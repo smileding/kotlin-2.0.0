@@ -583,12 +583,57 @@ class BodyGenerator(
         }
     }
 
+    private fun getTypeInheritancePosition(irType: IrType): Int {
+        var typeIndex = -1
+        var currentType: IrClass? = irType.getRuntimeClass(irBuiltIns)
+        while (currentType != null) {
+            typeIndex++
+            currentType = currentType.getSuperClass(irBuiltIns)
+        }
+        check(typeIndex >= 0) { "Invalid type for cast check" }
+        return typeIndex
+    }
+
     private fun generateRefTest(fromType: IrType, toType: IrType, location: SourceLocation) {
         if (!isDownCastAlwaysSuccessInRuntime(fromType, toType)) {
-            body.buildRefTestStatic(
-                toType = context.referenceGcType(toType.getRuntimeClass(irBuiltIns).symbol),
-                location
-            )
+            val parameterLocal = functionContext.referenceLocal(SyntheticLocalType.TYPECHECK_PARAMETER)
+            body.buildSetLocal(parameterLocal, location)
+            body.buildBlock("isSubtype_is_null", WasmI32) { outerLabel ->
+                body.buildConstI32(0, location)
+                body.buildGetLocal(parameterLocal, location)
+                body.buildBrInstr(WasmOp.BR_ON_NULL, outerLabel, location)
+
+                val typeIndex = getTypeInheritancePosition(toType)
+                //TypeInfo.SuperTypes array offset
+                val indexOffset = 32 + typeIndex * 4
+                if (typeIndex < SUPER_TYPE_ARRAY_MIN_SIZE) {
+                    // type check on offset position
+                    body.buildConstI32Symbol(context.referenceTypeId(toType.getRuntimeClass(irBuiltIns).symbol), location)
+                    body.buildGetLocal(parameterLocal, location)
+                    body.buildStructGet(context.referenceGcType(irBuiltIns.anyClass), WasmSymbol(2), location)
+                    body.buildInstr(WasmOp.I32_LOAD, location, WasmImmediate.MemArg(0u, indexOffset.toUInt()))
+                    body.buildInstr(WasmOp.I32_EQ, location)
+                } else {
+                    body.buildBlock("isSubtype_over_size", WasmI32) { innerLabel ->
+                        body.buildConstI32(0, location)
+                        body.buildConstI32(typeIndex, location)
+                        body.buildGetLocal(parameterLocal, location)
+                        body.buildStructGet(context.referenceGcType(irBuiltIns.anyClass), WasmSymbol(2), location)
+                        //TypeInfo.SuperTypes array length
+                        body.buildInstr(WasmOp.I32_LOAD, location, WasmImmediate.MemArg(0u, 24u))
+                        body.buildInstr(WasmOp.I32_GE_S, location)
+                        body.buildBrIf(innerLabel, location)
+                        // type check on offset position
+                        body.buildConstI32Symbol(context.referenceTypeId(toType.getRuntimeClass(irBuiltIns).symbol), location)
+                        body.buildGetLocal(parameterLocal, location)
+                        body.buildStructGet(context.referenceGcType(irBuiltIns.anyClass), WasmSymbol(2), location)
+                        body.buildInstr(WasmOp.I32_LOAD, location, WasmImmediate.MemArg(0u, indexOffset.toUInt()))
+                        body.buildInstr(WasmOp.I32_EQ, location)
+                        body.buildBr(innerLabel, location)
+                    }
+                }
+                body.buildBr(outerLabel, location)
+            }
         } else {
             body.buildDrop(location)
             body.buildConstI32(1, location)
@@ -628,7 +673,7 @@ class BodyGenerator(
                 assert(irInterface.isInterface)
                 if (irInterface.symbol in hierarchyDisjointUnions) {
                     val classITable = context.referenceClassITableGcType(irInterface.symbol)
-                    val parameterLocal = functionContext.referenceLocal(SyntheticLocalType.IS_INTERFACE_PARAMETER)
+                    val parameterLocal = functionContext.referenceLocal(SyntheticLocalType.TYPECHECK_PARAMETER)
                     body.buildSetLocal(parameterLocal, location)
                     body.buildBlock("isInterface", WasmI32) { outerLabel ->
                         body.buildBlock("isInterface", WasmRefNullType(WasmHeapType.Simple.Struct)) { innerLabel ->

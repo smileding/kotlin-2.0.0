@@ -27,6 +27,9 @@ import org.jetbrains.kotlin.name.parentOrNull
 import org.jetbrains.kotlin.wasm.ir.*
 import org.jetbrains.kotlin.wasm.ir.source.location.SourceLocation
 
+// Fast Subtype Checking in the HotSpot JVM, Cliff Click and John Rose, November 2002
+internal const val SUPER_TYPE_ARRAY_MIN_SIZE = 4
+
 class DeclarationGenerator(
     val context: WasmModuleCodegenContext,
     private val allowIncompleteImplementations: Boolean,
@@ -406,55 +409,53 @@ class DeclarationGenerator(
 
     private fun binaryDataStruct(classMetadata: ClassMetadata): ConstantDataStruct {
         val fqnShouldBeEmitted = context.backendContext.configuration.languageVersionSettings.getFlag(allowFullyQualifiedNameInKClass)
+        val klass = classMetadata.klass
         //TODO("FqName for inner classes could be invalid due to topping it out from outer class")
-        val packageName = if (fqnShouldBeEmitted) classMetadata.klass.kotlinFqName.parentOrNull()?.asString() ?: "" else ""
-        val simpleName = classMetadata.klass.kotlinFqName.shortName().asString()
+        val packageName = if (fqnShouldBeEmitted) klass.kotlinFqName.parentOrNull()?.asString() ?: "" else ""
+        val simpleName = klass.kotlinFqName.shortName().asString()
 
         val (packageNameAddress, packageNamePoolId) = context.referenceStringLiteralAddressAndId(packageName)
         val (simpleNameAddress, simpleNamePoolId) = context.referenceStringLiteralAddressAndId(simpleName)
 
-        val typeInfo = ConstantDataStruct(
-            name = "TypeInfo",
-            elements = listOf(
+        var currentKlass: IrClass? = klass
+        val superKlassIdList = mutableListOf<WasmSymbol<Int>>()
+        while (currentKlass != null) {
+            superKlassIdList.add(0, context.referenceTypeId(currentKlass.symbol))
+            currentKlass = currentKlass.getSuperClass(irBuiltIns)
+        }
+
+        repeat(SUPER_TYPE_ARRAY_MIN_SIZE - superKlassIdList.size) {
+            superKlassIdList.add(0, WasmSymbol(-1))
+        }
+
+        val klassIds = ConstantDataIntArray("superClassIds", superKlassIdList)
+
+        val interfacesIds: ConstantDataIntArray?
+        if (!klass.isAbstractOrSealed) {
+            interfacesIds = ConstantDataIntArray(
+                "interfacesIds",
+                classMetadata.interfaces.map { it.symbol.let(context::referenceTypeId) },
+            )
+        } else {
+            interfacesIds = null
+        }
+
+        return ConstantDataStruct(
+            name = "Class TypeInfo: ${klass.fqNameWhenAvailable}",
+            elements = listOfNotNull(
                 ConstantDataIntField("TypePackageNameLength", packageName.length),
                 ConstantDataIntField("TypePackageNameId", packageNamePoolId),
                 ConstantDataIntField("TypePackageNamePtr", packageNameAddress),
                 ConstantDataIntField("TypeNameLength", simpleName.length),
                 ConstantDataIntField("TypeNameId", simpleNamePoolId),
-                ConstantDataIntField("TypeNamePtr", simpleNameAddress)
+                ConstantDataIntField("TypeNamePtr", simpleNameAddress),
+                ConstantDataIntField("SuperTypeListSize", klassIds.value.size),
+                ConstantDataIntField("InterfaceListSize", interfacesIds?.value?.size ?: 0),
+                klassIds,
+                interfacesIds
             )
         )
-
-        val superClass = classMetadata.klass.getSuperClass(context.backendContext.irBuiltIns)
-        val superTypeId = superClass?.let {
-            ConstantDataIntField("SuperTypeId", context.referenceTypeId(it.symbol))
-        } ?: ConstantDataIntField("SuperTypeId", -1)
-
-        val typeInfoContent = mutableListOf(typeInfo, superTypeId)
-        if (!classMetadata.klass.isAbstractOrSealed) {
-            typeInfoContent.add(interfaceTable(classMetadata))
-        }
-
-        return ConstantDataStruct(
-            name = "Class TypeInfo: ${classMetadata.klass.fqNameWhenAvailable} ",
-            elements = typeInfoContent
-        )
     }
-
-    private fun interfaceTable(classMetadata: ClassMetadata): ConstantDataStruct {
-        val interfaces = classMetadata.interfaces
-        val size = ConstantDataIntField("size", interfaces.size)
-        val interfaceIds = ConstantDataIntArray(
-            "interfaceIds",
-            interfaces.map { context.referenceTypeId(it.symbol) },
-        )
-
-        return ConstantDataStruct(
-            name = "Class interface table: ${classMetadata.klass.fqNameWhenAvailable} ",
-            elements = listOf(size, interfaceIds)
-        )
-    }
-
 
     override fun visitField(declaration: IrField) {
         // Member fields are generated as part of struct type

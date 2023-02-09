@@ -15,9 +15,9 @@ internal const val TYPE_INFO_TYPE_PACKAGE_NAME_PRT_OFFSET = TYPE_INFO_TYPE_PACKA
 internal const val TYPE_INFO_TYPE_SIMPLE_NAME_LENGTH_OFFSET = TYPE_INFO_TYPE_PACKAGE_NAME_PRT_OFFSET + TYPE_INFO_ELEMENT_SIZE
 internal const val TYPE_INFO_TYPE_SIMPLE_NAME_ID_OFFSET = TYPE_INFO_TYPE_SIMPLE_NAME_LENGTH_OFFSET + TYPE_INFO_ELEMENT_SIZE
 internal const val TYPE_INFO_TYPE_SIMPLE_NAME_PRT_OFFSET = TYPE_INFO_TYPE_SIMPLE_NAME_ID_OFFSET + TYPE_INFO_ELEMENT_SIZE
-internal const val TYPE_INFO_SUPER_TYPE_OFFSET = TYPE_INFO_TYPE_SIMPLE_NAME_PRT_OFFSET + TYPE_INFO_ELEMENT_SIZE
-internal const val TYPE_INFO_ITABLE_SIZE_OFFSET = TYPE_INFO_SUPER_TYPE_OFFSET + TYPE_INFO_ELEMENT_SIZE
-internal const val TYPE_INFO_ITABLE_OFFSET = TYPE_INFO_ITABLE_SIZE_OFFSET + TYPE_INFO_ELEMENT_SIZE
+internal const val TYPE_INFO_SUPER_TYPE_LIST_SIZE_OFFSET = TYPE_INFO_TYPE_SIMPLE_NAME_PRT_OFFSET + TYPE_INFO_ELEMENT_SIZE
+internal const val TYPE_INFO_INTERFACE_LIST_SIZE_OFFSET = TYPE_INFO_SUPER_TYPE_LIST_SIZE_OFFSET + TYPE_INFO_ELEMENT_SIZE
+internal const val TYPE_INFO_SUPER_TYPE_LIST_OFFSET = TYPE_INFO_INTERFACE_LIST_SIZE_OFFSET + TYPE_INFO_ELEMENT_SIZE
 
 internal class TypeInfoData(val typeId: Int, val packageName: String, val typeName: String)
 
@@ -51,22 +51,31 @@ private fun getString(typeInfoPtr: Int, lengthOffset: Int, idOffset: Int, ptrOff
     return stringLiteral(id, ptr, length)
 }
 
-internal fun getSuperTypeId(typeInfoPtr: Int): Int =
-    wasm_i32_load(typeInfoPtr + TYPE_INFO_SUPER_TYPE_OFFSET)
-
 internal fun isInterfaceById(obj: Any, interfaceId: Int): Boolean {
-    val interfaceListSize = wasm_i32_load(obj.typeInfo + TYPE_INFO_ITABLE_SIZE_OFFSET)
-    val interfaceListPtr = obj.typeInfo + TYPE_INFO_ITABLE_OFFSET
+    val superTypeListSize = wasm_i32_load(obj.typeInfo + TYPE_INFO_SUPER_TYPE_LIST_SIZE_OFFSET)
+    val interfacesListSize = wasm_i32_load(obj.typeInfo + TYPE_INFO_INTERFACE_LIST_SIZE_OFFSET)
 
-    var interfaceSlot = 0
-    while (interfaceSlot < interfaceListSize) {
-        val supportedInterface = wasm_i32_load(interfaceListPtr + interfaceSlot * TYPE_INFO_ELEMENT_SIZE)
-        if (supportedInterface == interfaceId) {
+    val interfaceListPtr = obj.typeInfo + TYPE_INFO_SUPER_TYPE_LIST_OFFSET + superTypeListSize * TYPE_INFO_ELEMENT_SIZE
+    val interfaceListEndPtr = interfaceListPtr + interfacesListSize * TYPE_INFO_ELEMENT_SIZE
+
+    var currentPtr = interfaceListPtr
+    while (currentPtr < interfaceListEndPtr) {
+        if (interfaceId == wasm_i32_load(currentPtr)) {
             return true
         }
-        interfaceSlot++
+        currentPtr += TYPE_INFO_ELEMENT_SIZE
     }
     return false
+}
+
+internal fun isSupertypeByTypeInfo(obj: Any, typeData: TypeInfoData): Boolean {
+    val objPtr = obj.typeInfo
+    val typeDataPtr = typeData.typeId
+    val objSuperTypesListSize = wasm_i32_load(objPtr + TYPE_INFO_SUPER_TYPE_LIST_SIZE_OFFSET)
+    val typeDataTypesListSize = wasm_i32_load(typeDataPtr + TYPE_INFO_SUPER_TYPE_LIST_SIZE_OFFSET)
+    if (objSuperTypesListSize < typeDataTypesListSize) return false
+    val superTypeOnPositionPtr = objPtr + TYPE_INFO_SUPER_TYPE_LIST_OFFSET + (typeDataTypesListSize - 1) * TYPE_INFO_ELEMENT_SIZE
+    return wasm_i32_load(superTypeOnPositionPtr) == typeDataPtr
 }
 
 @Suppress("UNUSED_PARAMETER")

@@ -187,9 +187,7 @@ internal fun checkContextReceiverTypeRefIsResolved(declaration: FirCallableDecla
 internal fun checkContractDescriptionIsResolved(declaration: FirContractDescriptionOwner) {
     val contractDescription = declaration.contractDescription
     checkWithAttachment(
-        condition = contractDescription is FirResolvedContractDescription ||
-                contractDescription is FirEmptyContractDescription ||
-                contractDescription is FirLegacyRawContractDescription /* TODO: should be dropped after KT-60310 */,
+        condition = contractDescription is FirResolvedContractDescription || contractDescription is FirEmptyContractDescription,
         message = { "Expected ${FirResolvedContractDescription::class.simpleName} or ${FirEmptyContractDescription::class.simpleName} but ${contractDescription::class.simpleName} found for ${declaration::class.simpleName}" }
     ) {
         withFirEntry("declaration", declaration)

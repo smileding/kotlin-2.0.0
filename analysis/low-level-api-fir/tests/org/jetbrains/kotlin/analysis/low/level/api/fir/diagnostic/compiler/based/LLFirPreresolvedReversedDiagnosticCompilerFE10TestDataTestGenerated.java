@@ -39213,6 +39213,12 @@ public class LLFirPreresolvedReversedDiagnosticCompilerFE10TestDataTestGenerated
                     }
 
                     @Test
+                    @TestMetadata("incorrectContractCall.kt")
+                    public void testIncorrectContractCall() throws Exception {
+                        runTest("compiler/testData/diagnostics/testsWithStdLib/contracts/dsl/errors/incorrectContractCall.kt");
+                    }
+
+                    @Test
                     @TestMetadata("nestedConditionalEffects.kt")
                     public void testNestedConditionalEffects() throws Exception {
                         runTest("compiler/testData/diagnostics/testsWithStdLib/contracts/dsl/errors/nestedConditionalEffects.kt");

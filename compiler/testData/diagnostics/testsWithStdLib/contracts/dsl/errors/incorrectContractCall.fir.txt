@@ -1,0 +1,19 @@
+FILE: incorrectContractCall.fir.kt
+    public final fun test_1(): R|kotlin/Unit| {
+        R|kotlin/contracts/contract<Inapplicable(INAPPLICABLE_ARGUMENTS_MAPPING_ERROR): kotlin/contracts/contract>#|()
+    }
+    public final fun test_2(): R|kotlin/Unit| {
+        R|kotlin/contracts/contract<Inapplicable(INAPPLICABLE): kotlin/contracts/contract>#|(Int(10))
+    }
+    public final fun test_3(): R|kotlin/Unit| {
+        R|kotlin/contracts/contract<Inapplicable(INAPPLICABLE_ARGUMENTS_MAPPING_ERROR): kotlin/contracts/contract>#|(String(), <L> = contract@fun <anonymous>(): R|kotlin/Unit| <inline=Unknown>  {
+            ^@contract Unit
+        }
+        )
+    }
+    public final fun test_4(): R|kotlin/Unit| {
+        R|kotlin/contracts/contract<Inapplicable(INAPPLICABLE): kotlin/contracts/contract>#|(<L> = contract@fun R|kotlin/contracts/ContractBuilder|.<anonymous>(): R|kotlin/Unit| <inline=Inline, kind=UNKNOWN>  {
+            ^@contract Int(10)
+        }
+        )
+    }

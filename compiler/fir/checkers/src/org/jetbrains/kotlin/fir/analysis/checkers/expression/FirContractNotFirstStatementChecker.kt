@@ -38,8 +38,10 @@ object FirContractNotFirstStatementChecker : FirFunctionCallChecker() {
 
     private fun FirFunctionCall.isCorrectlyPlacedIn(functionDeclaration: FirFunction): Boolean {
         val firstStatement = functionDeclaration.body?.statements?.first()
-        return firstStatement is FirContractCallBlock && firstStatement.call == this
-                && !(functionDeclaration is FirContractDescriptionOwner && functionDeclaration.contractDescription.isNonFirstStatement)
+        if (!(firstStatement == this || (firstStatement as? FirContractCallBlock)?.call == this)) {
+            return false
+        }
+        return !(functionDeclaration is FirContractDescriptionOwner && functionDeclaration.contractDescription.isNonFirstStatement)
     }
 
     private val FirContractDescription.isNonFirstStatement: Boolean

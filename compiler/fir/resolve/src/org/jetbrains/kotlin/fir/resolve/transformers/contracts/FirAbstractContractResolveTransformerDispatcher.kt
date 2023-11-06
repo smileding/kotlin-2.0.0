@@ -22,7 +22,10 @@ import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.builder.*
 import org.jetbrains.kotlin.fir.expressions.impl.FirContractCallBlock
 import org.jetbrains.kotlin.fir.moduleData
+import org.jetbrains.kotlin.fir.references.FirResolvedErrorReference
+import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.references.builder.buildSimpleNamedReference
+import org.jetbrains.kotlin.fir.references.toResolvedCallableSymbol
 import org.jetbrains.kotlin.fir.resolve.ResolutionMode
 import org.jetbrains.kotlin.fir.resolve.ScopeSession
 import org.jetbrains.kotlin.fir.resolve.transformers.ReturnTypeCalculatorForFullBodyResolve
@@ -162,8 +165,10 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
                     .apply { replaceConeTypeOrNull(session.builtinTypes.unitType.type) }
             }
 
-            if (resolvedContractCall.toResolvedCallableSymbol()?.callableId != FirContractsDslNames.CONTRACT) {
+            fun errorInContractCall(): T {
                 if (hasBodyContract) {
+                    // Until the contract description is replaced with a resolved one, a call rests both in the description
+                    // and in the callable body (scoped inside a marker block). Here we patch the second call occurrence.
                     owner.body.replaceFirstStatement<FirContractCallBlock> { resolvedContractCall }
                 }
                 owner.replaceContractDescription(FirEmptyContractDescription)
@@ -171,17 +176,27 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
                 return owner
             }
 
+            val resolvedContractCallReference = resolvedContractCall.calleeReference as? FirResolvedNamedReference ?: return errorInContractCall()
+
+            if (resolvedContractCallReference.toResolvedCallableSymbol()?.callableId != FirContractsDslNames.CONTRACT) {
+                return errorInContractCall()
+            }
+
+            if (resolvedContractCallReference is FirResolvedErrorReference) {
+                return errorInContractCall()
+            }
+
+            val argument = resolvedContractCall.arguments.singleOrNull() as? FirLambdaArgumentExpression
+                ?: return errorInContractCall()
+
+            val lambdaBody = (argument.expression as FirAnonymousFunctionExpression).anonymousFunction.body
+                ?: return errorInContractCall()
+
             if (hasBodyContract) {
                 // Until the contract description is replaced with a resolved one, a call rests both in the description
                 // and in the callable body (scoped inside a marker block). Here we patch the second call occurrence.
                 owner.body.replaceFirstStatement<FirContractCallBlock> { FirContractCallBlock(resolvedContractCall) }
             }
-
-            val argument = resolvedContractCall.arguments.singleOrNull() as? FirLambdaArgumentExpression
-                ?: return transformOwnerOfErrorContract(owner)
-
-            val lambdaBody = (argument.expression as FirAnonymousFunctionExpression).anonymousFunction.body
-                ?: return transformOwnerOfErrorContract(owner)
 
             val resolvedContractDescription = buildResolvedContractDescription {
                 val effectExtractor = ConeEffectExtractor(session, owner, valueParameters)
@@ -317,11 +332,6 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
 
         override fun transformEnumEntry(enumEntry: FirEnumEntry, data: ResolutionMode): FirEnumEntry {
             return enumEntry
-        }
-
-        private fun <T : FirContractDescriptionOwner> transformOwnerOfErrorContract(owner: T): T {
-            dataFlowAnalyzer.exitContractDescription()
-            return owner
         }
 
         private val FirContractDescriptionOwner.hasContractToResolve: Boolean

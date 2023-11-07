@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.contracts.FirContractDescription
 import org.jetbrains.kotlin.fir.contracts.FirEffectDeclaration
 import org.jetbrains.kotlin.fir.contracts.description.ConeContractRenderer
-import org.jetbrains.kotlin.fir.contracts.impl.FirEmptyContractDescription
+import org.jetbrains.kotlin.fir.contracts.impl.isEmpty
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.impl.*
@@ -1157,7 +1157,7 @@ class FirRenderer(
         }
 
         override fun visitContractDescription(contractDescription: FirContractDescription) {
-            require(contractDescription is FirEmptyContractDescription)
+            require(contractDescription.isEmpty)
         }
 
         override fun visitPackageDirective(packageDirective: FirPackageDirective) {

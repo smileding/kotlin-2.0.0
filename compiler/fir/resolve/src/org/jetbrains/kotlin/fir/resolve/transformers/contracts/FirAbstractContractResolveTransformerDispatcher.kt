@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.fir.contracts.FirRawContractDescription
 import org.jetbrains.kotlin.fir.contracts.builder.buildLegacyRawContractDescription
 import org.jetbrains.kotlin.fir.contracts.builder.buildResolvedContractDescription
 import org.jetbrains.kotlin.fir.contracts.description.ConeEffectDeclaration
-import org.jetbrains.kotlin.fir.contracts.impl.FirEmptyContractDescription
+import org.jetbrains.kotlin.fir.contracts.impl.FirEmptyResolvedContractDescription
 import org.jetbrains.kotlin.fir.contracts.toFirElement
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.builder.buildAnonymousFunction
@@ -171,7 +171,7 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
                     // and in the callable body (scoped inside a marker block). Here we patch the second call occurrence.
                     owner.body.replaceFirstStatement<FirContractCallBlock> { resolvedContractCall }
                 }
-                owner.replaceContractDescription(FirEmptyContractDescription)
+                owner.replaceContractDescription(FirEmptyResolvedContractDescription)
                 dataFlowAnalyzer.exitContractDescription()
                 return owner
             }
@@ -353,9 +353,8 @@ private val FirContractDescriptionOwner.valueParameters: List<FirValueParameter>
 private val FirContractDescriptionOwner.body: FirBlock
     get() = when (this) {
         is FirFunction -> body!!
-        else ->  errorWithAttachment("Expected ${FirFunction::class.java} but ${this::class.java} found") {
+        else -> errorWithAttachment("Expected ${FirFunction::class.java} but ${this::class.java} found") {
             withFirEntry("foundElement", this@body)
         }
     }
 
-private fun FirContractDescriptionOwner.error(): Nothing = throw IllegalStateException("${this::class} can not be a contract owner")

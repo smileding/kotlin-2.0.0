@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.builder.PsiRawFirBuilder
 import org.jetbrains.kotlin.fir.contracts.FirRawContractDescription
 import org.jetbrains.kotlin.fir.contracts.impl.FirEmptyContractDescription
+import org.jetbrains.kotlin.fir.contracts.impl.isEmpty
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.annotationPlatformSupport
 import org.jetbrains.kotlin.fir.declarations.utils.getExplicitBackingField
@@ -128,7 +129,7 @@ private fun replaceLazyBody(target: FirFunction, copy: FirFunction) {
 private fun replaceLazyContractDescription(target: FirContractDescriptionOwner, copy: FirContractDescriptionOwner) {
     val shouldReplace = when (val currentContractDescription = target.contractDescription) {
         is FirRawContractDescription -> currentContractDescription.rawEffects.any { it is FirLazyExpression }
-        is FirEmptyContractDescription -> copy.contractDescription !is FirEmptyContractDescription
+        is FirEmptyContractDescription -> !copy.contractDescription.isEmpty
         else -> false
     }
 

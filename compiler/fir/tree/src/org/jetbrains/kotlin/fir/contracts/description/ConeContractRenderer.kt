@@ -7,7 +7,7 @@ package org.jetbrains.kotlin.fir.contracts.description
 
 import org.jetbrains.kotlin.contracts.description.*
 import org.jetbrains.kotlin.fir.contracts.*
-import org.jetbrains.kotlin.fir.contracts.impl.FirEmptyContractDescription
+import org.jetbrains.kotlin.fir.contracts.impl.isEmpty
 import org.jetbrains.kotlin.fir.declarations.FirContractDescriptionOwner
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.diagnostics.ConeDiagnostic
@@ -28,7 +28,7 @@ class ConeContractRenderer : KtContractDescriptionVisitor<Unit, Nothing?, ConeKo
 
     fun render(contractDescription: FirContractDescription) {
         printer.pushIndent()
-        if (contractDescription !is FirEmptyContractDescription) {
+        if (!contractDescription.isEmpty) {
             printer.newLine()
             val prefix = if (contractDescription is FirResolvedContractDescription) "R|" else ""
             printer.print("[${prefix}Contract description]")

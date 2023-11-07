@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.fakeElement
 import org.jetbrains.kotlin.fir.*
-import org.jetbrains.kotlin.fir.contracts.impl.FirEmptyContractDescription
+import org.jetbrains.kotlin.fir.contracts.impl.isEmpty
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.builder.buildAnonymousFunctionCopy
 import org.jetbrains.kotlin.fir.declarations.builder.buildContextReceiver
@@ -784,7 +784,7 @@ open class FirDeclarationsResolveTransformer(
                 prepareSignatureForBodyResolve(simpleFunction)
                 simpleFunction.transformStatus(this, simpleFunction.resolveStatus().mode())
 
-                if (simpleFunction.contractDescription != FirEmptyContractDescription) {
+                if (!simpleFunction.contractDescription.isEmpty) {
                     simpleFunction.runContractResolveForFunction(session, scopeSession, context)
                 }
             }
@@ -961,7 +961,7 @@ open class FirDeclarationsResolveTransformer(
             anonymousFunction.valueParameters.forEach { it.transformReturnTypeRef(transformer, ResolutionMode.ContextIndependent) }
         }
 
-        if (anonymousFunction.contractDescription != FirEmptyContractDescription) {
+        if (!anonymousFunction.contractDescription.isEmpty) {
             anonymousFunction.runContractResolveForFunction(session, scopeSession, context)
         }
 

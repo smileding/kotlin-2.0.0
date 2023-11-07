@@ -186,11 +186,14 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
                 return errorInContractCall()
             }
 
-            val argument = resolvedContractCall.arguments.singleOrNull() as? FirLambdaArgumentExpression
-                ?: return errorInContractCall()
+            val lambdaExpression = when (val argument = resolvedContractCall.arguments.singleOrNull()) {
+                is FirLambdaArgumentExpression -> argument.expression as? FirAnonymousFunctionExpression
+                is FirNamedArgumentExpression -> argument.expression as? FirAnonymousFunctionExpression
+                is FirAnonymousFunctionExpression -> argument
+                else -> null
+            } ?: return errorInContractCall()
 
-            val lambdaBody = (argument.expression as FirAnonymousFunctionExpression).anonymousFunction.body
-                ?: return errorInContractCall()
+            val lambdaBody = (lambdaExpression).anonymousFunction.body ?: return errorInContractCall()
 
             if (hasBodyContract) {
                 // Until the contract description is replaced with a resolved one, a call rests both in the description

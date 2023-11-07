@@ -13,12 +13,12 @@ import kotlin.contracts.*
 
 // TESTCASE NUMBER: 1
 inline fun case_1(block: () -> Unit) {
-    contract({ callsInPlace(<!USAGE_IS_NOT_INLINABLE!>block<!>, InvocationKind.EXACTLY_ONCE) })
+    contract({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })
     return block()
 }
 
 // TESTCASE NUMBER: 2
 inline fun case_2(block: () -> Unit) {
-    contract(builder = { callsInPlace(<!USAGE_IS_NOT_INLINABLE!>block<!>, InvocationKind.EXACTLY_ONCE) })
+    contract(builder = { callsInPlace(block, InvocationKind.EXACTLY_ONCE) })
     return block()
 }

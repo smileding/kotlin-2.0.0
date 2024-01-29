@@ -5,7 +5,9 @@
 
 package org.jetbrains.kotlin.fir.resolve
 
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationStatus
+import org.jetbrains.kotlin.fir.declarations.FirRegularClass
 import org.jetbrains.kotlin.fir.expressions.FirVariableAssignment
 import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.fir.types.*
@@ -23,7 +25,7 @@ sealed class ResolutionMode(
         companion object : ReceiverResolution(forCallableReference = false)
     }
 
-    class WithExpectedType(
+    open class WithExpectedType(
         val expectedTypeRef: FirResolvedTypeRef,
         val mayBeCoercionToUnitApplied: Boolean = false,
         val expectedTypeMismatchIsReportedInChecker: Boolean = false,
@@ -76,6 +78,16 @@ sealed class ResolutionMode(
         }
     }
 
+    /**
+     * This resolution mode is used for resolving the RHS of equality operators.
+     *
+     * It carries an expected type, as [WithExpectedType], but also additional contextual information about the LHS.
+     */
+    class WithContextTypeForEquality(
+        expectedTypeRef: FirResolvedTypeRef,
+        val contextTypeRef: FirResolvedTypeRef?,
+    ) : WithExpectedType(expectedTypeRef)
+
     class WithStatus(val status: FirDeclarationStatus) : ResolutionMode(forceFullCompletion = false) {
         override fun toString(): String {
             return "WithStatus: ${status.render()}"
@@ -118,6 +130,32 @@ fun ResolutionMode.expectedType(components: BodyResolveComponents): FirTypeRef? 
     is ResolutionMode.AssignmentLValue,
     is ResolutionMode.ReceiverResolution -> components.noExpectedType
     else -> null
+}
+
+fun ResolutionMode.contextType(components: BodyResolveComponents): FirTypeRef? = when (this) {
+    is ResolutionMode.WithContextTypeForEquality -> contextTypeRef?.takeIf { !this.fromCast }
+    else -> expectedType(components)
+}
+
+fun ResolutionMode.improvedResolutionTypes(components: BodyResolveComponents, session: FirSession): Set<FirRegularClass>? =
+    contextType(components)
+        ?.coneTypeOrNull
+        ?.gatherSuperTypes(session)
+        ?.toSet()
+
+private fun ConeKotlinType.gatherSuperTypes(session: FirSession): Collection<FirRegularClass> =
+    fullyExpandedType(session)
+        .expandIntersection()
+        .flatMap {
+            when (val klass = it.toRegularClassSymbol(session)) {
+                null -> emptyList()
+                else -> listOf(klass.fir) + klass.resolvedSuperTypes.flatMap { it.gatherSuperTypes(session) }
+            }
+        }
+
+private fun ConeKotlinType.expandIntersection(): Collection<ConeKotlinType> = when (this) {
+    is ConeIntersectionType -> intersectedTypes.flatMap { it.expandIntersection() }
+    else -> listOf(this)
 }
 
 fun withExpectedType(expectedTypeRef: FirTypeRef, expectedTypeMismatchIsReportedInChecker: Boolean = false): ResolutionMode = when {

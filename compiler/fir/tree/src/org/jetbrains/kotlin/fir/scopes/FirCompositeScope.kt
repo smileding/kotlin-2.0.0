@@ -116,6 +116,12 @@ class FirNameAwareCompositeScope(val scopes: Iterable<FirContainingNamesAwareSco
     }
 }
 
+fun Iterable<FirContainingNamesAwareScope>.composite(): FirContainingNamesAwareScope? = when (count()) {
+    0 -> null
+    1 -> this.single()
+    else -> FirNameAwareCompositeScope(this)
+}
+
 @DelicateScopeAPI
 inline fun <reified S : FirScope> Iterable<S>.withReplacedSessionOrNull(
     newSession: FirSession,

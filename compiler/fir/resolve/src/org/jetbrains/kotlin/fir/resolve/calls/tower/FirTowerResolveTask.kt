@@ -10,13 +10,14 @@ import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.fakeElement
 import org.jetbrains.kotlin.fir.declarations.ContextReceiverGroup
 import org.jetbrains.kotlin.fir.declarations.FirTowerDataContext
+import org.jetbrains.kotlin.fir.declarations.staticScope
 import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.expressions.FirQualifiedAccessExpression
 import org.jetbrains.kotlin.fir.expressions.FirResolvedQualifier
 import org.jetbrains.kotlin.fir.expressions.builder.buildExpressionStub
 import org.jetbrains.kotlin.fir.expressions.builder.buildResolvedQualifier
-import org.jetbrains.kotlin.fir.resolve.BodyResolveComponents
-import org.jetbrains.kotlin.fir.resolve.DoubleColonLHS
+import org.jetbrains.kotlin.fir.languageVersionSettings
+import org.jetbrains.kotlin.fir.resolve.*
 import org.jetbrains.kotlin.fir.resolve.calls.*
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.CallInfo
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.CallKind
@@ -24,6 +25,7 @@ import org.jetbrains.kotlin.fir.resolve.calls.candidate.CandidateCollector
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.CandidateFactory
 import org.jetbrains.kotlin.fir.resolve.setTypeOfQualifier
 import org.jetbrains.kotlin.fir.scopes.FirScope
+import org.jetbrains.kotlin.fir.scopes.composite
 import org.jetbrains.kotlin.fir.scopes.impl.FirWhenSubjectImportingScope
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.name.Name
@@ -66,7 +68,8 @@ internal abstract class FirBaseTowerResolveTask(
     private val manager: TowerResolveManager,
     protected val towerDataElementsForName: TowerDataElementsForName,
     private val collector: CandidateCollector,
-    private val candidateFactory: CandidateFactory
+    private val candidateFactory: CandidateFactory,
+    private val resolutionMode: ResolutionMode? = null,
 ) {
     protected val session get() = components.session
 
@@ -186,6 +189,23 @@ internal abstract class FirBaseTowerResolveTask(
             }
         }
 
+        if (session.languageVersionSettings.supportsContextSensitiveResolution) {
+            val contextClasses = resolutionMode?.improvedResolutionTypes(components, session)
+
+            if (contextClasses != null) {
+                contextClasses.mapNotNull { it.staticScope(session, components.scopeSession) }.composite()?.also {
+                    onScope(it, null, TowerGroup.Last)
+                }
+
+                for (contextClass in contextClasses) {
+                    contextClass.companionObjectSymbol?.fir?.also { companion ->
+                        val receiver = ImplicitDispatchReceiverValue(companion.symbol, session, components.scopeSession)
+                        onImplicitReceiver(receiver, TowerGroup.Last)
+                    }
+                }
+            }
+        }
+
         for ((depth, contextReceiverGroup) in towerDataElementsForName.contextReceiverGroups) {
             onContextReceiverGroup(contextReceiverGroup, parentGroup.ContextReceiverGroup(depth))
         }
@@ -223,12 +243,14 @@ internal open class FirTowerResolveTask(
     towerDataElementsForName: TowerDataElementsForName,
     collector: CandidateCollector,
     candidateFactory: CandidateFactory,
+    resolutionMode: ResolutionMode? = null,
 ) : FirBaseTowerResolveTask(
     components,
     manager,
     towerDataElementsForName,
     collector,
     candidateFactory,
+    resolutionMode,
 ) {
 
     suspend fun runResolverForQualifierReceiver(

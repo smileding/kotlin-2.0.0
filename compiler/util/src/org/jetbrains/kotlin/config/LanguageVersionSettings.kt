@@ -427,6 +427,7 @@ enum class LanguageFeature(
     ProperFieldAccessGenerationForFieldAccessShadowedByKotlinProperty(sinceVersion = null, kind = OTHER), // KT-56386
     WhenGuards(sinceVersion = null, kind = OTHER), // KT-13626
     MultiDollarInterpolation(sinceVersion = null, kind = OTHER), // KT-2425
+    ExpectedTypeGuidedResolution(sinceVersion = null, kind = OTHER), // KT-16768
     ;
 
     init {
@@ -607,6 +608,12 @@ interface LanguageVersionSettings {
             it == LanguageFeature.State.ENABLED ||
                     it == LanguageFeature.State.ENABLED_WITH_WARNING
         }
+
+    /**
+     * If 'true', a feature with context-sensitive resolution has been enabled.
+     */
+    val supportsContextSensitiveResolution: Boolean
+        get() = supportsFeature(LanguageFeature.ExpectedTypeGuidedResolution) || supportsFeature(LanguageFeature.ContextSensitiveEnumResolutionInWhen)
 
     fun isPreRelease(): Boolean
 

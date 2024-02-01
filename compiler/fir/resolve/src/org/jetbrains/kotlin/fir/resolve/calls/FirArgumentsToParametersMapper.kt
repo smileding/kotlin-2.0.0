@@ -22,6 +22,8 @@ import org.jetbrains.kotlin.fir.scopes.ProcessorAction
 import org.jetbrains.kotlin.fir.scopes.processOverriddenFunctions
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirValueParameterSymbol
+import org.jetbrains.kotlin.fir.types.coneTypeOrNull
+import org.jetbrains.kotlin.fir.types.parameterName
 import org.jetbrains.kotlin.fir.utils.exceptions.withFirEntry
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.ForbiddenNamedArgumentsTarget
@@ -318,7 +320,7 @@ private class FirCallArgumentsProcessor(
 
     private fun getParameterByName(name: Name): FirValueParameter? {
         if (nameToParameter == null) {
-            nameToParameter = parameters.associateBy { it.name }
+            nameToParameter = parameters.associateBy { it.returnTypeRef.coneTypeOrNull?.parameterName ?: it.name }
         }
         return nameToParameter!![name]
     }

@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.fir
 
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.builtins.StandardNames
+import org.jetbrains.kotlin.fir.declarations.getStringArgument
 import org.jetbrains.kotlin.fir.declarations.utils.expandedConeType
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.builder.FirImplicitInvokeCallBuilder
@@ -19,6 +20,8 @@ import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.builder.buildErrorTypeRef
 import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.StandardClassIds
 
 inline fun FirFunctionCall.copyAsImplicitInvokeCall(
     setupCopy: FirImplicitInvokeCallBuilder.() -> Unit
@@ -97,6 +100,11 @@ fun List<FirAnnotation>.computeTypeAttributes(
                     CompilerConeAttributes.ContextFunctionTypeParams(
                         annotation.extractContextReceiversCount() ?: 0
                     )
+            CompilerConeAttributes.ParameterName.ANNOTATION_CLASS_ID -> {
+                val name = annotation.getStringArgument(StandardClassIds.Annotations.ParameterNames.parameterNameName, session)
+                if (name != null) attributes += CompilerConeAttributes.ParameterName(Name.identifier(name))
+                customAnnotations += annotation // TODO, KT-???: Remove duplicate custom annotation for parameter name
+            }
 
             CompilerConeAttributes.UnsafeVariance.ANNOTATION_CLASS_ID -> attributes += CompilerConeAttributes.UnsafeVariance
             else -> {

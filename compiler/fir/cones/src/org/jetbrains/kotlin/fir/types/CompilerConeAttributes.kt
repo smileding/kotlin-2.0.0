@@ -101,6 +101,24 @@ object CompilerConeAttributes {
         }
     }
 
+    data class ParameterName(val name: Name) : ConeAttribute<ParameterName>() {
+        override fun union(other: ParameterName?): ParameterName? = null
+        override fun intersect(other: ParameterName?): ParameterName? = null
+        override fun add(other: ParameterName?): ParameterName = this
+
+        override fun isSubtypeOf(other: ParameterName?): Boolean = true
+
+        override val implementsEquality: Boolean get() = true
+        override val key: KClass<out ParameterName> = ParameterName::class
+        override val keepInInferredDeclarationType: Boolean get() = true
+
+        override fun toString(): String = "@ParameterName(\"$name\")"
+
+        companion object {
+            val ANNOTATION_CLASS_ID = StandardClassIds.Annotations.ParameterName
+        }
+    }
+
     object UnsafeVariance : ConeAttribute<UnsafeVariance>() {
         val ANNOTATION_CLASS_ID = ClassId(FqName("kotlin"), Name.identifier("UnsafeVariance"))
 
@@ -138,6 +156,7 @@ val ConeAttributes.noInfer: CompilerConeAttributes.NoInfer? by ConeAttributes.at
 val ConeAttributes.enhancedNullability: CompilerConeAttributes.EnhancedNullability? by ConeAttributes.attributeAccessor<CompilerConeAttributes.EnhancedNullability>()
 val ConeAttributes.extensionFunctionType: CompilerConeAttributes.ExtensionFunctionType? by ConeAttributes.attributeAccessor<CompilerConeAttributes.ExtensionFunctionType>()
 private val ConeAttributes.contextFunctionTypeParams: CompilerConeAttributes.ContextFunctionTypeParams? by ConeAttributes.attributeAccessor<CompilerConeAttributes.ContextFunctionTypeParams>()
+val ConeAttributes.parameterName: CompilerConeAttributes.ParameterName? by ConeAttributes.attributeAccessor<CompilerConeAttributes.ParameterName>()
 
 // ------------------------------------------------------------------
 
@@ -154,3 +173,5 @@ val ConeKotlinType.contextReceiversNumberForFunctionType: Int
     get() = attributes.contextReceiversNumberForFunctionType
 
 val ConeAttributes.contextReceiversNumberForFunctionType: Int get() = contextFunctionTypeParams?.contextReceiverNumber ?: 0
+
+val ConeKotlinType.parameterName: Name? get() = attributes.parameterName?.name

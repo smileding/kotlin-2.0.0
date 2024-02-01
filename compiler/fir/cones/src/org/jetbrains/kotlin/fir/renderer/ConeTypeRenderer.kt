@@ -174,14 +174,17 @@ open class ConeTypeRenderer(
     }
 
     protected open fun ConeKotlinType.renderAttributes() {
-        if (!attributes.any()) return
-        builder.append(attributeRenderer.render(attributes))
+        // TODO, KT-???: Remove duplicate custom annotation for parameter name
+        attributes
+            .filter { it !is CompilerConeAttributes.ParameterName }
+            .ifNotEmpty { builder.append(attributeRenderer.render(this)) }
     }
 
     protected fun ConeKotlinType.renderNonCompilerAttributes() {
+        // TODO, KT-???: Remove duplicate custom annotation for parameter name
         val compilerAttributes = CompilerConeAttributes.classIdByCompilerAttributeKey
         attributes
-            .filter { it.key !in compilerAttributes }
+            .filter { it.key !in compilerAttributes && it !is CompilerConeAttributes.ParameterName }
             .ifNotEmpty { builder.append(attributeRenderer.render(this)) }
     }
 

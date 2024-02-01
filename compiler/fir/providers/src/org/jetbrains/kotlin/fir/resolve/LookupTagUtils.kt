@@ -118,8 +118,14 @@ fun ConeKotlinType.withParameterNameAnnotation(parameter: FirFunctionTypeParamet
                 buildLiteralExpression(fakeSource, ConstantValueKind.String, name.asString(), setType = true)
         }
     }
-    val attributesWithParameterNameAnnotation =
-        ConeAttributes.create(listOf(CustomAnnotationTypeAttribute(listOf(parameterNameAnnotationCall))))
+
+    // TODO, KT-???: Remove duplicate custom annotation for parameter name
+    val attributesWithParameterNameAnnotation = ConeAttributes.create(
+        listOf(
+            CustomAnnotationTypeAttribute(listOf(parameterNameAnnotationCall)),
+            CompilerConeAttributes.ParameterName(name),
+        )
+    )
     return withCombinedAttributesFrom(attributesWithParameterNameAnnotation)
 }
 

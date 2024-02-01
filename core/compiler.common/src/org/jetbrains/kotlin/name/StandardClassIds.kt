@@ -153,6 +153,7 @@ object StandardClassIds {
         val SinceKotlin = "SinceKotlin".baseId()
         val ExtensionFunctionType = "ExtensionFunctionType".baseId()
         val ContextFunctionTypeParams = "ContextFunctionTypeParams".baseId()
+        val ParameterName = "ParameterName".baseId()
         val Deprecated = "Deprecated".baseId()
         val DeprecatedSinceKotlin = "DeprecatedSinceKotlin".baseId()
         val RequireKotlin = "RequireKotlin".internalId()

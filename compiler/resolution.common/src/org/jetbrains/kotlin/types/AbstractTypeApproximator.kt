@@ -323,7 +323,7 @@ abstract class AbstractTypeApproximator(
             } else this
         }
 
-        val supertypes = capturedType.typeConstructor().supertypes()
+        val supertypes = capturedType.typeConstructor().supertypes().toList()
         val baseSuperType = when (supertypes.size) {
             0 -> nullableAnyType() // Let C = in Int, then superType for C and C? is Any?
             1 -> supertypes.single().replaceRecursionWithStarProjection(capturedType)
@@ -359,16 +359,31 @@ abstract class AbstractTypeApproximator(
         val approximatedSubType by lazy(LazyThreadSafetyMode.NONE) { approximateToSubType(baseSubType, conf, depth) }
 
         if (!conf.capturedType(ctx, capturedType)) {
-            /**
-             * Here everything is ok if bounds for this captured type should not be approximated.
-             * But. If such bounds contains some unauthorized types, then we cannot leave this captured type "as is".
-             * And we cannot create new capture type, because meaning of new captured type is not clear.
-             * So, we will just approximate such types
-             *
-             * TODO remove workaround when we can create captured types with external identity KT-65228.
-             * todo handle flexible types
-             */
-            if (approximatedSuperType == null && approximatedSubType == null) {
+            if (isK2) {
+                val approximatedLowerType = capturedType.lowerType()?.let { if (toSuper) approximateToSuperType(it, conf, depth) else approximateToSubType(it, conf, depth) }
+                val approximatedSuperTypes =
+                    supertypes.map { if (toSuper) approximateToSuperType(it, conf, depth) else approximateToSubType(it, conf, depth) }
+
+                return if (approximatedLowerType == null && approximatedSuperTypes.all { it == null }) {
+                    null
+                } else {
+                    ctx.createCapturedType(
+                        capturedType.typeConstructorProjection(),
+                        approximatedSuperTypes.mapIndexed { i, it -> it ?: supertypes[i] },
+                        approximatedLowerType ?: capturedType.lowerType(),
+                        capturedType.captureStatus(),
+                        capturedType.typeConstructor(),
+                    )
+                }
+            } else if (approximatedSuperType == null && approximatedSubType == null) {
+                /**
+                 * Here everything is ok if bounds for this captured type should not be approximated.
+                 * But. If such bounds contains some unauthorized types, then we cannot leave this captured type "as is".
+                 * And we cannot create new capture type, because meaning of new captured type is not clear.
+                 * So, we will just approximate such types
+                 *
+                 * todo handle flexible types
+                 */
                 return null
             }
         }

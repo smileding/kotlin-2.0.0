@@ -397,7 +397,7 @@ fun ConeTypeContext.captureArguments(type: ConeKotlinType, status: CaptureStatus
             null
         }
 
-        ConeCapturedType(status, lowerType, argument, typeConstructor.getParameter(index))
+        ConeCapturedType(status, lowerType, argument, typeConstructor.getParameter(index),)
     }
 
     val substitution = (0 until argumentsCount).associate { index ->

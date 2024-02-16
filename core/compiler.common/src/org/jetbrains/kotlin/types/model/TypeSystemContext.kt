@@ -172,7 +172,8 @@ interface TypeSystemInferenceExtensionContext : TypeSystemContext, TypeSystemBui
         constructorProjection: TypeArgumentMarker,
         constructorSupertypes: List<KotlinTypeMarker>,
         lowerType: KotlinTypeMarker?,
-        captureStatus: CaptureStatus
+        captureStatus: CaptureStatus,
+        identity: CapturedTypeConstructorMarker?
     ): CapturedTypeMarker
 
     fun createStubTypeForBuilderInference(typeVariable: TypeVariableMarker): StubTypeMarker
@@ -335,7 +336,7 @@ interface TypeSystemInferenceExtensionContext : TypeSystemContext, TypeSystemBui
             }
         )
 
-        return createCapturedType(starProjection, listOf(superType), lowerType = null, CaptureStatus.FROM_EXPRESSION)
+        return createCapturedType(starProjection, listOf(superType), lowerType = null, CaptureStatus.FROM_EXPRESSION, null)
     }
 
     fun createSubstitutorForSuperTypes(baseType: KotlinTypeMarker): TypeSubstitutorMarker?

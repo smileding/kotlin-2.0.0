@@ -170,7 +170,8 @@ class ConstraintIncorporator(
                         createTypeArgument(otherConstraint.type, TypeVariance.OUT),
                         listOf(otherConstraint.type),
                         null,
-                        CaptureStatus.FOR_INCORPORATION
+                        CaptureStatus.FOR_INCORPORATION,
+                        null
                     ) to true
                 }
             }
@@ -193,7 +194,8 @@ class ConstraintIncorporator(
                         createTypeArgument(otherConstraint.type, TypeVariance.IN),
                         emptyList(),
                         otherConstraint.type,
-                        CaptureStatus.FOR_INCORPORATION
+                        CaptureStatus.FOR_INCORPORATION,
+                        null
                     ) to true
                 }
             }

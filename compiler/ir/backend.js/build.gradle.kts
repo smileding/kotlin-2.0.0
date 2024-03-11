@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    kotlin("plugin.power-assert")
     id("jps-compatible")
 }
 

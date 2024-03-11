@@ -37,6 +37,9 @@
          <trust group="org.jetbrains.kotlin" name="kotlin-klib-commonizer-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
          <trust group="org.jetbrains.kotlin" name="kotlin-native-prebuilt" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
          <trust group="org.jetbrains.kotlin" name="kotlin-native-utils" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-power-assert" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-power-assert-compiler-plugin" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-power-assert-compiler-plugin-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
          <trust group="org.jetbrains.kotlin" name="kotlin-project-model" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
          <trust group="org.jetbrains.kotlin" name="kotlin-reflect" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
          <trust group="org.jetbrains.kotlin" name="kotlin-sam-with-receiver" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>

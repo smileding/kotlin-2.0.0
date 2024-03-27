@@ -492,7 +492,7 @@ private val coroutinesLivenessAnalysisPhase = createFileLoweringPhase(
         prerequisite = setOf(coroutinesPhase)
 )
 
-private val coroutinesVarSpillingPhase = createFileLoweringPhase(
+internal val CoroutinesVarSpillingPhase = createFileLoweringPhase(
         lowering = ::CoroutinesVarSpillingLowering,
         name = "CoroutinesVarSpilling",
         description = "Save/restore coroutines variables before/after suspension",
@@ -685,7 +685,6 @@ internal fun PhaseEngine<NativeGenerationState>.getLoweringsAfterInlining(): Low
         // Either of these could be turned off without losing correctness.
         coroutinesLivenessAnalysisPhase, // This is more optimal
         coroutinesLivenessAnalysisFallbackPhase, // While this is simple
-        coroutinesVarSpillingPhase,
         typeOperatorPhase,
         expressionBodyTransformPhase,
         objectClassesPhase,

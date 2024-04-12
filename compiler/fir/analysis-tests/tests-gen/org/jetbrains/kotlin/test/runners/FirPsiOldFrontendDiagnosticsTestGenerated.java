@@ -34424,6 +34424,12 @@ public class FirPsiOldFrontendDiagnosticsTestGenerated extends AbstractFirPsiDia
         }
 
         @Test
+        @TestMetadata("lambdaWithCallInPlaceAndAssignmentOperator.kt")
+        public void testLambdaWithCallInPlaceAndAssignmentOperator() {
+          runTest("compiler/testData/diagnostics/tests/smartCasts/lambdasWithContracts/lambdaWithCallInPlaceAndAssignmentOperator.kt");
+        }
+
+        @Test
         @TestMetadata("lambdaWithCallInPlaceAndBounds.kt")
         public void testLambdaWithCallInPlaceAndBounds() {
           runTest("compiler/testData/diagnostics/tests/smartCasts/lambdasWithContracts/lambdaWithCallInPlaceAndBounds.kt");
@@ -34445,6 +34451,12 @@ public class FirPsiOldFrontendDiagnosticsTestGenerated extends AbstractFirPsiDia
         @TestMetadata("lambdaWithCallInPlaceAndOperators.kt")
         public void testLambdaWithCallInPlaceAndOperators() {
           runTest("compiler/testData/diagnostics/tests/smartCasts/lambdasWithContracts/lambdaWithCallInPlaceAndOperators.kt");
+        }
+
+        @Test
+        @TestMetadata("lambdaWithCallInPlaceAssignmnetsAndCycles.kt")
+        public void testLambdaWithCallInPlaceAssignmnetsAndCycles() {
+          runTest("compiler/testData/diagnostics/tests/smartCasts/lambdasWithContracts/lambdaWithCallInPlaceAssignmnetsAndCycles.kt");
         }
 
         @Test

@@ -591,6 +591,10 @@ interface ConeInferenceContext : TypeSystemInferenceExtensionContext, ConeTypeCo
         return intersectionType.withAlternative(secondCandidate)
     }
 
+    override fun KotlinTypeMarker.getAlternativeTypeForIntersectionType(): KotlinTypeMarker? {
+        return (this as? ConeIntersectionType)?.alternativeType
+    }
+
     override fun useRefinedBoundsForTypeVariableInFlexiblePosition(): Boolean = session.languageVersionSettings.supportsFeature(
         LanguageFeature.JavaTypeParameterDefaultRepresentationWithDNN
     )

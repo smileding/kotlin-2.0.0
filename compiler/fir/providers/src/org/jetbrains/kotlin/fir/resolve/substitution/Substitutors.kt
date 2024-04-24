@@ -355,6 +355,12 @@ fun createTypeSubstitutorByTypeConstructor(
     return ConeTypeSubstitutorByTypeConstructor(map, context, approximateIntegerLiterals)
 }
 
+class ConeIntegerLiteralApproximationSubstitutor(typeContext: ConeTypeContext) : AbstractConeSubstitutor(typeContext) {
+    override fun substituteType(type: ConeKotlinType): ConeKotlinType? {
+        return type.approximateIntegerLiteralType().takeUnless { it === type }
+    }
+}
+
 internal class ConeTypeSubstitutorByTypeConstructor(
     private val map: Map<TypeConstructorMarker, ConeKotlinType>,
     typeContext: ConeTypeContext,

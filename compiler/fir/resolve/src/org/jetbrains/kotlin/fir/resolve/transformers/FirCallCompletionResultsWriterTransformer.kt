@@ -29,7 +29,9 @@ import org.jetbrains.kotlin.fir.resolve.dfa.FirDataFlowAnalyzer
 import org.jetbrains.kotlin.fir.resolve.diagnostics.*
 import org.jetbrains.kotlin.fir.resolve.inference.FirTypeVariablesAfterPCLATransformer
 import org.jetbrains.kotlin.fir.resolve.inference.ResolvedLambdaAtom
+import org.jetbrains.kotlin.fir.resolve.substitution.ChainedSubstitutor
 import org.jetbrains.kotlin.fir.resolve.substitution.ConeSubstitutor
+import org.jetbrains.kotlin.fir.resolve.substitution.ConeIntegerLiteralApproximationSubstitutor
 import org.jetbrains.kotlin.fir.resolve.substitution.substitutorByMap
 import org.jetbrains.kotlin.fir.resolve.transformers.body.resolve.*
 import org.jetbrains.kotlin.fir.scopes.CallableCopyTypeCalculator
@@ -64,7 +66,7 @@ import kotlin.collections.component2
 class FirCallCompletionResultsWriterTransformer(
     override val session: FirSession,
     private val scopeSession: ScopeSession,
-    private val finalSubstitutor: ConeSubstitutor,
+    substitutor: ConeSubstitutor,
     private val typeCalculator: ReturnTypeCalculator,
     private val typeApproximator: ConeTypeApproximator,
     private val dataFlowAnalyzer: FirDataFlowAnalyzer,
@@ -74,12 +76,18 @@ class FirCallCompletionResultsWriterTransformer(
     private val mode: Mode = Mode.Normal,
 ) : FirAbstractTreeTransformer<ExpectedArgumentType?>(phase = FirResolvePhase.IMPLICIT_TYPES_BODY_RESOLVE) {
 
+    // TODO think about it
+    val finalSubstitutor = ChainedSubstitutor(
+        substitutor,
+        ConeIntegerLiteralApproximationSubstitutor(session.typeContext)
+    )
+
     private fun finallySubstituteOrNull(type: ConeKotlinType): ConeKotlinType? {
         val result = finalSubstitutor.substituteOrNull(type)
         if (result == null && type is ConeIntegerLiteralType) {
-            return type.approximateIntegerLiteralType()
+            return type
         }
-        return result?.approximateIntegerLiteralType()
+        return result
     }
 
     private fun finallySubstituteOrSelf(type: ConeKotlinType): ConeKotlinType {

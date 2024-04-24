@@ -36,8 +36,8 @@ digraph classCallInLambda_kt {
                 13 [label="Function call arguments exit"];
             }
             14 [label="Postponed exit from lambda"];
-            15 [label="Function call: R|<local>/x|.R|kotlin/let|<R|kotlin/String|, R|kotlin/reflect/KClass<out kotlin/String>|>(...)" style="filled" fillcolor=yellow];
-            16 [label="Jump: ^test R|<local>/x|.R|kotlin/let|<R|kotlin/String|, R|kotlin/reflect/KClass<out kotlin/String>|>(<L> = let@fun <anonymous>(it: R|kotlin/String|): R|kotlin/reflect/KClass<out kotlin/String>| <inline=Inline, kind=EXACTLY_ONCE>  {
+            15 [label="Function call: R|<local>/x|.R|kotlin/let|<R|kotlin/String|, R|kotlin/reflect/KClass<CapturedType(out kotlin/String)>|>(...)" style="filled" fillcolor=yellow];
+            16 [label="Jump: ^test R|<local>/x|.R|kotlin/let|<R|kotlin/String|, R|kotlin/reflect/KClass<CapturedType(out kotlin/String)>|>(<L> = let@fun <anonymous>(it: R|kotlin/String|): R|kotlin/reflect/KClass<CapturedType(out kotlin/String)>| <inline=Inline, kind=EXACTLY_ONCE>  {
     ^ <getClass>(R|<local>/it|)
 }
 )"];

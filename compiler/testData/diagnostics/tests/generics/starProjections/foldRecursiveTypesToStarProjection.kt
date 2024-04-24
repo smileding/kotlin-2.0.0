@@ -19,7 +19,7 @@ object KT32183 {
 
     fun test(graph: AGraphExecutionEntity) {
         val statusByMeta = graph.jobs.associateBy { it.meta }
-        <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<KT32183.ProjectJob.Process<*, *>, KT32183.AJobExecutionEntity>")!>statusByMeta<!>
+        <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out KT32183.ProjectJob.Process<*, *>, KT32183.AJobExecutionEntity>")!>statusByMeta<!>
     }
 }
 

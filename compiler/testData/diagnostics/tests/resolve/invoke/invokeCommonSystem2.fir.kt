@@ -12,6 +12,6 @@ fun foo(p: Box<in Any?>) {
     p.foo("").<!UNRESOLVED_REFERENCE!>length<!>
     p.foo.invoke("").<!UNRESOLVED_REFERENCE!>length<!>
 
-    <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.Any?")!>p.foo("")<!>
-    <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.Any?")!>p.foo.invoke("")<!>
+    <!DEBUG_INFO_EXPRESSION_TYPE("CapturedType(in kotlin.Any?)")!>p.foo("")<!>
+    <!DEBUG_INFO_EXPRESSION_TYPE("CapturedType(in kotlin.Any?)")!>p.foo.invoke("")<!>
 }

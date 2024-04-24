@@ -1394,7 +1394,7 @@ fun <T : InterfaceWithTypeParameter1<T>> InterfaceWithTypeParameter1<in T>?.case
         funNullableAny()
         ip1test1()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -1405,29 +1405,29 @@ fun <T : InterfaceWithTypeParameter1<T>> InterfaceWithTypeParameter1<in T>?.case
             funNullableT()
             funNullableAny()
             ip1test1()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.ip1test1()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.ip1test1()
         }
     }
 }
@@ -1466,7 +1466,7 @@ fun <T : InterfaceWithTypeParameter1<T>> InterfaceWithTypeParameter1<out T>?.cas
         funNullableAny()
         ip1test1()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -1477,29 +1477,29 @@ fun <T : InterfaceWithTypeParameter1<T>> InterfaceWithTypeParameter1<out T>?.cas
             funNullableT()
             funNullableAny()
             ip1test1()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.ip1test1()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.ip1test1()
         }
     }
 }
@@ -1538,7 +1538,7 @@ fun <T : InterfaceWithTypeParameter1<in T>> InterfaceWithTypeParameter1<out T>?.
         funNullableAny()
         ip1test1()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -1549,29 +1549,29 @@ fun <T : InterfaceWithTypeParameter1<in T>> InterfaceWithTypeParameter1<out T>?.
             funNullableT()
             funNullableAny()
             ip1test1()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.ip1test1()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.ip1test1()
         }
     }
 }
@@ -1610,7 +1610,7 @@ fun <T : InterfaceWithTypeParameter1<out T>> InterfaceWithTypeParameter1<in T>?.
         funNullableAny()
         ip1test1()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -1621,29 +1621,29 @@ fun <T : InterfaceWithTypeParameter1<out T>> InterfaceWithTypeParameter1<in T>?.
             funNullableT()
             funNullableAny()
             ip1test1()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.ip1test1()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.ip1test1()
         }
     }
 }
@@ -1682,7 +1682,7 @@ fun <T : InterfaceWithTypeParameter1<in T>> InterfaceWithTypeParameter1<in T>?.c
         funNullableAny()
         ip1test1()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -1693,29 +1693,29 @@ fun <T : InterfaceWithTypeParameter1<in T>> InterfaceWithTypeParameter1<in T>?.c
             funNullableT()
             funNullableAny()
             ip1test1()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.ip1test1()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.ip1test1()
         }
     }
 }
@@ -1754,7 +1754,7 @@ fun <T : InterfaceWithTypeParameter1<out T>> InterfaceWithTypeParameter1<out T>?
         funNullableAny()
         ip1test1()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -1765,29 +1765,29 @@ fun <T : InterfaceWithTypeParameter1<out T>> InterfaceWithTypeParameter1<out T>?
             funNullableT()
             funNullableAny()
             ip1test1()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.ip1test1()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.ip1test1()
         }
     }
 }
@@ -1826,7 +1826,7 @@ fun <T> Map<T, *>?.case_32() {
         funNullableAny()
         isEmpty()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -1837,29 +1837,29 @@ fun <T> Map<T, *>?.case_32() {
             funNullableT()
             funNullableAny()
             isEmpty()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>this<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>this<!>.isEmpty()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, *>")!>it<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(*)>")!>it<!>.isEmpty()
         }
     }
 }
@@ -1898,7 +1898,7 @@ fun <T> InterfaceWithFiveTypeParameters1<T, *, T, *, T>?.case_33() {
         funNullableAny()
         itest()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>this<!>
             equals(null)
             propT
             propAny
@@ -1909,29 +1909,29 @@ fun <T> InterfaceWithFiveTypeParameters1<T, *, T, *, T>?.case_33() {
             funNullableT()
             funNullableAny()
             itest()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>this<!>.itest()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>this<!>.itest()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, *, T, *, T>")!>it<!>.itest()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<T, CapturedType(*), T, CapturedType(*), T>")!>it<!>.itest()
         }
     }
 }
@@ -1970,7 +1970,7 @@ fun <T> InterfaceWithTypeParameter1<out T>?.case_34() {
         funNullableAny()
         ip1test1()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -1981,29 +1981,29 @@ fun <T> InterfaceWithTypeParameter1<out T>?.case_34() {
             funNullableT()
             funNullableAny()
             ip1test1()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.ip1test1()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.ip1test1()
         }
     }
 }
@@ -2042,7 +2042,7 @@ fun <T> InterfaceWithTypeParameter1<in T>?.case_35() {
         funNullableAny()
         ip1test1()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -2053,29 +2053,29 @@ fun <T> InterfaceWithTypeParameter1<in T>?.case_35() {
             funNullableT()
             funNullableAny()
             ip1test1()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>this<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>this<!>.ip1test1()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<in T>")!>it<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(in T)>")!>it<!>.ip1test1()
         }
     }
 }
@@ -2114,7 +2114,7 @@ fun <T> InterfaceWithTypeParameter1<out T>?.case_36() {
         funNullableAny()
         ip1test1()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -2125,29 +2125,29 @@ fun <T> InterfaceWithTypeParameter1<out T>?.case_36() {
             funNullableT()
             funNullableAny()
             ip1test1()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>this<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>this<!>.ip1test1()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<out T>")!>it<!>.ip1test1()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTypeParameter1<CapturedType(out T)>")!>it<!>.ip1test1()
         }
     }
 }
@@ -2186,7 +2186,7 @@ fun <T> Map<in T, *>?.case_37() {
         funNullableAny()
         isEmpty()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -2197,29 +2197,29 @@ fun <T> Map<in T, *>?.case_37() {
             funNullableT()
             funNullableAny()
             isEmpty()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>this<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>this<!>.isEmpty()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, *>")!>it<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), CapturedType(*)>")!>it<!>.isEmpty()
         }
     }
 }
@@ -2258,7 +2258,7 @@ fun <T> Map<*, out T>?.case_38() {
         funNullableAny()
         isEmpty()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -2269,29 +2269,29 @@ fun <T> Map<*, out T>?.case_38() {
             funNullableT()
             funNullableAny()
             isEmpty()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>this<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>this<!>.isEmpty()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<*, T>")!>it<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(*), CapturedType(out T)>")!>it<!>.isEmpty()
         }
     }
 }
@@ -2328,7 +2328,7 @@ fun <T> InterfaceWithTwoTypeParameters<in T, out T>?.case_39() {
 
         funNullableAny()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -2338,27 +2338,27 @@ fun <T> InterfaceWithTwoTypeParameters<in T, out T>?.case_39() {
             funAny()
             funNullableT()
             funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>this<!>.funNullableAny()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, out T>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(out T)>")!>it<!>.funNullableAny()
         }
     }
 }
@@ -2395,7 +2395,7 @@ fun <T> InterfaceWithTwoTypeParameters<in T, in T>?.case_40() {
 
         funNullableAny()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -2405,27 +2405,27 @@ fun <T> InterfaceWithTwoTypeParameters<in T, in T>?.case_40() {
             funAny()
             funNullableT()
             funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>this<!>.funNullableAny()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<in T, in T>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithTwoTypeParameters<CapturedType(in T), CapturedType(in T)>")!>it<!>.funNullableAny()
         }
     }
 }
@@ -2464,7 +2464,7 @@ fun <T> Map<out T, out T>?.case_41() {
         funNullableAny()
         isEmpty()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -2475,29 +2475,29 @@ fun <T> Map<out T, out T>?.case_41() {
             funNullableT()
             funNullableAny()
             isEmpty()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>this<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>this<!>.isEmpty()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<out T, T>")!>it<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(out T), CapturedType(out T)>")!>it<!>.isEmpty()
         }
     }
 }
@@ -2536,7 +2536,7 @@ fun <T> Map<T, out T>?.case_42() {
         funNullableAny()
         isEmpty()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>this<!>
             equals(null)
             propT
             propAny
@@ -2547,29 +2547,29 @@ fun <T> Map<T, out T>?.case_42() {
             funNullableT()
             funNullableAny()
             isEmpty()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>this<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>this<!>.isEmpty()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, T>")!>it<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<T, CapturedType(out T)>")!>it<!>.isEmpty()
         }
     }
 }
@@ -2608,7 +2608,7 @@ fun <T> Map<in T, T>?.case_43() {
         funNullableAny()
         isEmpty()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>this<!>
             equals(null)
             propT
             propAny
@@ -2619,29 +2619,29 @@ fun <T> Map<in T, T>?.case_43() {
             funNullableT()
             funNullableAny()
             isEmpty()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>this<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>this<!>.isEmpty()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<in T, T>")!>it<!>.isEmpty()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.collections.Map<CapturedType(in T), T>")!>it<!>.isEmpty()
         }
     }
 }
@@ -2680,7 +2680,7 @@ fun <T> InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>?.case_44() {
         funNullableAny()
         itest()
         apply {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>this<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>this<!>
             equals(null)
             propT
             propAny
@@ -2691,29 +2691,29 @@ fun <T> InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>?.case_44() {
             funNullableT()
             funNullableAny()
             itest()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>this<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>this<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>this<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>this<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>this<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>this<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>this<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>this<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>this<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>this<!>.itest()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>this<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>this<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>this<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>this<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>this<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>this<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>this<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>this<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>this<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>this<!>.itest()
         }
         also {
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>it<!>
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>it<!>.equals(null)
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>it<!>.propT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>it<!>.propAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>it<!>.propNullableT
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>it<!>.propNullableAny
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>it<!>.funT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>it<!>.funAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>it<!>.funNullableT()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>it<!>.funNullableAny()
-            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<in T, *, out T, *, T>")!>it<!>.itest()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>it<!>
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>it<!>.equals(null)
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>it<!>.propT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>it<!>.propAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>it<!>.propNullableT
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>it<!>.propNullableAny
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>it<!>.funT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>it<!>.funAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>it<!>.funNullableT()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>it<!>.funNullableAny()
+            <!DEBUG_INFO_EXPRESSION_TYPE("InterfaceWithFiveTypeParameters1<CapturedType(in T), CapturedType(*), CapturedType(out T), CapturedType(*), T>")!>it<!>.itest()
         }
     }
 }

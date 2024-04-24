@@ -130,11 +130,9 @@ class FirDelegatedPropertyInferenceSession(
 
         val completedCalls = completeCandidatesForRootSession()
 
-        val finalSubstitutor = parentConstraintSystem.asReadOnlyStorage()
-            .buildAbstractResultingSubstitutor(components.session.typeContext) as ConeSubstitutor
-
         val callCompletionResultsWriter = callCompleter.createCompletionResultsWriter(
-            finalSubstitutor,
+            parentConstraintSystem.asReadOnlyStorage()
+                .buildAbstractResultingSubstitutor(components.session.typeContext) as ConeSubstitutor,
             // TODO: Get rid of the mode
             mode = FirCallCompletionResultsWriterTransformer.Mode.DelegatedPropertyCompletion
         )
@@ -142,7 +140,7 @@ class FirDelegatedPropertyInferenceSession(
             it.transformSingle(callCompletionResultsWriter, null)
         }
 
-        onCompletionResultsWriting(finalSubstitutor)
+        onCompletionResultsWriting(callCompletionResultsWriter.finalSubstitutor)
     }
 
     private fun completeCandidatesForRootSession(): List<FirResolvable> {

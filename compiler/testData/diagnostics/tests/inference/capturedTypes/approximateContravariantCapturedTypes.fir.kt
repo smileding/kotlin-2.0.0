@@ -28,7 +28,7 @@ fun <K> id(x: K) = x
 fun test1() {
     val fooSetRef = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo<*>, CapturedType(*), CapturedType(*)>")!>Foo<*>::setX<!>
 
-    val fooSetRef2 = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo<*>, kotlin.Nothing, kotlin.Number>")!>id(
+    val fooSetRef2 = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo<*>, CapturedType(*), CapturedType(*)>")!>id(
         <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo<*>, CapturedType(*), CapturedType(*)>")!>Foo<*>::setX<!>
     )<!>
     val foo = Foo<Float>(1f)
@@ -41,7 +41,7 @@ fun test1() {
 
 fun test2() {
     val fooSetRef = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo<*>, CapturedType(*), CapturedType(*)>")!>Foo<*>::setX1<!>
-    val fooSetRef2 = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo<*>, kotlin.Nothing, kotlin.Number>")!>id(
+    val fooSetRef2 = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo<*>, CapturedType(*), CapturedType(*)>")!>id(
         <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo<*>, CapturedType(*), CapturedType(*)>")!>Foo<*>::setX1<!>
     )<!>
     val foo = Foo<Float>(1f)
@@ -54,7 +54,7 @@ fun test2() {
 
 fun test3() {
     val fooSetRef = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo2<*>, CapturedType(*), CapturedType(*)>")!>Foo2<*>::setX<!>
-    val fooSetRef2 = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo2<*>, kotlin.Nothing, kotlin.Any?>")!>id(
+    val fooSetRef2 = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo2<*>, CapturedType(*), CapturedType(*)>")!>id(
         <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo2<*>, CapturedType(*), CapturedType(*)>")!>Foo2<*>::setX<!>
     )<!>
     val foo = Foo2<Int>(1)
@@ -67,7 +67,7 @@ fun test3() {
 
 fun test4() {
     val fooSetRef = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo2<*>, CapturedType(*), CapturedType(*)>")!>Foo2<*>::setX1<!>
-    val fooSetRef2 = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo2<*>, kotlin.Nothing, kotlin.Any?>")!>id(
+    val fooSetRef2 = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo2<*>, CapturedType(*), CapturedType(*)>")!>id(
         <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.reflect.KFunction2<Foo2<*>, CapturedType(*), CapturedType(*)>")!>Foo2<*>::setX1<!>
     )<!>
     val foo = Foo2<Int>(1)

@@ -104,6 +104,12 @@ open class TypeApproximatorConfiguration {
         override val intersectionTypesInContravariantPositions: Boolean get() = true
     }
 
+    object InternalTypesApproximationNoCapturedTypes : AbstractCapturedTypesApproximation(null) {
+        override val integerLiteralConstantType: Boolean get() = true
+        override val integerConstantOperatorType: Boolean get() = true
+        override val intersectionTypesInContravariantPositions: Boolean get() = true
+    }
+
     object FinalApproximationAfterResolutionAndInference :
         AbstractCapturedTypesApproximation(CaptureStatus.FROM_EXPRESSION) {
         override val integerLiteralConstantType: Boolean get() = true

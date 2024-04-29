@@ -1,11 +1,11 @@
 @file:OptIn(kotlin.experimental.ExperimentalNativeApi::class)
 
-import kotlin.test.*
 import kotlin.native.Platform
+import kotlin.test.*
 
 fun main(args: Array<String>) {
     // Remove path and extension (.kexe or .exe)
     val programFileName = Platform.programName.substringAfterLast("/").substringBeforeLast(".")
 
-    assertEquals("program_name", programFileName)
+    assertEquals("standalone_entryPoint_programName", programFileName)
 }

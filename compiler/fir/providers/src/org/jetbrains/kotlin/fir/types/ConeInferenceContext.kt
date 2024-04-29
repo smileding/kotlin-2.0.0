@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.fir.types
 
 import org.jetbrains.kotlin.builtins.functions.FunctionTypeKind
 import org.jetbrains.kotlin.config.LanguageFeature
-import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.fir.declarations.utils.modality
 import org.jetbrains.kotlin.fir.diagnostics.ConeIntermediateDiagnostic
@@ -31,6 +30,7 @@ import org.jetbrains.kotlin.types.AbstractTypeRefiner
 import org.jetbrains.kotlin.types.TypeCheckerState
 import org.jetbrains.kotlin.types.model.*
 import org.jetbrains.kotlin.utils.DFS
+import org.jetbrains.kotlin.utils.addToStdlib.shouldNotBeCalled
 import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
 
 interface ConeInferenceContext : TypeSystemInferenceExtensionContext, ConeTypeContext {
@@ -279,8 +279,7 @@ interface ConeInferenceContext : TypeSystemInferenceExtensionContext, ConeTypeCo
     }
 
     override fun createStubTypeForBuilderInference(typeVariable: TypeVariableMarker): StubTypeMarker {
-        require(typeVariable is ConeTypeVariable) { "$typeVariable should subtype of ${ConeTypeVariable::class.qualifiedName}" }
-        return ConeStubTypeForChainInference(typeVariable, ConeNullability.create(typeVariable.defaultType().isMarkedNullable()))
+        shouldNotBeCalled("PCLA does not use stub types for builder inference")
     }
 
     override fun createStubTypeForTypeVariablesInSubtyping(typeVariable: TypeVariableMarker): StubTypeMarker {
@@ -542,11 +541,14 @@ interface ConeInferenceContext : TypeSystemInferenceExtensionContext, ConeTypeCo
             "Not a function type or subtype: ${this.renderForDebugging()}"
         }
 
-        return fullyExpandedType(session).let {
-            val simpleType = it.lowerBoundIfFlexible()
-            if ((simpleType as ConeKotlinType).isSomeFunctionType(session))
-                this
-            else {
+        val simpleType = fullyExpandedType(session).lowerBoundIfFlexible() as ConeSimpleKotlinType
+
+        return when {
+            simpleType.isSomeFunctionType(session) -> this
+            simpleType is ConeCapturedType -> {
+                simpleType.constructor.supertypes?.firstNotNullOfOrNull { it.getFunctionTypeFromSupertypes() }
+            }
+            else -> {
                 var functionalSupertype: KotlinTypeMarker? = null
                 simpleType.anySuperTypeConstructor { type ->
                     simpleType.fastCorrespondingSupertypes(type.typeConstructor())?.any { superType ->
@@ -558,16 +560,15 @@ interface ConeInferenceContext : TypeSystemInferenceExtensionContext, ConeTypeCo
                     } ?: false
                 }
                 functionalSupertype
-                    ?: errorWithAttachment("Failed to find functional supertype for ${simpleType::class.java}") {
-                    withConeTypeEntry("type", simpleType)
-                }
             }
+        } ?: errorWithAttachment("Failed to find functional supertype for ${simpleType::class.java}") {
+            withConeTypeEntry("type", simpleType)
         }
     }
 
     override fun KotlinTypeMarker.functionTypeKind(): FunctionTypeKind? {
         require(this is ConeKotlinType)
-        return this.functionTypeKind(session)
+        return (this.lowerBoundIfFlexible() as ConeClassLikeType).functionTypeKind(session)
     }
 
     override fun getNonReflectFunctionTypeConstructor(parametersNumber: Int, kind: FunctionTypeKind): TypeConstructorMarker {

@@ -39,13 +39,14 @@ import org.jetbrains.kotlin.load.java.descriptors.JavaCallableMemberDescriptor
 import org.jetbrains.kotlin.load.java.descriptors.JavaClassDescriptor
 import org.jetbrains.kotlin.load.java.descriptors.JavaForKotlinOverridePropertyDescriptor
 import org.jetbrains.kotlin.load.java.descriptors.JavaPropertyDescriptor
+import org.jetbrains.kotlin.load.java.lazy.types.RawTypeImpl
 import org.jetbrains.kotlin.load.java.sources.JavaSourceElement
 import org.jetbrains.kotlin.load.kotlin.toSourceElement
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.psi.KtCallElement
-import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.resolve.DescriptorUtils
@@ -64,6 +65,7 @@ import org.jetbrains.kotlin.synthetic.SyntheticJavaPropertyDescriptor
 import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.types.checker.NewCapturedType
 import org.jetbrains.kotlin.types.checker.NewTypeVariableConstructor
+import org.jetbrains.kotlin.types.checker.SimpleClassicTypeSystemContext.eraseContainingTypeParameters
 import org.jetbrains.kotlin.types.error.ErrorType
 import org.jetbrains.kotlin.types.error.ErrorTypeKind
 import org.jetbrains.kotlin.types.error.ErrorUtils
@@ -449,18 +451,35 @@ internal fun List<ConstantValue<*>>.expandArrayAnnotationValue(
 }
 
 internal fun ConstantValue<*>.toKtAnnotationValue(analysisContext: Fe10AnalysisContext): KtAnnotationValue {
+    val token = analysisContext.token
+
     return when (this) {
         is ArrayValue -> {
             val arrayType = getType(analysisContext.resolveSession.moduleDescriptor)
-            KtArrayAnnotationValue(value.expandArrayAnnotationValue(arrayType, analysisContext), sourcePsi = null)
+            KtArrayAnnotationValue(value.expandArrayAnnotationValue(arrayType, analysisContext), sourcePsi = null, token)
         }
-        is EnumValue -> KtEnumEntryAnnotationValue(CallableId(enumClassId, enumEntryName), sourcePsi = null)
+        is EnumValue -> KtEnumEntryAnnotationValue(CallableId(enumClassId, enumEntryName), sourcePsi = null, token)
         is KClassValue -> when (val value = value) {
             is KClassValue.Value.LocalClass -> {
-                val descriptor = value.type.constructor.declarationDescriptor as ClassDescriptor
-                KtKClassAnnotationValue.KtLocalKClassAnnotationValue(descriptor.source.getPsi() as KtClassOrObject, sourcePsi = null)
+                val type = value.type.toKtType(analysisContext)
+                val classId = value.type.unwrap().constructor.declarationDescriptor?.maybeLocalClassId
+                KtKClassAnnotationValue(type, classId, sourcePsi = null, token)
             }
-            is KClassValue.Value.NormalClass -> KtKClassAnnotationValue.KtNonLocalKClassAnnotationValue(value.classId, sourcePsi = null)
+            is KClassValue.Value.NormalClass -> {
+                val classLiteralInfo = resolveClassLiteral(value, analysisContext)
+
+                if (classLiteralInfo != null) {
+                    KtKClassAnnotationValue(classLiteralInfo.type, classLiteralInfo.classId, sourcePsi = null, token)
+                } else {
+                    val classId = if (value.arrayDimensions == 0) value.classId else StandardClassIds.Array
+
+                    val type = ErrorUtils
+                        .createErrorType(ErrorTypeKind.UNRESOLVED_TYPE, classId.asFqNameString())
+                        .toKtType(analysisContext)
+
+                    KtKClassAnnotationValue(type, classId, sourcePsi = null, token)
+                }
+            }
         }
 
         is AnnotationValue -> {
@@ -472,13 +491,48 @@ internal fun ConstantValue<*>.toKtAnnotationValue(analysisContext: Fe10AnalysisC
                     arguments = value.getKtNamedAnnotationArguments(analysisContext),
                     index = null,
                     constructorSymbolPointer = null,
-                )
+                    token = token
+                ),
+                token
             )
         }
         else -> {
-            KtConstantAnnotationValue(toKtConstantValue())
+            KtConstantAnnotationValue(toKtConstantValue(), token)
         }
     }
+}
+
+private class ClassLiteralResolutionResult(val type: KtType, val classId: ClassId)
+
+private fun resolveClassLiteral(value: KClassValue.Value.NormalClass, analysisContext: Fe10AnalysisContext): ClassLiteralResolutionResult? {
+    var descriptor = analysisContext.resolveSession.moduleDescriptor.findClassifierAcrossModuleDependencies(value.classId)
+
+    if (descriptor is TypeAliasDescriptor) {
+        descriptor = descriptor.classDescriptor
+    }
+
+    if (descriptor !is ClassDescriptor) {
+        return null
+    }
+
+    // Generic non-array class literals are not supported in K1
+    val typeArguments = descriptor.typeConstructor.parameters.map { StarProjectionImpl(it) }
+
+    var type: KotlinType = TypeUtils.substituteProjectionsForParameters(descriptor, typeArguments)
+    var classId = value.classId
+
+    if (value.arrayDimensions > 0) {
+        val arrayDescriptor = analysisContext.resolveSession.moduleDescriptor.findClassAcrossModuleDependencies(StandardClassIds.Array)
+            ?: return null
+
+        repeat(value.arrayDimensions) {
+            type = TypeUtils.substituteParameters(arrayDescriptor, listOf(type))
+        }
+
+        classId = StandardClassIds.Array
+    }
+
+    return ClassLiteralResolutionResult(type.toKtType(analysisContext), classId)
 }
 
 internal val CallableMemberDescriptor.callableIdIfNotLocal: CallableId?
@@ -627,16 +681,23 @@ internal fun AnnotationDescriptor.toKtAnnotationApplication(
         arguments = getKtNamedAnnotationArguments(analysisContext),
         index = index,
         constructorSymbolPointer = null,
+        token = analysisContext.token
     )
 }
 
-internal fun AnnotationDescriptor.toKtAnnotationInfo(index: Int): KtAnnotationApplicationInfo = KtAnnotationApplicationInfo(
-    classId = classIdForAnnotation,
-    psi = psi,
-    useSiteTarget = useSiteTarget,
-    isCallWithArguments = allValueArguments.isNotEmpty(),
-    index = index,
-)
+internal fun AnnotationDescriptor.toKtAnnotationInfo(
+    analysisContext: Fe10AnalysisContext,
+    index: Int
+): KtAnnotationApplicationInfo {
+    return KtAnnotationApplicationInfo(
+        classId = classIdForAnnotation,
+        psi = psi,
+        useSiteTarget = useSiteTarget,
+        isCallWithArguments = allValueArguments.isNotEmpty(),
+        index = index,
+        token = analysisContext.token
+    )
+}
 
 private val AnnotationDescriptor.psi: KtCallElement? get() = (source as? PsiSourceElement)?.psi as? KtCallElement
 internal val AnnotationDescriptor.classIdForAnnotation: ClassId? get() = annotationClass?.maybeLocalClassId
@@ -645,7 +706,7 @@ internal val AnnotationDescriptor.useSiteTarget: AnnotationUseSiteTarget?
 
 internal fun AnnotationDescriptor.getKtNamedAnnotationArguments(analysisContext: Fe10AnalysisContext): List<KtNamedAnnotationValue> =
     allValueArguments.map { (name, value) ->
-        KtNamedAnnotationValue(name, value.toKtAnnotationValue(analysisContext))
+        KtNamedAnnotationValue(name, value.toKtAnnotationValue(analysisContext), analysisContext.token)
     }
 
 internal fun CallableDescriptor.createContextReceivers(

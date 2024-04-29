@@ -52,4 +52,15 @@ class Foo (a: Int) {
      * this is a sample comment for var on class without package
      */
     var my_variable: Long = 5
+
+    /**
+     * should be ignored, as we did not designed this
+     */
+    companion object {
+        fun COMPANION_OBJECT_FUNCTION_SHOULD_BE_IGNORED(): Int = TODO()
+    }
+}
+
+class CLASS_WITH_SAME_NAME {
+    fun foo(): Int = TODO()
 }

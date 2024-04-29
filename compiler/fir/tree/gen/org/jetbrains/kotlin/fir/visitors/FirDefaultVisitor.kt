@@ -122,14 +122,14 @@ abstract class FirDefaultVisitor<out R, in D> : FirVisitor<R, D>() {
     override fun visitComparisonExpression(comparisonExpression: FirComparisonExpression, data: D): R =
         visitExpression(comparisonExpression, data)
 
-    override fun visitAssignmentOperatorStatement(assignmentOperatorStatement: FirAssignmentOperatorStatement, data: D): R =
-        visitStatement(assignmentOperatorStatement, data)
+    override fun visitAugmentedAssignment(augmentedAssignment: FirAugmentedAssignment, data: D): R =
+        visitStatement(augmentedAssignment, data)
 
     override fun visitIncrementDecrementExpression(incrementDecrementExpression: FirIncrementDecrementExpression, data: D): R =
         visitExpression(incrementDecrementExpression, data)
 
-    override fun visitAugmentedArraySetCall(augmentedArraySetCall: FirAugmentedArraySetCall, data: D): R =
-        visitStatement(augmentedArraySetCall, data)
+    override fun visitIndexedAccessAugmentedAssignment(indexedAccessAugmentedAssignment: FirIndexedAccessAugmentedAssignment, data: D): R =
+        visitStatement(indexedAccessAugmentedAssignment, data)
 
     override fun visitClassReferenceExpression(classReferenceExpression: FirClassReferenceExpression, data: D): R =
         visitExpression(classReferenceExpression, data)

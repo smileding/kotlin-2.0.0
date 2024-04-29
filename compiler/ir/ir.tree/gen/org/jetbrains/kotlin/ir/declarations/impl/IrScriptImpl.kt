@@ -32,9 +32,7 @@ class IrScriptImpl(
 
     override var origin: IrDeclarationOrigin = SCRIPT_ORIGIN
 
-    override lateinit var parent: IrDeclarationParent
-
-    override val statements: MutableList<IrStatement> = ArrayList()
+    override val statements: MutableList<IrStatement> = ArrayList(2)
 
     override var metadata: MetadataSource? = null
 

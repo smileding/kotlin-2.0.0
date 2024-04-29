@@ -310,7 +310,8 @@ interface ConeTypeContext : TypeSystemContext, TypeSystemOptimizationContext, Ty
     }
 
     override fun TypeConstructorMarker.isClassTypeConstructor(): Boolean {
-        return this is ConeClassLikeLookupTag
+        // See KT-55383
+        return this is ConeClassLikeLookupTag || this is ConeStubTypeConstructor
     }
 
     override fun TypeConstructorMarker.isInterface(): Boolean {
@@ -462,7 +463,7 @@ interface ConeTypeContext : TypeSystemContext, TypeSystemOptimizationContext, Ty
     }
 
     override fun SimpleTypeMarker.isStubTypeForBuilderInference(): Boolean {
-        return this is ConeStubTypeForChainInference
+        return false
     }
 
     override fun TypeConstructorMarker.unwrapStubTypeVariableConstructor(): TypeConstructorMarker {
@@ -472,14 +473,14 @@ interface ConeTypeContext : TypeSystemContext, TypeSystemOptimizationContext, Ty
         return this.variable.typeConstructor
     }
 
-    override fun intersectTypes(types: List<SimpleTypeMarker>): SimpleTypeMarker {
+    override fun intersectTypes(types: Collection<SimpleTypeMarker>): SimpleTypeMarker {
         @Suppress("UNCHECKED_CAST")
-        return ConeTypeIntersector.intersectTypes(this as ConeInferenceContext, types as List<ConeKotlinType>) as SimpleTypeMarker
+        return ConeTypeIntersector.intersectTypes(this as ConeInferenceContext, types as Collection<ConeKotlinType>) as SimpleTypeMarker
     }
 
-    override fun intersectTypes(types: List<KotlinTypeMarker>): ConeKotlinType {
+    override fun intersectTypes(types: Collection<KotlinTypeMarker>): ConeKotlinType {
         @Suppress("UNCHECKED_CAST")
-        return ConeTypeIntersector.intersectTypes(this as ConeInferenceContext, types as List<ConeKotlinType>)
+        return ConeTypeIntersector.intersectTypes(this as ConeInferenceContext, types as Collection<ConeKotlinType>)
     }
 
     override fun KotlinTypeMarker.isNullableType(): Boolean {

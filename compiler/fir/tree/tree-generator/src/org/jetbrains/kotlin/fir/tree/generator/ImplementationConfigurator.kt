@@ -5,7 +5,9 @@
 
 package org.jetbrains.kotlin.fir.tree.generator
 
+import org.jetbrains.kotlin.fir.tree.generator.FirTreeBuilder.declaration
 import org.jetbrains.kotlin.fir.tree.generator.context.AbstractFirTreeImplementationConfigurator
+import org.jetbrains.kotlin.fir.tree.generator.model.Element
 import org.jetbrains.kotlin.generators.tree.ImplementationKind.Object
 import org.jetbrains.kotlin.generators.tree.ImplementationKind.OpenClass
 
@@ -221,8 +223,8 @@ object ImplementationConfigurator : AbstractFirTreeImplementationConfigurator() 
 
         impl(errorLoop) {
             default("block", "FirEmptyExpressionBlock()")
-            default("condition", "FirErrorExpressionImpl(source, MutableOrEmptyList.empty(), ConeStubDiagnostic(diagnostic), null, null)")
-            additionalImports(emptyExpressionBlock, coneStubDiagnosticType)
+            default("condition", "FirErrorExpressionImpl(source, MutableOrEmptyList.empty(), ConeUnreportedDuplicateDiagnostic(diagnostic), null, null)")
+            additionalImports(emptyExpressionBlock, coneUnreportedDuplicateDiagnosticType)
         }
 
         impl(expression, "FirExpressionStub") {
@@ -335,7 +337,7 @@ object ImplementationConfigurator : AbstractFirTreeImplementationConfigurator() 
             defaultFalse("argFromStubType")
         }
 
-        impl(assignmentOperatorStatement)
+        impl(augmentedAssignment)
 
         impl(incrementDecrementExpression)
 
@@ -438,6 +440,7 @@ object ImplementationConfigurator : AbstractFirTreeImplementationConfigurator() 
             }
             default("source") {
                 value = "originalExpression.source?.fakeElement(KtFakeSourceElementKind.SmartCastExpression)"
+                withGetter = true
             }
             additionalImports(fakeElementImport, fakeSourceElementKindImport)
         }
@@ -501,13 +504,13 @@ object ImplementationConfigurator : AbstractFirTreeImplementationConfigurator() 
         }
 
         impl(errorExpression) {
-            default("coneTypeOrNull", "expression?.coneTypeOrNull ?: ConeErrorType(ConeStubDiagnostic(diagnostic))", withGetter = true)
-            additionalImports(coneErrorTypeType, coneStubDiagnosticType)
+            default("coneTypeOrNull", "expression?.coneTypeOrNull ?: ConeErrorType(ConeUnreportedDuplicateDiagnostic(diagnostic))", withGetter = true)
+            additionalImports(coneErrorTypeType, coneUnreportedDuplicateDiagnosticType)
         }
 
         impl(qualifiedErrorAccessExpression) {
-            default("coneTypeOrNull", "ConeErrorType(ConeStubDiagnostic(diagnostic))")
-            additionalImports(coneErrorTypeType, coneStubDiagnosticType)
+            default("coneTypeOrNull", "ConeErrorType(ConeUnreportedDuplicateDiagnostic(diagnostic))")
+            additionalImports(coneErrorTypeType, coneUnreportedDuplicateDiagnosticType)
         }
 
         impl(errorFunction) {
@@ -650,7 +653,7 @@ object ImplementationConfigurator : AbstractFirTreeImplementationConfigurator() 
         configureFieldInAllImplementations(
             fieldName = "typeRef",
             implementationPredicate = { it.typeName !in implementationWithConfigurableTypeRef },
-            fieldPredicate = { it.defaultValueInImplementation == null }
+            fieldPredicate = { it.implementationDefaultStrategy!!.defaultValue != null }
         ) {
             default(it, "FirImplicitTypeRefImplWithoutSource")
             additionalImports(firImplicitTypeWithoutSourceType)
@@ -659,10 +662,22 @@ object ImplementationConfigurator : AbstractFirTreeImplementationConfigurator() 
         configureFieldInAllImplementations(
             fieldName = "lValueTypeRef",
             implementationPredicate = { it.typeName in "FirVariableAssignmentImpl" },
-            fieldPredicate = { it.defaultValueInImplementation == null }
+            fieldPredicate = { it.implementationDefaultStrategy!!.defaultValue != null }
         ) {
             default(it, "FirImplicitTypeRefImplWithoutSource")
             additionalImports(firImplicitTypeWithoutSourceType)
+        }
+
+        configureAllImplementations(
+            implementationPredicate = {
+                fun hasDeclarationSupertype(element: Element): Boolean {
+                    if (element == declaration) return true
+                    return element.allParents.any { hasDeclarationSupertype(it) }
+                }
+                hasDeclarationSupertype(it.element)
+            }
+        ) {
+            optInToInternals()
         }
     }
 

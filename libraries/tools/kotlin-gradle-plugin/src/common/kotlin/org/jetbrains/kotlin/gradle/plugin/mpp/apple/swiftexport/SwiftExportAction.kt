@@ -28,20 +28,23 @@ internal abstract class SwiftExportAction : WorkAction<SwiftExportParameters> {
         }
     }
 
+    @Suppress("DEPRECATION")
     override fun execute() {
         runSwiftExport(
-            input = SwiftExportInput(
-                sourceRoot = parameters.sourceRoot.getFile().toPath()
+            input = InputModule.Source(
+                name = parameters.swiftApiModuleName.get(),
+                path = parameters.sourceRoot.getFile().toPath()
             ),
             config = SwiftExportConfig(
                 settings = mapOf(
-                    SwiftExportConfig.DEBUG_MODE_ENABLED to parameters.debugMode.getOrElse(false).toString(),
+                    SwiftExportConfig.STABLE_DECLARATIONS_ORDER to parameters.debugMode.getOrElse(false).toString(),
                     SwiftExportConfig.BRIDGE_MODULE_NAME to parameters.bridgeModuleName.getOrElse(SwiftExportConfig.DEFAULT_BRIDGE_MODULE_NAME),
                 ),
-                Companion,
+                logger = Companion,
                 distribution = parameters.konanDistribution.get(),
+                outputPath = parameters.swiftApiPath.getFile().toPath(), // just a placeholder
             ),
-            output = SwiftExportOutput(
+            output = SwiftExportFiles(
                 swiftApi = parameters.swiftApiPath.getFile().toPath(),
                 kotlinBridges = parameters.kotlinBridgePath.getFile().toPath(),
                 cHeaderBridges = parameters.headerBridgePath.getFile().toPath(),

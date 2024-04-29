@@ -135,7 +135,7 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
       overridden:
-        public abstract a: kotlin.Int
+        public abstract a: kotlin.Int declared in <root>.KotlinInterface
       FUN FAKE_OVERRIDE name:<get-a> visibility:public modality:ABSTRACT <> ($this:<root>.KotlinInterface) returnType:kotlin.Int [fake_override]
         correspondingProperty: PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
         overridden:
@@ -187,7 +187,7 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
       overridden:
-        public abstract a: kotlin.Int
+        public abstract a: kotlin.Int declared in <root>.KotlinInterface
       FUN FAKE_OVERRIDE name:<get-a> visibility:public modality:ABSTRACT <> ($this:<root>.KotlinInterface) returnType:kotlin.Int [fake_override]
         correspondingProperty: PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
         overridden:
@@ -239,8 +239,8 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
       overridden:
-        public abstract a: kotlin.Int
-        public abstract a: kotlin.Int
+        public abstract a: kotlin.Int declared in <root>.KotlinInterface
+        public abstract a: kotlin.Int declared in <root>.KotlinInterface2
       FUN FAKE_OVERRIDE name:<get-a> visibility:public modality:ABSTRACT <> ($this:<root>.KotlinInterface) returnType:kotlin.Int [fake_override]
         correspondingProperty: PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
         overridden:
@@ -393,14 +393,14 @@ FILE fqName:<root> fileName:/1.kt
           o: CONST Null type=kotlin.Nothing? value=null
       VAR name:k9 type:kotlin.Any [val]
         TYPE_OP type=kotlin.Any origin=IMPLICIT_NOTNULL typeOperand=kotlin.Any
-          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] kotlin.Any? visibility:public [final,static]' type=@[FlexibleNullability] kotlin.Any? origin=null
+          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] kotlin.Any? visibility:public [final,static] declared in <root>.Java1' type=@[FlexibleNullability] kotlin.Any? origin=null
       VAR name:k10 type:kotlin.Int [val]
-        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:kotlin.Int visibility:public [final,static]' type=kotlin.Int origin=null
+        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:kotlin.Int visibility:public [final,static] declared in <root>.Java2' type=kotlin.Int origin=null
       VAR name:k11 type:kotlin.Any [val]
         TYPE_OP type=kotlin.Any origin=IMPLICIT_NOTNULL typeOperand=kotlin.Any
-          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] kotlin.Any? visibility:public [final,static]' type=@[FlexibleNullability] kotlin.Any? origin=null
+          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] kotlin.Any? visibility:public [final,static] declared in <root>.SeparateModuleJava1' type=@[FlexibleNullability] kotlin.Any? origin=null
       VAR name:k12 type:kotlin.Int [val]
-        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:kotlin.Int visibility:public [final,static]' type=kotlin.Int origin=null
+        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:kotlin.Int visibility:public [final,static] declared in <root>.SeparateModuleJava2' type=kotlin.Int origin=null
       VAR name:k13 type:kotlin.Int [val]
         CALL 'public abstract fun foo (): kotlin.Int declared in <root>.C' type=kotlin.Int origin=null
           $this: GET_VAR 'c: <root>.C declared in <root>.test' type=<root>.C origin=null
@@ -500,4 +500,4 @@ FILE fqName:<root> fileName:/1.kt
           o: CONST Null type=kotlin.Nothing? value=null
       VAR name:k37 type:kotlin.Number [val]
         TYPE_OP type=kotlin.Number origin=IMPLICIT_NOTNULL typeOperand=kotlin.Number
-          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] kotlin.Number? visibility:public [final,static]' type=@[FlexibleNullability] kotlin.Number? origin=null
+          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] kotlin.Number? visibility:public [final,static] declared in <root>.Java3' type=@[FlexibleNullability] kotlin.Number? origin=null

@@ -6,17 +6,16 @@
 package org.jetbrains.kotlin.analysis.api.fir.symbols
 
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.base.KtContextReceiver
 import org.jetbrains.kotlin.analysis.api.contracts.description.KtContractEffectDeclaration
 import org.jetbrains.kotlin.analysis.api.fir.KtFirAnalysisSession
 import org.jetbrains.kotlin.analysis.api.fir.annotations.KtFirAnnotationListForDeclaration
 import org.jetbrains.kotlin.analysis.api.fir.contracts.coneEffectDeclarationToAnalysisApi
 import org.jetbrains.kotlin.analysis.api.fir.findPsi
+import org.jetbrains.kotlin.analysis.api.fir.symbols.pointers.*
 import org.jetbrains.kotlin.analysis.api.fir.symbols.pointers.FirCallableSignature
 import org.jetbrains.kotlin.analysis.api.fir.symbols.pointers.KtFirMemberFunctionSymbolPointer
 import org.jetbrains.kotlin.analysis.api.fir.symbols.pointers.KtFirTopLevelFunctionSymbolPointer
-import org.jetbrains.kotlin.analysis.api.fir.symbols.pointers.requireOwnerPointer
 import org.jetbrains.kotlin.analysis.api.fir.utils.cached
 import org.jetbrains.kotlin.analysis.api.impl.base.util.kotlinFunctionInvokeCallableIds
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
@@ -75,8 +74,7 @@ internal class KtFirFunctionSymbol(
     override val isOverride: Boolean get() = withValidityAssertion { firSymbol.isOverride }
     override val isInfix: Boolean get() = withValidityAssertion { firSymbol.isInfix }
     override val isStatic: Boolean get() = withValidityAssertion { firSymbol.isStatic }
-
-
+    override val isTailRec: Boolean get() = withValidityAssertion { firSymbol.isTailRec }
     override val isOperator: Boolean get() = withValidityAssertion { firSymbol.isOperator }
     override val isExternal: Boolean get() = withValidityAssertion { firSymbol.isExternal }
     override val isInline: Boolean get() = withValidityAssertion { firSymbol.isInline }
@@ -99,7 +97,6 @@ internal class KtFirFunctionSymbol(
     override val modality: Modality get() = withValidityAssertion { firSymbol.modality }
     override val visibility: Visibility get() = withValidityAssertion { firSymbol.visibility }
 
-    context(KtAnalysisSession)
     override fun createPointer(): KtSymbolPointer<KtFunctionSymbol> = withValidityAssertion {
         KtPsiBasedSymbolPointer.createForSymbolFromSource<KtFunctionSymbol>(this)?.let { return it }
 
@@ -110,7 +107,7 @@ internal class KtFirFunctionSymbol(
             )
 
             KtSymbolKind.CLASS_MEMBER -> KtFirMemberFunctionSymbolPointer(
-                requireOwnerPointer(),
+                analysisSession.createOwnerPointer(this),
                 firSymbol.name,
                 FirCallableSignature.createSignature(firSymbol),
                 isStatic = firSymbol.isStatic,

@@ -85,7 +85,7 @@ FILE fqName:<root> fileName:/1.kt
     TYPE_PARAMETER name:R index:0 variance: superTypes:[kotlin.Any?] reified:false
     PROPERTY name:a visibility:public modality:OPEN [var]
       overridden:
-        public abstract a: T of <root>.KotlinInterface
+        public abstract a: T of <root>.KotlinInterface declared in <root>.KotlinInterface
       FIELD PROPERTY_BACKING_FIELD name:a type:R of <root>.C visibility:private
         EXPRESSION_BODY
           GET_VAR 'a: R of <root>.C declared in <root>.C.<init>' type=R of <root>.C origin=INITIALIZE_PROPERTY_FROM_PARAMETER
@@ -151,7 +151,7 @@ FILE fqName:<root> fileName:/1.kt
     TYPE_PARAMETER name:R index:0 variance: superTypes:[kotlin.Any?] reified:false
     PROPERTY name:a visibility:public modality:OPEN [var]
       overridden:
-        public abstract a: T of <root>.KotlinInterface
+        public abstract a: T of <root>.KotlinInterface declared in <root>.KotlinInterface
       FIELD PROPERTY_BACKING_FIELD name:a type:R of <root>.D visibility:private
         EXPRESSION_BODY
           GET_VAR 'a: R of <root>.D declared in <root>.D.<init>' type=R of <root>.D origin=INITIALIZE_PROPERTY_FROM_PARAMETER
@@ -312,8 +312,8 @@ FILE fqName:<root> fileName:/1.kt
             arg0: CONST Null type=kotlin.Nothing? value=null
     PROPERTY name:a visibility:public modality:OPEN [var]
       overridden:
-        public abstract a: T of <root>.KotlinInterface
-        public abstract a: T of <root>.KotlinInterface2
+        public abstract a: T of <root>.KotlinInterface declared in <root>.KotlinInterface
+        public abstract a: T of <root>.KotlinInterface2 declared in <root>.KotlinInterface2
       FUN name:<get-a> visibility:public modality:OPEN <> ($this:<root>.F<R of <root>.F>) returnType:R of <root>.F
         correspondingProperty: PROPERTY name:a visibility:public modality:OPEN [var]
         overridden:
@@ -448,9 +448,9 @@ FILE fqName:<root> fileName:/1.kt
           o: CONST Int type=kotlin.Int value=1
       VAR name:k13 type:kotlin.Int [val]
         TYPE_OP type=kotlin.Int origin=IMPLICIT_NOTNULL typeOperand=kotlin.Int
-          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public' type=@[FlexibleNullability] kotlin.Int? origin=null
+          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public declared in <root>.Java3' type=@[FlexibleNullability] kotlin.Int? origin=null
             receiver: GET_VAR 'e: <root>.E<kotlin.Int> declared in <root>.test' type=<root>.E<kotlin.Int> origin=null
-      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public' type=kotlin.Unit origin=EQ
+      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public declared in <root>.Java3' type=kotlin.Unit origin=EQ
         receiver: GET_VAR 'e: <root>.E<kotlin.Int> declared in <root>.test' type=<root>.E<kotlin.Int> origin=null
         value: CONST Int type=kotlin.Int value=1
       VAR name:k14 type:kotlin.Int [val]

@@ -3671,6 +3671,12 @@ public class FirLightTreeBytecodeTextTestGenerated extends AbstractFirLightTreeB
     }
 
     @Test
+    @TestMetadata("syntheticPropertyReference.kt")
+    public void testSyntheticPropertyReference() {
+      runTest("compiler/testData/codegen/bytecodeText/inline/syntheticPropertyReference.kt");
+    }
+
+    @Test
     @TestMetadata("whenMappingOnCallSite.kt")
     public void testWhenMappingOnCallSite() {
       runTest("compiler/testData/codegen/bytecodeText/inline/whenMappingOnCallSite.kt");
@@ -6004,6 +6010,12 @@ public class FirLightTreeBytecodeTextTestGenerated extends AbstractFirLightTreeB
     @TestMetadata("inlineConstValsInsideWhen.kt")
     public void testInlineConstValsInsideWhen() {
       runTest("compiler/testData/codegen/bytecodeText/when/inlineConstValsInsideWhen.kt");
+    }
+
+    @Test
+    @TestMetadata("innerWhenEnumTableSwitch.kt")
+    public void testInnerWhenEnumTableSwitch() {
+      runTest("compiler/testData/codegen/bytecodeText/when/innerWhenEnumTableSwitch.kt");
     }
 
     @Test

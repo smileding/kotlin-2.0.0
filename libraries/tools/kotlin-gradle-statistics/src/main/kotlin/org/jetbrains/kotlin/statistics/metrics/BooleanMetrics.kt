@@ -36,10 +36,13 @@ enum class BooleanMetrics(val type: BooleanOverridePolicy, val anonymization: Bo
     BUILD_PREPARE_KOTLIN_BUILD_SCRIPT_MODEL(OR, SAFE),
     GRADLE_BUILD_CACHE_USED(OVERRIDE, SAFE),
     GRADLE_WORKER_API_USED(OVERRIDE, SAFE),
+    GRADLE_CONFIGURATION_CACHE_ENABLED(OR, SAFE),
+    GRADLE_PROJECT_ISOLATION_ENABLED(OR, SAFE),
 
     KOTLIN_OFFICIAL_CODESTYLE(OVERRIDE, SAFE),
     KOTLIN_PROGRESSIVE_MODE(OVERRIDE, SAFE),
     KOTLIN_KTS_USED(OR, SAFE),
+    KOTLIN_INCREMENTAL_NATIVE_ENABLED(OR, SAFE),
 
     JS_GENERATE_EXTERNALS(OR, SAFE),
 
@@ -82,6 +85,6 @@ enum class BooleanMetrics(val type: BooleanOverridePolicy, val anonymization: Bo
     COCOAPODS_PLUGIN_ENABLED(OR, SAFE);
 
     companion object {
-        const val VERSION = 5
+        const val VERSION = 7
     }
 }

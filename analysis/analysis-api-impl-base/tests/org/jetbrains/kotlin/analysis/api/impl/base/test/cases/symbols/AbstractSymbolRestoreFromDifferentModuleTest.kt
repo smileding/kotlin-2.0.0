@@ -14,20 +14,18 @@ import org.jetbrains.kotlin.analysis.test.framework.services.expressionMarkerPro
 import org.jetbrains.kotlin.analysis.utils.printer.prettyPrint
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.test.services.TestModuleStructure
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.assertions
 
 abstract class AbstractSymbolRestoreFromDifferentModuleTest : AbstractAnalysisApiBasedTest() {
     private val defaultRenderer = KtDeclarationRendererForDebug.WITH_QUALIFIED_NAMES
 
-    override fun doTestByModuleStructure(moduleStructure: TestModuleStructure, testServices: TestServices) {
+    override fun doTest(testServices: TestServices) {
         val declaration =
-            testServices.expressionMarkerProvider.getElementsOfTypeAtCarets<KtDeclaration>(moduleStructure, testServices).single().first
+            testServices.expressionMarkerProvider.getElementsOfTypeAtCarets<KtDeclaration>(testServices).single().first
 
         val restoreAt =
             testServices.expressionMarkerProvider.getElementsOfTypeAtCarets<KtElement>(
-                moduleStructure,
                 testServices,
                 caretTag = "restoreAt"
             ).single().first
@@ -39,13 +37,13 @@ abstract class AbstractSymbolRestoreFromDifferentModuleTest : AbstractAnalysisAp
         val (debugRendered, prettyRendered, pointer) = analyseForTest(declaration) {
             val symbol = declaration.getSymbol()
             val pointer = symbol.createPointer()
-            Triple(DebugSymbolRenderer().render(symbol), symbol.render(defaultRenderer), pointer)
+            Triple(DebugSymbolRenderer().render(analysisSession, symbol), symbol.render(defaultRenderer), pointer)
         }
         configurator.doGlobalModuleStateModification(project)
 
         val (debugRenderedRestored, prettyRenderedRestored) = analyseForTest(restoreAt) {
             val symbol = pointer.restoreSymbol() as? KtDeclarationSymbol
-            symbol?.let { DebugSymbolRenderer().render(it) } to symbol?.render(defaultRenderer)
+            symbol?.let { DebugSymbolRenderer().render(analysisSession, it) } to symbol?.render(defaultRenderer)
         }
 
         val actualDebug = prettyPrint {

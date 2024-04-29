@@ -24,11 +24,8 @@ import org.jetbrains.kotlin.fir.resolve.transformers.setLazyPublishedVisibility
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.fir.toEffectiveVisibility
-import org.jetbrains.kotlin.fir.types.ConeLookupTagBasedType
-import org.jetbrains.kotlin.fir.types.FirResolvedTypeRef
-import org.jetbrains.kotlin.fir.types.FirTypeRef
+import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
-import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.impl.ConeClassLikeTypeImpl
 import org.jetbrains.kotlin.fir.types.impl.ConeTypeParameterTypeImpl
 import org.jetbrains.kotlin.fir.types.impl.FirImplicitUnitTypeRef
@@ -80,14 +77,8 @@ class FirDeserializationContext(
         moduleData,
         packageFqName,
         relativeClassName,
-        FirTypeDeserializer(
-            moduleData,
-            nameResolver,
-            typeTable,
-            annotationDeserializer,
-            typeParameterProtos,
-            typeDeserializer,
-            containingDeclarationSymbol
+        typeDeserializer.forChildContext(
+            typeParameterProtos, containingDeclarationSymbol, nameResolver, typeTable, annotationDeserializer
         ),
         annotationDeserializer,
         constDeserializer,
@@ -106,6 +97,7 @@ class FirDeserializationContext(
             nameResolver: NameResolver,
             moduleData: FirModuleData,
             annotationDeserializer: AbstractAnnotationDeserializer,
+            flexibleTypeFactory: FirTypeDeserializer.FlexibleTypeFactory,
             constDeserializer: FirConstDeserializer,
             containerSource: DeserializedContainerSource?
         ): FirDeserializationContext = createRootContext(
@@ -114,6 +106,7 @@ class FirDeserializationContext(
             moduleData,
             VersionRequirementTable.create(packageProto.versionRequirementTable),
             annotationDeserializer,
+            flexibleTypeFactory,
             constDeserializer,
             fqName,
             relativeClassName = null,
@@ -129,6 +122,7 @@ class FirDeserializationContext(
             nameResolver: NameResolver,
             moduleData: FirModuleData,
             annotationDeserializer: AbstractAnnotationDeserializer,
+            flexibleTypeFactory: FirTypeDeserializer.FlexibleTypeFactory,
             constDeserializer: FirConstDeserializer,
             containerSource: DeserializedContainerSource?,
             outerClassSymbol: FirRegularClassSymbol
@@ -138,6 +132,7 @@ class FirDeserializationContext(
             moduleData,
             VersionRequirementTable.create(classProto.versionRequirementTable),
             annotationDeserializer,
+            flexibleTypeFactory,
             constDeserializer,
             classId.packageFqName,
             classId.relativeClassName,
@@ -153,6 +148,7 @@ class FirDeserializationContext(
             moduleData: FirModuleData,
             versionRequirementTable: VersionRequirementTable,
             annotationDeserializer: AbstractAnnotationDeserializer,
+            flexibleTypeFactory: FirTypeDeserializer.FlexibleTypeFactory,
             constDeserializer: FirConstDeserializer,
             packageFqName: FqName,
             relativeClassName: FqName?,
@@ -172,6 +168,7 @@ class FirDeserializationContext(
                     nameResolver,
                     typeTable,
                     annotationDeserializer,
+                    flexibleTypeFactory,
                     typeParameterProtos,
                     null,
                     containingDeclarationSymbol
@@ -454,7 +451,11 @@ class FirMemberDeserializer(private val c: FirDeserializationContext) {
             }
             this.containerSource = c.containerSource
             this.initializer = when {
-                Flags.HAS_CONSTANT.get(proto.flags) -> c.constDeserializer.loadConstant(proto, symbol.callableId, c.nameResolver)
+                Flags.HAS_CONSTANT.get(proto.flags) -> {
+                    c.constDeserializer.loadConstant(
+                        proto, symbol.callableId, c.nameResolver, returnTypeRef.type.isUnsignedTypeOrNullableUnsignedType
+                    )
+                }
                 // classSymbol?.classKind?.isAnnotationClass throws 'Fir is not initialized for FirRegularClassSymbol kotlin/String'
                 classProto != null && Flags.CLASS_KIND.get(classProto.flags) == ProtoBuf.Class.Kind.ANNOTATION_CLASS -> {
                     c.annotationDeserializer.loadAnnotationPropertyDefaultValue(

@@ -41,6 +41,12 @@ class SmartPrinter private constructor(private val printer: Printer) : Indenting
         return this
     }
 
+    override fun printlnMultiLine(s: String): SmartPrinter {
+        printer.printlnMultiLine(s)
+        notFirstPrint = false
+        return this
+    }
+
     @Deprecated("Unit-returning method is removed", level = DeprecationLevel.HIDDEN)
     fun print(objects: Array<Any?>) {
         print(*objects)

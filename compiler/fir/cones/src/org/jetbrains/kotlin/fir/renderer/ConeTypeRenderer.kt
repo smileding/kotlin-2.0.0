@@ -63,9 +63,6 @@ open class ConeTypeRenderer(
     }
 
     fun render(type: ConeKotlinType) {
-        type.abbreviatedType?.let {
-            return render(it)
-        }
         if (type !is ConeFlexibleType && type !is ConeDefinitelyNotNullType) {
             // We don't render attributes for flexible/definitely not null types here,
             // because bounds duplicate these attributes often
@@ -118,10 +115,6 @@ open class ConeTypeRenderer(
                     render(intersected)
                 }
                 builder.append(")")
-            }
-
-            is ConeStubTypeForChainInference -> {
-                builder.append("Stub (chain inference): ${type.constructor.variable}")
             }
 
             is ConeStubType -> {

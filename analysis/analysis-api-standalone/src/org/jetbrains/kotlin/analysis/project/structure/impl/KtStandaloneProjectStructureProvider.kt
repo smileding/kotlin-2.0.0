@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2022 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -11,6 +11,7 @@ import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiJavaFile
 import org.jetbrains.kotlin.analysis.api.standalone.base.project.structure.KtStaticProjectStructureProvider
 import org.jetbrains.kotlin.analysis.api.standalone.base.project.structure.StandaloneProjectFactory.findJvmRootsForJavaFiles
+import org.jetbrains.kotlin.analysis.low.level.api.fir.LLFirInternals
 import org.jetbrains.kotlin.analysis.low.level.api.fir.project.structure.LLFirBuiltinsSessionFactory
 import org.jetbrains.kotlin.analysis.project.structure.*
 import org.jetbrains.kotlin.platform.TargetPlatform
@@ -31,6 +32,7 @@ internal class KtStandaloneProjectStructureProvider(
     }
 
     private val builtinsModule: KtBuiltinsModule by lazy {
+        @OptIn(LLFirInternals::class)
         LLFirBuiltinsSessionFactory.getInstance(project).getBuiltinsSession(platform).ktModule as KtBuiltinsModule
     }
 
@@ -44,20 +46,24 @@ internal class KtStandaloneProjectStructureProvider(
             ?: return ktNotUnderContentRootModuleWithoutPsiFile
 
         val virtualFile = containingFile.virtualFile
-            ?: error("${containingFile.name} is not a physical file")
-
-        if (virtualFile.extension == BuiltInSerializerProtocol.BUILTINS_FILE_EXTENSION) {
+        if (virtualFile != null && virtualFile.extension == BuiltInSerializerProtocol.BUILTINS_FILE_EXTENSION) {
             return builtinsModule
         }
 
         computeSpecialModule(containingFile)?.let { return it }
 
+        if (virtualFile == null) {
+            throw KotlinExceptionWithAttachments("Cannot find a KtModule for a non-physical file")
+                .withPsiAttachment("containingFile", containingFile)
+                .withAttachment("contextualModule", contextualModule?.asDebugString())
+        }
+
         return allKtModules.firstOrNull { module -> virtualFile in module.contentScope }
-            ?: throw KotlinExceptionWithAttachments("Cannot find KtModule; see the attachment for more details.")
-                .withAttachment(
-                    virtualFile.path,
-                    allKtModules.joinToString(separator = System.lineSeparator()) { it.asDebugString() }
-                )
+            ?: throw KotlinExceptionWithAttachments("Cannot find a KtModule for the VirtualFile")
+                .withPsiAttachment("containingFile", containingFile)
+                .withAttachment("contextualModule", contextualModule?.asDebugString())
+                .withAttachment("path", virtualFile.path)
+                .withAttachment("modules", allKtModules.joinToString(separator = System.lineSeparator()) { it.asDebugString() })
     }
 
     internal val binaryModules: List<KtBinaryModule> by lazy {

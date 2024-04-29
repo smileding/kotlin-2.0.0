@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2023 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.resolve.toFirRegularClass
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.fir.types.coneType
+import org.jetbrains.kotlin.fir.types.isResolved
 import org.jetbrains.kotlin.fir.types.resolvedType
 import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.declarations.*
@@ -39,19 +40,20 @@ import org.jetbrains.kotlin.serialization.deserialization.descriptors.Deserializ
 
 @OptIn(FirBasedFakeOverrideGenerator::class)
 class Fir2IrLazyProperty(
-    private val components: Fir2IrComponents,
+    private val c: Fir2IrComponents,
     override val startOffset: Int,
     override val endOffset: Int,
     override var origin: IrDeclarationOrigin,
     override val fir: FirProperty,
     val containingClass: FirRegularClass?,
     symbols: PropertySymbols,
-    override var parent: IrDeclarationParent,
-    override var isFakeOverride: Boolean
-) : IrProperty(), AbstractFir2IrLazyDeclaration<FirProperty>, Fir2IrComponents by components {
+    parent: IrDeclarationParent,
+    override var isFakeOverride: Boolean,
+) : IrProperty(), AbstractFir2IrLazyDeclaration<FirProperty>, Fir2IrComponents by c {
     override val symbol: IrPropertySymbol = symbols.propertySymbol
 
     init {
+        this.parent = parent
         symbol.bind(this)
         classifierStorage.preCacheTypeParameters(fir)
     }
@@ -90,7 +92,7 @@ class Fir2IrLazyProperty(
         get() = fir.name
         set(_) = mutationNotSupported()
 
-    override var visibility: DescriptorVisibility = components.visibilityConverter.convertToDescriptorVisibility(fir.visibility)
+    override var visibility: DescriptorVisibility = c.visibilityConverter.convertToDescriptorVisibility(fir.visibility)
         set(_) = mutationNotSupported()
 
     override var modality: Modality
@@ -98,7 +100,7 @@ class Fir2IrLazyProperty(
         set(_) = mutationNotSupported()
 
     private val type: IrType by lazy {
-        with(typeConverter) { fir.returnTypeRef.toIrType() }
+        fir.returnTypeRef.toIrType(c)
     }
 
     private fun toIrInitializer(initializer: FirExpression?): IrExpressionBody? {
@@ -115,13 +117,14 @@ class Fir2IrLazyProperty(
                         declarationStorage.getIrConstructorSymbol(firPrimaryConstructor).owner.putParametersInScope(firPrimaryConstructor.fir)
                     }
                     fir.lazyResolveToPhase(FirResolvePhase.BODY_RESOLVE)
-                    irInitializer = initializer?.asCompileTimeIrInitializer(components, fir.returnTypeRef.coneType)
+                    irInitializer = initializer?.asCompileTimeIrInitializer(c, fir.returnTypeRef.coneType)
                 }
                 irInitializer
             }
             // Setting initializers to every other class causes some cryptic errors in lowerings
             initializer is FirLiteralExpression<*> -> {
-                val constType = with(typeConverter) { initializer.resolvedType.toIrType() }
+                fir.lazyResolveToPhase(FirResolvePhase.BODY_RESOLVE)
+                val constType = fir.initializer?.resolvedType?.toIrType(c) ?: initializer.resolvedType.toIrType(c)
                 factory.createExpressionBody(initializer.toIrConst(constType))
             }
             else -> null
@@ -131,9 +134,7 @@ class Fir2IrLazyProperty(
     override var backingField: IrField? = when {
         symbols.backingFieldSymbol == null -> null
         fir.hasExplicitBackingField -> {
-            val backingFieldType = with(typeConverter) {
-                fir.backingField?.returnTypeRef?.toIrType()
-            }
+            val backingFieldType = fir.backingField?.returnTypeRef?.toIrType(c)
             val initializer = fir.backingField?.initializer ?: fir.initializer
             val visibility = fir.backingField?.visibility ?: fir.visibility
             callablesGenerator.createBackingField(
@@ -141,7 +142,7 @@ class Fir2IrLazyProperty(
                 fir,
                 IrDeclarationOrigin.PROPERTY_BACKING_FIELD,
                 symbols.backingFieldSymbol,
-                components.visibilityConverter.convertToDescriptorVisibility(visibility),
+                c.visibilityConverter.convertToDescriptorVisibility(visibility),
                 fir.name,
                 fir.isVal,
                 initializer,
@@ -156,7 +157,7 @@ class Fir2IrLazyProperty(
                 fir,
                 IrDeclarationOrigin.PROPERTY_DELEGATE,
                 symbols.backingFieldSymbol,
-                components.visibilityConverter.convertToDescriptorVisibility(fir.visibility),
+                c.visibilityConverter.convertToDescriptorVisibility(fir.visibility),
                 NameUtils.propertyDelegateName(fir.name),
                 true,
                 fir.delegate
@@ -168,7 +169,7 @@ class Fir2IrLazyProperty(
                 fir,
                 IrDeclarationOrigin.PROPERTY_BACKING_FIELD,
                 symbols.backingFieldSymbol,
-                components.visibilityConverter.convertToDescriptorVisibility(fir.visibility),
+                c.visibilityConverter.convertToDescriptorVisibility(fir.visibility),
                 fir.name,
                 fir.isVal,
                 fir.initializer,
@@ -187,7 +188,7 @@ class Fir2IrLazyProperty(
 
     override var getter: IrSimpleFunction? = symbols.getterSymbol?.let {
         Fir2IrLazyPropertyAccessor(
-            components, startOffset, endOffset,
+            c, startOffset, endOffset,
             origin = when {
                 origin == IrDeclarationOrigin.IR_EXTERNAL_DECLARATION_STUB -> origin
                 fir.delegate != null -> IrDeclarationOrigin.DELEGATED_PROPERTY_ACCESSOR
@@ -212,7 +213,7 @@ class Fir2IrLazyProperty(
     override var setter: IrSimpleFunction? = run {
         if (!fir.isVar || symbols.setterSymbol == null) return@run null
         Fir2IrLazyPropertyAccessor(
-            components, startOffset, endOffset,
+            c, startOffset, endOffset,
             origin = when {
                 origin == IrDeclarationOrigin.IR_EXTERNAL_DECLARATION_STUB -> origin
                 fir.delegate != null -> IrDeclarationOrigin.DELEGATED_PROPERTY_ACCESSOR
@@ -252,7 +253,7 @@ class Fir2IrLazyProperty(
                 return it
             }
         }
-        return fir.generateOverriddenPropertySymbols(containingClass)
+        return fir.generateOverriddenPropertySymbols(containingClass, c)
     }
 
     private fun computeOverriddenSymbolsForIrFakeOverrideGenerator(): List<IrPropertySymbol> {

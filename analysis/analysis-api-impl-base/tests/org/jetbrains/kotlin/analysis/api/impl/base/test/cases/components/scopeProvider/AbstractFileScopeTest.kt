@@ -5,36 +5,24 @@
 
 package org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.scopeProvider
 
+import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
+import org.jetbrains.kotlin.analysis.api.scopes.KtScope
 import org.jetbrains.kotlin.analysis.api.symbols.DebugSymbolRenderer
-import org.jetbrains.kotlin.analysis.test.framework.base.AbstractAnalysisApiBasedTest
-import org.jetbrains.kotlin.analysis.test.framework.utils.executeOnPooledThreadInReadAction
+import org.jetbrains.kotlin.analysis.test.framework.project.structure.KtTestModule
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.assertions
 
-abstract class AbstractFileScopeTest : AbstractAnalysisApiBasedTest() {
-    override fun doTestByMainFile(mainFile: KtFile, mainModule: TestModule, testServices: TestServices) {
-        val actual = executeOnPooledThreadInReadAction {
-            analyseForTest(mainFile) {
-                val symbol = mainFile.getFileSymbol()
-                val scope = symbol.getFileScope()
-                with(DebugSymbolRenderer(renderExtra = true)) {
-                    val renderedSymbol = render(symbol)
-                    val callableNames = scope.getPossibleCallableNames()
-                    val renderedCallables = scope.getCallableSymbols().map { render(it) }
-                    val classifierNames = scope.getPossibleClassifierNames()
-                    val renderedClassifiers = scope.getClassifierSymbols().map { render(it) }
+abstract class AbstractFileScopeTest : AbstractScopeTestBase() {
+    override fun KtAnalysisSession.getScope(mainFile: KtFile, testServices: TestServices): KtScope = mainFile.getFileSymbol().getFileScope()
 
-                    "FILE SYMBOL:\n" + renderedSymbol + "\n" +
-                            "\nCALLABLE NAMES:\n" + callableNames.joinToString(prefix = "[", postfix = "]\n", separator = ", ") +
-                            "\nCALLABLE SYMBOLS:\n" + renderedCallables.joinToString(separator = "\n\n", postfix = "\n") +
-                            "\nCLASSIFIER NAMES:\n" + classifierNames.joinToString(prefix = "[", postfix = "]\n", separator = ", ") +
-                            "\nCLASSIFIER SYMBOLS:\n" + renderedClassifiers.joinToString(separator = "\n\n")
-                }
-            }
+    override fun doTestByMainFile(mainFile: KtFile, mainModule: KtTestModule, testServices: TestServices) {
+        super.doTestByMainFile(mainFile, mainModule, testServices)
+
+        analyseForTest(mainFile) {
+            val fileSymbol = mainFile.getFileSymbol()
+            val renderedFileSymbol = DebugSymbolRenderer(renderExtra = true).render(analysisSession, fileSymbol)
+            testServices.assertions.assertEqualsToTestDataFileSibling(renderedFileSymbol, extension = ".file_symbol.txt")
         }
-
-        testServices.assertions.assertEqualsToTestDataFileSibling(actual)
     }
 }

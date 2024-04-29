@@ -20,8 +20,10 @@ import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.ConeTypeVariable
 import org.jetbrains.kotlin.resolve.ForbiddenNamedArgumentsTarget
 import org.jetbrains.kotlin.resolve.calls.inference.model.ConstraintSystemError
+import org.jetbrains.kotlin.resolve.calls.tower.ApplicabilityDetail
 import org.jetbrains.kotlin.resolve.calls.tower.CandidateApplicability
 import org.jetbrains.kotlin.resolve.calls.tower.CandidateApplicability.*
+import org.jetbrains.kotlin.resolve.calls.tower.isSuccess
 import org.jetbrains.kotlin.types.EmptyIntersectionTypeKind
 
 abstract class ResolutionDiagnostic(val applicability: CandidateApplicability)
@@ -111,7 +113,7 @@ object LowerPriorityForDynamic : ResolutionDiagnostic(RESOLVED_LOW_PRIORITY)
 
 object CandidateChosenUsingOverloadResolutionByLambdaAnnotation : ResolutionDiagnostic(RESOLVED)
 
-class UnstableSmartCast(val argument: FirSmartCastExpression, val targetType: ConeKotlinType, val isCastToNotNull: Boolean) :
+class UnstableSmartCast(val argument: FirSmartCastExpression, val targetType: ConeKotlinType, val isCastToNotNull: Boolean, val isImplicitInvokeReceiver: Boolean) :
     ResolutionDiagnostic(UNSTABLE_SMARTCAST)
 
 class ArgumentTypeMismatch(
@@ -170,3 +172,10 @@ object CallToDeprecatedOverrideOfHidden : ResolutionDiagnostic(RESOLVED)
 class AmbiguousInterceptedSymbol(val pluginNames: List<String>) : ResolutionDiagnostic(RESOLVED_WITH_ERROR)
 
 class MissingInnerClassConstructorReceiver(val candidateSymbol: FirRegularClassSymbol) : ResolutionDiagnostic(INAPPLICABLE)
+
+@OptIn(ApplicabilityDetail::class)
+val Collection<ResolutionDiagnostic>.allSuccessful: Boolean get() = all { it.applicability.isSuccess }
+val Collection<ResolutionDiagnostic>.anyUnsuccessful: Boolean get() = !allSuccessful
+
+@OptIn(ApplicabilityDetail::class)
+val ResolutionDiagnostic.isSuccess get() = applicability.isSuccess

@@ -2839,6 +2839,18 @@ public class FirLightTreeJvmIrTextTestGenerated extends AbstractFirLightTreeJvmI
         }
 
         @Test
+        @TestMetadata("inheritJavaListSubclass.kt")
+        public void testInheritJavaListSubclass() {
+          runTest("compiler/testData/ir/irText/fakeOverrides/collections/list/inheritJavaListSubclass.kt");
+        }
+
+        @Test
+        @TestMetadata("inheritJavaUtilList.kt")
+        public void testInheritJavaUtilList() {
+          runTest("compiler/testData/ir/irText/fakeOverrides/collections/list/inheritJavaUtilList.kt");
+        }
+
+        @Test
         @TestMetadata("intersectionListOverrideKJJ.kt")
         public void testIntersectionListOverrideKJJ() {
           runTest("compiler/testData/ir/irText/fakeOverrides/collections/list/intersectionListOverrideKJJ.kt");
@@ -4079,6 +4091,12 @@ public class FirLightTreeJvmIrTextTestGenerated extends AbstractFirLightTreeJvmI
     }
 
     @Test
+    @TestMetadata("kt65642.kt")
+    public void testKt65642() {
+      runTest("compiler/testData/ir/irText/firProblems/kt65642.kt");
+    }
+
+    @Test
     @TestMetadata("lambdaInEnumEntryConstructorCall.kt")
     public void testLambdaInEnumEntryConstructorCall() {
       runTest("compiler/testData/ir/irText/firProblems/lambdaInEnumEntryConstructorCall.kt");
@@ -4223,6 +4241,12 @@ public class FirLightTreeJvmIrTextTestGenerated extends AbstractFirLightTreeJvmI
     }
 
     @Test
+    @TestMetadata("TypeAliasInImport.kt")
+    public void testTypeAliasInImport() {
+      runTest("compiler/testData/ir/irText/firProblems/TypeAliasInImport.kt");
+    }
+
+    @Test
     @TestMetadata("TypeParameterBounds.kt")
     public void testTypeParameterBounds() {
       runTest("compiler/testData/ir/irText/firProblems/TypeParameterBounds.kt");
@@ -4351,12 +4375,6 @@ public class FirLightTreeJvmIrTextTestGenerated extends AbstractFirLightTreeJvmI
     }
 
     @Test
-    @TestMetadata("lambdaReturningUnit.kt")
-    public void testLambdaReturningUnit() {
-      runTest("compiler/testData/ir/irText/lambdas/lambdaReturningUnit.kt");
-    }
-
-    @Test
     @TestMetadata("localFunction.kt")
     public void testLocalFunction() {
       runTest("compiler/testData/ir/irText/lambdas/localFunction.kt");
@@ -4388,6 +4406,12 @@ public class FirLightTreeJvmIrTextTestGenerated extends AbstractFirLightTreeJvmI
     @Test
     public void testAllFilesPresentInProperties() {
       KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/ir/irText/properties"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JVM_IR, true);
+    }
+
+    @Test
+    @TestMetadata("targetOnPrimaryCtorParameter.kt")
+    public void testTargetOnPrimaryCtorParameter() {
+      runTest("compiler/testData/ir/irText/properties/targetOnPrimaryCtorParameter.kt");
     }
 
     @Nested

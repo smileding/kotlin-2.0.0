@@ -6,18 +6,18 @@
 package org.jetbrains.kotlin.generators.tests.analysis.api
 
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.annotations.*
-import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.callResolver.AbstractMultiModuleResolveCallTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.callResolver.AbstractResolveCallTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.callResolver.AbstractResolveCandidatesTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.compileTimeConstantProvider.AbstractCompileTimeConstantEvaluatorTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.compilerFacility.AbstractCompilerFacilityTest
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.compilerFacility.AbstractFirPluginPrototypeCompilerFacilityTestWithAnalysis
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.compilerFacility.AbstractFirPluginPrototypeMultiModuleCompilerFacilityTest
-import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.compilerFacility.AbstractMultiModuleCompilerFacilityTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.containingDeclarationProvider.AbstractContainingDeclarationProviderByDelegatedMemberScopeTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.containingDeclarationProvider.AbstractContainingDeclarationProviderByMemberScopeTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.containingDeclarationProvider.AbstractContainingDeclarationProviderByPsiTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.containingDeclarationProvider.AbstractContainingDeclarationProviderByReferenceTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.containingDeclarationProvider.AbstractContainingDeclarationProviderForSetterParameterTest
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.containingDeclarationProvider.AbstractContainingModuleByFileTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.dataFlowInfoProvider.AbstractExitPointSnapshotTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.diagnosticProvider.AbstractCodeFragmentCollectDiagnosticsTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.diagnosticProvider.AbstractCollectDiagnosticsTest
@@ -60,7 +60,14 @@ import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.typeInf
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.typeProvider.AbstractAnalysisApiGetSuperTypesTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.typeProvider.AbstractHasCommonSubtypeTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.typeProvider.AbstractTypeReferenceTest
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.visibilityChecker.AbstractVisibilityCheckerTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.references.*
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.session.AbstractCodeFragmentContextModificationAnalysisSessionInvalidationTest
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.session.AbstractGlobalModuleStateModificationAnalysisSessionInvalidationTest
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.session.AbstractGlobalSourceModuleStateModificationAnalysisSessionInvalidationTest
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.session.AbstractGlobalSourceOutOfBlockModificationAnalysisSessionInvalidationTest
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.session.AbstractModuleOutOfBlockModificationAnalysisSessionInvalidationTest
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.session.AbstractModuleStateModificationAnalysisSessionInvalidationTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.symbols.*
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.types.AbstractAnalysisApiSubstitutorsTest
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.types.AbstractBuiltInTypeTest
@@ -113,12 +120,12 @@ internal fun AnalysisApiTestGroup.generateAnalysisApiTests() {
             model("compilation", pattern = TestGeneratorUtil.KT)
         }
 
-        test<AbstractMultiModuleCompilerFacilityTest>(filter = testModuleKindIs(TestModuleKind.Source)) {
-            model("compilationMultiModule", pattern = TestGeneratorUtil.KT)
-        }
-
         test<AbstractFirPluginPrototypeMultiModuleCompilerFacilityTest>(filter = testModuleKindIs(TestModuleKind.Source)) {
             model("firPluginPrototypeMultiModule", pattern = TestGeneratorUtil.KT)
+        }
+
+        test<AbstractFirPluginPrototypeCompilerFacilityTestWithAnalysis>(filter = testModuleKindIs(TestModuleKind.Source)) {
+            model("bugsFromRealComposeApps", pattern = TestGeneratorUtil.KT)
         }
     }
 
@@ -237,6 +244,41 @@ private fun AnalysisApiTestGroup.generateAnalysisApiNonComponentsTests() {
             model(it, "typeSubstitution")
         }
     }
+
+    // We don't test Standalone API analysis session invalidation because it doesn't support modification (yet). The test infrastructure
+    // registers an "always accessible" lifetime token, which is at odds with checking the validity of an analysis session after
+    // invalidation.
+    group(
+        "sessions",
+        filter = frontendIs(FrontendKind.Fir)
+                and testModuleKindIs(TestModuleKind.Source)
+                and analysisSessionModeIs(AnalysisSessionMode.Normal)
+                and analysisApiModeIs(AnalysisApiMode.Ide)
+    ) {
+        test<AbstractModuleStateModificationAnalysisSessionInvalidationTest> {
+            model("sessionInvalidation")
+        }
+
+        test<AbstractModuleOutOfBlockModificationAnalysisSessionInvalidationTest> {
+            model("sessionInvalidation")
+        }
+
+        test<AbstractGlobalModuleStateModificationAnalysisSessionInvalidationTest> {
+            model("sessionInvalidation")
+        }
+
+        test<AbstractGlobalSourceModuleStateModificationAnalysisSessionInvalidationTest> {
+            model("sessionInvalidation")
+        }
+
+        test<AbstractGlobalSourceOutOfBlockModificationAnalysisSessionInvalidationTest> {
+            model("sessionInvalidation")
+        }
+
+        test<AbstractCodeFragmentContextModificationAnalysisSessionInvalidationTest> {
+            model("sessionInvalidation")
+        }
+    }
 }
 
 private fun AnalysisApiTestGroup.generateAnalysisApiStandaloneTests() {
@@ -268,17 +310,6 @@ private fun AnalysisApiTestGroup.generateAnalysisApiComponentsTests() {
 
         test<AbstractResolveCandidatesTest> {
             model(it, "resolveCandidates")
-        }
-    }
-
-    component("multiModuleCallResolver", filter = analysisSessionModeIs(AnalysisSessionMode.Normal)) {
-        test<AbstractMultiModuleResolveCallTest>(filter = frontendIs(FrontendKind.Fir)) {
-            when (it.analysisApiMode) {
-                AnalysisApiMode.Ide ->
-                    model(it, "resolveCall")
-                AnalysisApiMode.Standalone ->
-                    model(it, "resolveCall")
-            }
         }
     }
 
@@ -366,6 +397,10 @@ private fun AnalysisApiTestGroup.generateAnalysisApiComponentsTests() {
 
         test<AbstractContainingDeclarationProviderByDelegatedMemberScopeTest> {
             model(it, "containingDeclarationByDelegatedMemberScope")
+        }
+
+        test<AbstractContainingModuleByFileTest> {
+            model(it, "containingModuleByFile")
         }
     }
 
@@ -538,29 +573,6 @@ private fun AnalysisApiTestGroup.generateAnalysisApiComponentsTests() {
         }
 
         group(filter = analysisSessionModeIs(AnalysisSessionMode.Normal)) {
-            test<AbstractSubstitutionOverridesUnwrappingTest>(
-                filter = frontendIs(FrontendKind.Fir),
-            ) {
-                model(it, "substitutionOverridesUnwrapping")
-            }
-
-            test<AbstractMemberScopeTest>(
-                filter = frontendIs(FrontendKind.Fir),
-            ) {
-                when (it.analysisApiMode) {
-                    AnalysisApiMode.Ide ->
-                        model(it, "memberScope")
-                    AnalysisApiMode.Standalone ->
-                        model(it, "memberScope", excludeDirsRecursively = listOf("withTestCompilerPluginEnabled"))
-                }
-            }
-
-            test<AbstractStaticMemberScopeTest>(
-                filter = frontendIs(FrontendKind.Fir),
-            ) {
-                model(it, "staticMemberScope")
-            }
-
             test<AbstractFileScopeTest> {
                 model(it, "fileScopeTest")
             }
@@ -569,22 +581,39 @@ private fun AnalysisApiTestGroup.generateAnalysisApiComponentsTests() {
                 model(it, "delegatedMemberScope")
             }
 
-            test<AbstractDeclaredMemberScopeTest>(
-                filter = frontendIs(FrontendKind.Fir),
-            ) {
-                model(it, "declaredMemberScope")
+            test<AbstractPackageScopeTest> {
+                model(it, "packageScope")
             }
 
-            test<AbstractStaticDeclaredMemberScopeTest>(
-                filter = frontendIs(FrontendKind.Fir),
-            ) {
-                model(it, "staticDeclaredMemberScope")
-            }
+            group(filter = frontendIs(FrontendKind.Fir)) {
+                test<AbstractSubstitutionOverridesUnwrappingTest> {
+                    model(it, "substitutionOverridesUnwrapping")
+                }
 
-            test<AbstractCombinedDeclaredMemberScopeTest>(
-                filter = frontendIs(FrontendKind.Fir),
-            ) {
-                model(it, "combinedDeclaredMemberScope")
+                test<AbstractMemberScopeTest> {
+                    when (it.analysisApiMode) {
+                        AnalysisApiMode.Ide ->
+                            model(it, "memberScope")
+                        AnalysisApiMode.Standalone ->
+                            model(it, "memberScope", excludeDirsRecursively = listOf("withTestCompilerPluginEnabled"))
+                    }
+                }
+
+                test<AbstractStaticMemberScopeTest> {
+                    model(it, "staticMemberScope")
+                }
+
+                test<AbstractDeclaredMemberScopeTest> {
+                    model(it, "declaredMemberScope")
+                }
+
+                test<AbstractStaticDeclaredMemberScopeTest> {
+                    model(it, "staticDeclaredMemberScope")
+                }
+
+                test<AbstractCombinedDeclaredMemberScopeTest> {
+                    model(it, "combinedDeclaredMemberScope")
+                }
             }
         }
     }
@@ -598,6 +627,12 @@ private fun AnalysisApiTestGroup.generateAnalysisApiComponentsTests() {
     component("klibSourceFileNameProvider", filter = frontendIs(FrontendKind.Fir) and analysisApiModeIs(AnalysisApiMode.Standalone)) {
         test<AbstractGetKlibSourceFileNameTest> {
             model(it, "getKlibSourceFileName")
+        }
+    }
+
+    component("visibilityChecker", filter = frontendIs(FrontendKind.Fir)) {
+        test<AbstractVisibilityCheckerTest> {
+            model(it, "visibility")
         }
     }
 }

@@ -138,7 +138,7 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
       overridden:
-        public abstract a: T of <root>.KotlinInterface
+        public abstract a: T of <root>.KotlinInterface declared in <root>.KotlinInterface
       FUN FAKE_OVERRIDE name:<get-a> visibility:public modality:ABSTRACT <> ($this:<root>.KotlinInterface<R of <root>.C>) returnType:R of <root>.C [fake_override]
         correspondingProperty: PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
         overridden:
@@ -187,7 +187,7 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
       overridden:
-        public abstract a: T of <root>.KotlinInterface
+        public abstract a: T of <root>.KotlinInterface declared in <root>.KotlinInterface
       FUN FAKE_OVERRIDE name:<get-a> visibility:public modality:ABSTRACT <> ($this:<root>.KotlinInterface<R of <root>.D>) returnType:R of <root>.D [fake_override]
         correspondingProperty: PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
         overridden:
@@ -236,8 +236,8 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
       overridden:
-        public abstract a: T of <root>.KotlinInterface
-        public abstract a: T of <root>.KotlinInterface2
+        public abstract a: T of <root>.KotlinInterface declared in <root>.KotlinInterface
+        public abstract a: T of <root>.KotlinInterface2 declared in <root>.KotlinInterface2
       FUN FAKE_OVERRIDE name:<get-a> visibility:public modality:ABSTRACT <> ($this:<root>.KotlinInterface<R of <root>.F>) returnType:R of <root>.F [fake_override]
         correspondingProperty: PROPERTY FAKE_OVERRIDE name:a visibility:public modality:ABSTRACT [fake_override,var]
         overridden:
@@ -327,9 +327,9 @@ FILE fqName:<root> fileName:/1.kt
           o: CONST Int type=kotlin.Int value=2
       VAR name:k3 type:kotlin.String [val]
         TYPE_OP type=kotlin.String origin=IMPLICIT_NOTNULL typeOperand=kotlin.String
-          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public' type=@[FlexibleNullability] kotlin.String? origin=null
+          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public declared in <root>.Java3' type=@[FlexibleNullability] kotlin.String? origin=null
             receiver: GET_VAR 'b: <root>.B<kotlin.String> declared in <root>.test' type=<root>.B<kotlin.String> origin=null
-      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public' type=kotlin.Unit origin=EQ
+      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public declared in <root>.Java3' type=kotlin.Unit origin=EQ
         receiver: GET_VAR 'b: <root>.B<kotlin.String> declared in <root>.test' type=<root>.B<kotlin.String> origin=null
         value: CONST String type=kotlin.String value="1"
       VAR name:k4 type:kotlin.String [val]
@@ -380,9 +380,9 @@ FILE fqName:<root> fileName:/1.kt
           o: CONST Null type=kotlin.Nothing? value=null
       VAR name:k15 type:kotlin.Int [val]
         TYPE_OP type=kotlin.Int origin=IMPLICIT_NOTNULL typeOperand=kotlin.Int
-          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public' type=@[FlexibleNullability] kotlin.Int? origin=null
+          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public declared in <root>.Java3' type=@[FlexibleNullability] kotlin.Int? origin=null
             receiver: GET_VAR 'e: <root>.E<kotlin.Int> declared in <root>.test' type=<root>.E<kotlin.Int> origin=null
-      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public' type=kotlin.Unit origin=EQ
+      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:a type:@[FlexibleNullability] T of <root>.Java3? visibility:public declared in <root>.Java3' type=kotlin.Unit origin=EQ
         receiver: GET_VAR 'e: <root>.E<kotlin.Int> declared in <root>.test' type=<root>.E<kotlin.Int> origin=null
         value: CONST Int type=kotlin.Int value=1
       VAR name:k16 type:kotlin.Int [val]

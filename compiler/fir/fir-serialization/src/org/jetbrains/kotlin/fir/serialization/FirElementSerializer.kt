@@ -11,9 +11,9 @@ import org.jetbrains.kotlin.builtins.functions.isBuiltin
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersion
 import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.constant.AnnotationValue
 import org.jetbrains.kotlin.constant.EnumValue
 import org.jetbrains.kotlin.constant.IntValue
-import org.jetbrains.kotlin.constant.StringValue
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.*
@@ -84,11 +84,7 @@ class FirElementSerializer private constructor(
 
     private var metDefinitelyNotNullType: Boolean = false
 
-    fun packagePartProto(
-        packageFqName: FqName,
-        files: List<FirFile>,
-        actualizedExpectDeclarations: Set<FirDeclaration>?
-    ): ProtoBuf.Package.Builder {
+    fun packagePartProto(file: FirFile, actualizedExpectDeclarations: Set<FirDeclaration>?): ProtoBuf.Package.Builder {
         val builder = ProtoBuf.Package.newBuilder()
 
         fun addDeclaration(declaration: FirDeclaration, onUnsupportedDeclaration: (FirDeclaration) -> Unit) {
@@ -106,13 +102,13 @@ class FirElementSerializer private constructor(
             }
         }
 
-        for (file in files) {
-            extension.processFile(file) {
-                for (declaration in file.declarations) {
-                    addDeclaration(declaration) {}
-                }
+        extension.processFile(file) {
+            for (declaration in file.declarations) {
+                addDeclaration(declaration) {}
             }
         }
+
+        val packageFqName = file.packageFqName
 
         // TODO: figure out how to extract all file dependent processing from `serializePackage`
         extension.serializePackage(packageFqName, builder)
@@ -311,6 +307,7 @@ class FirElementSerializer private constructor(
         return builder
     }
 
+    @OptIn(UnexpandedTypeCheck::class)
     fun scriptProto(script: FirScript): ProtoBuf.Class.Builder = whileAnalysing(session, script) {
         val builder = ProtoBuf.Class.newBuilder()
 
@@ -348,7 +345,20 @@ class FirElementSerializer private constructor(
 
         for (declaration in callableMembers) {
             when (declaration) {
-                is FirProperty -> propertyProto(declaration)?.let { builder.addProperty(it) }
+                is FirProperty -> {
+                    val skipPropertyMetadata = when {
+                        declaration.origin == FirDeclarationOrigin.ScriptCustomization.ResultProperty -> {
+                            declaration.returnTypeRef.let { (it.isUnit || it.isNothing || it.isNullableNothing) }
+                        }
+                        declaration.name == SpecialNames.UNDERSCORE_FOR_UNUSED_VAR -> { // '_' DD element
+                            declaration.destructuringDeclarationContainerVariable != null
+                        }
+                        else -> false
+                    }
+                    if (!skipPropertyMetadata) {
+                        propertyProto(declaration)?.let { builder.addProperty(it) }
+                    }
+                }
                 is FirSimpleFunction -> functionProto(declaration)?.let { builder.addFunction(it) }
                 else -> {}
             }
@@ -522,7 +532,10 @@ class FirElementSerializer private constructor(
             }
         }
 
-        val hasConstant = (!property.isVar && property.initializer.hasConstantValue(session)) || property.isConst
+        val hasConstant = (!property.isVar
+                && property.returnTypeRef.coneType.fullyExpandedType(session).canBeUsedForConstVal()
+                && property.initializer.hasConstantValue(session))
+                || property.isConst
         val flags = Flags.getPropertyFlags(
             hasAnnotations,
             ProtoEnumFlags.visibility(normalizeVisibility(property)),
@@ -940,7 +953,7 @@ class FirElementSerializer private constructor(
                             argumentMapping = buildAnnotationArgumentMapping {
                                 this.mapping[StandardNames.CONTEXT_FUNCTION_TYPE_PARAMETER_COUNT_NAME] =
                                     buildLiteralExpression(
-                                        source = null, ConstantValueKind.Int, type.contextReceiversNumberForFunctionType, setType = false
+                                        source = null, ConstantValueKind.Int, type.contextReceiversNumberForFunctionType, setType = true
                                     )
                             }
                         )
@@ -1166,9 +1179,10 @@ class FirElementSerializer private constructor(
     }
 
     private fun serializeVersionRequirementFromRequireKotlin(annotation: FirAnnotation): ProtoBuf.VersionRequirement.Builder? {
-        val argumentMapping = annotation.argumentMapping.mapping
+        val convertedAnnotation = annotation.toConstantValue<AnnotationValue>(session, scopeSession, extension.constValueProvider) ?: return null
+        val argumentMapping = convertedAnnotation.value.argumentsMapping
 
-        val versionString = argumentMapping[RequireKotlinConstants.VERSION]?.toConstantValue<StringValue>(session)?.value ?: return null
+        val versionString = argumentMapping[RequireKotlinConstants.VERSION]?.value as String? ?: return null
         val matchResult = RequireKotlinConstants.VERSION_REGEX.matchEntire(versionString) ?: return null
 
         val major = matchResult.groupValues.getOrNull(1)?.toIntOrNull() ?: return null
@@ -1181,12 +1195,12 @@ class FirElementSerializer private constructor(
             writeVersionFull = { proto.versionFull = it }
         )
 
-        val message = argumentMapping[RequireKotlinConstants.MESSAGE]?.toConstantValue<StringValue>(session)?.value
+        val message = argumentMapping[RequireKotlinConstants.MESSAGE]?.value as String?
         if (message != null) {
             proto.message = stringTable.getStringIndex(message)
         }
 
-        when (argumentMapping[RequireKotlinConstants.LEVEL]?.toConstantValue<EnumValue>(session)?.enumEntryName?.asString()) {
+        when ((argumentMapping[RequireKotlinConstants.LEVEL] as EnumValue?)?.enumEntryName?.asString()) {
             DeprecationLevel.ERROR.name -> {
                 // ERROR is the default level
             }
@@ -1194,7 +1208,7 @@ class FirElementSerializer private constructor(
             DeprecationLevel.HIDDEN.name -> proto.level = ProtoBuf.VersionRequirement.Level.HIDDEN
         }
 
-        when (argumentMapping[RequireKotlinConstants.VERSION_KIND]?.toConstantValue<EnumValue>(session)?.enumEntryName?.asString()) {
+        when ((argumentMapping[RequireKotlinConstants.VERSION_KIND] as EnumValue?)?.enumEntryName?.asString()) {
             ProtoBuf.VersionRequirement.VersionKind.LANGUAGE_VERSION.name -> {
                 // LANGUAGE_VERSION is the default kind
             }
@@ -1204,7 +1218,7 @@ class FirElementSerializer private constructor(
                 proto.versionKind = ProtoBuf.VersionRequirement.VersionKind.API_VERSION
         }
 
-        val errorCode = argumentMapping[RequireKotlinConstants.ERROR_CODE]?.toConstantValue<IntValue>(session)?.value
+        val errorCode = (argumentMapping[RequireKotlinConstants.ERROR_CODE] as? IntValue)?.value
         if (errorCode != null && errorCode != -1) {
             proto.errorCode = errorCode
         }

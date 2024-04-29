@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.descriptors.impl.DescriptorDerivedFromTypeAlias
 import org.jetbrains.kotlin.descriptors.impl.TypeAliasConstructorDescriptor
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.Call
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -20,6 +21,7 @@ import org.jetbrains.kotlin.resolve.calls.checkers.isOperatorMod
 import org.jetbrains.kotlin.resolve.calls.checkers.shouldWarnAboutDeprecatedModFromBuiltIns
 import org.jetbrains.kotlin.resolve.checkSinceKotlinVersionAccessibility
 import org.jetbrains.kotlin.resolve.checkers.OptInUsageChecker
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
 import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedClassDescriptor
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedMemberDescriptor
@@ -171,7 +173,11 @@ class DeprecationResolver(
             }
         }
 
-        return isDeprecatedHidden(descriptor)
+        if (!isDeprecatedHidden(descriptor)) return false
+        // Here we would like to consider List.getFirst(Last) not as hidden but just as deprecated. See KT-66768.
+        // setHiddenForResolutionEverywhereBesideSupercalls() (see JvmBuiltInsCustomizer.kt) does not work here,
+        // because it e.g. makes overridden functions also hidden`(and we don't want it per KT-65441 decision).
+        return !isSuperCall || descriptor.fqNameOrNull() !in KOTLIN_LIST_FIRST_LAST
     }
 
     private fun KotlinType.deprecationsByConstituentTypes(): List<DescriptorBasedDeprecationInfo> =
@@ -335,5 +341,9 @@ class DeprecationResolver(
         val JAVA_DEPRECATED = FqName("java.lang.Deprecated")
 
         val LIST_DEPRECATED_PROPERTIES = listOf("first", "last")
+
+        val KOTLIN_LIST_FIRST_LAST = LIST_DEPRECATED_PROPERTIES.map { propertyName ->
+            StandardNames.FqNames.list.child(Name.identifier("get${propertyName.replaceFirstChar { it.uppercase() }}"))
+        }
     }
 }

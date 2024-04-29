@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.test.frontend.fir
 
 import org.jetbrains.kotlin.backend.jvm.JvmIrCodegenFactory
 import org.jetbrains.kotlin.backend.jvm.JvmIrDeserializerImpl
+import org.jetbrains.kotlin.backend.jvm.JvmIrSpecialAnnotationSymbolProvider
 import org.jetbrains.kotlin.backend.jvm.JvmIrTypeSystemContext
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
@@ -15,6 +16,7 @@ import org.jetbrains.kotlin.codegen.ClassBuilderFactories
 import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporterFactory
 import org.jetbrains.kotlin.fir.backend.Fir2IrConfiguration
+import org.jetbrains.kotlin.fir.backend.extractFirDeclarations
 import org.jetbrains.kotlin.fir.backend.jvm.*
 import org.jetbrains.kotlin.fir.pipeline.convertToIrAndActualize
 import org.jetbrains.kotlin.ir.backend.jvm.serialization.JvmIrMangler
@@ -86,10 +88,11 @@ class Fir2IrJvmResultsConverter(
             fir2IrConfiguration,
             module.irGenerationExtensions(testServices),
             irMangler,
-            FirJvmKotlinMangler(),
+            FirJvmKotlinMangler,
             FirJvmVisibilityConverter,
             DefaultBuiltIns.Instance,
-            ::JvmIrTypeSystemContext
+            ::JvmIrTypeSystemContext,
+            JvmIrSpecialAnnotationSymbolProvider,
         )
 
         val backendInput = JvmIrCodegenFactory.JvmIrBackendInput(
@@ -98,7 +101,10 @@ class Fir2IrJvmResultsConverter(
             phaseConfig,
             fir2irResult.components.irProviders,
             fir2IrExtensions,
-            FirJvmBackendExtension(fir2irResult.components, actualizedExpectDeclarations = null),
+            FirJvmBackendExtension(
+                fir2irResult.components,
+                fir2irResult.irActualizedResult?.actualizedExpectDeclarations?.extractFirDeclarations(),
+            ),
             fir2irResult.pluginContext,
             notifyCodegenStart = {},
         )

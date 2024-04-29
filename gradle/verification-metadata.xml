@@ -8,74 +8,74 @@
          <trust file=".*-sources[.]jar" regex="true"/>
          <trust file=".*[.]module" regex="true"/>
          <trust file=".*[.]pom" regex="true"/>
-         <trust file="kotlin-native-prebuilt-.*-1\.9\.3[0-9](-.+)?" regex="true"/>
          <trust file="kotlin-native-prebuilt-.*-2\.0\.0(-.+)?" regex="true"/>
+         <trust file="kotlin-native-prebuilt-.*-2\.0\.20(-.+)?" regex="true"/>
          <trust group="gradle" name="gradle" file="gradle-.*-src[.]zip" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="builtins" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-android-extensions" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-annotation-processing-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-annotation-processing-gradle" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-assignment" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-assignment-compiler-plugin-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-build-common" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-build-statistics" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-build-tools-api" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-build-tools-enum-compat" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-build-tools-impl" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-compiler-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-compiler-runner" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-daemon-client" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-daemon-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-dom-api-compat" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-annotations" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-api" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-compiler-dependencies" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-idea" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-idea-proto" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-model" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-klib-commonizer-api" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-klib-commonizer-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-native-prebuilt" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-native-utils" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-project-model" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-reflect" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-sam-with-receiver" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-sam-with-receiver-compiler-plugin" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-sam-with-receiver-compiler-plugin-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-script-runtime" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-scripting-common" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-scripting-compiler-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-scripting-compiler-impl-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-scripting-jvm" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-serialization" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-serialization-compiler-plugin" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-serialization-compiler-plugin-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-serialization-unshaded" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-common" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-jdk7" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-jdk8" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-js" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-jvm-minimal-for-test" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-wasm-js" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-wasm-wasi" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-test" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-test-annotations-common" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-test-common" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-test-js" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-test-js-runner" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-test-junit" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-test-junit5" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-test-testng" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-test-wasm-js" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-test-wasm-wasi" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-tooling-core" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-tooling-metadata" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-util-io" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlin-util-klib" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlinx-serialization-compiler-plugin" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
-         <trust group="org.jetbrains.kotlin" name="kotlinx-serialization-compiler-plugin-embeddable" version="1\.9\.3[0-9](-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="builtins" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-android-extensions" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-annotation-processing-embeddable" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-annotation-processing-gradle" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-assignment" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-assignment-compiler-plugin-embeddable" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-build-common" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-build-statistics" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-build-tools-api" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-build-tools-enum-compat" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-build-tools-impl" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-compiler-embeddable" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-compiler-runner" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-daemon-client" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-daemon-embeddable" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-dom-api-compat" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-annotations" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-api" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-compiler-dependencies" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-idea" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-idea-proto" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-gradle-plugin-model" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-klib-commonizer-api" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-klib-commonizer-embeddable" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-native-prebuilt" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-native-utils" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-project-model" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-reflect" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-sam-with-receiver" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-sam-with-receiver-compiler-plugin" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-sam-with-receiver-compiler-plugin-embeddable" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-script-runtime" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-scripting-common" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-scripting-compiler-embeddable" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-scripting-compiler-impl-embeddable" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-scripting-jvm" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-serialization" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-serialization-compiler-plugin" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-serialization-compiler-plugin-embeddable" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-serialization-unshaded" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-common" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-jdk7" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-jdk8" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-js" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-jvm-minimal-for-test" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-wasm-js" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-stdlib-wasm-wasi" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-test" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-test-annotations-common" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-test-common" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-test-js" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-test-js-runner" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-test-junit" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-test-junit5" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-test-testng" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-test-wasm-js" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-test-wasm-wasi" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-tooling-core" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-tooling-metadata" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-util-io" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlin-util-klib" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlinx-serialization-compiler-plugin" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
+         <trust group="org.jetbrains.kotlin" name="kotlinx-serialization-compiler-plugin-embeddable" version="2\.0\.20(-.+)?|2\.0\.0(-.+)?" regex="true"/>
       </trusted-artifacts>
    </configuration>
    <components>
@@ -83,6 +83,30 @@
          <artifact name="annotation-1.0.0.jar">
             <md5 value="558104d32e109ad96655ecbe9fe4e39f" origin="Generated by Gradle"/>
             <sha256 value="0baae9755f7caf52aa80cd04324b91ba93af55d4d1d17dcc9a7b53d99ef7c016" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="androidx.annotation" name="annotation-jvm" version="1.7.0">
+         <artifact name="annotation-jvm-1.7.0.jar">
+            <md5 value="57648573f37f082988423cbc112f763c" origin="Generated by Gradle"/>
+            <sha256 value="e36b8e4b8393a4adc74e3d4ab22ad5a36396f0cea2e40b5734eae14937dfd224" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="androidx.collection" name="collection-jvm" version="1.4.0">
+         <artifact name="collection-jvm-1.4.0.jar">
+            <md5 value="3f00597ec99a52ecdbf6f3962c5dc77a" origin="Generated by Gradle"/>
+            <sha256 value="d5cf7b72647c7995071588fe870450ff9c8f127f253d2d4851e161b800f67ae0" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="androidx.compose.runtime" name="runtime" version="1.7.0-alpha07">
+         <artifact name="runtime-metadata-1.7.0-alpha07.jar">
+            <md5 value="377754d56814d9739a8332b2b1e65b8a" origin="Generated by Gradle"/>
+            <sha256 value="9f40ab0b8cf4e7cb0f593493c2ed96e7155d0e91eb592407597ecd61e2d5a054" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="androidx.compose.runtime" name="runtime-desktop" version="1.7.0-alpha07">
+         <artifact name="runtime-desktop-1.7.0-alpha07.jar">
+            <md5 value="f42299714b24d1d8788d28d0531a95db" origin="Generated by Gradle"/>
+            <sha256 value="129840d6a25ae60fe7d53bc4cb1ff366be30c53f12a4feb7e923ec3b4f8b5870" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="androidx.databinding" name="databinding-common" version="7.4.2">
@@ -751,22 +775,22 @@
             <sha256 value="b31539cdcf189d9e68a1f6998cba09ea912f99f5f24bcd0650212b1af9d355a2" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="com.github.webassembly" name="binaryen" version="116">
-         <artifact name="binaryen-116-arm64-macos.tar.gz">
-            <md5 value="c2cd623ea10ec1b39e2129522a443ba9" origin="Generated by Gradle"/>
-            <sha256 value="d8c978aec366629eae6fefbcedaf5093b829e4c5ab0e2990973b6e337c544867" origin="Generated by Gradle"/>
+      <component group="com.github.webassembly" name="binaryen" version="117">
+         <artifact name="binaryen-117-arm64-macos.tar.gz">
+            <md5 value="6c6a28d5596bbacb2c6d252565ce4701" origin="Generated by Gradle"/>
+            <sha256 value="f2d962ff294b38ea3cfbbae8f6c728089d9375a57bac9a1880eb86779d6d3a84" origin="Generated by Gradle"/>
          </artifact>
-         <artifact name="binaryen-116-x86_64-linux.tar.gz">
-            <md5 value="886df9f75b7b60136086773c2dc099f8" origin="Generated by Gradle"/>
-            <sha256 value="c55b74f3109cdae97490faf089b0286d3bba926bb6ea5ed00c8c784fc53718fd" origin="Generated by Gradle"/>
+         <artifact name="binaryen-117-x86_64-linux.tar.gz">
+            <md5 value="1dcb77cd5a99d8d70ea8e6072edf3fe5" origin="Generated by Gradle"/>
+            <sha256 value="3dc677006555b355ea2da5e82602065a161d5e83eaefd3f759afa00b96e83212" origin="Generated by Gradle"/>
          </artifact>
-         <artifact name="binaryen-116-x86_64-macos.tar.gz">
-            <md5 value="1c1f7fab2f954b6b3562524020f0b836" origin="Generated by Gradle"/>
-            <sha256 value="266f63d3d8d9e17d5e532b8fc6c5340f92b3fea2020a634957a6dd938294ba56" origin="Generated by Gradle"/>
+         <artifact name="binaryen-117-x86_64-macos.tar.gz">
+            <md5 value="b83c8a44220fafdb7235dc6801f9bfd0" origin="Generated by Gradle"/>
+            <sha256 value="c0be7b448888f2c851a853ca19299b09d42cac8c3090c716d14cc8ec3c0ac849" origin="Generated by Gradle"/>
          </artifact>
-         <artifact name="binaryen-116-x86_64-windows.tar.gz">
-            <md5 value="6ffc0f6e2ccc04684414a82a7e2c99f7" origin="Generated by Gradle"/>
-            <sha256 value="06a18d71ef294150c61737899d9b3290dbc635dba4dc4f80f528e04d4eaef478" origin="Generated by Gradle"/>
+         <artifact name="binaryen-117-x86_64-windows.tar.gz">
+            <md5 value="6a5f17c24c5b002528afe62f59412dde" origin="Generated by Gradle"/>
+            <sha256 value="b09f260176483bd30194303ccb15ac81c2247e4e566894f9d931e4313cb36d58" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="com.github.zafarkhaja" name="java-semver" version="0.9.0">
@@ -847,22 +871,28 @@
             <sha256 value="f1dd23f8ae34a8e91366723991ead0d6499d1a3e9163ce550c200b02d76a872b" origin="Generated by Gradle"/>
          </artifact>
       </component>
+      <component group="com.google.dagger" name="dagger" version="2.40.1">
+         <artifact name="dagger-2.40.1.jar">
+            <md5 value="1754d442110850170a9ea95e9b599bf1" origin="Generated by Gradle"/>
+            <sha256 value="d4fc5b3bbc048983c8a1395e30c2a76629a15fcba96b34b081e1543407f6ec1d" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
       <component group="com.google.errorprone" name="error_prone_annotations" version="2.1.3">
          <artifact name="error_prone_annotations-2.1.3.jar">
             <md5 value="97504b36cf871722d81a4b9e114f2a16" origin="Generated by Gradle"/>
             <sha256 value="03d0329547c13da9e17c634d1049ea2ead093925e290567e1a364fd6b1fc7ff8" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="com.google.errorprone" name="error_prone_annotations" version="2.11.0">
-         <artifact name="error_prone_annotations-2.11.0.jar">
-            <md5 value="656ad66261b7e7ea472ed0ffeea773ea" origin="Generated by Gradle"/>
-            <sha256 value="721cb91842b46fa056847d104d5225c8b8e1e8b62263b993051e1e5a0137b7ec" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="com.google.errorprone" name="error_prone_annotations" version="2.23.0">
          <artifact name="error_prone_annotations-2.23.0.jar">
             <md5 value="b3ea764beb68c9b44cf57c1b5a5608b2" origin="Generated by Gradle"/>
             <sha256 value="ec6f39f068b6ff9ac323c68e28b9299f8c0a80ca512dccb1d4a70f40ac3ec054" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="com.google.errorprone" name="error_prone_annotations" version="2.26.1">
+         <artifact name="error_prone_annotations-2.26.1.jar">
+            <md5 value="64c623e550068e3b2708e5d901865c56" origin="Generated by Gradle"/>
+            <sha256 value="de25f2d9a2156529bd765f51d8efdfc0dfa7301e04efb9cc75b7f10cf5d0e0fb" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="com.google.errorprone" name="error_prone_annotations" version="2.3.4">
@@ -875,6 +905,12 @@
          <artifact name="flatbuffers-java-1.12.0.jar">
             <md5 value="26ecc1a330e441f909226a338d4bef65" origin="Generated by Gradle"/>
             <sha256 value="3f8c088b4dd04a9858721f2e162508c94db0dd86f961e306ee63ef2eda871bf7" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="com.google.gradle" name="osdetector-gradle-plugin" version="1.7.3">
+         <artifact name="osdetector-gradle-plugin-1.7.3.jar">
+            <md5 value="f41c63b4f972443ded989dcca83b52e5" origin="Generated by Gradle"/>
+            <sha256 value="6b4692f913a21b1fb603169ee78ba8f3e4ab2af9d762af9ca88b79126c1c0ad1" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="com.google.guava" name="failureaccess" version="1.0.1">
@@ -907,16 +943,16 @@
             <sha256 value="e6dd072f9d3fe02a4600688380bd422bdac184caf6fe2418cfdd0934f09432aa" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="com.google.guava" name="guava" version="31.1-jre">
-         <artifact name="guava-31.1-jre.jar">
-            <md5 value="e37782d974104aa3b0a7bee9927c8042" origin="Generated by Gradle"/>
-            <sha256 value="a42edc9cab792e39fe39bb94f3fca655ed157ff87a8af78e1d6ba5b07c4a00ab" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="com.google.guava" name="guava" version="33.0.0-jre">
          <artifact name="guava-33.0.0-jre.jar">
             <md5 value="5d8aefac09131c3a74d6dab4b01bcff6" origin="Generated by Gradle"/>
             <sha256 value="f4d85c3e4d411694337cb873abea09b242b664bb013320be6105327c45991537" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="com.google.guava" name="guava" version="33.1.0-jre">
+         <artifact name="guava-33.1.0-jre.jar">
+            <md5 value="4117dd61f73b1204fac466ce5c23d590" origin="Generated by Gradle"/>
+            <sha256 value="346aec0eb8c8987360c8a264e70ff10c2fba760446eb27e8ab07e78e787a75fe" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="com.google.guava" name="listenablefuture" version="9999.0-empty-to-avoid-conflict-with-guava">
@@ -943,10 +979,22 @@
             <sha256 value="21af30c92267bd6122c0e0b4d20cccb6641a37eaf956c6540ec471d584e64a7b" origin="Generated by Gradle"/>
          </artifact>
       </component>
+      <component group="com.google.j2objc" name="j2objc-annotations" version="3.0.0">
+         <artifact name="j2objc-annotations-3.0.0.jar">
+            <md5 value="f59529b29202a5baf37f491ea5ec8627" origin="Generated by Gradle"/>
+            <sha256 value="88241573467ddca44ffd4d74aa04c2bbfd11bf7c17e0c342c94c9de7a70a7c64" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
       <component group="com.google.jimfs" name="jimfs" version="1.1">
          <artifact name="jimfs-1.1.jar">
             <md5 value="2a66dd6ae1115e7547be594d52ea7546" origin="Generated by Gradle"/>
             <sha256 value="c4828e28d7c0a930af9387510b3bada7daa5c04d7c25a75c7b8b081f1c257ddd" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="com.google.protobuf" name="protobuf-gradle-plugin" version="0.9.4">
+         <artifact name="protobuf-gradle-plugin-0.9.4.jar">
+            <md5 value="362306ac042d94f375942a013439f943" origin="Generated by Gradle"/>
+            <sha256 value="7e554bdec3202ede0a2407f20141d8ca2e9e3ab62429ffa9b21ab0c02f435223" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="com.google.protobuf" name="protobuf-java" version="2.6.1">
@@ -977,6 +1025,12 @@
          <artifact name="protobuf-java-util-3.17.2.jar">
             <md5 value="c3ea3b40e77112fc70ebddfa9ceb7b6f" origin="Generated by Gradle"/>
             <sha256 value="849925333aac23f46f9a154a52e441117017d5673e04e5636993bcc3cf1924d9" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="com.google.protobuf" name="protobuf-javalite" version="3.21.9">
+         <artifact name="protobuf-javalite-3.21.9.jar">
+            <md5 value="e5298b5890c793e994bfa9391988c4c7" origin="Generated by Gradle"/>
+            <sha256 value="70e3f2b78c3ac41d93dec0433aec4c005b327c502861b8ecec4973a7f80b197d" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="com.google.protobuf" name="protobuf-kotlin" version="3.21.9">
@@ -1691,28 +1745,28 @@
             <sha256 value="39493c1da24d9f5f160cc3fb6670b9cad023e65ce12a6673af32e47ddcdeb8c3" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="google.d8" name="v8" version="linux64-rel-11.9.85">
-         <artifact name="v8-linux64-rel-11.9.85.zip">
-            <md5 value="af40627b1c3426a78663f37b4b8b45b6" origin="Generated by Gradle"/>
-            <sha256 value="2d1238346e704b501f8fd3beb563d212e366f93b9151a7b0cd5b1de84f1cb4d3" origin="Generated by Gradle"/>
+      <component group="google.d8" name="v8" version="linux64-rel-12.5.170">
+         <artifact name="v8-linux64-rel-12.5.170.zip">
+            <md5 value="e3e2e93bef1fa39ddb18d077cacc3e2d" origin="Generated by Gradle"/>
+            <sha256 value="68be94d454fa55535ffd275a8f1b4948218e36b4ad16f3811ead4c86c9ee9a42" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="google.d8" name="v8" version="mac-arm64-rel-11.9.85">
-         <artifact name="v8-mac-arm64-rel-11.9.85.zip">
-            <md5 value="ccfb43081eb3a8f079800dfc2699cc7d" origin="Generated by Gradle"/>
-            <sha256 value="d064a3fbeefb5344eb6c43755b3eb501f004cc112ad2dd7aa010b443f985b9fc" origin="Generated by Gradle"/>
+      <component group="google.d8" name="v8" version="mac-arm64-rel-12.5.170">
+         <artifact name="v8-mac-arm64-rel-12.5.170.zip">
+            <md5 value="cd602cd9868581858829693c2c882914" origin="Generated by Gradle"/>
+            <sha256 value="39ef32642669e96cb89949901ab067dbddbc9de992bab76c7fa97c6900857042" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="google.d8" name="v8" version="mac64-rel-11.9.85">
-         <artifact name="v8-mac64-rel-11.9.85.zip">
-            <md5 value="318732c752927da3dd5032b233524e8d" origin="Generated by Gradle"/>
-            <sha256 value="471a04c884d698e65842cc757cdfad873ebd8158231106fcbaa01306238bdada" origin="Generated by Gradle"/>
+      <component group="google.d8" name="v8" version="mac64-rel-12.5.170">
+         <artifact name="v8-mac64-rel-12.5.170.zip">
+            <md5 value="e6cb2e3c55a5375f8d19ed805e3b4363" origin="Generated by Gradle"/>
+            <sha256 value="66dc85ecd926fecbbad23a1fe140b446f7b5a6a9792088f6778dddc719db5f94" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="google.d8" name="v8" version="win64-rel-11.9.85">
-         <artifact name="v8-win64-rel-11.9.85.zip">
-            <md5 value="b60ae4757e8adf84b251a525b925f4a5" origin="Generated by Gradle"/>
-            <sha256 value="800e5d2c8ad139589247fb1940254bd6bfacbd9786891224c79f9a6f665f5266" origin="Generated by Gradle"/>
+      <component group="google.d8" name="v8" version="win64-rel-12.5.170">
+         <artifact name="v8-win64-rel-12.5.170.zip">
+            <md5 value="c19a73fcd2a362219c3fe0ca3dfed05b" origin="Generated by Gradle"/>
+            <sha256 value="bf3d621e65e9a1d8bf25c1f41d3f58ac8a078ce63789da84816aa64d5b3d0cad" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="gradle.plugin.org.gradle.crypto" name="checksum" version="1.4.0">
@@ -2319,6 +2373,12 @@
          <artifact name="junit-4.13.2.jar">
             <md5 value="d98a9a02a99a9acd22d7653cbcc1f31f" origin="Generated by Gradle"/>
             <sha256 value="8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="kr.motd.maven" name="os-maven-plugin" version="1.7.1">
+         <artifact name="os-maven-plugin-1.7.1.jar">
+            <md5 value="01b5775d2fdcaf8717974e7f78b0f46f" origin="Generated by Gradle"/>
+            <sha256 value="f47aeef86821e52b2b18758978bd045f03d722292e32e747082122c6228952e0" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="nekohtml" name="nekohtml" version="1.9.6.2">
@@ -3143,22 +3203,16 @@
             <sha256 value="a40b2ce6d8551e5b90b1bf637064303f32944d61b52ab2014e38699df573941b" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.checkerframework" name="checker-qual" version="3.12.0">
-         <artifact name="checker-qual-3.12.0.jar">
-            <md5 value="ab1ae0e2f2f63601597a5a96fca8a54f" origin="Generated by Gradle"/>
-            <sha256 value="ff10785ac2a357ec5de9c293cb982a2cbb605c0309ea4cc1cb9b9bc6dbe7f3cb" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
-      <component group="org.checkerframework" name="checker-qual" version="3.19.0">
-         <artifact name="checker-qual-3.19.0.jar">
-            <md5 value="a70912824bb142a53d6cb50a349dab1a" origin="Generated by Gradle"/>
-            <sha256 value="a827c49183f3a632277d27a0a4673686cb341507447b9d570261094bd748aa68" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="org.checkerframework" name="checker-qual" version="3.41.0">
          <artifact name="checker-qual-3.41.0.jar">
             <md5 value="3187e97ad396c881e9e9f98456e8d878" origin="Generated by Gradle"/>
             <sha256 value="2f9f245bf68e4259d610894f2406dc1f6363dc639302bd566e8272e4f4541172" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="org.checkerframework" name="checker-qual" version="3.42.0">
+         <artifact name="checker-qual-3.42.0.jar">
+            <md5 value="4c55448dcbfe9c3702f7758fc8fe0086" origin="Generated by Gradle"/>
+            <sha256 value="ccaedd33af0b7894d9f2f3b644f4d19e43928e32902e61ac4d10777830f5aac7" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.checkerframework" name="checker-qual" version="3.5.0">
@@ -3533,12 +3587,6 @@
             <sha256 value="711d64522f9ec410983bd310934296da134be4254a125080a0416ec178dfad1c" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.javassist" name="javassist" version="3.26.0-GA">
-         <artifact name="javassist-3.26.0-GA.jar">
-            <md5 value="547690071a74a2aafb01896c9f42b37d" origin="Generated by Gradle"/>
-            <sha256 value="ca5625874ff0a34f2422173a511b33c225218c146a3c961b18940efff430462d" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="org.javassist" name="javassist" version="3.28.0-GA">
          <artifact name="javassist-3.28.0-GA.jar">
             <md5 value="1a2dd8c76321cef26cc2669fe70a2557" origin="Generated by Gradle"/>
@@ -3795,12 +3843,6 @@
             <sha256 value="3277ac102ae17aad10a55abec75ff5696c8d109790396434b496e75087854203" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.jetbrains.kotlin" name="kotlin-reflect" version="1.6.21">
-         <artifact name="kotlin-reflect-1.6.21.jar">
-            <md5 value="3db09afc9595efdfa2eccba08665501b" origin="Generated by Gradle"/>
-            <sha256 value="1e1f57209f7238c3fd1735a1b9339a56565507dca249f8371bf59d91f601aeaa" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="org.jetbrains.kotlin" name="kotlin-reflect" version="1.7.10">
          <artifact name="kotlin-reflect-1.7.10.jar">
             <md5 value="22aaff1245b21364e794444c9e064e0c" origin="Generated by Gradle"/>
@@ -3823,6 +3865,12 @@
          <artifact name="kotlin-reflect-1.9.10.jar">
             <md5 value="dd9c5b1139dd521f3a58bfa05791ccf3" origin="Generated by Gradle"/>
             <sha256 value="8a835f5176355083668aff0ed6eef5b3eb030e10e89679ed3eeb703fd2d5b900" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="org.jetbrains.kotlin" name="kotlin-reflect" version="1.9.21">
+         <artifact name="kotlin-reflect-1.9.21.jar">
+            <md5 value="10d2445d9dca5a0ea93243134a7b3c24" origin="Generated by Gradle"/>
+            <sha256 value="a133e049f0a4e249651582428e166de4dfac9546adf436b6172119255ede510f" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.jetbrains.kotlin" name="kotlin-script-runtime" version="1.9.20">
@@ -4041,6 +4089,12 @@
             <sha256 value="f34ac12010dd84d50dd9d04de6cd24c9d5692790cd4231ee4a2ecbc8e7de60cd" origin="Generated by Gradle"/>
          </artifact>
       </component>
+      <component group="org.jetbrains.kotlinx" name="atomicfu-jvm" version="0.20.2">
+         <artifact name="atomicfu-jvm-0.20.2.jar">
+            <md5 value="e253ba6c650d1dae476c1e6628394e07" origin="Generated by Gradle"/>
+            <sha256 value="b3d9ec0298e84ed09e0448c52a643bfdad7f3d8096f1303592a3046e711551af" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
       <component group="org.jetbrains.kotlinx" name="atomicfu-jvm" version="0.21.0">
          <artifact name="atomicfu-jvm-0.21.0.jar">
             <md5 value="aa61ce985451776e884940095b05bf6a" origin="Generated by Gradle"/>
@@ -4141,6 +4195,12 @@
             <sha256 value="e63dbc37232112465068b898718f2f7029d08ee82c83db9663f9a0de0f4bf470" origin="Generated by Gradle"/>
          </artifact>
       </component>
+      <component group="org.jetbrains.kotlinx" name="kotlinx-collections-immutable-jvm" version="0.3.4">
+         <artifact name="kotlinx-collections-immutable-jvm-0.3.4.jar">
+            <md5 value="1369793963dac5983bb55ea9895e02a7" origin="Generated by Gradle"/>
+            <sha256 value="91d253c00c5e20e3af35604504609a475fbcee37aaeebc195e72e8aeccf7ac6e" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
       <component group="org.jetbrains.kotlinx" name="kotlinx-collections-immutable-jvm" version="0.3.7">
          <artifact name="kotlinx-collections-immutable-jvm-0.3.7.jar">
             <md5 value="33920449b91d9a9b23f3599f01f9f458" origin="Generated by Gradle"/>
@@ -4157,6 +4217,12 @@
          <artifact name="kotlinx-coroutines-core-metadata-1.7.1-all.jar">
             <md5 value="c31d118274309feef2969c1766831089" origin="Generated by Gradle"/>
             <sha256 value="b7d5370ed0e54952003b13595a67b97ced3f873d919f5ddfbe50fcd499cbf0a7" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-core" version="1.7.3">
+         <artifact name="kotlinx-coroutines-core-metadata-1.7.3.jar">
+            <md5 value="f838b601e6c21a679580f38649ddedca" origin="Generated by Gradle"/>
+            <sha256 value="f9522095aedcc2a6ab32c7484061ea698352c71be1390adb403b59aa48a38fdc" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-core-jvm" version="1.5.0">
@@ -4177,16 +4243,16 @@
             <sha256 value="58a497ab595d83bbbf28892a8b34ab57d94309a8742ee0eba43cb86408d235bf" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-core-jvm" version="1.6.4">
-         <artifact name="kotlinx-coroutines-core-jvm-1.6.4.jar">
-            <md5 value="9ba1873872fe1406d39bc40683050c45" origin="Generated by Gradle"/>
-            <sha256 value="c24c8bb27bb320c4a93871501a7e5e0c61607638907b197aef675513d4c820be" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-core-jvm" version="1.7.1">
          <artifact name="kotlinx-coroutines-core-jvm-1.7.1.jar">
             <md5 value="a9042dc49ad3a7a589e7738729898335" origin="Generated by Gradle"/>
             <sha256 value="7496cffdd3eb10109acdda1c3212f6ac7815789e09380dc9e2ccdec496dba3fc" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-core-jvm" version="1.7.3">
+         <artifact name="kotlinx-coroutines-core-jvm-1.7.3.jar">
+            <md5 value="d191fb92ece2167e8cf5d42c63edaad7" origin="Generated by Gradle"/>
+            <sha256 value="1ab3acc38f3e7355c4f9d1ec62107a46fa73c899f3070d055e5d4373dfe67e12" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-debug" version="1.7.1">
@@ -4201,16 +4267,16 @@
             <sha256 value="518b349498ee371f840f7ee240b942b921960c507dc9dbd853a7e83197043def" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-jdk8" version="1.6.4">
-         <artifact name="kotlinx-coroutines-jdk8-1.6.4.jar">
-            <md5 value="9532e16578f95c1f9bb3d199fa1c1039" origin="Generated by Gradle"/>
-            <sha256 value="88c64b8eea3eb90597d2fb0fd30f3cf782fbcdad06312e5665a618f070f02119" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-jdk8" version="1.7.1">
          <artifact name="kotlinx-coroutines-jdk8-1.7.1.jar">
             <md5 value="fa342b8acc44aca4c5ba2a7ce06e58a4" origin="Generated by Gradle"/>
             <sha256 value="b96f7145ba69b48f4940534cb8e19c7e159c45443e27c36821626148ba1710f2" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-jdk8" version="1.7.3">
+         <artifact name="kotlinx-coroutines-jdk8-1.7.3.jar">
+            <md5 value="90b72fd5993c885bcca96a3d9b695b49" origin="Generated by Gradle"/>
+            <sha256 value="ae2da5b6579894055555cd13aae41230386d4586db0616b6163184f70b8b379d" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.jetbrains.kotlinx" name="kotlinx-coroutines-slf4j" version="1.7.1">
@@ -4357,16 +4423,16 @@
             <sha256 value="682cbf020fcd0d3a047d9fe9e21c681f02daf0aa3a587f36ac26d4c435d28bee" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.jetbrains.kotlinx" name="lincheck" version="2.24">
-         <artifact name="lincheck-metadata-2.24.jar">
-            <md5 value="9e9a84de6cd9dd5b88a5f27f189691be" origin="Generated by Gradle"/>
-            <sha256 value="81561d4f66be0593aaf61fd5f9ff951c4b0df9198bfb7cd363bde67950f9999f" origin="Generated by Gradle"/>
+      <component group="org.jetbrains.kotlinx" name="lincheck" version="2.28.1">
+         <artifact name="lincheck-metadata-2.28.1.jar">
+            <md5 value="4444104759a70d9235a88e37291a0ed1" origin="Generated by Gradle"/>
+            <sha256 value="ce320c4fabd34d57f929a99f111e544bce93840a522fa244044d25ad59b0d35a" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.jetbrains.kotlinx" name="lincheck-jvm" version="2.24">
-         <artifact name="lincheck-jvm-2.24.jar">
-            <md5 value="ac832ceed4f9e56ab62cc3cc0e66f7dd" origin="Generated by Gradle"/>
-            <sha256 value="0ea79f9bf09922bf8d540371b9ecb7040950ccd3732941eb7cc0803aaa49abd7" origin="Generated by Gradle"/>
+      <component group="org.jetbrains.kotlinx" name="lincheck-jvm" version="2.28.1">
+         <artifact name="lincheck-jvm-2.28.1.jar">
+            <md5 value="41a70cc1cdd0b476b5ae012e19a35dcc" origin="Generated by Gradle"/>
+            <sha256 value="9d390e4eca1fee8357051390f8abec48faa07026f9e7c15e14567cd2f54a4756" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.jetbrains.teamcity" name="serviceMessages" version="2019.1.4">
@@ -4405,34 +4471,28 @@
             <sha256 value="0f18192df289114e17aa1a0d0a7f8372cc9f5c7e4f7e39adcf8906fe714fa7d3" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.jsoup" name="jsoup" version="1.14.2">
-         <artifact name="jsoup-1.14.2.jar">
-            <md5 value="fbec0de500bd3b622b178706a3e0a35c" origin="Generated by Gradle"/>
-            <sha256 value="a601ba7ce2e2c6e744d4eac793a76707c0121576170ef717ef7a81f2343ada1a" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="org.jsoup" name="jsoup" version="1.15.3">
          <artifact name="jsoup-1.15.3.jar">
             <md5 value="4f16c3b17b8c1b0173b1ed9f99f2c27c" origin="Generated by Gradle"/>
             <sha256 value="e20a5e78b1372f2a4e620832db4442d5077e5cbde280b24c666a3770844999bc" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.junit.jupiter" name="junit-jupiter" version="5.10.0">
-         <artifact name="junit-jupiter-5.10.0.jar">
-            <md5 value="ba19f309e63d0c128c381a8d68432c34" origin="Generated by Gradle"/>
-            <sha256 value="8e4bde23ee28fc443975654a7b28c410a3b78d6be96b78c99ab73695ec344f7c" origin="Generated by Gradle"/>
+      <component group="org.jsoup" name="jsoup" version="1.17.2">
+         <artifact name="jsoup-1.17.2.jar">
+            <md5 value="d9dd58c3f8a09f45e57d85e78993be6e" origin="Generated by Gradle"/>
+            <sha256 value="f60b33b38e9d7ac93eaaa68a6c70f706bb99036494b2e2add2bfee11d09ac6f5" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="org.junit.jupiter" name="junit-jupiter" version="5.10.1">
+         <artifact name="junit-jupiter-5.10.1.jar">
+            <md5 value="32fd55a03f648868767c1bebedd198df" origin="Generated by Gradle"/>
+            <sha256 value="c1a386e901fae28e493185a47c8cea988fb1a37422b353a0f8b4df2e6c5d6037" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.junit.jupiter" name="junit-jupiter-api" version="5.0.0">
          <artifact name="junit-jupiter-api-5.0.0.jar">
             <md5 value="59468e20e8d8c03c17bd089659d26654" origin="Generated by Gradle"/>
             <sha256 value="559826fb47a05d541edd6a0034d2bbb9ad27078f49fb5fe76c0f07e23816b660" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
-      <component group="org.junit.jupiter" name="junit-jupiter-api" version="5.10.0">
-         <artifact name="junit-jupiter-api-5.10.0.jar">
-            <md5 value="d976b1d3b22eded7c2e496ea881ed77f" origin="Generated by Gradle"/>
-            <sha256 value="108088fd7ea46a8e65a0ce7f5d75ae3ff7865606770a078715f5a6e5709e17d8" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.junit.jupiter" name="junit-jupiter-api" version="5.10.1">
@@ -4447,12 +4507,6 @@
             <sha256 value="f767a170f97127b0ad3582bf3358eabbbbe981d9f96411853e629d9276926fd5" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.junit.jupiter" name="junit-jupiter-engine" version="5.10.0">
-         <artifact name="junit-jupiter-engine-5.10.0.jar">
-            <md5 value="9b559627f23413bf20f450211f6edcba" origin="Generated by Gradle"/>
-            <sha256 value="57ea48e6f795200791065bbc86b70b84cd05367c5c9f2ac8f9268e27154c88a8" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="org.junit.jupiter" name="junit-jupiter-engine" version="5.10.1">
          <artifact name="junit-jupiter-engine-5.10.1.jar">
             <md5 value="71d86cd027062c4da0796c2493ae94fe" origin="Generated by Gradle"/>
@@ -4463,12 +4517,6 @@
          <artifact name="junit-jupiter-engine-5.9.2.jar">
             <md5 value="fa19af0ae35359fe2a20bbe7789da353" origin="Generated by Gradle"/>
             <sha256 value="74cfc49388f760413ff348ca2c9ab39527484b57deecd157f2275a5f8a5fe971" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
-      <component group="org.junit.jupiter" name="junit-jupiter-params" version="5.10.0">
-         <artifact name="junit-jupiter-params-5.10.0.jar">
-            <md5 value="f005062186389c756ce58cb380190cc4" origin="Generated by Gradle"/>
-            <sha256 value="f259a7322cce375430c2236a2dcb24d4a49d22045b723ad85af88e11704391c2" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.junit.jupiter" name="junit-jupiter-params" version="5.10.1">
@@ -4483,12 +4531,6 @@
             <sha256 value="ffa95e7d2180aa5c5f14df2e710cbb71bc479b47e3ac5a95be71e932e9d8bba7" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.junit.platform" name="junit-platform-commons" version="1.10.0">
-         <artifact name="junit-platform-commons-1.10.0.jar">
-            <md5 value="0cef49daddba2084397f34eca55502f9" origin="Generated by Gradle"/>
-            <sha256 value="6083db08ca11fca1e16099d0dcfede0193d80b3762b276349d80d3da536791b2" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="org.junit.platform" name="junit-platform-commons" version="1.10.1">
          <artifact name="junit-platform-commons-1.10.1.jar">
             <md5 value="cd430f3f7345c0888f8408ce8795c751" origin="Generated by Gradle"/>
@@ -4499,12 +4541,6 @@
          <artifact name="junit-platform-commons-1.9.2.jar">
             <md5 value="ea08de66492717980f9c33e15d243577" origin="Generated by Gradle"/>
             <sha256 value="624a3d745ef1d28e955a6a67af8edba0fdfc5c9bad680a73f67a70bb950a683d" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
-      <component group="org.junit.platform" name="junit-platform-engine" version="1.10.0">
-         <artifact name="junit-platform-engine-1.10.0.jar">
-            <md5 value="a383ac183081fe771888842534e77e62" origin="Generated by Gradle"/>
-            <sha256 value="cd338efd02ee73966ea754e0c0c71e1a11f4af5db9c2003e4b6137e119155abe" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.junit.platform" name="junit-platform-engine" version="1.10.1">
@@ -4519,12 +4555,6 @@
             <sha256 value="25f23dc535a091e9dc80c008faf29dcb92be902e6911f77a736fbaf019908367" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.junit.platform" name="junit-platform-launcher" version="1.10.0">
-         <artifact name="junit-platform-launcher-1.10.0.jar">
-            <md5 value="ec357e6d7d3c5aafdca114aec83f1790" origin="Generated by Gradle"/>
-            <sha256 value="8c60b661ac170701a635dfc67565efbb8c85b5c5cdd5a4a9576e3a015c7111a4" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="org.junit.platform" name="junit-platform-launcher" version="1.10.1">
          <artifact name="junit-platform-launcher-1.10.1.jar">
             <md5 value="48761921601bb4bec86cff7ecfd0fef2" origin="Generated by Gradle"/>
@@ -4537,28 +4567,28 @@
             <sha256 value="eef139eb09c98e9cdd358b6ce4c6cdd59b30c6a88096e369c33ba96e67edf0e4" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.junit.platform" name="junit-platform-runner" version="1.10.0">
-         <artifact name="junit-platform-runner-1.10.0.jar">
-            <md5 value="d3ee0a4491bcfa3aaef59fb0e89da18b" origin="Generated by Gradle"/>
-            <sha256 value="8bc9c0c41bc8a5215fb7304d3b213ef1817abb2b97b0f1007191a9276a19091d" origin="Generated by Gradle"/>
+      <component group="org.junit.platform" name="junit-platform-runner" version="1.10.1">
+         <artifact name="junit-platform-runner-1.10.1.jar">
+            <md5 value="89a51e532d5678850ac7f92057d919fb" origin="Generated by Gradle"/>
+            <sha256 value="f0fed60684f4c7497248d140df8066ddef78846e53fc4ec003a99973e987b7f5" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.junit.platform" name="junit-platform-suite-api" version="1.10.0">
-         <artifact name="junit-platform-suite-api-1.10.0.jar">
-            <md5 value="7fc1c589754da082f208f8f240000792" origin="Generated by Gradle"/>
-            <sha256 value="29375380c304d96c93466dd2d21e7a0692381689a0a2205e3c0d1961638beaf3" origin="Generated by Gradle"/>
+      <component group="org.junit.platform" name="junit-platform-suite-api" version="1.10.1">
+         <artifact name="junit-platform-suite-api-1.10.1.jar">
+            <md5 value="e13a99d143ace36468659c32b3a02f4e" origin="Generated by Gradle"/>
+            <sha256 value="b025bac64da625da2c494fa7678cfbaf8259cbad492904c0a03f968b96f84402" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.junit.platform" name="junit-platform-suite-commons" version="1.10.0">
-         <artifact name="junit-platform-suite-commons-1.10.0.jar">
-            <md5 value="7e1b4ab2643a4003eb8378581312ffc3" origin="Generated by Gradle"/>
-            <sha256 value="01eb735855dc0d9d24d7219c84c4d4bf8751a126101e56948f792b27289f676b" origin="Generated by Gradle"/>
+      <component group="org.junit.platform" name="junit-platform-suite-commons" version="1.10.1">
+         <artifact name="junit-platform-suite-commons-1.10.1.jar">
+            <md5 value="4730e83c3b19c58238a9ae5b98b6dd4c" origin="Generated by Gradle"/>
+            <sha256 value="c6931dea135b204388c1f8b925d2d6494a34d010630481f1d4ed9430419db6c0" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.junit.vintage" name="junit-vintage-engine" version="5.10.0">
-         <artifact name="junit-vintage-engine-5.10.0.jar">
-            <md5 value="ff0ab1be3b14c837ca3d5d71defce409" origin="Generated by Gradle"/>
-            <sha256 value="6cb4d98b2f37ad78d28bbee4864869a110d278d9684445bde243de01148d8e8a" origin="Generated by Gradle"/>
+      <component group="org.junit.vintage" name="junit-vintage-engine" version="5.10.1">
+         <artifact name="junit-vintage-engine-5.10.1.jar">
+            <md5 value="41ca5da6c302cadb487c4a6e0b9e12b8" origin="Generated by Gradle"/>
+            <sha256 value="96385222c8a415ffe8a2362e73eb2516a7e262f85b10387c6e990a56765604d5" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.jvnet.staxex" name="stax-ex" version="1.8.1">
@@ -4585,36 +4615,18 @@
             <sha256 value="56df2cd46e45e8e8069fcc89bfcde1767cbbb6430d0e60ecbd13404a4e967963" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.mozilla" name="jsshell" version="2023-12-08-21-57-22-mozilla-central">
-         <artifact name="jsshell-2023-12-08-21-57-22-mozilla-central-linux-x86_64.zip">
-            <md5 value="151c9f38b3db029ed6d58995a836aa96" origin="Generated by Gradle"/>
-            <sha256 value="82466f1d8a4435c374659457d207930da92086184b02cbddf142f5c23aaec488" origin="Generated by Gradle"/>
+      <component group="org.mozilla" name="jsshell" version="2024-03-26-09-52-07-mozilla-central">
+         <artifact name="jsshell-2024-03-26-09-52-07-mozilla-central-linux-x86_64.zip">
+            <md5 value="71ca3d6876d7b3b5f995d77bf9a3ece1" origin="Generated by Gradle"/>
+            <sha256 value="8ec5886fc2557808bf3720eafded38dbc4588121a21d0746e2bb13e0dbe8696f" origin="Generated by Gradle"/>
          </artifact>
-         <artifact name="jsshell-2023-12-08-21-57-22-mozilla-central-mac.zip">
-            <md5 value="d66e9a36eee00c40a9ddfa8ecf1c7cfe" origin="Generated by Gradle"/>
-            <sha256 value="54550140f1046773a1b10d14f7bed3976f9e5c5f672f7ae92e4e7e83788bff03" origin="Generated by Gradle"/>
+         <artifact name="jsshell-2024-03-26-09-52-07-mozilla-central-mac.zip">
+            <md5 value="48e1d437ffe95926e58c325a57ee05db" origin="Generated by Gradle"/>
+            <sha256 value="60edf738881ab59c89eb2d7a529e8be3be0a061911026fd9e5f8226372a2dd1d" origin="Generated by Gradle"/>
          </artifact>
-         <artifact name="jsshell-2023-12-08-21-57-22-mozilla-central-win64.zip">
-            <md5 value="c18206096f686164250f75510cb90509" origin="Generated by Gradle"/>
-            <sha256 value="ff0ab6f416a8c79ad31ce4c0b8a0b21a0ad8b50c6c25c56a9627f9c7ddbcce12" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
-      <component group="org.nodejs" name="node" version="20.2.0">
-         <artifact name="node-20.2.0-darwin-arm64.tar.gz">
-            <md5 value="fc1bf8dac08592c584650d0a42eb180c" origin="Generated by Gradle"/>
-            <sha256 value="8dd23fb204b2c239239085761ccae232c5cdc129f633489598a8759248e5f063" origin="Generated by Gradle"/>
-         </artifact>
-         <artifact name="node-20.2.0-darwin-x64.tar.gz">
-            <md5 value="a4e546ac1f3697b1f5a43e264fd0d31c" origin="Generated by Gradle"/>
-            <sha256 value="d92bc1e96b2458595f41f5e75749ad4d2b1dd8e96b5ebc34cf5a45ab21797cb3" origin="Generated by Gradle"/>
-         </artifact>
-         <artifact name="node-20.2.0-linux-x64.tar.gz">
-            <md5 value="1355ed671071ec015066089d8df416ff" origin="Generated by Gradle"/>
-            <sha256 value="cb0eff87d37f0df1dcd176a58b9ed0be3b5c08a02fe133a5dffd11dcae29626b" origin="Generated by Gradle"/>
-         </artifact>
-         <artifact name="node-20.2.0-win-x64.zip">
-            <md5 value="35dad006b492da89ff60efb10706144f" origin="Generated by Gradle"/>
-            <sha256 value="eda20d37da0c6629414121dc70c639944e0cfce37f0c5351a9c3141bdb80a4ff" origin="Generated by Gradle"/>
+         <artifact name="jsshell-2024-03-26-09-52-07-mozilla-central-win64.zip">
+            <md5 value="3de382e6dd7299590f28731fd0d9bb3f" origin="Generated by Gradle"/>
+            <sha256 value="4cad1dec3e7b298de7dae641cebd0d18bede9e25109eba20c0a4df458b7aadaa" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.nodejs" name="node" version="21.0.0-v8-canary20231019bd785be450">
@@ -4633,6 +4645,24 @@
          <artifact name="node-21.0.0-v8-canary20231019bd785be450-win-x64.zip">
             <md5 value="1139f0dc5c178f96e95ae82849340c4c" origin="Generated by Gradle"/>
             <sha256 value="7216fcebb2e5500b3e390bc4d7de2470cacce2772219811587adbb32d9b62716" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="org.nodejs" name="node" version="22.0.0">
+         <artifact name="node-22.0.0-darwin-arm64.tar.gz">
+            <md5 value="dbff45950b9faa9b7808806002a0ca34" origin="Generated by Gradle"/>
+            <sha256 value="ea96d349cfaa67aa87ceeaa3e5b52c9167f7ac302fd8d1ff162d0785e9dc0785" origin="Generated by Gradle"/>
+         </artifact>
+         <artifact name="node-22.0.0-darwin-x64.tar.gz">
+            <md5 value="7198e25922062b9154cd02f39da7ac46" origin="Generated by Gradle"/>
+            <sha256 value="422a3887ff5418f0a4552d89cf99346ab8ab51bb5d384660baa88b8444d2c111" origin="Generated by Gradle"/>
+         </artifact>
+         <artifact name="node-22.0.0-linux-x64.tar.gz">
+            <md5 value="0d4af228415b57c21a5c053cd5363e3c" origin="Generated by Gradle"/>
+            <sha256 value="74bb0f3a80307c529421c3ed84517b8f543867709f41e53cd73df99e6442af4d" origin="Generated by Gradle"/>
+         </artifact>
+         <artifact name="node-22.0.0-win-x64.zip">
+            <md5 value="02670f9dbbfa4d01a9dc2d87594aeb8f" origin="Generated by Gradle"/>
+            <sha256 value="32d639b47d4c0a651ff8f8d7d41a454168a3d4045be37985f9a810cf8cef6174" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.openjdk.jmh" name="jmh-core" version="1.21">
@@ -4713,16 +4743,16 @@
             <sha256 value="39d0e2b3dc45af65a09b097945750a94a126e052e124f93468443a1d0e15f381" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.ow2.asm" name="asm-analysis" version="9.2">
-         <artifact name="asm-analysis-9.2.jar">
-            <md5 value="e62aa59de96ae29c690c3521ea4b6359" origin="Generated by Gradle"/>
-            <sha256 value="878fbe521731c072d14d2d65b983b1beae6ad06fda0007b6a8bae81f73f433c4" origin="Generated by Gradle"/>
+      <component group="org.ow2.asm" name="asm" version="9.6">
+         <artifact name="asm-9.6.jar">
+            <md5 value="6f8bccf756f170d4185bb24c8c2d2020" origin="Generated by Gradle"/>
+            <sha256 value="3c6fac2424db3d4a853b669f4e3d1d9c3c552235e19a319673f887083c2303a1" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.ow2.asm" name="asm-analysis" version="9.4">
-         <artifact name="asm-analysis-9.4.jar">
-            <md5 value="707cb3616c99af872dcdd00801723600" origin="Generated by Gradle"/>
-            <sha256 value="7b5f8c5e3bf341b5bb570d26f379e3fdebdc32732187159c42479164053f373d" origin="Generated by Gradle"/>
+      <component group="org.ow2.asm" name="asm-analysis" version="9.6">
+         <artifact name="asm-analysis-9.6.jar">
+            <md5 value="31c84ef7cc893fb278952ae2d6a2674f" origin="Generated by Gradle"/>
+            <sha256 value="d92832d7c37edc07c60e2559ac6118b31d642e337a6671edcb7ba9fae68edbbb" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.ow2.asm" name="asm-commons" version="6.0">
@@ -4731,16 +4761,16 @@
             <sha256 value="f1bce5c648a96a017bdcd01fe5d59af9845297fd7b79b81c015a6fbbd9719abf" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.ow2.asm" name="asm-commons" version="9.2">
-         <artifact name="asm-commons-9.2.jar">
-            <md5 value="3eb09775e1076eb0a085a4592faebc2a" origin="Generated by Gradle"/>
-            <sha256 value="be4ce53138a238bb522cd781cf91f3ba5ce2f6ca93ec62d46a162a127225e0a6" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
       <component group="org.ow2.asm" name="asm-commons" version="9.4">
          <artifact name="asm-commons-9.4.jar">
             <md5 value="bf0034c3d79a244121380da0308c5ec8" origin="Generated by Gradle"/>
             <sha256 value="0c128a9ec3f33c98959272f6d16cf14247b508f58951574bcdbd2b56d6326364" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="org.ow2.asm" name="asm-commons" version="9.6">
+         <artifact name="asm-commons-9.6.jar">
+            <md5 value="9e317c75534bd1da8c00a67c618ab288" origin="Generated by Gradle"/>
+            <sha256 value="7aefd0d5c0901701c69f7513feda765fb6be33af2ce7aa17c5781fc87657c511" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.ow2.asm" name="asm-tree" version="6.0">
@@ -4761,16 +4791,16 @@
             <sha256 value="c42d479cf24566a21eb20af7eeaeef4e86bdb4a886306cf72f483b65e75b2acf" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.ow2.asm" name="asm-util" version="9.2">
-         <artifact name="asm-util-9.2.jar">
-            <md5 value="8562ac2619220b948cef931285b1e13b" origin="Generated by Gradle"/>
-            <sha256 value="ff5b3cd331ae8a9a804768280da98f50f424fef23dd3c788bb320e08c94ee598" origin="Generated by Gradle"/>
+      <component group="org.ow2.asm" name="asm-tree" version="9.6">
+         <artifact name="asm-tree-9.6.jar">
+            <md5 value="6062608f1a98afe1e853d01fa1221a9e" origin="Generated by Gradle"/>
+            <sha256 value="c43ecf17b539c777e15da7b5b86553b377e2d39a683de6285567d5283888e7ef" origin="Generated by Gradle"/>
          </artifact>
       </component>
-      <component group="org.ow2.asm" name="asm-util" version="9.4">
-         <artifact name="asm-util-9.4.jar">
-            <md5 value="3e671d779360f8053109ab99ee169915" origin="Generated by Gradle"/>
-            <sha256 value="3d7932b93ff55056641e7cfb601f96bcd5cd071e1b0503c78a5014232297a23e" origin="Generated by Gradle"/>
+      <component group="org.ow2.asm" name="asm-util" version="9.6">
+         <artifact name="asm-util-9.6.jar">
+            <md5 value="bd3bc1c176a787373e9a031073c9574b" origin="Generated by Gradle"/>
+            <sha256 value="c635a7402f4aa9bf66b2f4230cea62025a0fe1cd63e8729adefc9b1994fac4c3" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.projectlombok" name="lombok" version="1.18.16">
@@ -4783,12 +4813,6 @@
          <artifact name="reflections-0.10.2.jar">
             <md5 value="1d0070839d825f57fe6f4d8e2a82989b" origin="Generated by Gradle"/>
             <sha256 value="938a2d08fe54050d7610b944d8ddc3a09355710d9e6be0aac838dbc04e9a2825" origin="Generated by Gradle"/>
-         </artifact>
-      </component>
-      <component group="org.reflections" name="reflections" version="0.9.12">
-         <artifact name="reflections-0.9.12.jar">
-            <md5 value="59386d63f168cbabb61cdece9fdd55a6" origin="Generated by Gradle"/>
-            <sha256 value="d168f58d32f2ae7ac5a8d5d9092adeee526c604b41125dcb45eea877960a99cf" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="org.robolectric" name="android-all" version="5.0.2_r3-robolectric-r0">
@@ -4995,6 +5019,12 @@
          <artifact name="xercesImpl-2.12.0.jar">
             <md5 value="b89632b53c4939a2982bcb52806f6dec" origin="Generated by Gradle"/>
             <sha256 value="b50d3a4ca502faa4d1c838acb8aa9480446953421f7327e338c5dda3da5e76d0" origin="Generated by Gradle"/>
+         </artifact>
+      </component>
+      <component group="xerces" name="xercesImpl" version="2.12.2">
+         <artifact name="xercesImpl-2.12.2.jar">
+            <md5 value="40e4f2d5aacfbf51a9a1572d77a0e5e9" origin="Generated by Gradle"/>
+            <sha256 value="6fc991829af1708d15aea50c66f0beadcd2cfeb6968e0b2f55c1b0909883fe16" origin="Generated by Gradle"/>
          </artifact>
       </component>
       <component group="xerces" name="xmlParserAPIs" version="2.6.2">

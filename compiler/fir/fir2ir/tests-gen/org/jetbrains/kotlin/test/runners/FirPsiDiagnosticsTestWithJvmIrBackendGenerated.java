@@ -61,6 +61,12 @@ public class FirPsiDiagnosticsTestWithJvmIrBackendGenerated extends AbstractFirP
   }
 
   @Test
+  @TestMetadata("nothingToOverrideWithRawParameter.kt")
+  public void testNothingToOverrideWithRawParameter() {
+    runTest("compiler/testData/diagnostics/testsWithJvmBackend/nothingToOverrideWithRawParameter.kt");
+  }
+
+  @Test
   @TestMetadata("propertyInlineCycle.kt")
   public void testPropertyInlineCycle() {
     runTest("compiler/testData/diagnostics/testsWithJvmBackend/propertyInlineCycle.kt");
@@ -548,6 +554,36 @@ public class FirPsiDiagnosticsTestWithJvmIrBackendGenerated extends AbstractFirP
       @TestMetadata("charAtAndOverload.kt")
       public void testCharAtAndOverload() {
         runTest("compiler/testData/diagnostics/testsWithJvmBackend/duplicateJvmSignature/javaInterop/charAtAndOverload.kt");
+      }
+
+      @Test
+      @TestMetadata("charAtAndOverloadWithAbstractGet.kt")
+      public void testCharAtAndOverloadWithAbstractGet() {
+        runTest("compiler/testData/diagnostics/testsWithJvmBackend/duplicateJvmSignature/javaInterop/charAtAndOverloadWithAbstractGet.kt");
+      }
+
+      @Test
+      @TestMetadata("charAtAndOverloadWithAbstractGetAndProxy.kt")
+      public void testCharAtAndOverloadWithAbstractGetAndProxy() {
+        runTest("compiler/testData/diagnostics/testsWithJvmBackend/duplicateJvmSignature/javaInterop/charAtAndOverloadWithAbstractGetAndProxy.kt");
+      }
+
+      @Test
+      @TestMetadata("charAtAndOverloadWithAbstractGetOpenCharAt.kt")
+      public void testCharAtAndOverloadWithAbstractGetOpenCharAt() {
+        runTest("compiler/testData/diagnostics/testsWithJvmBackend/duplicateJvmSignature/javaInterop/charAtAndOverloadWithAbstractGetOpenCharAt.kt");
+      }
+
+      @Test
+      @TestMetadata("charAtAndOverloadWithFinalGet.kt")
+      public void testCharAtAndOverloadWithFinalGet() {
+        runTest("compiler/testData/diagnostics/testsWithJvmBackend/duplicateJvmSignature/javaInterop/charAtAndOverloadWithFinalGet.kt");
+      }
+
+      @Test
+      @TestMetadata("charAtFinalAndOverload.kt")
+      public void testCharAtFinalAndOverload() {
+        runTest("compiler/testData/diagnostics/testsWithJvmBackend/duplicateJvmSignature/javaInterop/charAtFinalAndOverload.kt");
       }
 
       @Test

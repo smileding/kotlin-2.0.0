@@ -305,6 +305,12 @@ public class FirJsES6BoxTestGenerated extends AbstractFirJsES6BoxTest {
     }
 
     @Test
+    @TestMetadata("contextDependentClassObjectTwoNames.kt")
+    public void testContextDependentClassObjectTwoNames() {
+      runTest("js/js.translator/testData/box/classObject/contextDependentClassObjectTwoNames.kt");
+    }
+
+    @Test
     @TestMetadata("defaultObjectSameNamesAsInOuter.kt")
     public void testDefaultObjectSameNamesAsInOuter() {
       runTest("js/js.translator/testData/box/classObject/defaultObjectSameNamesAsInOuter.kt");
@@ -1745,6 +1751,18 @@ public class FirJsES6BoxTestGenerated extends AbstractFirJsES6BoxTest {
     }
 
     @Test
+    @TestMetadata("deserializedDynamicWithAnnotatedBounds.kt")
+    public void testDeserializedDynamicWithAnnotatedBounds() {
+      runTest("js/js.translator/testData/box/dynamic/deserializedDynamicWithAnnotatedBounds.kt");
+    }
+
+    @Test
+    @TestMetadata("dynamicArrayInc.kt")
+    public void testDynamicArrayInc() {
+      runTest("js/js.translator/testData/box/dynamic/dynamicArrayInc.kt");
+    }
+
+    @Test
     @TestMetadata("dynamicArraySetWithLambda.kt")
     public void testDynamicArraySetWithLambda() {
       runTest("js/js.translator/testData/box/dynamic/dynamicArraySetWithLambda.kt");
@@ -2618,6 +2636,12 @@ public class FirJsES6BoxTestGenerated extends AbstractFirJsES6BoxTest {
       }
 
       @Test
+      @TestMetadata("packages.kt")
+      public void testPackages() {
+        runTest("js/js.translator/testData/box/esModules/jsExport/packages.kt");
+      }
+
+      @Test
       @TestMetadata("perFileExportedApi.kt")
       public void testPerFileExportedApi() {
         runTest("js/js.translator/testData/box/esModules/jsExport/perFileExportedApi.kt");
@@ -3194,6 +3218,12 @@ public class FirJsES6BoxTestGenerated extends AbstractFirJsES6BoxTest {
     @TestMetadata("exportProtectedMembers.kt")
     public void testExportProtectedMembers() {
       runTest("js/js.translator/testData/box/export/exportProtectedMembers.kt");
+    }
+
+    @Test
+    @TestMetadata("exportWithJsStatic.kt")
+    public void testExportWithJsStatic() {
+      runTest("js/js.translator/testData/box/export/exportWithJsStatic.kt");
     }
 
     @Test
@@ -9296,6 +9326,12 @@ public class FirJsES6BoxTestGenerated extends AbstractFirJsES6BoxTest {
     @TestMetadata("contextDependentObjectName.kt")
     public void testContextDependentObjectName() {
       runTest("js/js.translator/testData/box/objectDeclaration/contextDependentObjectName.kt");
+    }
+
+    @Test
+    @TestMetadata("contextDependentObjectTwoNames.kt")
+    public void testContextDependentObjectTwoNames() {
+      runTest("js/js.translator/testData/box/objectDeclaration/contextDependentObjectTwoNames.kt");
     }
 
     @Test

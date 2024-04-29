@@ -9,12 +9,13 @@ import org.jetbrains.kotlin.backend.common.ClassLoweringPass
 import org.jetbrains.kotlin.backend.common.lower.SpecialMethodWithDefaultInfo
 import org.jetbrains.kotlin.backend.common.lower.createIrBuilder
 import org.jetbrains.kotlin.backend.common.lower.irNot
-import org.jetbrains.kotlin.backend.common.phaser.makeIrFilePhase
+import org.jetbrains.kotlin.backend.common.phaser.PhaseDescription
 import org.jetbrains.kotlin.backend.jvm.JvmBackendContext
 import org.jetbrains.kotlin.backend.jvm.JvmLoweredDeclarationOrigin
 import org.jetbrains.kotlin.backend.jvm.MemoizedMultiFieldValueClassReplacements
 import org.jetbrains.kotlin.backend.jvm.SpecialBridge
 import org.jetbrains.kotlin.backend.jvm.ir.*
+import org.jetbrains.kotlin.backend.jvm.mapping.MethodSignatureMapper
 import org.jetbrains.kotlin.codegen.AsmUtil
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
@@ -109,13 +110,11 @@ import org.jetbrains.org.objectweb.asm.commons.Method
  * the same signature already exists in a superclass. We only diverge from this idea to match the behavior of
  * the JVM backend in a few corner cases.
  */
-internal val bridgePhase = makeIrFilePhase(
-    ::BridgeLowering,
+@PhaseDescription(
     name = "Bridge",
     description = "Generate bridges",
-    prerequisite = setOf(jvmInlineClassPhase, inheritedDefaultMethodsOnClassesPhase)
+    prerequisite = [JvmInlineClassLowering::class, InheritedDefaultMethodsOnClassesLowering::class]
 )
-
 internal class BridgeLowering(val context: JvmBackendContext) : ClassLoweringPass {
     // Represents a synthetic bridge to `overridden` with a precomputed signature
     private class Bridge(
@@ -140,7 +139,7 @@ internal class BridgeLowering(val context: JvmBackendContext) : ClassLoweringPas
             // We should rewrite this static replacement as well ('remove' function itself is handled during special bridge processing).
             val remove = irClass.functions.find {
                 val original = context.inlineClassReplacements.originalFunctionForStaticReplacement[it]
-                original != null && context.defaultMethodSignatureMapper.shouldBoxSingleValueParameterForSpecialCaseOfRemove(original)
+                original != null && MethodSignatureMapper.shouldBoxSingleValueParameterForSpecialCaseOfRemove(original)
             }
             if (remove != null) {
                 remove.valueParameters.last().let {
@@ -492,7 +491,7 @@ internal class BridgeLowering(val context: JvmBackendContext) : ClassLoweringPas
                 overriddenSymbols = listOf(specialBridge.overridden.symbol)
             }
 
-            if (context.defaultMethodSignatureMapper.shouldBoxSingleValueParameterForSpecialCaseOfRemove(this)) {
+            if (MethodSignatureMapper.shouldBoxSingleValueParameterForSpecialCaseOfRemove(this)) {
                 valueParameters.last().let {
                     it.type = it.type.makeNullable()
                 }

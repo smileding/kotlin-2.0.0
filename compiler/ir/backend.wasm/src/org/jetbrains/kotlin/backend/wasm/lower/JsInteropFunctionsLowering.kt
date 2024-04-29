@@ -31,8 +31,6 @@ import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
-import org.jetbrains.kotlin.js.config.JSConfigurationKeys
-import org.jetbrains.kotlin.js.config.WasmTarget
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.util.OperatorNameConventions
@@ -337,7 +335,7 @@ class JsInteropFunctionsLowering(val context: WasmBackendContext) : DeclarationT
         notNullType: IrType,
         isPrimitiveOrUnsigned: Boolean,
         valueAdapter: InteropTypeAdapter?
-    ): InteropTypeAdapter? {
+    ): InteropTypeAdapter {
         return if (isPrimitiveOrUnsigned) { //nullable primitive should be checked and adapt to target type
             val externRefToPrimitiveAdapter = when (notNullType) {
                 builtIns.floatType -> adapters.externRefToKotlinFloatAdapter.owner
@@ -519,12 +517,15 @@ class JsInteropFunctionsLowering(val context: WasmBackendContext) : DeclarationT
         // TODO: Cache created JS closures
         val arity = info.parametersAdapters.size
         val jsCode = buildString {
-            append("(f) => (")
+            append("(f) => ")
+            append("getCachedJsObject(f, ")
+            append("(")
             appendParameterList(arity)
             append(") => wasmExports[")
             append("$CALL_FUNCTION${info.signatureString}".toJsStringLiteral())
             append("](f, ")
             appendParameterList(arity)
+            append(")")
             append(")")
         }
 

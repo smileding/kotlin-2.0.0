@@ -17,19 +17,22 @@ import org.jetbrains.kotlin.fir.backend.Fir2IrComponents
 import org.jetbrains.kotlin.fir.backend.Fir2IrConversionScope
 import org.jetbrains.kotlin.fir.backend.Fir2IrExtensions
 import org.jetbrains.kotlin.fir.backend.InjectedValue
-import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
-import org.jetbrains.kotlin.fir.declarations.FirProperty
+import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.references.FirReference
 import org.jetbrains.kotlin.ir.IrBuiltIns
+import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.declarations.impl.IrExternalPackageFragmentImpl
 import org.jetbrains.kotlin.ir.declarations.impl.IrFactoryImpl
+import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
+import org.jetbrains.kotlin.ir.expressions.impl.IrConstructorCallImpl
 import org.jetbrains.kotlin.ir.overrides.IrExternalOverridabilityCondition
 import org.jetbrains.kotlin.ir.symbols.impl.DescriptorlessExternalPackageFragmentSymbol
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.load.java.JvmAnnotationNames
 import org.jetbrains.kotlin.load.kotlin.FacadeClassSource
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.resolve.jvm.JvmClassName
 
 class JvmFir2IrExtensions(
@@ -52,11 +55,18 @@ class JvmFir2IrExtensions(
 
     private val specialAnnotationConstructors = mutableListOf<IrConstructor>()
 
-    private val rawTypeAnnotationClass =
-        createSpecialAnnotationClass(JvmSymbols.RAW_TYPE_ANNOTATION_FQ_NAME, kotlinIrInternalPackage)
+    private val rawTypeAnnotationClassConstructor: IrConstructor =
+        createSpecialAnnotationClass(JvmSymbols.RAW_TYPE_ANNOTATION_FQ_NAME, kotlinIrInternalPackage).constructors.single()
 
-    override val rawTypeAnnotationConstructor: IrConstructor =
-        rawTypeAnnotationClass.constructors.single()
+    override fun generateRawTypeAnnotationCall(): IrConstructorCall =
+        rawTypeAnnotationClassConstructor.let {
+            IrConstructorCallImpl.fromSymbolOwner(
+                UNDEFINED_OFFSET,
+                UNDEFINED_OFFSET,
+                it.constructedClassType,
+                it.symbol
+            )
+        }
 
     init {
         createSpecialAnnotationClass(JvmAnnotationNames.ENHANCED_NULLABILITY_ANNOTATION, kotlinJvmInternalPackage)
@@ -105,4 +115,8 @@ class JvmFir2IrExtensions(
 
     override fun hasBackingField(property: FirProperty, session: FirSession): Boolean =
         property.origin is FirDeclarationOrigin.Java || Fir2IrExtensions.Default.hasBackingField(property, session)
+
+    override fun isTrueStatic(declaration: FirCallableDeclaration, session: FirSession): Boolean =
+        declaration.hasAnnotation(StandardClassIds.Annotations.jvmStatic, session) ||
+                (declaration as? FirPropertyAccessor)?.propertySymbol?.fir?.hasAnnotation(StandardClassIds.Annotations.jvmStatic, session) == true
 }

@@ -16,6 +16,7 @@
 
 package org.jetbrains.kotlin.psi
 
+import com.intellij.mock.MockProject
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
@@ -44,7 +45,7 @@ abstract class KtCodeFragment(
     }, false
 ), KtCodeFragmentBase {
     private var viewProvider = super.getViewProvider() as SingleRootFileViewProvider
-    private val importDirectiveStrings = LinkedHashSet<String>()
+    private var importDirectiveStrings = LinkedHashSet<String>()
 
     private val fakeContextForJavaFile: PsiElement? by lazy {
         this.getCopyableUserData(FAKE_CONTEXT_FOR_JAVA_FILE)?.invoke()
@@ -101,8 +102,7 @@ abstract class KtCodeFragment(
         return (cloneImpl(elementClone) as KtCodeFragment).apply {
             isPhysical = false
             myOriginalFile = this@KtCodeFragment
-            importDirectiveStrings.clear()
-            importDirectiveStrings.addAll(this@KtCodeFragment.importDirectiveStrings)
+            importDirectiveStrings = LinkedHashSet(this@KtCodeFragment.importDirectiveStrings)
             viewProvider = SingleRootFileViewProvider(
                 PsiManager.getInstance(myProject),
                 LightVirtualFile(name, KotlinFileType.INSTANCE, text),
@@ -131,20 +131,24 @@ abstract class KtCodeFragment(
     }
 
     override fun addImportsFromString(imports: String?) {
+        val notifyChanged = viewProvider.isEventSystemEnabled && project !is MockProject
+
         if (imports != null && appendImports(imports)) {
-            // For K1: This forces the code fragment to be re-highlighted.
-            add(KtPsiFactory(project).createColon()).delete()
+            if (notifyChanged) {
+                // This forces the code fragment to be re-highlighted
+                add(KtPsiFactory(project).createColon()).delete()
+            }
 
             // Increment the modification stamp
             clearCaches()
 
-            if (viewProvider.isEventSystemEnabled) {
+            if (notifyChanged) {
                 project.messageBus.syncPublisher(IMPORT_MODIFICATION).onCodeFragmentImportsModification(this)
             }
         }
     }
 
-    @Deprecated("Use 'addImportsFromString()' instead", ReplaceWith("addImportsFromString(import)"), level = DeprecationLevel.WARNING)
+    @Deprecated("Use 'addImportsFromString()w' instead", ReplaceWith("addImportsFromString(import)"), level = DeprecationLevel.WARNING)
     fun addImport(import: String) {
         addImportsFromString(import)
     }

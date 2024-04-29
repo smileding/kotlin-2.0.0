@@ -24,7 +24,7 @@ FILE fqName:<root> fileName:/kt35550.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY DELEGATED_MEMBER name:id visibility:public modality:OPEN [val]
       overridden:
-        public open id: T of <root>.I.<get-id>
+        public open id: T of <root>.I.<get-id> declared in <root>.I
       FUN DELEGATED_MEMBER name:<get-id> visibility:public modality:OPEN <T> ($this:<root>.A, $receiver:T of <root>.A.<get-id>) returnType:T of <root>.A.<get-id>
         correspondingProperty: PROPERTY DELEGATED_MEMBER name:id visibility:public modality:OPEN [val]
         overridden:
@@ -36,7 +36,7 @@ FILE fqName:<root> fileName:/kt35550.kt
           RETURN type=kotlin.Nothing from='public open fun <get-id> <T> (): T of <root>.A.<get-id> declared in <root>.A'
             CALL 'public open fun <get-id> <T> (): T of <root>.I.<get-id> declared in <root>.I' type=T of <root>.A.<get-id> origin=null
               <T>: T of <root>.A.<get-id>
-              $this: GET_FIELD 'FIELD DELEGATE name:$$delegate_0 type:<root>.I visibility:private [final]' type=<root>.I origin=null
+              $this: GET_FIELD 'FIELD DELEGATE name:$$delegate_0 type:<root>.I visibility:private [final] declared in <root>.A' type=<root>.I origin=null
                 receiver: GET_VAR '<this>: <root>.A declared in <root>.A.<get-id>' type=<root>.A origin=null
               $receiver: GET_VAR '<this>: T of <root>.A.<get-id> declared in <root>.A.<get-id>' type=T of <root>.A.<get-id> origin=null
   CLASS INTERFACE name:I modality:ABSTRACT visibility:public superTypes:[kotlin.Any]

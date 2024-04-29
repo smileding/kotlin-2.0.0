@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.fir.symbols
 
 import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.fir.FirAnnotationContainer
+import org.jetbrains.kotlin.fir.FirImplementationDetail
 import org.jetbrains.kotlin.fir.FirModuleData
 import org.jetbrains.kotlin.fir.declarations.FirDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
@@ -22,7 +23,7 @@ import org.jetbrains.kotlin.mpp.DeclarationSymbolMarker
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
 
-abstract class FirBasedSymbol<E : FirDeclaration> : DeclarationSymbolMarker {
+abstract class FirBasedSymbol<out E : FirDeclaration> : DeclarationSymbolMarker {
     private var _fir: E? = null
 
     @SymbolInternals
@@ -32,7 +33,8 @@ abstract class FirBasedSymbol<E : FirDeclaration> : DeclarationSymbolMarker {
                 withFirSymbolIdEntry("symbol", this@FirBasedSymbol)
             }
 
-    fun bind(e: E) {
+    @FirImplementationDetail
+    fun bind(e: @UnsafeVariance E) {
         _fir = e
     }
 

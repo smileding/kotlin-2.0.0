@@ -1,15 +1,186 @@
-// FIR_IDENTICAL
 // LANGUAGE: -JavaTypeParameterDefaultRepresentationWithDNN
-// ISSUE: KT-57014
+// RENDER_DIAGNOSTICS_FULL_TEXT
+// ISSUE: KT-57014, KT-66730
 // FULL_JDK
 // JVM_TARGET: 1.8
 
-import java.util.function.Supplier
+// FILE: MySupplier.java
+public interface MySupplier<T> {
+    T get();
+}
 
-fun main() {
-    val sam = Supplier<String> {
-        foo()
+// FILE: StringSupplier.java
+public interface StringSupplier {
+    String get();
+}
+
+// FILE: JavaTestValueProvider.java
+import org.jetbrains.annotations.Nullable;
+
+public class TestValueProvider {
+    @Nullable
+    static String getNullableString() {
+        return null;
     }
 }
 
-fun foo(): String? = null
+// FILE: test.kt
+import java.util.function.Supplier
+
+inline fun run(fn: () -> Unit) = fn()
+
+typealias StringAlias = String
+
+fun main() {
+    Supplier<String> {
+        returnNullableString()
+    }
+
+    Supplier<StringAlias> {
+        returnNullableString()
+    }
+
+    Supplier<String> {
+        TestValueProvider.getNullableString()
+    }
+
+    Supplier<String>  {
+        val x = 1
+        when(x) {
+            1 -> returnNullableString()
+            else -> ""
+        }
+    }
+
+    Supplier<String> {
+        if (true) return@Supplier returnNullableString()
+        run { return@Supplier returnNullableString() }
+        try {
+            if (true) return@Supplier returnNullableString()
+            2
+        } finally {
+            Unit
+        }
+        ""
+    }
+
+    val sam: Supplier<String> = Supplier {
+        <!TYPE_MISMATCH!>returnNullableString()<!>
+    }
+
+    Supplier<String?> {
+        returnNullableString()
+    }
+
+    Supplier<_> {
+        returnNullableString()
+    }
+
+    Supplier {
+        returnNullableString()
+    }
+
+    Supplier<String>(
+        fun(): String {
+            if (true) return <!TYPE_MISMATCH, TYPE_MISMATCH!>returnNullableString()<!>
+            return ""
+        }
+    )
+
+    Supplier<String>(
+        <!TYPE_MISMATCH!>fun(): String? {
+        if (true) return returnNullableString()
+        return ""
+    }<!>
+    )
+
+    Supplier<String> {
+        if (true) return@Supplier returnNullableString()
+        ""
+    }
+
+    object : Supplier<String> {
+        override fun get(): <!RETURN_TYPE_MISMATCH_ON_OVERRIDE!>String?<!> = returnNullableString()
+    }
+
+    object : Supplier<String> {
+        override fun <!RETURN_TYPE_MISMATCH_ON_OVERRIDE!>get<!>() = returnNullableString()
+    }
+
+    MySupplier<String> {
+        returnNullableString()
+    }
+
+    object : MySupplier<String> {
+        override fun get(): String? = returnNullableString()
+    }
+
+    object : MySupplier<String> {
+        override fun get() = returnNullableString()
+    }
+
+    StringSupplier {
+        returnNullableString()
+    }
+
+    object : StringSupplier {
+        override fun get(): String? = returnNullableString()
+    }
+
+    object : StringSupplier {
+        override fun get() = returnNullableString()
+    }
+}
+
+fun returnNullableString(): String? = null
+
+// FILE: edge-cases.kt
+import java.util.function.Supplier
+
+fun scopes () {
+    Supplier<String> {
+        <!TYPE_MISMATCH!>run {
+        returnNullableString()
+    }<!>
+    }
+
+    Supplier<String> {
+        <!TYPE_MISMATCH!>run {
+        return@run <!TYPE_MISMATCH, TYPE_MISMATCH!>returnNullableString()<!>
+    }<!>
+    }
+
+    Supplier<String> {
+        <!TYPE_MISMATCH!>run run@ {
+        return@run <!TYPE_MISMATCH, TYPE_MISMATCH!>returnNullableString()<!>
+    }<!>
+    }
+
+    Supplier<String> lambda@ {
+        <!TYPE_MISMATCH!>run {
+        return@lambda returnNullableString()
+    }<!>
+    }
+}
+
+fun <T: Number> test1(x: T) {
+    Supplier<T> {
+        x.foo()
+    }
+}
+
+fun <T> test2(x: T) where T: Any?, T: Comparable<T> {
+    Supplier<T> {
+        x.foo()
+    }
+}
+
+fun <T> T.foo(): T? = null!!
+
+fun <T> T.foo2(): T? = null!!
+
+fun test()  {
+    Supplier<String> {
+        returnNullableString().foo2()
+    }
+}

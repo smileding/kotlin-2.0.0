@@ -6,8 +6,7 @@
 package org.jetbrains.kotlin.backend.jvm.lower
 
 import org.jetbrains.kotlin.backend.common.FileLoweringPass
-import org.jetbrains.kotlin.backend.common.phaser.makeIrFilePhase
-import org.jetbrains.kotlin.backend.common.phaser.makeIrModulePhase
+import org.jetbrains.kotlin.backend.common.phaser.PhaseDescription
 import org.jetbrains.kotlin.backend.jvm.CachedFieldsForObjectInstances
 import org.jetbrains.kotlin.backend.jvm.JvmBackendContext
 import org.jetbrains.kotlin.backend.jvm.JvmLoweredDeclarationOrigin
@@ -27,26 +26,22 @@ import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
 import org.jetbrains.kotlin.resolve.annotations.JVM_STATIC_ANNOTATION_FQ_NAME
 
-internal val jvmStaticInObjectPhase = makeIrModulePhase(
-    ::JvmStaticInObjectLowering,
+@PhaseDescription(
     name = "JvmStaticInObject",
     description = "Make JvmStatic functions in non-companion objects static and replace all call sites in the module"
 )
-
-internal val jvmStaticInCompanionPhase = makeIrFilePhase(
-    ::JvmStaticInCompanionLowering,
-    name = "JvmStaticInCompanion",
-    description = "Synthesize static proxy functions for JvmStatic functions in companion objects"
-)
-
-private class JvmStaticInObjectLowering(val context: JvmBackendContext) : FileLoweringPass {
+internal class JvmStaticInObjectLowering(val context: JvmBackendContext) : FileLoweringPass {
     override fun lower(irFile: IrFile) =
         irFile.transformChildrenVoid(
             SingletonObjectJvmStaticTransformer(context.irBuiltIns, context.cachedDeclarations.fieldsForObjectInstances)
         )
 }
 
-private class JvmStaticInCompanionLowering(val context: JvmBackendContext) : FileLoweringPass {
+@PhaseDescription(
+    name = "JvmStaticInCompanion",
+    description = "Synthesize static proxy functions for JvmStatic functions in companion objects"
+)
+internal class JvmStaticInCompanionLowering(val context: JvmBackendContext) : FileLoweringPass {
     override fun lower(irFile: IrFile) =
         irFile.transformChildrenVoid(CompanionObjectJvmStaticTransformer(context))
 }

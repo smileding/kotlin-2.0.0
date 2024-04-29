@@ -2,8 +2,8 @@ import org.jetbrains.kotlin.tooling.core.KotlinToolingVersion
 
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
     `jvm-test-suite`
+    id("test-symlink-transformation")
 }
 
 dependencies {
@@ -67,6 +67,7 @@ fun SourceSet.configureCompatibilitySourceDirectories() {
 // just add a new test suit name here and that's it
 val businessLogicTestSuits = setOf(
     "testExample",
+    "testEscapableCharacters",
 )
 
 testing {
@@ -117,6 +118,12 @@ testing {
                 projectTest(taskName = testTask.name, jUnitMode = JUnitMode.JUnit5) {
                     systemProperty("kotlin.build-tools-api.log.level", "DEBUG")
                 }
+            }
+        }
+
+        named<JvmTestSuite>("testEscapableCharacters") {
+            configurations.named(sources.runtimeClasspathConfigurationName) {
+                testSymlinkTransformation.resolveAgainstSymlinkedArtifacts(this)
             }
         }
     }

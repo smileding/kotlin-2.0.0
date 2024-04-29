@@ -1,15 +1,3 @@
-FILE SYMBOL:
-KtFileSymbol:
-  annotationsList: []
-  origin: SOURCE
-  getContainingFileSymbol: null
-  getContainingModule: KtSourceModule "Sources of main"
-  deprecationStatus: null
-
-CALLABLE NAMES:
-[function, functionWithDefault, testVal, initializedVariable, unitializedVariable, lateinitVariable, variableWithBackingField, privateSetter, jvmNameOnSetter, customGetter, jvmNameOnGetter, propertyWithReceiver, propertyWithGenericReceiver, constant, jvmField]
-
-CALLABLE SYMBOLS:
 KtFunctionSymbol:
   annotationsList: []
   callableIdIfNonLocal: /function
@@ -27,6 +15,7 @@ KtFunctionSymbol:
   isOverride: false
   isStatic: false
   isSuspend: false
+  isTailRec: false
   modality: FINAL
   name: function
   origin: SOURCE
@@ -64,6 +53,7 @@ KtFunctionSymbol:
   isOverride: false
   isStatic: false
   isSuspend: false
+  isTailRec: false
   modality: FINAL
   name: functionWithDefault
   origin: SOURCE
@@ -1751,10 +1741,6 @@ KtKotlinPropertySymbol:
   javaSetterName: jvmField
   setterDeprecationStatus: null
 
-CLASSIFIER NAMES:
-[OuterClass]
-
-CLASSIFIER SYMBOLS:
 KtNamedClassOrObjectSymbol:
   annotationsList: []
   classIdIfNonLocal: OuterClass

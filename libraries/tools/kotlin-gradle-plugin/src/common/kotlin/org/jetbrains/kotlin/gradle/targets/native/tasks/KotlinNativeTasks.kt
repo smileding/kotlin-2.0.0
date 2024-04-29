@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilationInfo
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.CreateCompilerArgumentsContext
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.CreateCompilerArgumentsContext.Companion.create
+import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.asValidFrameworkName
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.plugin.statistics.NativeCompilerOptionMetrics
@@ -167,7 +168,7 @@ abstract class AbstractKotlinNativeCompile<
     override val libraries: ConfigurableFileCollection = objectFactory.fileCollection().from(
         {
             // Avoid resolving these dependencies during task graph construction when we can't build the target:
-            if (konanTarget.enabledOnCurrentHost)
+            if (konanTarget.enabledOnCurrentHostForKlibCompilation(project.kotlinPropertiesProvider))
                 objectFactory.fileCollection().from({ compilation.compileDependencyFiles })
             else objectFactory.fileCollection()
         }
@@ -301,9 +302,6 @@ internal constructor(
         else "${project.name}_${compilation.compilationName}"
     }
 
-    // Store as an explicit provider in order to allow Gradle Instant Execution to capture the state
-//    private val allSourceProvider = compilation.map { project.files(it.allSources).asFileTree }
-
     @Deprecated(
         message = "Please use 'compilerOptions.moduleName' to configure",
         replaceWith = ReplaceWith("compilerOptions.moduleName.get()")
@@ -326,15 +324,13 @@ internal constructor(
     }
 
     @Deprecated(
-        message = "This property as a konanHome will be squashed into one in future releases.",
-        replaceWith = ReplaceWith("kotlinNativeProvider.konanDataDir")
+        message = "This property will be removed in future releases. Don't use it in your code.",
     )
     @get:Internal
     val konanDataDir: Provider<String?> = kotlinNativeProvider.flatMap { it.konanDataDir }
 
     @Deprecated(
-        message = "This property as a konanDataDir will be squashed into one in future releases.",
-        replaceWith = ReplaceWith("kotlinNativeProvider.compilerDirectory")
+        message = "This property will be removed in future releases. Don't use it in your code.",
     )
     @get:Internal
     val konanHome: Provider<String> = kotlinNativeProvider.map { it.bundleDirectory.get().asFile.absolutePath }
@@ -1081,15 +1077,13 @@ abstract class CInteropProcess @Inject internal constructor(params: Params) :
     }
 
     @Deprecated(
-        message = "This property as a konanHome will be squashed into one in future releases.",
-        replaceWith = ReplaceWith("kotlinNativeProvider.konanDataDir")
+        message = "This property will be removed in future releases. Don't use it in your code.",
     )
     @get:Internal
     val konanDataDir: Provider<String?> = kotlinNativeProvider.flatMap { it.konanDataDir }
 
     @Deprecated(
-        message = "This property as a konanDataDir will be squashed into one in future releases.",
-        replaceWith = ReplaceWith("kotlinNativeProvider.compilerDirectory")
+        message = "This property will be removed in future releases. Don't use it in your code.",
     )
     @get:Internal
     val konanHome: Provider<String> = kotlinNativeProvider.map { it.bundleDirectory.get().asFile.absolutePath }

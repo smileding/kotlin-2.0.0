@@ -66,6 +66,7 @@ import org.jetbrains.kotlin.psi.KtNamedDeclaration
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtParameter
+import org.jetbrains.kotlin.psi.KtPrimaryConstructor
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
 import org.jetbrains.kotlin.psi.KtReturnExpression
@@ -357,6 +358,12 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
     interface MissingDependencyClassInLambdaParameter : KtFirDiagnostic<PsiElement> {
         override val diagnosticClass get() = MissingDependencyClassInLambdaParameter::class
         val type: KtType
+        val parameterName: Name
+    }
+
+    interface MissingDependencyClassInLambdaReceiver : KtFirDiagnostic<PsiElement> {
+        override val diagnosticClass get() = MissingDependencyClassInLambdaReceiver::class
+        val type: KtType
     }
 
     interface CreatingAnInstanceOfAbstractClass : KtFirDiagnostic<KtExpression> {
@@ -427,6 +434,10 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
         override val diagnosticClass get() = DeprecatedBinaryMod::class
         val forbiddenFunction: KtSymbol
         val suggestedFunction: String
+    }
+
+    interface SelfCallInNestedObjectConstructorError : KtFirDiagnostic<PsiElement> {
+        override val diagnosticClass get() = SelfCallInNestedObjectConstructorError::class
     }
 
     interface SuperIsNotAnExpression : KtFirDiagnostic<PsiElement> {
@@ -639,6 +650,30 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
         override val diagnosticClass get() = SealedClassConstructorCall::class
     }
 
+    interface DataClassConsistentCopyAndExposedCopyAreIncompatibleAnnotations : KtFirDiagnostic<KtAnnotationEntry> {
+        override val diagnosticClass get() = DataClassConsistentCopyAndExposedCopyAreIncompatibleAnnotations::class
+    }
+
+    interface DataClassConsistentCopyWrongAnnotationTarget : KtFirDiagnostic<KtAnnotationEntry> {
+        override val diagnosticClass get() = DataClassConsistentCopyWrongAnnotationTarget::class
+    }
+
+    interface DataClassCopyVisibilityWillBeChangedError : KtFirDiagnostic<KtPrimaryConstructor> {
+        override val diagnosticClass get() = DataClassCopyVisibilityWillBeChangedError::class
+    }
+
+    interface DataClassCopyVisibilityWillBeChangedWarning : KtFirDiagnostic<KtPrimaryConstructor> {
+        override val diagnosticClass get() = DataClassCopyVisibilityWillBeChangedWarning::class
+    }
+
+    interface DataClassInvisibleCopyUsageError : KtFirDiagnostic<KtNameReferenceExpression> {
+        override val diagnosticClass get() = DataClassInvisibleCopyUsageError::class
+    }
+
+    interface DataClassInvisibleCopyUsageWarning : KtFirDiagnostic<KtNameReferenceExpression> {
+        override val diagnosticClass get() = DataClassInvisibleCopyUsageWarning::class
+    }
+
     interface DataClassWithoutParameters : KtFirDiagnostic<KtNamedDeclaration> {
         override val diagnosticClass get() = DataClassWithoutParameters::class
     }
@@ -763,6 +798,11 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
         val deprecationInfo: DeprecationInfo
     }
 
+    interface RedundantAnnotation : KtFirDiagnostic<KtAnnotationEntry> {
+        override val diagnosticClass get() = RedundantAnnotation::class
+        val annotation: ClassId
+    }
+
     interface AnnotationOnSuperclassError : KtFirDiagnostic<KtAnnotationEntry> {
         override val diagnosticClass get() = AnnotationOnSuperclassError::class
     }
@@ -826,11 +866,11 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
         override val diagnosticClass get() = InapplicableFileTarget::class
     }
 
-    interface RepeatedAnnotation : KtFirDiagnostic<KtAnnotationEntry> {
+    interface RepeatedAnnotation : KtFirDiagnostic<PsiElement> {
         override val diagnosticClass get() = RepeatedAnnotation::class
     }
 
-    interface RepeatedAnnotationWarning : KtFirDiagnostic<KtAnnotationEntry> {
+    interface RepeatedAnnotationWarning : KtFirDiagnostic<PsiElement> {
         override val diagnosticClass get() = RepeatedAnnotationWarning::class
     }
 
@@ -1060,6 +1100,11 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
     interface SubclassOptInInapplicable : KtFirDiagnostic<KtAnnotationEntry> {
         override val diagnosticClass get() = SubclassOptInInapplicable::class
         val target: String
+    }
+
+    interface SubclassOptArgumentIsNotMarker : KtFirDiagnostic<KtAnnotationEntry> {
+        override val diagnosticClass get() = SubclassOptArgumentIsNotMarker::class
+        val notMarkerClassId: ClassId
     }
 
     interface ExposedTypealiasExpandedType : KtFirDiagnostic<KtNamedDeclaration> {
@@ -1300,6 +1345,12 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
     interface ReservedMemberInsideValueClass : KtFirDiagnostic<KtFunction> {
         override val diagnosticClass get() = ReservedMemberInsideValueClass::class
         val name: String
+    }
+
+    interface ReservedMemberFromInterfaceInsideValueClass : KtFirDiagnostic<KtClass> {
+        override val diagnosticClass get() = ReservedMemberFromInterfaceInsideValueClass::class
+        val interfaceName: String
+        val methodName: String
     }
 
     interface TypeArgumentOnTypedValueClassEquals : KtFirDiagnostic<KtTypeReference> {
@@ -1812,6 +1863,14 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
 
     interface SmartcastImpossible : KtFirDiagnostic<KtExpression> {
         override val diagnosticClass get() = SmartcastImpossible::class
+        val desiredType: KtType
+        val subject: KtExpression
+        val description: String
+        val isCastToNotNull: Boolean
+    }
+
+    interface SmartcastImpossibleOnImplicitInvokeReceiver : KtFirDiagnostic<KtExpression> {
+        override val diagnosticClass get() = SmartcastImpossibleOnImplicitInvokeReceiver::class
         val desiredType: KtType
         val subject: KtExpression
         val description: String
@@ -2679,13 +2738,6 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
         override val diagnosticClass get() = ExpectedFunctionSourceWithDefaultArgumentsNotFound::class
     }
 
-    interface NoActualForExpect : KtFirDiagnostic<KtNamedDeclaration> {
-        override val diagnosticClass get() = NoActualForExpect::class
-        val declaration: KtSymbol
-        val module: FirModuleData
-        val compatibility: Map<ExpectActualCompatibility<FirBasedSymbol<*>>, List<KtSymbol>>
-    }
-
     interface ActualWithoutExpect : KtFirDiagnostic<KtNamedDeclaration> {
         override val diagnosticClass get() = ActualWithoutExpect::class
         val declaration: KtSymbol
@@ -2815,6 +2867,11 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
 
     interface CapturedMemberValInitialization : KtFirDiagnostic<KtExpression> {
         override val diagnosticClass get() = CapturedMemberValInitialization::class
+        val property: KtVariableSymbol
+    }
+
+    interface NonInlineMemberValInitialization : KtFirDiagnostic<KtExpression> {
+        override val diagnosticClass get() = NonInlineMemberValInitialization::class
         val property: KtVariableSymbol
     }
 
@@ -3652,6 +3709,12 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
         val messageSuffix: String
     }
 
+    interface TypeMismatchWhenFlexibilityChanges : KtFirDiagnostic<PsiElement> {
+        override val diagnosticClass get() = TypeMismatchWhenFlexibilityChanges::class
+        val expectedType: KtType
+        val actualType: KtType
+    }
+
     interface UpperBoundCannotBeArray : KtFirDiagnostic<PsiElement> {
         override val diagnosticClass get() = UpperBoundCannotBeArray::class
     }
@@ -4059,6 +4122,22 @@ sealed interface KtFirDiagnostic<PSI : PsiElement> : KtDiagnosticWithPsi<PSI> {
     interface WrongOperationWithDynamic : KtFirDiagnostic<KtElement> {
         override val diagnosticClass get() = WrongOperationWithDynamic::class
         val operation: String
+    }
+
+    interface JsStaticNotInClassCompanion : KtFirDiagnostic<PsiElement> {
+        override val diagnosticClass get() = JsStaticNotInClassCompanion::class
+    }
+
+    interface JsStaticOnNonPublicMember : KtFirDiagnostic<PsiElement> {
+        override val diagnosticClass get() = JsStaticOnNonPublicMember::class
+    }
+
+    interface JsStaticOnConst : KtFirDiagnostic<PsiElement> {
+        override val diagnosticClass get() = JsStaticOnConst::class
+    }
+
+    interface JsStaticOnOverride : KtFirDiagnostic<PsiElement> {
+        override val diagnosticClass get() = JsStaticOnOverride::class
     }
 
     interface Syntax : KtFirDiagnostic<PsiElement> {

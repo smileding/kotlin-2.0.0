@@ -8,6 +8,7 @@ package org.jetbrains.kotlin.backend.wasm
 import org.jetbrains.kotlin.backend.common.ir.Ir
 import org.jetbrains.kotlin.backend.common.ir.Symbols
 import org.jetbrains.kotlin.backend.common.linkage.partial.createPartialLinkageSupportForLowerings
+import org.jetbrains.kotlin.backend.common.lower.InnerClassesSupport
 import org.jetbrains.kotlin.backend.wasm.ir2wasm.JsModuleAndQualifierReference
 import org.jetbrains.kotlin.backend.wasm.lower.WasmSharedVariablesManager
 import org.jetbrains.kotlin.backend.wasm.utils.WasmInlineClassesUtils
@@ -33,10 +34,10 @@ import org.jetbrains.kotlin.ir.util.SymbolTable
 import org.jetbrains.kotlin.ir.util.addChild
 import org.jetbrains.kotlin.ir.util.file
 import org.jetbrains.kotlin.ir.util.irMessageLogger
-import org.jetbrains.kotlin.js.config.WasmTarget
-import org.jetbrains.kotlin.js.config.wasmTarget
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.platform.wasm.WasmTarget
+import org.jetbrains.kotlin.wasm.config.wasmTarget
 
 class WasmBackendContext(
     val module: ModuleDescriptor,
@@ -80,7 +81,7 @@ class WasmBackendContext(
     override val jsPromiseSymbol: IrClassSymbol?
         get() = if (isWasmJsTarget) wasmSymbols.jsRelatedSymbols.jsPromise else null
 
-    val innerClassesSupport = JsInnerClassesSupport(mapping, irFactory)
+    override val innerClassesSupport: InnerClassesSupport = JsInnerClassesSupport(mapping, irFactory)
 
     override val internalPackageFqn = FqName("kotlin.wasm")
 

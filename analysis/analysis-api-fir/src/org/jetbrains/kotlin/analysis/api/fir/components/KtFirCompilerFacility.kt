@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.analysis.api.components.KtCompilationResult
 import org.jetbrains.kotlin.analysis.api.components.KtCompilerFacility
 import org.jetbrains.kotlin.analysis.api.components.KtCompilerTarget
 import org.jetbrains.kotlin.analysis.api.diagnostics.KtDiagnostic
+import org.jetbrains.kotlin.analysis.api.diagnostics.KtDiagnosticWithPsi
 import org.jetbrains.kotlin.analysis.api.fir.KtFirAnalysisSession
 import org.jetbrains.kotlin.analysis.api.impl.base.util.KtCompiledFileForOutputFile
 import org.jetbrains.kotlin.analysis.low.level.api.fir.LLFirInternals
@@ -37,10 +38,17 @@ import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.*
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.diagnostics.toFirDiagnostics
 import org.jetbrains.kotlin.fir.backend.*
-import org.jetbrains.kotlin.fir.backend.jvm.*
-import org.jetbrains.kotlin.fir.declarations.*
+import org.jetbrains.kotlin.fir.backend.jvm.FirJvmBackendExtension
+import org.jetbrains.kotlin.fir.backend.jvm.FirJvmKotlinMangler
+import org.jetbrains.kotlin.fir.backend.jvm.FirJvmVisibilityConverter
+import org.jetbrains.kotlin.fir.backend.jvm.JvmFir2IrExtensions
+import org.jetbrains.kotlin.fir.declarations.FirDeclaration
+import org.jetbrains.kotlin.fir.declarations.FirFile
+import org.jetbrains.kotlin.fir.declarations.FirFunction
+import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
 import org.jetbrains.kotlin.fir.declarations.utils.hasBody
 import org.jetbrains.kotlin.fir.diagnostics.ConeSyntaxDiagnostic
 import org.jetbrains.kotlin.fir.languageVersionSettings
@@ -66,7 +74,10 @@ import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.IrSimpleType
-import org.jetbrains.kotlin.ir.util.*
+import org.jetbrains.kotlin.ir.util.IdSignature
+import org.jetbrains.kotlin.ir.util.StubGeneratorExtensions
+import org.jetbrains.kotlin.ir.util.SymbolTable
+import org.jetbrains.kotlin.ir.util.classId
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.visitors.acceptVoid
@@ -95,7 +106,8 @@ internal class KtFirCompilerFacility(
             is KtCompilerTarget.Jvm -> target.classBuilderFactory
         }
 
-        val syntaxErrors = SyntaxErrorReportingVisitor().also(file::accept).diagnostics
+        val syntaxErrors = SyntaxErrorReportingVisitor(analysisSession.useSiteSession) { it.asKtDiagnostic() }
+            .also(file::accept).diagnostics
 
         if (syntaxErrors.isNotEmpty()) {
             return KtCompilationResult.Failure(syntaxErrors)
@@ -268,17 +280,18 @@ internal class KtFirCompilerFacility(
             fir2IrConfiguration,
             irGeneratorExtensions,
             JvmIrMangler,
-            FirJvmKotlinMangler(),
+            FirJvmKotlinMangler,
             FirJvmVisibilityConverter,
             DefaultBuiltIns.Instance,
             ::JvmIrTypeSystemContext,
+            JvmIrSpecialAnnotationSymbolProvider,
         )
     }
 
     private fun patchCodeFragmentIr(fir2IrResult: Fir2IrActualizedResult) {
         fun isCodeFragmentFile(irFile: IrFile): Boolean {
-            val firFiles = (irFile.metadata as? FirMetadataSource.File)?.files ?: return false
-            return firFiles.any { it.psi is KtCodeFragment }
+            val file = (irFile.metadata as? FirMetadataSource.File)?.fir
+            return file?.psi is KtCodeFragment
         }
 
         val (irCodeFragmentFiles, irOrdinaryFiles) = fir2IrResult.irModuleFragment.files.partition(::isCodeFragmentFile)
@@ -422,8 +435,7 @@ internal class KtFirCompilerFacility(
     private class CompilerFacilityJvmGeneratorExtensions(
         private val delegate: JvmGeneratorExtensions
     ) : StubGeneratorExtensions(), JvmGeneratorExtensions by delegate {
-        override val rawTypeAnnotationConstructor: IrConstructor?
-            get() = delegate.rawTypeAnnotationConstructor
+        override fun generateRawTypeAnnotationCall(): IrConstructorCall? = delegate.generateRawTypeAnnotationCall()
 
         /**
          * This method is used from [org.jetbrains.kotlin.backend.jvm.lower.ReflectiveAccessLowering.visitCall]
@@ -521,8 +533,6 @@ internal class KtFirCompilerFacility(
             shouldReferenceUndiscoveredExpectSymbols = false, // TODO it was true
         )
 
-        val phaseConfig = PhaseConfig(if (isCodeFragment) jvmFragmentLoweringPhases else jvmLoweringPhases)
-
         @OptIn(ObsoleteDescriptorBasedAPI::class)
         val evaluatorFragmentInfoForPsi2Ir = runIf<EvaluatorFragmentInfo?>(isCodeFragment) {
             val irFile = irModuleFragment.files.single { (it.fileEntry as? PsiIrFileEntry)?.psiFile is KtCodeFragment }
@@ -533,7 +543,7 @@ internal class KtFirCompilerFacility(
 
         return JvmIrCodegenFactory(
             configuration,
-            phaseConfig,
+            PhaseConfig(jvmPhases),
             jvmGeneratorExtensions = jvmGeneratorExtensions,
             evaluatorFragmentInfoForPsi2Ir = evaluatorFragmentInfoForPsi2Ir,
             ideCodegenSettings = ideCodegenSettings,
@@ -697,8 +707,10 @@ private class DeclarationRegistrarVisitor(private val consumer: SymbolTable) : I
     }
 }
 
-context(KtFirAnalysisSessionComponent)
-private class SyntaxErrorReportingVisitor : KtTreeVisitorVoid() {
+private class SyntaxErrorReportingVisitor(
+    private val useSiteSession: FirSession,
+    private val diagnosticConverter: (KtPsiDiagnostic) -> KtDiagnosticWithPsi<*>
+) : KtTreeVisitorVoid() {
     private val collectedDiagnostics = mutableListOf<KtDiagnostic>()
 
     val diagnostics: List<KtDiagnostic>
@@ -706,8 +718,8 @@ private class SyntaxErrorReportingVisitor : KtTreeVisitorVoid() {
 
     override fun visitErrorElement(element: PsiErrorElement) {
         collectedDiagnostics += ConeSyntaxDiagnostic(element.errorDescription)
-            .toFirDiagnostics(analysisSession.useSiteSession, KtRealPsiSourceElement(element), callOrAssignmentSource = null)
-            .map { (it as KtPsiDiagnostic).asKtDiagnostic() }
+            .toFirDiagnostics(useSiteSession, KtRealPsiSourceElement(element), callOrAssignmentSource = null)
+            .map { diagnosticConverter(it as KtPsiDiagnostic) }
 
         super.visitErrorElement(element)
     }

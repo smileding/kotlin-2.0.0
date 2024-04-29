@@ -11,20 +11,22 @@ import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.stringR
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.impl.KtDeclarationRendererForSource
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.renderers.KtRendererKeywordFilter
 import org.jetbrains.kotlin.analysis.api.scopes.KtScope
+import org.jetbrains.kotlin.analysis.api.scopes.KtScopeLike
 import org.jetbrains.kotlin.analysis.api.scopes.KtTypeScope
 import org.jetbrains.kotlin.analysis.api.symbols.DebugSymbolRenderer
 import org.jetbrains.kotlin.analysis.test.framework.base.AbstractAnalysisApiBasedTest
+import org.jetbrains.kotlin.analysis.test.framework.project.structure.KtTestModule
 import org.jetbrains.kotlin.analysis.test.framework.services.expressionMarkerProvider
+import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 import org.jetbrains.kotlin.analysis.utils.printer.prettyPrint
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.assertions
 import org.jetbrains.kotlin.types.Variance
 
 abstract class AbstractTypeScopeTest : AbstractAnalysisApiBasedTest() {
-    override fun doTestByMainFile(mainFile: KtFile, mainModule: TestModule, testServices: TestServices) {
+    override fun doTestByMainFile(mainFile: KtFile, mainModule: KtTestModule, testServices: TestServices) {
         val expression = testServices.expressionMarkerProvider.getSelectedElementOfType<KtExpression>(mainFile)
         analyseForTest(expression) {
             val type = expression.getKtType()
@@ -56,6 +58,17 @@ abstract class AbstractTypeScopeTest : AbstractAnalysisApiBasedTest() {
 
             testServices.assertions.assertEqualsToTestDataFileSibling(scopeStringRepresentation)
             testServices.assertions.assertEqualsToTestDataFileSibling(signaturePretty, extension = ".pretty.txt")
+
+            val actualNames = prettyPrint {
+                appendLine("KtTypeScope:")
+                renderContainedNamesIfExists(typeScope)
+                appendLine()
+
+                appendLine("Declaration Scope:")
+                renderContainedNamesIfExists(declaredScopeByTypeScope)
+            }
+
+            testServices.assertions.assertEqualsToTestDataFileSibling(actualNames, extension = ".names.txt")
         }
     }
 
@@ -82,7 +95,7 @@ abstract class AbstractTypeScopeTest : AbstractAnalysisApiBasedTest() {
         val callables = scope.getCallableSymbols().toList()
         return prettyPrint {
             callables.forEach {
-                appendLine(DebugSymbolRenderer().render(it))
+                appendLine(DebugSymbolRenderer().render(analysisSession, it))
             }
         }
     }
@@ -92,6 +105,16 @@ abstract class AbstractTypeScopeTest : AbstractAnalysisApiBasedTest() {
         return prettyPrint {
             callables.forEach {
                 appendLine(it.render(renderer))
+            }
+        }
+    }
+
+    private fun PrettyPrinter.renderContainedNamesIfExists(scope: KtScopeLike?) {
+        withIndent {
+            if (scope != null) {
+                renderNamesContainedInScope(scope)
+            } else {
+                appendLine("NO_SCOPE")
             }
         }
     }

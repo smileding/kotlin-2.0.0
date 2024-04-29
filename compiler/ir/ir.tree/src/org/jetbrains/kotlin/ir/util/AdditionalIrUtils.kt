@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.ir.*
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
 import org.jetbrains.kotlin.ir.symbols.*
-import org.jetbrains.kotlin.ir.symbols.impl.IrClassPublicSymbolImpl
+import org.jetbrains.kotlin.ir.symbols.impl.IrClassSymbolImpl
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.resolve.descriptorUtil.module
 import org.jetbrains.kotlin.utils.filterIsInstanceAnd
@@ -153,7 +153,7 @@ fun IrDeclarationWithName.hasTopLevelEqualFqName(packageName: String, declaratio
     }
 
 fun IrSymbol.hasEqualFqName(fqName: FqName): Boolean {
-    return this is IrClassPublicSymbolImpl && with(signature as? IdSignature.CommonSignature ?: return false) {
+    return this is IrClassSymbol && with(signature as? IdSignature.CommonSignature ?: return false) {
         // optimized version of FqName("$packageFqName.$declarationFqName") == fqName
         val fqNameAsString = fqName.asString()
         fqNameAsString.length == packageFqName.length + 1 + declarationFqName.length &&
@@ -164,7 +164,7 @@ fun IrSymbol.hasEqualFqName(fqName: FqName): Boolean {
 }
 
 private fun IrSymbol.hasTopLevelEqualFqName(packageName: String, declarationName: String): Boolean {
-    return this is IrClassPublicSymbolImpl && with(signature as? IdSignature.CommonSignature ?: return false) {
+    return this is IrClassSymbol && with(signature as? IdSignature.CommonSignature ?: return false) {
         // optimized version of FqName("$packageFqName.$declarationFqName") == fqName
         packageFqName == packageName && declarationFqName == declarationName
     }

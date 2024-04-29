@@ -7,59 +7,12 @@ package org.jetbrains.kotlin.generators.tree.printer
 
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.generators.tree.*
-import org.jetbrains.kotlin.utils.SmartPrinter
-import org.jetbrains.kotlin.generators.tree.ImportCollector
-import org.jetbrains.kotlin.generators.tree.render
-import org.jetbrains.kotlin.types.Variance
+import org.jetbrains.kotlin.generators.tree.imports.ImportCollecting
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.toLowerCaseAsciiOnly
-import org.jetbrains.kotlin.utils.addToStdlib.joinToWithBuffer
+import org.jetbrains.kotlin.utils.IndentingPrinter
 import org.jetbrains.kotlin.utils.withIndent
 
-/**
- * The angle bracket-delimited list of type parameters to print, or empty string if the list is empty.
- *
- * For type parameters that have a single upper bound, also prints that upper bound. If at least one type parameter has multiple upper
- * bounds, doesn't print any upper bounds at all. They are expected to be printed in the `where` clause (see [multipleUpperBoundsList]).
- *
- * @param end The string to add after the closing angle bracket of the type parameter list
- */
-context(ImportCollector)
-fun List<TypeVariable>.typeParameters(end: String = ""): String = buildString {
-    if (this@typeParameters.isEmpty()) return@buildString
-    joinToWithBuffer(this, prefix = "<", postfix = ">") { param ->
-        if (param.variance != Variance.INVARIANT) {
-            append(param.variance.label)
-            append(" ")
-        }
-        append(param.name)
-        param.bounds.singleOrNull()?.let {
-            append(" : ")
-            it.renderTo(this)
-        }
-    }
-    append(end)
-}
-
-/**
- * The `where` clause to print after the class or function declaration if at least one of the element's tye parameters has multiple upper
- * bounds.
- *
- * Otherwise, an empty string.
- */
-context(ImportCollector)
-fun List<TypeVariable>.multipleUpperBoundsList(): String {
-    val paramsWithMultipleUpperBounds = filter { it.bounds.size > 1 }.takeIf { it.isNotEmpty() } ?: return ""
-    return buildString {
-        append(" where ")
-        paramsWithMultipleUpperBounds.joinToWithBuffer(this, separator = ", ") { param ->
-            param.bounds.joinToWithBuffer(this) { bound ->
-                append(param.name)
-                append(" : ")
-                bound.renderTo(this)
-            }
-        }
-    }
-}
+interface ImportCollectingPrinter : ImportCollecting, IndentingPrinter
 
 /**
  * The braces to print in the inheritance clause if this is a class, or empty string if this is an interface.
@@ -70,7 +23,7 @@ fun ImplementationKind?.braces(): String = when (this) {
     else -> throw IllegalStateException(this.toString())
 }
 
-fun SmartPrinter.printKDoc(kDoc: String?) {
+fun IndentingPrinter.printKDoc(kDoc: String?) {
     if (kDoc == null) return
     println("/**")
     for (line in kDoc.lineSequence()) {
@@ -96,17 +49,16 @@ fun AbstractElement<*, *, *>.extendedKDoc(): String = buildString {
 
 data class FunctionParameter(val name: String, val type: TypeRef, val defaultValue: String? = null) {
 
-    context(ImportCollector)
-    fun render(): String = buildString {
-        append(name, ": ", type.render())
+    fun render(importCollector: ImportCollecting): String = buildString {
+        append(name, ": ")
+        type.renderTo(this, importCollector)
         defaultValue?.let {
             append(" = ", it)
         }
     }
 }
 
-context(ImportCollector)
-fun SmartPrinter.printFunctionDeclaration(
+fun ImportCollectingPrinter.printFunctionDeclaration(
     name: String,
     parameters: List<FunctionParameter>,
     returnType: TypeRef,
@@ -118,9 +70,14 @@ fun SmartPrinter.printFunctionDeclaration(
     isInline: Boolean = false,
     allParametersOnSeparateLines: Boolean = false,
     optInAnnotation: ClassRef<*>? = null,
+    deprecation: Deprecated? = null,
 ) {
     optInAnnotation?.let {
         println("@", it.render())
+    }
+
+    deprecation?.let {
+        printDeprecation(it)
     }
 
     if (visibility != Visibility.PUBLIC) {
@@ -151,13 +108,13 @@ fun SmartPrinter.printFunctionDeclaration(
             println()
             withIndent {
                 for (parameter in parameters) {
-                    print(parameter.render())
+                    print(parameter.render(this))
                     println(",")
                 }
             }
         }
     } else {
-        print(parameters.joinToString { it.render() })
+        print(parameters.joinToString { it.render(this) })
     }
     print(")")
     if (returnType != StandardTypes.unit) {
@@ -166,8 +123,7 @@ fun SmartPrinter.printFunctionDeclaration(
     print(typeParameters.multipleUpperBoundsList())
 }
 
-context(ImportCollector)
-inline fun SmartPrinter.printFunctionWithBlockBody(
+inline fun ImportCollectingPrinter.printFunctionWithBlockBody(
     name: String,
     parameters: List<FunctionParameter>,
     returnType: TypeRef,
@@ -178,6 +134,7 @@ inline fun SmartPrinter.printFunctionWithBlockBody(
     override: Boolean = false,
     isInline: Boolean = false,
     allParametersOnSeparateLines: Boolean = false,
+    deprecation: Deprecated? = null,
     blockBody: () -> Unit,
 ) {
     printFunctionDeclaration(
@@ -191,12 +148,23 @@ inline fun SmartPrinter.printFunctionWithBlockBody(
         override,
         isInline,
         allParametersOnSeparateLines,
+        deprecation = deprecation,
     )
     printBlock(blockBody)
 }
 
-context(ImportCollector)
-fun SmartPrinter.printPropertyDeclaration(
+private fun IndentingPrinter.printDeprecation(deprecation: Deprecated) {
+    println("@Deprecated(")
+    withIndent {
+        println("message = \"", deprecation.message, "\",")
+        println("replaceWith = ReplaceWith(\"", deprecation.replaceWith.expression, "\"),")
+        println("level = DeprecationLevel.", deprecation.level.name, ",")
+    }
+    println(")")
+}
+
+
+fun ImportCollectingPrinter.printPropertyDeclaration(
     name: String,
     type: TypeRef,
     kind: VariableKind,
@@ -215,13 +183,7 @@ fun SmartPrinter.printPropertyDeclaration(
     printKDoc(kDoc)
 
     deprecation?.let {
-        println("@Deprecated(")
-        withIndent {
-            println("message = \"", it.message, "\",")
-            println("replaceWith = ReplaceWith(\"", it.replaceWith.expression, "\"),")
-            println("level = DeprecationLevel.", it.level.name, ",")
-        }
-        println(")")
+        printDeprecation(it)
     }
 
     if (isVolatile) {
@@ -269,7 +231,7 @@ fun SmartPrinter.printPropertyDeclaration(
 
 enum class VariableKind { VAL, VAR, PARAMETER }
 
-inline fun SmartPrinter.printBlock(body: () -> Unit) {
+inline fun IndentingPrinter.printBlock(body: () -> Unit) {
     println(" {")
     withIndent(body)
     println("}")
@@ -304,8 +266,7 @@ private fun acceptMethodKDoc(
     }
 }
 
-context(ImportCollector)
-fun SmartPrinter.printAcceptMethod(
+fun ImportCollectingPrinter.printAcceptMethod(
     element: AbstractElement<*, *, *>,
     visitorClass: ClassRef<PositionTypeParameterRef>,
     hasImplementation: Boolean,
@@ -355,8 +316,7 @@ private fun transformMethodKDoc(
     append("\n@return The transformed node.")
 }
 
-context(ImportCollector)
-fun SmartPrinter.printTransformMethod(
+fun ImportCollectingPrinter.printTransformMethod(
     element: AbstractElement<*, *, *>,
     transformerClass: ClassRef<PositionTypeParameterRef>,
     implementation: String?,
@@ -414,8 +374,7 @@ private fun acceptChildrenKDoc(visitorParameter: FunctionParameter, dataParamete
     }
 }
 
-context(ImportCollector)
-fun SmartPrinter.printAcceptChildrenMethod(
+fun ImportCollectingPrinter.printAcceptChildrenMethod(
     element: FieldContainer<*>,
     visitorClass: ClassRef<PositionTypeParameterRef>,
     visitorResultType: TypeRef,
@@ -468,8 +427,7 @@ private fun transformChildrenMethodKDoc(transformerParameter: FunctionParameter,
         }
     }
 
-context(ImportCollector)
-fun SmartPrinter.printTransformChildrenMethod(
+fun ImportCollectingPrinter.printTransformChildrenMethod(
     element: FieldContainer<*>,
     transformerClass: ClassRef<PositionTypeParameterRef>,
     returnType: TypeRef,
@@ -492,8 +450,7 @@ fun SmartPrinter.printTransformChildrenMethod(
     )
 }
 
-context(ImportCollector)
-fun SmartPrinter.printAcceptVoidMethod(visitorType: ClassRef<*>, treeName: String) {
+fun ImportCollectingPrinter.printAcceptVoidMethod(visitorType: ClassRef<*>, treeName: String) {
     val visitorParameter = FunctionParameter("visitor", visitorType)
     val returnType = StandardTypes.unit
     printKDoc(acceptMethodKDoc(visitorParameter, null, returnType, treeName))
@@ -501,16 +458,14 @@ fun SmartPrinter.printAcceptVoidMethod(visitorType: ClassRef<*>, treeName: Strin
     println(" = accept(", visitorParameter.name, ", null)")
 }
 
-context(ImportCollector)
-fun SmartPrinter.printAcceptChildrenVoidMethod(visitorType: ClassRef<*>) {
+fun ImportCollectingPrinter.printAcceptChildrenVoidMethod(visitorType: ClassRef<*>) {
     val visitorParameter = FunctionParameter("visitor", visitorType)
     printKDoc(acceptChildrenKDoc(visitorParameter, null))
     printFunctionDeclaration("acceptChildren", listOf(visitorParameter), StandardTypes.unit)
     println(" = acceptChildren(", visitorParameter.name, ", null)")
 }
 
-context(ImportCollector)
-fun SmartPrinter.printTransformVoidMethod(element: AbstractElement<*, *, *>, transformerType: ClassRef<*>, treeName: String) {
+fun ImportCollectingPrinter.printTransformVoidMethod(element: AbstractElement<*, *, *>, transformerType: ClassRef<*>, treeName: String) {
     assert(element.isRootElement) { "Expected root element" }
     val transformerParameter = FunctionParameter("transformer", transformerType)
     val elementTP = TypeVariable("E", listOf(element))
@@ -527,8 +482,7 @@ fun SmartPrinter.printTransformVoidMethod(element: AbstractElement<*, *, *>, tra
     }
 }
 
-context(ImportCollector)
-fun SmartPrinter.printTransformChildrenVoidMethod(element: AbstractElement<*, *, *>, visitorType: ClassRef<*>, returnType: TypeRef) {
+fun ImportCollectingPrinter.printTransformChildrenVoidMethod(element: AbstractElement<*, *, *>, visitorType: ClassRef<*>, returnType: TypeRef) {
     assert(element.isRootElement) { "Expected root element" }
     val transformerParameter = FunctionParameter("transformer", visitorType)
     printKDoc(transformChildrenMethodKDoc(transformerParameter, null, returnType))

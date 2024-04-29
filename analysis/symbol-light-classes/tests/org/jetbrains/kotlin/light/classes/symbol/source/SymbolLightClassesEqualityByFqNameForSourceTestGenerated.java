@@ -103,6 +103,12 @@ public class SymbolLightClassesEqualityByFqNameForSourceTestGenerated extends Ab
   }
 
   @Test
+  @TestMetadata("CompanionObjectWithAConflictingProperty.kt")
+  public void testCompanionObjectWithAConflictingProperty() {
+    runTest("compiler/testData/asJava/lightClasses/lightClassByFqName/CompanionObjectWithAConflictingProperty.kt");
+  }
+
+  @Test
   @TestMetadata("Constructors.kt")
   public void testConstructors() {
     runTest("compiler/testData/asJava/lightClasses/lightClassByFqName/Constructors.kt");
@@ -208,6 +214,12 @@ public class SymbolLightClassesEqualityByFqNameForSourceTestGenerated extends Ab
   @TestMetadata("InterfaceTypeParameterAnnotation.kt")
   public void testInterfaceTypeParameterAnnotation() {
     runTest("compiler/testData/asJava/lightClasses/lightClassByFqName/InterfaceTypeParameterAnnotation.kt");
+  }
+
+  @Test
+  @TestMetadata("InterfaceWithDefaultMethodAndCompanion.kt")
+  public void testInterfaceWithDefaultMethodAndCompanion() {
+    runTest("compiler/testData/asJava/lightClasses/lightClassByFqName/InterfaceWithDefaultMethodAndCompanion.kt");
   }
 
   @Test

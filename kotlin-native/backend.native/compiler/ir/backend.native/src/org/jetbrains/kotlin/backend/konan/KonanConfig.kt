@@ -274,18 +274,21 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
     }
 
     init {
-        if (!platformManager.isEnabled(target)) {
-            error("Target ${target.visibleName} is not available on the ${HostManager.hostName} host")
+        // NB: producing LIBRARY is enabled on any combination of hosts/targets
+        if (produce != CompilerOutputKind.LIBRARY && !platformManager.isEnabled(target)) {
+            error("Target ${target.visibleName} is not available for output kind '${produce}' on the ${HostManager.hostName} host")
         }
     }
 
-    val platform = platformManager.platform(target).apply {
-        if (configuration.getBoolean(KonanConfigKeys.CHECK_DEPENDENCIES)) {
-            downloadDependencies()
+    val platform by lazy {
+        platformManager.platform(target).apply {
+            if (configuration.getBoolean(KonanConfigKeys.CHECK_DEPENDENCIES)) {
+                downloadDependencies()
+            }
         }
     }
 
-    internal val clang = platform.clang
+    internal val clang by lazy { platform.clang }
 
     internal val produce get() = configuration.get(KonanConfigKeys.PRODUCE)!!
 
@@ -456,6 +459,8 @@ class KonanConfig(val project: Project, val configuration: CompilerConfiguration
     internal val manifestProperties = configuration.get(KonanConfigKeys.MANIFEST_FILE)?.let {
         File(it).loadProperties()
     }
+
+    internal val nativeTargetsForManifest = configuration.get(KonanConfigKeys.MANIFEST_NATIVE_TARGETS)
 
     internal val isInteropStubs: Boolean get() = manifestProperties?.getProperty("interop") == "true"
 

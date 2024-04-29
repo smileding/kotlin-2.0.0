@@ -8,7 +8,10 @@ package org.jetbrains.kotlin.generators.tree.printer
 import org.jetbrains.kotlin.generators.tree.*
 import org.jetbrains.kotlin.generators.tree.config.AbstractBuilderConfigurator
 import org.jetbrains.kotlin.generators.tree.config.AbstractImplementationConfigurator
+import org.jetbrains.kotlin.generators.tree.imports.ImportCollecting
+import org.jetbrains.kotlin.generators.tree.imports.ImportCollector
 import org.jetbrains.kotlin.generators.util.GeneratorsFileUtil
+import org.jetbrains.kotlin.utils.IndentingPrinter
 import org.jetbrains.kotlin.utils.SmartPrinter
 import java.io.File
 
@@ -21,27 +24,38 @@ private fun getPathForFile(generationPath: File, packageName: String, typeName: 
     return File(dir, "$typeName.kt")
 }
 
+private data class PrinterAndImportCollector(
+    val printer: SmartPrinter,
+    val importCollector: ImportCollecting,
+) : IndentingPrinter by printer,
+    ImportCollecting by importCollector,
+    ImportCollectingPrinter
+
+fun ImportCollectingPrinter.withNewPrinter(printer: SmartPrinter, body: ImportCollectingPrinter.() -> Unit) {
+    PrinterAndImportCollector(printer, this).apply(body)
+}
+
 fun printGeneratedType(
     generationPath: File,
     treeGeneratorReadMe: String,
     packageName: String,
     typeName: String,
     fileSuppressions: List<String> = emptyList(),
-    body: context(ImportCollector) SmartPrinter.() -> Unit,
+    body: ImportCollectingPrinter.() -> Unit,
 ): GeneratedFile {
     val stringBuilder = StringBuilder()
     val file = getPathForFile(generationPath, packageName, typeName)
     val importCollector = ImportCollector(packageName)
-    body(importCollector, SmartPrinter(stringBuilder))
+    PrinterAndImportCollector(SmartPrinter(stringBuilder), importCollector).body()
     return GeneratedFile(
         file,
         buildString {
             appendLine(COPYRIGHT)
             appendLine()
-            append("// This file was generated automatically. See ")
+            append(GeneratorsFileUtil.GENERATED_MESSAGE_PREFIX)
             append(treeGeneratorReadMe)
             appendLine(".")
-            appendLine("// DO NOT MODIFY IT MANUALLY.")
+            appendLine(GeneratorsFileUtil.GENERATED_MESSAGE_SUFFIX)
             appendLine()
             if (fileSuppressions.isNotEmpty()) {
                 fileSuppressions.joinTo(this, prefix = "@file:Suppress(", postfix = ")\n\n") { "\"$it\"" }
@@ -81,19 +95,18 @@ fun <Element, Implementation, ElementField, ImplementationField> generateTree(
     treeGeneratorReadme: String,
     model: Model<Element>,
     pureAbstractElement: ClassRef<*>,
-    createElementPrinter: (SmartPrinter) -> AbstractElementPrinter<Element, ElementField>,
-    createVisitorPrinters: List<Pair<ClassRef<*>, (SmartPrinter, ClassRef<*>) -> AbstractVisitorPrinter<Element, ElementField>>>,
-    implementationConfigurator: AbstractImplementationConfigurator<Implementation, Element, ImplementationField>,
+    createElementPrinter: (ImportCollectingPrinter) -> AbstractElementPrinter<Element, ElementField>,
+    createVisitorPrinters: List<Pair<ClassRef<*>, (ImportCollectingPrinter, ClassRef<*>) -> AbstractVisitorPrinter<Element, ElementField>>>,
+    implementationConfigurator: AbstractImplementationConfigurator<Implementation, Element, ElementField, ImplementationField>,
     builderConfigurator: AbstractBuilderConfigurator<Element, Implementation, ImplementationField, ElementField>? = null,
-    createImplementationPrinter: (SmartPrinter) -> AbstractImplementationPrinter<Implementation, Element, ImplementationField>,
-    createBuilderPrinter: ((SmartPrinter) -> AbstractBuilderPrinter<Element, Implementation, ImplementationField, ElementField>)? = null,
+    createImplementationPrinter: (ImportCollectingPrinter) -> AbstractImplementationPrinter<Implementation, Element, ImplementationField>,
+    createBuilderPrinter: ((ImportCollectingPrinter) -> AbstractBuilderPrinter<Element, Implementation, ImplementationField, ElementField>)? = null,
     enableBaseTransformerTypeDetection: Boolean = true,
     addFiles: MutableList<GeneratedFile>.() -> Unit = {},
 ) where Element : AbstractElement<Element, ElementField, Implementation>,
         Implementation : AbstractImplementation<Implementation, Element, ImplementationField>,
         ElementField : AbstractField<ElementField>,
-        ImplementationField : AbstractField<*>,
-        ImplementationField : AbstractFieldWithDefaultValue<ElementField> {
+        ImplementationField : AbstractField<ElementField> {
     if (enableBaseTransformerTypeDetection) {
         detectBaseTransformerTypes(model)
     }
@@ -106,7 +119,7 @@ fun <Element, Implementation, ElementField, ImplementationField> generateTree(
     builderConfigurator?.configureBuilders()
     val generatedFiles = mutableListOf<GeneratedFile>()
 
-    model.elements.mapTo(generatedFiles) { element ->
+    model.elements.filter { it.doPrint }.mapTo(generatedFiles) { element ->
         printGeneratedType(
             generationPath,
             treeGeneratorReadme,

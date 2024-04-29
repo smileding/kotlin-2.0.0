@@ -193,10 +193,6 @@ fun generateJUnit5CompilerTests(args: Array<String>, mainClassName: String?) {
                 model("codegen/bytecodeListing")
             }
 
-            testClass<AbstractAsmLikeInstructionListingTest> {
-                model("codegen/asmLike")
-            }
-
             testClass<AbstractIrAsmLikeInstructionListingTest> {
                 model("codegen/asmLike")
             }
@@ -407,6 +403,14 @@ fun generateJUnit5CompilerTests(args: Array<String>, mainClassName: String?) {
 
             testClass<AbstractFirLightTreeBytecodeListingTest> {
                 model("codegen/bytecodeListing")
+            }
+
+            testClass<AbstractFirPsiAsmLikeInstructionListingTest> {
+                model("codegen/asmLike")
+            }
+
+            testClass<AbstractFirLightTreeAsmLikeInstructionListingTest> {
+                model("codegen/asmLike")
             }
 
             testClass<AbstractFirScriptCodegenTest> {

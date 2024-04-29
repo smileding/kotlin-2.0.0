@@ -10,4 +10,5 @@ import org.jetbrains.kotlin.ir.overrides.FakeOverrideBuilderStrategy
 internal class Fir2IrFakeOverrideStrategy(
     friendModules: Map<String, List<String>>,
     override val isGenericClashFromSameSupertypeAllowed: Boolean,
-    ) : FakeOverrideBuilderStrategy.BindToPrivateSymbols(friendModules)
+    override val isOverrideOfPublishedApiFromOtherModuleDisallowed: Boolean,
+) : FakeOverrideBuilderStrategy.BindToPrivateSymbols(friendModules)

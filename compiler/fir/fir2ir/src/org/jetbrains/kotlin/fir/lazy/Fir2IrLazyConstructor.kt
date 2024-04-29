@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2020 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -22,24 +22,27 @@ import org.jetbrains.kotlin.ir.expressions.IrBody
 import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
 import org.jetbrains.kotlin.ir.symbols.IrConstructorSymbol
 import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.ir.util.classId
 import org.jetbrains.kotlin.ir.util.isAnnotationClass
 import org.jetbrains.kotlin.ir.util.parentClassOrNull
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
+import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 
 class Fir2IrLazyConstructor(
-    components: Fir2IrComponents,
+    private val c: Fir2IrComponents,
     override val startOffset: Int,
     override val endOffset: Int,
     override var origin: IrDeclarationOrigin,
     override val fir: FirConstructor,
     override val symbol: IrConstructorSymbol,
-    override var parent: IrDeclarationParent
+    parent: IrDeclarationParent,
 ) : IrConstructor(), AbstractFir2IrLazyDeclaration<FirConstructor>, Fir2IrTypeParametersContainer,
-    Fir2IrComponents by components {
+    Fir2IrComponents by c {
     init {
+        this.parent = parent
         symbol.bind(this)
         classifierStorage.preCacheTypeParameters(fir)
     }
@@ -73,7 +76,7 @@ class Fir2IrLazyConstructor(
         get() = SpecialNames.INIT
         set(_) = mutationNotSupported()
 
-    override var visibility: DescriptorVisibility = components.visibilityConverter.convertToDescriptorVisibility(fir.visibility)
+    override var visibility: DescriptorVisibility = c.visibilityConverter.convertToDescriptorVisibility(fir.visibility)
         set(_) = mutationNotSupported()
 
     override var returnType: IrType by lazyVar(lock) {
@@ -86,6 +89,7 @@ class Fir2IrLazyConstructor(
         if (containingClass?.isInner == true && outerClass != null) {
             declarationStorage.enterScope(this.symbol)
             declareThisReceiverParameter(
+                c,
                 thisType = outerClass.thisReceiver!!.type,
                 thisOrigin = origin
             ).apply {
@@ -109,10 +113,11 @@ class Fir2IrLazyConstructor(
             )
 
             fir.valueParameters.mapIndexedTo(this) { index, valueParameter ->
+                val parentClass = parent as? IrClass
                 callablesGenerator.createIrParameter(
                     valueParameter, index + contextReceiverParametersCount,
-                    useStubForDefaultValueStub = (parent as? IrClass)?.name != Name.identifier("Enum"),
-                    forcedDefaultValueConversion = (parent as? IrClass)?.isAnnotationClass == true
+                    useStubForDefaultValueStub = parentClass?.classId != StandardClassIds.Enum,
+                    forcedDefaultValueConversion = parentClass?.isAnnotationClass == true
                 ).apply {
                     this.parent = this@Fir2IrLazyConstructor
                 }

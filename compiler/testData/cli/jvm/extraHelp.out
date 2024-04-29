@@ -40,7 +40,7 @@ where advanced options include:
   -Xjava-source-roots=<path> Paths to directories with Java source files.
   -Xjavac-arguments=<option[,]> Java compiler arguments.
   -Xjdk-release=<version>    Compile against the specified JDK API version, similarly to javac's '-release'. This requires JDK 9 or newer.
-                             The supported versions depend on the JDK used; for JDK 17+, the supported versions are 1.8 and 9–21.
+                             The supported versions depend on the JDK used; for JDK 17+, the supported versions are 1.8 and 9–22.
                              This also sets the value of '-jvm-target' to be equal to the selected JDK version.
   -Xjspecify-annotations=ignore|strict|warn
                              Specify the behavior of 'jspecify' annotations.
@@ -110,7 +110,6 @@ where advanced options include:
                              `profilerPath` is the path to libasyncProfiler.so; async-profiler.jar should be on the compiler classpath.
                              If it's not on the classpath, the compiler will attempt to load async-profiler.jar from the containing directory of profilerPath.
                              Example: -Xprofile=<PATH_TO_ASYNC_PROFILER>/async-profiler/build/libasyncProfiler.so:event=cpu,interval=1ms,threads,start:<SNAPSHOT_DIR_PATH>
-  -Xrepeat=<number>          Debug option: Repeat module compilation <number> times.
   -Xsam-conversions={class|indy} Select the code generation scheme for SAM conversions.
                              -Xsam-conversions=indy          Generate SAM conversions using 'invokedynamic' with 'LambdaMetafactory.metafactory'. Requires '-jvm-target 1.8' or greater.
                              -Xsam-conversions=class         Generate SAM conversions as explicit classes
@@ -162,6 +161,8 @@ where advanced options include:
                              Run sticky condition checks on subsequent phases. Implicitly enables '-Xcheck-phase-conditions'.
   -Xcommon-sources=<path>    Sources of the common module that need to be compiled together with this module in multiplatform mode.
                              They should be a subset of sources passed as free arguments.
+  -Xconsistent-data-class-copy-visibility
+                             The effect of this compiler flag is the same as applying @ConsistentCopyVisibility annotation to all data classes in the module. See https://youtrack.jetbrains.com/issue/KT-11914
   -Xcontext-receivers        Enable experimental context receivers.
   -Xdisable-default-scripting-plugin
                              Don't enable the scripting plugin by default.
@@ -216,6 +217,7 @@ where advanced options include:
   -Xklib-relative-path-base  Provide a base path to compute the source's relative paths in klib (default is empty).
   -Xrender-internal-diagnostic-names
                              Render the internal names of warnings and errors.
+  -Xreport-all-warnings      Report all warnings even if errors are found.
   -Xreport-output-files      Report the source-to-output file mapping.
   -Xreport-perf              Report detailed performance statistics.
   -Xself-upper-bound-inference Support inferring type arguments from the self-type upper bounds of the corresponding type parameters.

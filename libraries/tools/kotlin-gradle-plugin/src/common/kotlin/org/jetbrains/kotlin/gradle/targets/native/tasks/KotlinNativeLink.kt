@@ -37,7 +37,6 @@ import org.jetbrains.kotlin.gradle.targets.native.toolchain.KotlinNativeProvider
 import org.jetbrains.kotlin.gradle.targets.native.toolchain.UsesKotlinNativeBundleBuildService
 import org.jetbrains.kotlin.gradle.utils.*
 import org.jetbrains.kotlin.konan.target.CompilerOutputKind
-import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.project.model.LanguageSettings
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.toLowerCaseAsciiOnly
 import java.io.File
@@ -77,7 +76,7 @@ constructor(
         {
             // Avoid resolving these dependencies during task graph construction when we can't build the target:
             @Suppress("DEPRECATION")
-            if (konanTarget.enabledOnCurrentHost) compilation.compileDependencyFiles
+            if (konanTarget.enabledOnCurrentHostForBinariesCompilation()) compilation.compileDependencyFiles
             else objectFactory.fileCollection()
         }
     )
@@ -369,15 +368,13 @@ constructor(
     }
 
     @Deprecated(
-        message = "This property as a konanHome will be squashed into one in future releases.",
-        replaceWith = ReplaceWith("kotlinNativeProvider.konanDataDir")
+        message = "This property will be removed in future releases. Don't use it in your code.",
     )
     @get:Internal
     val konanDataDir: Provider<String?> = kotlinNativeProvider.flatMap { it.konanDataDir }
 
     @Deprecated(
-        message = "This property as a konanDataDir will be squashed into one in future releases.",
-        replaceWith = ReplaceWith("kotlinNativeProvider.compilerDirectory")
+        message = "This property will be removed in future releases. Don't use it in your code.",
     )
     @get:Internal
     val konanHome: Provider<String> = kotlinNativeProvider.map { it.bundleDirectory.get().asFile.absolutePath }

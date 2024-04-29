@@ -104,7 +104,7 @@ internal class KtFirPsiTypeProvider(
             annotateByKtType(
                 psiType = psiType,
                 ktType = type,
-                psiContext = typeElement,
+                annotationParent = typeElement,
             )
         }
     }
@@ -199,7 +199,7 @@ internal class KtFirPsiTypeProvider(
                 }
             }
         }
-        val firTypeRef = javaTypeRef.resolveIfJavaType(analysisSession.useSiteSession, javaTypeParameterStack)
+        val firTypeRef = javaTypeRef.resolveIfJavaType(analysisSession.useSiteSession, javaTypeParameterStack, source = null)
         val coneKotlinType = (firTypeRef as? FirResolvedTypeRef)?.type ?: return null
         return coneKotlinType.asKtType()
     }
@@ -353,8 +353,10 @@ private fun ConeKotlinType.asPsiTypeElement(
     val typeInfo = TypeInfo.fromString(javaType, false)
     val typeText = TypeInfo.createTypeText(typeInfo) ?: return null
 
-    return ClsTypeElementImpl(useSitePosition, typeText, '\u0000')
+    return SyntheticTypeElement(useSitePosition, typeText)
 }
+
+private class SyntheticTypeElement(parent: PsiElement, typeText: String) : ClsTypeElementImpl(parent, typeText, '\u0000'), SyntheticElement
 
 private val PsiElement.containingKtFile: KtFile?
     get() = (this as? KtLightElement<*, *>)?.kotlinOrigin?.containingKtFile

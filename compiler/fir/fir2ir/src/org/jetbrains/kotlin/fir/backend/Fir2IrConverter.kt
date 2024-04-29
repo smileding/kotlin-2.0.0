@@ -6,18 +6,15 @@
 package org.jetbrains.kotlin.fir.backend
 
 import com.intellij.util.containers.MultiMap
-import org.jetbrains.kotlin.ir.KtDiagnosticReporterWithImplicitIrBasedContext
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.KtPsiSourceFileLinesMapping
 import org.jetbrains.kotlin.KtSourceFileLinesMappingFromLineStartOffsets
 import org.jetbrains.kotlin.backend.common.CommonBackendErrors
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.analysis.checkers.toRegularClassSymbol
-import org.jetbrains.kotlin.fir.backend.generators.DataClassMembersGenerator
 import org.jetbrains.kotlin.fir.backend.generators.FirBasedFakeOverrideGenerator
 import org.jetbrains.kotlin.fir.backend.generators.addDeclarationToParent
 import org.jetbrains.kotlin.fir.backend.generators.setParent
@@ -35,10 +32,9 @@ import org.jetbrains.kotlin.fir.extensions.generatedNestedClassifiers
 import org.jetbrains.kotlin.fir.java.javaElementFinder
 import org.jetbrains.kotlin.fir.lazy.Fir2IrLazyClass
 import org.jetbrains.kotlin.fir.references.toResolvedValueParameterSymbol
-import org.jetbrains.kotlin.fir.resolve.ScopeSession
 import org.jetbrains.kotlin.fir.symbols.lazyDeclarationResolver
 import org.jetbrains.kotlin.fir.types.resolvedType
-import org.jetbrains.kotlin.ir.IrBuiltIns
+import org.jetbrains.kotlin.ir.KtDiagnosticReporterWithImplicitIrBasedContext
 import org.jetbrains.kotlin.ir.PsiIrFileEntry
 import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
 import org.jetbrains.kotlin.ir.declarations.*
@@ -51,21 +47,22 @@ import org.jetbrains.kotlin.ir.interpreter.IrInterpreterConfiguration
 import org.jetbrains.kotlin.ir.interpreter.IrInterpreterEnvironment
 import org.jetbrains.kotlin.ir.interpreter.checker.EvaluationMode
 import org.jetbrains.kotlin.ir.interpreter.transformer.transformConst
-import org.jetbrains.kotlin.ir.overrides.IrFakeOverrideBuilder
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.symbols.impl.IrConstructorSymbolImpl
 import org.jetbrains.kotlin.ir.symbols.impl.IrSimpleFunctionSymbolImpl
-import org.jetbrains.kotlin.ir.types.IrTypeSystemContext
-import org.jetbrains.kotlin.ir.util.*
+import org.jetbrains.kotlin.ir.util.NaiveSourceBasedFileEntryImpl
+import org.jetbrains.kotlin.ir.util.defaultType
+import org.jetbrains.kotlin.ir.util.fileOrNull
+import org.jetbrains.kotlin.ir.util.sourceElement
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.platform.jvm.isJvm
+import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.psi.KtFile
 
 class Fir2IrConverter(
     private val moduleDescriptor: FirModuleDescriptor,
-    private val components: Fir2IrComponents,
+    private val c: Fir2IrComponents,
     private val conversionScope: Fir2IrConversionScope,
-) : Fir2IrComponents by components {
+) : Fir2IrComponents by c {
 
     private val generatorExtensions = session.extensionService.declarationGenerators
 
@@ -121,7 +118,7 @@ class Fir2IrConverter(
 
         if (
             configuration.useFirBasedFakeOverrideGenerator &&
-            components.session.languageVersionSettings.supportsFeature(LanguageFeature.MultiPlatformProjects)
+            c.session.languageVersionSettings.supportsFeature(LanguageFeature.MultiPlatformProjects)
         ) {
             // See the comment to generateUnboundFakeOverrides function itself
             @OptIn(LeakedDeclarationCaches::class)
@@ -275,7 +272,6 @@ class Fir2IrConverter(
         // Otherwise, redundant members, e.g., synthetic toString _and_ fake override toString, will be added.
         if (klass is FirRegularClass && irConstructor != null && (irClass.isValue || irClass.isData)) {
             declarationStorage.enterScope(irConstructor.symbol)
-            val dataClassMembersGenerator = DataClassMembersGenerator(components)
             if (irClass.isSingleFieldValueClass) {
                 allDeclarations += dataClassMembersGenerator.generateSingleFieldValueClassMembers(klass, irClass)
             }
@@ -332,7 +328,7 @@ class Fir2IrConverter(
 
         IrSimpleFunctionSymbolImpl().let { irSymbol ->
             val lastStatement = codeFragment.block.statements.lastOrNull()
-            val returnType = (lastStatement as? FirExpression)?.resolvedType?.toIrType(typeConverter) ?: irBuiltIns.unitType
+            val returnType = (lastStatement as? FirExpression)?.resolvedType?.toIrType(c) ?: irBuiltIns.unitType
 
             irFactory.createSimpleFunction(
                 UNDEFINED_OFFSET, UNDEFINED_OFFSET,
@@ -412,7 +408,7 @@ class Fir2IrConverter(
         return irClass.declarations.filter {
             it.origin == IrDeclarationOrigin.DELEGATED_MEMBER
         }.mapNotNull {
-            components.declarationStorage.originalDeclarationForDelegated(it)
+            c.declarationStorage.originalDeclarationForDelegated(it)
         }
     }
 
@@ -542,7 +538,16 @@ class Fir2IrConverter(
                         }
                     }
                     for (scriptDeclaration in declaration.declarations) {
-                        if (scriptDeclaration !is FirAnonymousInitializer) {
+                        val needProcessMember = when (scriptDeclaration) {
+                            is FirAnonymousInitializer -> false // processed later
+                            is FirProperty -> {
+                                // '_' DD element
+                                scriptDeclaration.name != SpecialNames.UNDERSCORE_FOR_UNUSED_VAR ||
+                                        scriptDeclaration.destructuringDeclarationContainerVariable == null
+                            }
+                            else -> true
+                        }
+                        if (needProcessMember) {
                             processMemberDeclaration(scriptDeclaration, containingClass = null, irScript, delegateFieldToPropertyMap = null)
                         }
                     }
@@ -641,7 +646,7 @@ class Fir2IrConverter(
             )
 
             val interpreter = IrInterpreter(IrInterpreterEnvironment(irModuleFragment.irBuiltins, configuration))
-            val mode = if (intrinsicConstEvaluation) EvaluationMode.ONLY_INTRINSIC_CONST else EvaluationMode.ONLY_BUILTINS
+            val mode = if (intrinsicConstEvaluation) EvaluationMode.OnlyIntrinsicConst() else EvaluationMode.OnlyBuiltins
 
             components.session.javaElementFinder?.propertyEvaluator = { it.evaluate(components, interpreter, mode) }
 
@@ -693,7 +698,7 @@ class Fir2IrConverter(
         }
 
         // TODO: drop this function in favor of using [IrModuleDescriptor::shouldSeeInternalsOf] in FakeOverrideBuilder KT-61384
-        private fun friendModulesMap(session: FirSession): Map<String, List<String>> {
+        fun friendModulesMap(session: FirSession): Map<String, List<String>> {
             fun FirModuleData.friendsMapName() = name.asStringStripSpecialMarkers()
             fun FirModuleData.collectDependsOnRecursive(set: MutableSet<FirModuleData>) {
                 if (!set.add(this)) return
@@ -709,41 +714,12 @@ class Fir2IrConverter(
             return dependsOnTransitive.associate { it.friendsMapName() to friendNames }
         }
 
-        fun createIrModuleFragment(
-            session: FirSession,
-            scopeSession: ScopeSession,
-            firFiles: List<FirFile>,
-            fir2IrExtensions: Fir2IrExtensions,
-            fir2IrConfiguration: Fir2IrConfiguration,
-            irMangler: KotlinMangler.IrMangler,
-            irFactory: IrFactory,
-            visibilityConverter: Fir2IrVisibilityConverter,
-            specialSymbolProvider: Fir2IrSpecialSymbolProvider,
-            kotlinBuiltIns: KotlinBuiltIns,
-            commonMemberStorage: Fir2IrCommonMemberStorage,
-            initializedIrBuiltIns: IrBuiltInsOverFir?,
-            typeContextProvider: (IrBuiltIns) -> IrTypeSystemContext
-        ): Fir2IrResult {
+        fun generateIrModuleFragment(components: Fir2IrComponentsStorage, firFiles: List<FirFile>): IrModuleFragment {
+            val session = components.session
+
             session.lazyDeclarationResolver.disableLazyResolveContractChecks()
-            val moduleDescriptor = FirModuleDescriptor.createSourceModuleDescriptor(session, kotlinBuiltIns)
-            val components = Fir2IrComponentsStorage(
-                session, scopeSession, irFactory, fir2IrExtensions, fir2IrConfiguration, visibilityConverter,
-                { irBuiltins ->
-                    IrFakeOverrideBuilder(
-                        typeContextProvider(irBuiltins),
-                        Fir2IrFakeOverrideStrategy(
-                            friendModulesMap(session),
-                            isGenericClashFromSameSupertypeAllowed = session.moduleData.platform.isJvm()
-                        ),
-                        fir2IrExtensions.externalOverridabilityConditions
-                    )
-                },
-                moduleDescriptor, commonMemberStorage, irMangler, specialSymbolProvider, initializedIrBuiltIns
-            )
 
-            fir2IrExtensions.registerDeclarations(commonMemberStorage.symbolTable)
-
-            val irModuleFragment = IrModuleFragmentImpl(moduleDescriptor, components.irBuiltIns)
+            val irModuleFragment = IrModuleFragmentImpl(components.moduleDescriptor, components.irBuiltIns)
 
             val allFirFiles = buildList {
                 addAll(firFiles)
@@ -752,15 +728,9 @@ class Fir2IrConverter(
                 generatedFiles.forEach { components.firProvider.recordFile(it) }
             }
 
-            components.converter.runSourcesConversion(
-                allFirFiles,
-                irModuleFragment,
-                components.fir2IrVisitor
-            )
+            components.converter.runSourcesConversion(allFirFiles, irModuleFragment, components.fir2IrVisitor)
 
-            commonMemberStorage.registerFirProvider(session.moduleData, components.firProvider)
-
-            return Fir2IrResult(irModuleFragment, components, moduleDescriptor)
+            return irModuleFragment
         }
     }
 }

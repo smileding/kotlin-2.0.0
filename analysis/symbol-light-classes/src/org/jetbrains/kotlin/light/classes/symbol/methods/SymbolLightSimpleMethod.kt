@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.analysis.api.symbols.KtNamedClassOrObjectSymbol
 import org.jetbrains.kotlin.analysis.api.types.KtNonErrorClassType
 import org.jetbrains.kotlin.analysis.api.types.KtType
 import org.jetbrains.kotlin.analysis.api.types.KtTypeMappingMode
+import org.jetbrains.kotlin.analysis.api.types.KtTypeNullability
 import org.jetbrains.kotlin.asJava.builder.LightMemberOrigin
 import org.jetbrains.kotlin.asJava.classes.lazyPub
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -156,19 +157,19 @@ internal class SymbolLightSimpleMethod(
                 additionalAnnotationsProvider = CompositeAdditionalAnnotationsProvider(
                     NullabilityAnnotationsProvider {
                         if (modifierList.hasModifierProperty(PsiModifier.PRIVATE)) {
-                            NullabilityType.Unknown
+                            KtTypeNullability.UNKNOWN
                         } else {
                             withFunctionSymbol { functionSymbol ->
                                 when {
                                     functionSymbol.isSuspend -> { // Any?
-                                        NullabilityType.Nullable
+                                        KtTypeNullability.NULLABLE
                                     }
                                     forceBoxedReturnType(functionSymbol) -> {
-                                        NullabilityType.NotNull
+                                        KtTypeNullability.NON_NULLABLE
                                     }
                                     else -> {
                                         val returnType = functionSymbol.returnType
-                                        if (returnType.isVoidType) NullabilityType.Unknown else getTypeNullability(returnType)
+                                        if (isVoidType(returnType)) KtTypeNullability.UNKNOWN else getTypeNullability(returnType)
                                     }
                                 }
                             }
@@ -191,12 +192,11 @@ internal class SymbolLightSimpleMethod(
     }
 
     // Inspired by KotlinTypeMapper#forceBoxedReturnType
-    context(KtAnalysisSession)
-    private fun forceBoxedReturnType(functionSymbol: KtFunctionSymbol): Boolean {
+    private fun KtAnalysisSession.forceBoxedReturnType(functionSymbol: KtFunctionSymbol): Boolean {
         val returnType = functionSymbol.returnType
         // 'invoke' methods for lambdas, function literals, and callable references
         // implicitly override generic 'invoke' from a corresponding base class.
-        if (functionSymbol.isBuiltinFunctionInvoke && returnType.isInlineClassType)
+        if (functionSymbol.isBuiltinFunctionInvoke && isInlineClassType(returnType))
             return true
 
         return returnType.isPrimitive &&
@@ -205,23 +205,22 @@ internal class SymbolLightSimpleMethod(
                 }
     }
 
-    context(KtAnalysisSession)
-    private val KtType.isInlineClassType: Boolean
-        get() = ((this as? KtNonErrorClassType)?.classSymbol as? KtNamedClassOrObjectSymbol)?.isInline == true
+    @Suppress("UnusedReceiverParameter")
+    private fun KtAnalysisSession.isInlineClassType(type: KtType): Boolean {
+        return ((type as? KtNonErrorClassType)?.classSymbol as? KtNamedClassOrObjectSymbol)?.isInline == true
+    }
 
-    context(KtAnalysisSession)
-    private val KtType.isVoidType: Boolean
-        get() {
-            val expandedType = fullyExpandedType
-            return expandedType.isUnit && expandedType.nullabilityType != NullabilityType.Nullable
-        }
+    private fun KtAnalysisSession.isVoidType(type: KtType): Boolean {
+        val expandedType = type.fullyExpandedType
+        return expandedType.isUnit && expandedType.nullability != KtTypeNullability.NULLABLE
+    }
 
     private val _returnedType: PsiType by lazyPub {
         withFunctionSymbol { functionSymbol ->
             val ktType = if (functionSymbol.isSuspend) {
                 analysisSession.builtinTypes.NULLABLE_ANY // Any?
             } else {
-                functionSymbol.returnType.takeUnless { it.isVoidType } ?: return@withFunctionSymbol PsiType.VOID
+                functionSymbol.returnType.takeUnless { isVoidType(it) } ?: return@withFunctionSymbol PsiType.VOID
             }
 
             val typeMappingMode = if (forceBoxedReturnType(functionSymbol))

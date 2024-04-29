@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.ir.linkage.partial.setupPartialLinkageConfig
 import org.jetbrains.kotlin.konan.file.File
 import org.jetbrains.kotlin.konan.target.CompilerOutputKind
+import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.util.visibleName
 
 fun CompilerConfiguration.setupFromArguments(arguments: K2NativeCompilerArguments) = with(KonanConfigKeys) {
@@ -73,6 +74,10 @@ fun CompilerConfiguration.setupFromArguments(arguments: K2NativeCompilerArgument
     arguments.runtimeFile?.let { put(RUNTIME_FILE, it) }
     arguments.temporaryFilesDir?.let { put(TEMPORARY_FILES_DIR, it) }
     put(SAVE_LLVM_IR, arguments.saveLlvmIrAfter.toList())
+
+    if (arguments.optimization && arguments.debug) {
+        report(WARNING, "Unsupported combination of flags: -opt and -g. Please pick one.")
+    }
 
     put(LIST_TARGETS, arguments.listTargets)
     put(OPTIMIZATION, arguments.optimization)
@@ -169,7 +174,6 @@ fun CompilerConfiguration.setupFromArguments(arguments: K2NativeCompilerArgument
     put(FRAMEWORK_IMPORT_HEADERS, arguments.frameworkImportHeaders.toNonNullList())
     arguments.emitLazyObjCHeader?.let { put(EMIT_LAZY_OBJC_HEADER_FILE, it) }
 
-    put(BITCODE_EMBEDDING_MODE, selectBitcodeEmbeddingMode(this@setupFromArguments, arguments))
     put(DEBUG_INFO_VERSION, arguments.debugInfoFormatVersion.toInt())
     put(OBJC_GENERICS, !arguments.noObjcGenerics)
     put(DEBUG_PREFIX_MAP, parseDebugPrefixMap(arguments, this@setupFromArguments))
@@ -320,6 +324,9 @@ fun CompilerConfiguration.setupFromArguments(arguments: K2NativeCompilerArgument
     putIfNotNull(SAVE_DEPENDENCIES_PATH, arguments.saveDependenciesPath)
     putIfNotNull(SAVE_LLVM_IR_DIRECTORY, arguments.saveLlvmIrDirectory)
     putIfNotNull(KONAN_DATA_DIR, arguments.konanDataDir)
+
+    if (arguments.manifestNativeTargets != null)
+        putIfNotNull(MANIFEST_NATIVE_TARGETS, parseManifestNativeTargets(arguments.manifestNativeTargets!!))
 }
 
 private fun String.absoluteNormalizedFile() = java.io.File(this).absoluteFile.normalize()
@@ -370,25 +377,6 @@ private fun parsePreLinkCachesValue(
         configuration.report(ERROR, "Unsupported `-Xpre-link-caches` value: $value. Possible values are 'enable'/'disable'")
         null
     }
-}
-
-private fun selectBitcodeEmbeddingMode(
-        configuration: CompilerConfiguration,
-        arguments: K2NativeCompilerArguments
-): BitcodeEmbedding.Mode = when {
-    arguments.embedBitcodeMarker -> {
-        if (arguments.embedBitcode) {
-            configuration.report(
-                    STRONG_WARNING,
-                    "'${K2NativeCompilerArguments.EMBED_BITCODE_FLAG}' is ignored because '${K2NativeCompilerArguments.EMBED_BITCODE_MARKER_FLAG}' is specified"
-            )
-        }
-        BitcodeEmbedding.Mode.MARKER
-    }
-    arguments.embedBitcode -> {
-        BitcodeEmbedding.Mode.FULL
-    }
-    else -> BitcodeEmbedding.Mode.NONE
 }
 
 private fun selectExportedLibraries(
@@ -592,4 +580,24 @@ private fun parseCompileFromBitcode(
                 "Compilation from bitcode is not available when producing ${outputKind.visibleName}")
     }
     return arguments.compileFromBitcode
+}
+
+private fun CompilerConfiguration.parseManifestNativeTargets(targetStrings: Array<String>): Collection<KonanTarget> {
+    val trimmedTargetStrings = targetStrings.map { it.trim() }
+    val (recognizedTargetNames, unrecognizedTargetNames) = trimmedTargetStrings.partition { it in KonanTarget.predefinedTargets.keys }
+
+    if (unrecognizedTargetNames.isNotEmpty()) {
+        report(
+                WARNING,
+                """
+                    The following target names passed to the -Xmanifest-native-targets are not recognized:
+                    ${unrecognizedTargetNames.joinToString(separator = ", ")}
+                    
+                    List of known target names:
+                    ${KonanTarget.predefinedTargets.keys.joinToString(separator = ", ")}
+                """.trimIndent()
+        )
+    }
+
+    return recognizedTargetNames.map { KonanTarget.predefinedTargets[it]!! }
 }

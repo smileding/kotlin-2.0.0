@@ -38,6 +38,12 @@ public class FirLightTreeJsOldFrontendDiagnosticsTestGenerated extends AbstractF
   }
 
   @Test
+  @TestMetadata("excludedDefaultImports.kt")
+  public void testExcludedDefaultImports() {
+    runTest("compiler/testData/diagnostics/testsWithJsStdLib/excludedDefaultImports.kt");
+  }
+
+  @Test
   @TestMetadata("externalInterfaceClassLiteral.kt")
   public void testExternalInterfaceClassLiteral() {
     runTest("compiler/testData/diagnostics/testsWithJsStdLib/externalInterfaceClassLiteral.kt");
@@ -77,6 +83,12 @@ public class FirLightTreeJsOldFrontendDiagnosticsTestGenerated extends AbstractF
   @TestMetadata("jsExternalSuperclassWithoutArguments.kt")
   public void testJsExternalSuperclassWithoutArguments() {
     runTest("compiler/testData/diagnostics/testsWithJsStdLib/jsExternalSuperclassWithoutArguments.kt");
+  }
+
+  @Test
+  @TestMetadata("jsStatic.kt")
+  public void testJsStatic() {
+    runTest("compiler/testData/diagnostics/testsWithJsStdLib/jsStatic.kt");
   }
 
   @Test

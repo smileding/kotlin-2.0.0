@@ -633,8 +633,8 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
      *     val <array> = a
      *     val <index0> = b
      *     val <index1> = c
-     *     val <unary> = <array>.get(b, c)
-     *     <array>.set(b, c, <unary>.inc())
+     *     val <unary> = <array>.get(<index0>, <index1>)
+     *     <array>.set(<index0>, <index1>, <unary>.inc())
      *     ^<unary>
      * }
      *
@@ -646,8 +646,8 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
      *     val <array> = a
      *     val <index0> = b
      *     val <index1> = c
-     *     <array>.set(b, c, <array>.get(b, c).inc())
-     *     ^<array>.get(b, c)
+     *     <array>.set(b, c, <array>.get(<index0>, <index1>).inc())
+     *     ^<array>.get(<index0>, <index1>)
      * }
      *
      */
@@ -816,7 +816,7 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
         rhsExpression: FirExpression,
         operation: FirOperation,
         annotations: List<FirAnnotation>,
-        // Effectively `value = rhs?.convert()`, but at generateAugmentedArraySetCall we need to recreate FIR for rhs
+        // Effectively `value = rhs?.convert()`, but at generateIndexedAccessAugmentedAssignment we need to recreate FIR for rhs
         // since there should be different nodes for desugaring as `.set(.., get().plus($rhs1))` and `.get(...).plusAssign($rhs2)`
         // Once KT-50861 is fixed, those two parameters shall be eliminated
         rhsAST: T?,
@@ -842,18 +842,18 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
 
                     if (receiver is FirSafeCallExpression) {
                         receiver.replaceSelector(
-                            generateAugmentedArraySetCall(
+                            generateIndexedAccessAugmentedAssignment(
                                 receiver.selector as FirExpression, baseSource, arrayAccessSource, operation, annotations, rhsAST, convert
                             )
                         )
                         source = receiver.source?.fakeElement(KtFakeSourceElementKind.IndexedAssignmentCoercionBlock)
                         statements += receiver
                     } else {
-                        val augmentedArraySetCall = generateAugmentedArraySetCall(
+                        val indexedAccessAugmentedAssignment = generateIndexedAccessAugmentedAssignment(
                             receiver, baseSource, arrayAccessSource, operation, annotations, rhsAST, convert
                         )
-                        source = augmentedArraySetCall.source?.fakeElement(KtFakeSourceElementKind.IndexedAssignmentCoercionBlock)
-                        statements += augmentedArraySetCall
+                        source = indexedAccessAugmentedAssignment.source?.fakeElement(KtFakeSourceElementKind.IndexedAssignmentCoercionBlock)
+                        statements += indexedAccessAugmentedAssignment
                     }
                 }
                 statements += buildUnitExpression {
@@ -864,6 +864,10 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
 
         if (operation in FirOperation.ASSIGNMENTS && operation != FirOperation.ASSIGN) {
             val lhsReceiver = this@generateAssignment?.convert()
+            if (lhsReceiver is FirQualifiedAccessExpression) {
+                @OptIn(FirImplementationDetail::class)
+                lhsReceiver.replaceSource(lhsReceiver.source?.fakeElement(operation.toAugmentedAssignSourceKind()))
+            }
 
             val receiverToUse =
                 if (lhsReceiver is FirSafeCallExpression)
@@ -871,7 +875,7 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
                 else
                     lhsReceiver
 
-            val result = buildAssignmentOperatorStatement {
+            val result = buildAugmentedAssignment {
                 source = baseSource
                 this.operation = operation
                 leftArgument = receiverToUse ?: buildErrorExpression {
@@ -940,7 +944,7 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
         return safeCallNonAssignment
     }
 
-    private fun generateAugmentedArraySetCall(
+    private fun generateIndexedAccessAugmentedAssignment(
         receiver: FirExpression, // a.get(x,y)
         baseSource: KtSourceElement?,
         arrayAccessSource: KtSourceElement?,
@@ -948,12 +952,12 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
         annotations: List<FirAnnotation>,
         rhs: T?,
         convert: T.() -> FirExpression,
-    ): FirStatement {
+    ): FirIndexedAccessAugmentedAssignment {
         require(receiver is FirFunctionCall) {
             "Array access should be desugared to a function call, but $receiver is found"
         }
 
-        return buildAugmentedArraySetCall {
+        return buildIndexedAccessAugmentedAssignment {
             source = baseSource
             this.operation = operation
             this.lhsGetCall = receiver
@@ -1203,10 +1207,12 @@ fun <TBase, TSource : TBase, TParameter : TBase> FirRegularClassBuilder.createDa
         symbol = FirNamedFunctionSymbol(CallableId(classId.packageFqName, classId.relativeClassName, StandardNames.DATA_CLASS_COPY))
         dispatchReceiverType = dispatchReceiver
         resolvePhase = this@createDataClassCopyFunction.resolvePhase
+        // We need to resolve annotations on the data class. It's not possible to do it on RAW_FIR phase.
+        // We will resolve the visibility later in the STATUS phase
         status = if (isFromLibrary) {
-            FirResolvedDeclarationStatusImpl(Visibilities.Public, Modality.FINAL, EffectiveVisibility.Public)
+            FirResolvedDeclarationStatusImpl(Visibilities.Unknown, Modality.FINAL, EffectiveVisibility.Unknown)
         } else {
-            FirDeclarationStatusImpl(Visibilities.Public, Modality.FINAL)
+            FirDeclarationStatusImpl(Visibilities.Unknown, Modality.FINAL)
         }
         for ((ktParameter, firProperty) in zippedParameters) {
             val propertyName = firProperty.name

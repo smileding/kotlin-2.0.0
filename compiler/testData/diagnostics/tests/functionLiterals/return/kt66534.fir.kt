@@ -19,7 +19,7 @@ public class A {
 // ================= Lambdas assigned to a variable =================
 
 val expectedNullableUnitEmptyReturnAndString: () -> Unit? = l@ {
-    if ("0".hashCode() == 42) return@l
+    if ("0".hashCode() == 42) <!RETURN_TYPE_MISMATCH!>return@l<!>
     ""
 }
 
@@ -31,8 +31,8 @@ fun expectedFlexibleUnitEmptyReturnAndString() {
 }
 
 val expectedNullableUnitEmptyReturnAndExplicitReturnNull: () -> Unit? = l@ {
-    if ("0".hashCode() == 42) return@l
-    return@l <!NULL_FOR_NONNULL_TYPE!>null<!>
+    if ("0".hashCode() == 42) <!RETURN_TYPE_MISMATCH!>return@l<!>
+    return@l null
 }
 
 fun expectedFlexibleUnitEmptyReturnAndExplicitReturnNull() {
@@ -42,16 +42,22 @@ fun expectedFlexibleUnitEmptyReturnAndExplicitReturnNull() {
     }
 }
 
-val expectedNullableUnitExplicitReturnUnitAndString: () -> Unit? = <!INITIALIZER_TYPE_MISMATCH!>l@ {
+val expectedNullableUnitExplicitReturnUnitAndString: () -> Unit? = <!INITIALIZER_TYPE_MISMATCH("kotlin.Function0<kotlin.Unit?>; kotlin.Function0<kotlin.Any>")!>l@ {
     if ("0".hashCode() == 42) return@l Unit
     ""
 }<!>
 
+fun expectedFlexibleUnitImplicitReturnString() {
+    A.foo = l@ {
+        ""
+    }
+}
+
 fun expectedFlexibleUnitExplicitReturnUnitAndString() {
-    A.foo = l@ <!ASSIGNMENT_TYPE_MISMATCH!>{
+    A.foo = l@ {
         if ("0".hashCode() == 42) return@l Unit
         ""
-    }<!>
+    }
 }
 
 val expectedNullableUnitExplicitReturnString: () -> Unit? = <!INITIALIZER_TYPE_MISMATCH!>l@ {
@@ -59,9 +65,9 @@ val expectedNullableUnitExplicitReturnString: () -> Unit? = <!INITIALIZER_TYPE_M
 }<!>
 
 fun expectedFlexibleUnitExplicitReturnString() {
-    A.foo = l@ <!ASSIGNMENT_TYPE_MISMATCH!>{
-        return@l ""
-    }<!>
+    A.foo = l@ {
+        return@l <!RETURN_TYPE_MISMATCH!>""<!>
+    }
 }
 
 val expectedNullableUnitExplicitReturnNull: () -> Unit? = l@ {
@@ -70,7 +76,7 @@ val expectedNullableUnitExplicitReturnNull: () -> Unit? = l@ {
 
 fun expectedFlexibleUnitExplicitReturnNull() {
     A.foo = l@ {
-        return@l null
+        return@l <!NULL_FOR_NONNULL_TYPE!>null<!>
     }
 }
 
@@ -94,7 +100,7 @@ fun test() {
 
     A.run l@ {
         if ("0".hashCode() == 42) return@l
-        return@l null
+        return@l <!NULL_FOR_NONNULL_TYPE!>null<!>
     }
 
     run<Unit?> l@ {
@@ -103,12 +109,16 @@ fun test() {
     }
 
     A.run l@ {
+        ""
+    }
+
+    A.run l@ {
         if ("0".hashCode() == 42) return@l Unit
         ""
     }
 
     run<Unit?> l@ {
-        return@l <!ARGUMENT_TYPE_MISMATCH, RETURN_TYPE_MISMATCH!>""<!>
+        return@l <!ARGUMENT_TYPE_MISMATCH!>""<!>
     }
 
     A.run l@ {
@@ -120,6 +130,6 @@ fun test() {
     }
 
     A.run l@ {
-        return@l null
+        return@l <!NULL_FOR_NONNULL_TYPE!>null<!>
     }
 }

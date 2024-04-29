@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    api(project(":compiler:cli-base"))
     api(project(":compiler:util"))
     api(project(":compiler:frontend"))
     api(project(":compiler:backend-common"))
@@ -16,6 +17,9 @@ dependencies {
     api(project(":js:js.frontend"))
     api(project(":compiler:backend.js"))
     api(project(":wasm:wasm.ir"))
+
+    implementation(project(":wasm:wasm.frontend"))
+    implementation(project(":wasm:wasm.config"))
 
     compileOnly(intellijCore())
 }

@@ -28,7 +28,7 @@ internal abstract class KtFirMemberSymbolPointer<S : KtSymbol>(
         val scope = with(analysisSession) {
             val ownerSymbol = ownerPointer.restoreSymbol() ?: return null
             val owner = ownerSymbol.firSymbol as? FirClassSymbol ?: return null
-            getSearchScope(owner)
+            getSearchScope(analysisSession, owner)
         } ?: return null
 
         return analysisSession.chooseCandidateAndCreateSymbol(scope, analysisSession.useSiteSession)
@@ -36,10 +36,9 @@ internal abstract class KtFirMemberSymbolPointer<S : KtSymbol>(
 
     protected abstract fun KtFirAnalysisSession.chooseCandidateAndCreateSymbol(candidates: FirScope, firSession: FirSession): S?
 
-    context(KtFirAnalysisSession)
-    protected open fun getSearchScope(owner: FirClassSymbol<*>): FirScope? {
-        val firSession = useSiteSession
-        val scopeSession = getScopeSessionFor(firSession)
+    protected open fun getSearchScope(analysisSession: KtFirAnalysisSession, owner: FirClassSymbol<*>): FirScope? {
+        val firSession = analysisSession.useSiteSession
+        val scopeSession = analysisSession.getScopeSessionFor(firSession)
         return if (isStatic) {
             val firClass = owner.fir
             firClass.scopeProvider.getStaticMemberScopeForCallables(firClass, firSession, scopeSession)
@@ -58,12 +57,12 @@ internal abstract class KtFirMemberSymbolPointer<S : KtSymbol>(
         other.isStatic == isStatic && other.ownerPointer.pointsToTheSameSymbolAs(ownerPointer)
 }
 
-context(KtAnalysisSession)
-internal inline fun <reified T : KtSymbol> KtSymbol.requireOwnerPointer(): KtSymbolPointer<T> {
-    val symbolWithMembers = getContainingSymbol()
-    requireNotNull(symbolWithMembers) { "should present for member declaration" }
-    requireIsInstance<T>(symbolWithMembers)
+internal inline fun <reified T : KtSymbol> KtAnalysisSession.createOwnerPointer(symbol: KtSymbol): KtSymbolPointer<T> {
+    val containingSymbol = symbol.getContainingSymbol()
+        ?: error("Non-null symbol is expected for a member declaration")
+
+    requireIsInstance<T>(containingSymbol)
 
     @Suppress("UNCHECKED_CAST")
-    return symbolWithMembers.createPointer() as KtSymbolPointer<T>
+    return containingSymbol.createPointer() as KtSymbolPointer<T>
 }

@@ -15,7 +15,6 @@ import org.jetbrains.kotlin.diagnostics.hasVar
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
-import org.jetbrains.kotlin.fir.resolve.diagnostics.canBeEvaluatedAtCompileTime
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.getAllowedAnnotationTargets
 import org.jetbrains.kotlin.fir.analysis.checkers.getTargetAnnotation
@@ -24,6 +23,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.CYCLE_IN_ANNOTATI
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.isLocal
 import org.jetbrains.kotlin.fir.declarations.utils.isSynthetic
+import org.jetbrains.kotlin.fir.expressions.canBeEvaluatedAtCompileTime
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.resolve.toSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
@@ -191,7 +191,7 @@ object FirAnnotationClassDeclarationChecker : FirRegularClassChecker(MppCheckerK
         }
 
         fun parameterHasCycle(ownedAnnotation: FirRegularClassSymbol, parameter: FirValueParameterSymbol): Boolean {
-            val returnType = parameter.resolvedReturnTypeRef.coneType
+            val returnType = parameter.resolvedReturnTypeRef.coneType.fullyExpandedType(session)
             return when {
                 parameter.isVararg || returnType.isNonPrimitiveArray -> false
                 returnType.typeArguments.isNotEmpty() -> {

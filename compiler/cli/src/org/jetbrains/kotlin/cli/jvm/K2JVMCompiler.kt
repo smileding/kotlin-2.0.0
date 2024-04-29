@@ -57,7 +57,6 @@ class K2JVMCompiler : CLICompiler<K2JVMCompilerArguments>() {
     ): ExitCode {
         val messageCollector = configuration.getNotNull(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY)
 
-        configuration.putIfNotNull(CLIConfigurationKeys.REPEAT_COMPILE_MODULES, arguments.repeatCompileModules?.toIntOrNull())
         configuration.put(CLIConfigurationKeys.PHASE_CONFIG, createPhaseConfig(jvmPhases, arguments, messageCollector))
 
         if (!configuration.configureJdkHome(arguments)) return COMPILATION_ERROR
@@ -153,10 +152,12 @@ class K2JVMCompiler : CLICompiler<K2JVMCompilerArguments>() {
                     return COMPILATION_ERROR
                 }
 
-                compileModulesUsingFrontendIrAndLightTree(
-                    projectEnvironment, configuration, messageCollector, buildFile, chunk.single(), targetDescription,
-                    checkSourceFiles = !arguments.allowNoSourceFiles && !arguments.version
-                )
+                if (!compileModulesUsingFrontendIrAndLightTree(
+                        projectEnvironment, configuration, messageCollector, buildFile, chunk.single(), targetDescription,
+                        checkSourceFiles = !arguments.allowNoSourceFiles,
+                        isPrintingVersion = arguments.version,
+                    )
+                ) return COMPILATION_ERROR
             } else {
                 val environment = createCoreEnvironment(
                     rootDisposable, configuration, messageCollector,
@@ -173,7 +174,7 @@ class K2JVMCompiler : CLICompiler<K2JVMCompilerArguments>() {
                     return COMPILATION_ERROR
                 }
 
-                KotlinToJVMBytecodeCompiler.compileModules(environment, buildFile, chunk)
+                if (!KotlinToJVMBytecodeCompiler.compileModules(environment, buildFile, chunk)) return COMPILATION_ERROR
             }
             return OK
         } catch (e: CompilationException) {

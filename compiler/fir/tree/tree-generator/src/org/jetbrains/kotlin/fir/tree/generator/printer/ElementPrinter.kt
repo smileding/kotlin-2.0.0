@@ -11,14 +11,17 @@ import org.jetbrains.kotlin.fir.tree.generator.model.Element
 import org.jetbrains.kotlin.fir.tree.generator.model.Field
 import org.jetbrains.kotlin.generators.tree.*
 import org.jetbrains.kotlin.generators.tree.printer.*
-import org.jetbrains.kotlin.utils.SmartPrinter
 
-internal class ElementPrinter(printer: SmartPrinter) : AbstractElementPrinter<Element, Field>(printer) {
+private val elementsWithReplaceSource = setOf(
+    FirTreeBuilder.qualifiedAccessExpression,
+    FirTreeBuilder.delegatedConstructorCall,
+)
 
-    override fun makeFieldPrinter(printer: SmartPrinter) = object : AbstractFieldPrinter<Field>(printer) {}
+internal class ElementPrinter(printer: ImportCollectingPrinter) : AbstractElementPrinter<Element, Field>(printer) {
 
-    context(ImportCollector)
-    override fun SmartPrinter.printAdditionalMethods(element: Element) {
+    override fun makeFieldPrinter(printer: ImportCollectingPrinter) = object : AbstractFieldPrinter<Field>(printer) {}
+
+    override fun ImportCollectingPrinter.printAdditionalMethods(element: Element) {
         val kind = element.kind ?: error("Expected non-null element kind")
         with(element) {
             val treeName = "FIR"
@@ -42,7 +45,7 @@ internal class ElementPrinter(printer: SmartPrinter) : AbstractElementPrinter<El
             }
 
             allFields.filter { it.withReplace }.forEach {
-                val override = overriddenFieldsHaveSameClass[it, it] && !(it.name == "source" && element == FirTreeBuilder.qualifiedAccessExpression)
+                val override = overriddenFieldsHaveSameClass[it, it] && !(it.name == "source" && element in elementsWithReplaceSource)
                 it.replaceDeclaration(override, forceNullable = it.useNullableForReplace)
                 for (overriddenType in it.overriddenTypes) {
                     it.replaceDeclaration(true, overriddenType)
@@ -52,13 +55,18 @@ internal class ElementPrinter(printer: SmartPrinter) : AbstractElementPrinter<El
             for (field in allFields) {
                 if (!field.needsSeparateTransform) continue
                 println()
-                transformFunctionDeclaration(field, element, override = field.fromParent && field.parentHasSeparateTransform, kind)
+                transformFunctionDeclaration(
+                    field = field,
+                    returnType = element.withSelfArgs(),
+                    override = field.fromParent && field.parentHasSeparateTransform,
+                    implementationKind = kind
+                )
                 println()
             }
             if (needTransformOtherChildren) {
                 println()
                 transformOtherChildrenFunctionDeclaration(
-                    element,
+                    element.withSelfArgs(),
                     override = element.elementParents.any { it.element.needTransformOtherChildren },
                     kind,
                 )

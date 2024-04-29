@@ -5,6 +5,9 @@
 
 package org.jetbrains.kotlin.generators.tree
 
+import org.jetbrains.kotlin.generators.tree.imports.ImportCollecting
+import org.jetbrains.kotlin.generators.tree.imports.Importable
+
 sealed class Builder<BuilderField, Element> : FieldContainer<BuilderField>, TypeRefWithNullability, Importable
         where BuilderField : AbstractField<*>,
               Element : AbstractElement<Element, *, *> {
@@ -14,11 +17,6 @@ sealed class Builder<BuilderField, Element> : FieldContainer<BuilderField>, Type
     val usedTypes: MutableList<Importable> = mutableListOf()
 
     abstract val uselessFields: List<BuilderField>
-
-    override fun get(fieldName: String): BuilderField {
-        return allFields.firstOrNull { it.name == fieldName }
-            ?: throw IllegalArgumentException("Builder $typeName doesn't contains field $fieldName")
-    }
 
     private val fieldsFromParentIndex: Map<String, Boolean> by lazy {
         mutableMapOf<String, Boolean>().apply {
@@ -32,9 +30,8 @@ sealed class Builder<BuilderField, Element> : FieldContainer<BuilderField>, Type
 
     override fun substitute(map: TypeParameterSubstitutionMap) = this
 
-    context(ImportCollector)
-    override fun renderTo(appendable: Appendable) {
-        addImport(this)
+    override fun renderTo(appendable: Appendable, importCollector: ImportCollecting) {
+        importCollector.addImport(this)
         appendable.append(typeName)
     }
 

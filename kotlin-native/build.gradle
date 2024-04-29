@@ -30,6 +30,8 @@ import java.util.concurrent.ConcurrentHashMap
 import plugins.KotlinBuildPublishingPluginKt
 import java.security.MessageDigest
 
+import static BuildPropertiesKt.getKotlinBuildProperties
+
 buildscript {
     apply from: "gradle/kotlinGradlePlugin.gradle"
 
@@ -53,6 +55,7 @@ if (PlatformInfo.isMac()) {
 
 apply plugin: "kotlin.native.build-tools-conventions"
 apply plugin: "platform-manager"
+apply plugin: "java"
 
 allprojects {
     repositories {
@@ -616,26 +619,11 @@ tasks.register("compdb", Copy) {
 }
 
 targetList.each { targetName ->
-    tasks.register("${targetName}CheckPlatformAbiCompatibility", CompareDistributionSignatures) {
-        dependsOn "${targetName}PlatformLibs"
-
-        libraries = new CompareDistributionSignatures.Libraries.Platform(targetName)
-        if (project.hasProperty("anotherDistro")) {
-            oldDistribution = project.findProperty("anotherDistro")
-        }
-        onMismatchMode = CompareDistributionSignatures.OnMismatchMode.FAIL
-    }
+    CompareDistributionSignatures.registerForPlatform(project, targetName)
 }
 
-tasks.register("checkStdlibAbiCompatibility", CompareDistributionSignatures) {
-    dependsOn "distRuntime"
+CompareDistributionSignatures.registerForStdlib(project)
 
-    libraries = CompareDistributionSignatures.Libraries.Standard.INSTANCE
-    if (project.hasProperty("anotherDistro")) {
-        oldDistribution = project.findProperty("anotherDistro")
-    }
-    onMismatchMode = CompareDistributionSignatures.OnMismatchMode.FAIL
-}
 // FIXME: should be a part of Host/TargetManager
 String platformName(KonanTarget target) {
     def result

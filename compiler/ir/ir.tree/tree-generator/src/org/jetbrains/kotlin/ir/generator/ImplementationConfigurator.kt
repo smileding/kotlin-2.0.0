@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.ir.generator
 
 import org.jetbrains.kotlin.generators.tree.*
+import org.jetbrains.kotlin.generators.tree.imports.ArbitraryImportable
 import org.jetbrains.kotlin.generators.tree.printer.FunctionParameter
 import org.jetbrains.kotlin.generators.tree.printer.VariableKind
 import org.jetbrains.kotlin.generators.tree.printer.printFunctionWithBlockBody
@@ -17,42 +18,67 @@ import org.jetbrains.kotlin.utils.withIndent
 
 object ImplementationConfigurator : AbstractIrTreeImplementationConfigurator() {
     override fun configure(model: Model): Unit = with(IrTree) {
+        allImplOf(attributeContainer) {
+            default("attributeOwnerId", "this")
+            defaultNull("originalBeforeInline")
+        }
+
+        allImplOf(metadataSourceOwner) {
+            defaultNull("metadata")
+        }
+
+        allImplOf(mutableAnnotationContainer) {
+            defaultEmptyList("annotations")
+        }
+
+        allImplOf(overridableDeclaration) {
+            defaultEmptyList("overriddenSymbols")
+        }
+
+        allImplOf(typeParametersContainer) {
+            defaultEmptyList("typeParameters")
+        }
+
+        allImplOf(statementContainer) {
+            default("statements", "ArrayList(2)")
+        }
+
+        allImplOf(declaration) {
+            default("descriptor", "symbol.descriptor", withGetter = true)
+        }
+
         impl(anonymousInitializer) {
             isLateinit("body")
         }
 
-        impl(simpleFunction, "IrFunctionImpl") {
-            defaultEmptyList("valueParameters")
-            defaultNull("dispatchReceiverParameter", "extensionReceiverParameter", "body", "correspondingPropertySymbol")
-            default("contextReceiverParametersCount", "0")
-            isLateinit("returnType")
-        }
-        impl(functionWithLateBinding) {
-            defaultEmptyList("valueParameters")
-            defaultNull("dispatchReceiverParameter", "extensionReceiverParameter", "body", "correspondingPropertySymbol")
-            default("contextReceiverParametersCount", "0")
-            isLateinit("returnType")
-            defaultNull("containerSource", withGetter = true)
-            configureDeclarationWithLateBindinig(simpleFunctionSymbolType)
-        }
-
-        impl(constructor) {
+        allImplOf(function) {
             defaultEmptyList("valueParameters")
             defaultNull("dispatchReceiverParameter", "extensionReceiverParameter", "body")
             default("contextReceiverParametersCount", "0")
             isLateinit("returnType")
         }
 
+        allImplOf(simpleFunction) {
+            defaultNull("correspondingPropertySymbol")
+        }
+
+        impl(simpleFunction, "IrFunctionImpl")
+
+        impl(functionWithLateBinding) {
+            configureDeclarationWithLateBindinig(simpleFunctionSymbolType)
+        }
+
         impl(field) {
             defaultNull("initializer", "correspondingPropertySymbol")
         }
 
-        impl(property) {
+        allImplOf(property) {
             defaultNull("backingField", "getter", "setter")
         }
+
+        impl(property)
+
         impl(propertyWithLateBinding) {
-            defaultNull("backingField", "getter", "setter")
-            defaultNull("containerSource", withGetter = true)
             configureDeclarationWithLateBindinig(propertySymbolType)
         }
 
@@ -129,8 +155,7 @@ object ImplementationConfigurator : AbstractIrTreeImplementationConfigurator() {
             default("endOffset", undefinedOffset(), withGetter = true)
             implementation.generationCallback = {
                 println()
-                print()
-                println(
+                printlnMultiLine(
                     """
                     companion object {
                         @Deprecated(
@@ -140,7 +165,7 @@ object ImplementationConfigurator : AbstractIrTreeImplementationConfigurator() {
                         fun createEmptyExternalPackageFragment(module: ModuleDescriptor, fqName: FqName): IrExternalPackageFragment =
                             org.jetbrains.kotlin.ir.declarations.createEmptyExternalPackageFragment(module, fqName)
                     }
-                    """.replaceIndent(currentIndent)
+                    """
                 )
             }
         }
@@ -160,6 +185,124 @@ object ImplementationConfigurator : AbstractIrTreeImplementationConfigurator() {
                 }
             }
         }
+
+        allImplOf(loop) {
+            isLateinit("condition")
+            defaultNull("label", "body")
+        }
+
+        allImplOf(breakContinue) {
+            defaultNull("label")
+        }
+
+        impl(branch)
+
+        impl(`when`) {
+            default("branches", "ArrayList(2)")
+        }
+
+        impl(catch) {
+            isLateinit("result")
+        }
+
+        impl(`try`) {
+            isLateinit("tryResult")
+            defaultNull("finallyExpression")
+            default("catches", smartList())
+        }
+
+        impl(constantObject) {
+            default("typeArguments", smartList())
+            default("valueArguments", smartList())
+        }
+
+        impl(constantArray) {
+            default("elements", smartList())
+        }
+
+        impl(dynamicOperatorExpression) {
+            isLateinit("receiver")
+            default("arguments", smartList())
+        }
+
+        impl(errorCallExpression) {
+            defaultNull("explicitReceiver")
+            default("arguments", smartList())
+        }
+
+        allImplOf(fieldAccessExpression) {
+            defaultNull("receiver")
+        }
+
+        impl(setField) {
+            isLateinit("value")
+        }
+
+        impl(stringConcatenation) {
+            default("arguments", "ArrayList(2)")
+        }
+
+        impl(block)
+
+        impl(returnableBlock) {
+            default("descriptor", "symbol.descriptor", withGetter = true)
+        }
+
+        impl(errorExpression)
+
+        impl(vararg) {
+            default("elements", smartList())
+        }
+
+
+        impl(composite) {
+            implementation.generationCallback = {
+                println()
+                print()
+                println("""
+                    // A temporary API for compatibility with Flysto user project, see KQA-1254
+                    constructor(
+                        startOffset: Int,
+                        endOffset: Int,
+                        type: IrType,
+                        origin: IrStatementOrigin?,
+                        statements: List<IrStatement>,
+                    ) : this(
+                        constructorIndicator = null,
+                        startOffset = startOffset,
+                        endOffset = endOffset,
+                        type = type,
+                        origin = origin,
+                    ) {
+                        this.statements.addAll(statements)
+                    }
+                """.replaceIndent(currentIndent))
+            }
+        }
+
+        impl(`return`) {
+            implementation.generationCallback = {
+                println()
+                print()
+                println("""
+                    // A temporary API for compatibility with Flysto user project, see KQA-1254
+                    constructor(
+                        startOffset: Int,
+                        endOffset: Int,
+                        type: IrType,
+                        returnTargetSymbol: IrReturnTargetSymbol,
+                        value: IrExpression,
+                    ) : this(
+                        constructorIndicator = null,
+                        startOffset = startOffset,
+                        endOffset = endOffset,
+                        type = type,
+                        returnTargetSymbol = returnTargetSymbol,
+                        value = value,
+                    )
+                """.replaceIndent(currentIndent))
+            }
+        }
     }
 
     private fun ImplementationContext.configureDeclarationWithLateBindinig(symbolType: ClassRef<*>) {
@@ -177,6 +320,7 @@ object ImplementationConfigurator : AbstractIrTreeImplementationConfigurator() {
             value = "_symbol?.descriptor ?: this.toIrBasedDescriptor()"
             withGetter = true
         }
+        defaultNull("containerSource", withGetter = true)
         implementation.generationCallback = {
             println()
             printPropertyDeclaration(
@@ -203,57 +347,22 @@ object ImplementationConfigurator : AbstractIrTreeImplementationConfigurator() {
     }
 
     override fun configureAllImplementations(model: Model) {
-        configureFieldInAllImplementations("parent") {
-            isLateinit("parent")
-            isMutable("parent")
-        }
-
-        configureFieldInAllImplementations("attributeOwnerId") {
-            default(it, "this")
-        }
-        configureFieldInAllImplementations("originalBeforeInline") {
-            defaultNull(it)
-        }
-
-        configureFieldInAllImplementations("metadata") {
-            defaultNull(it)
-        }
-
-        configureFieldInAllImplementations("annotations") {
-            defaultEmptyList(it)
-        }
-
-        configureFieldInAllImplementations("overriddenSymbols") {
-            defaultEmptyList(it)
-        }
-
-        configureFieldInAllImplementations("typeParameters") {
-            defaultEmptyList(it)
-        }
-
-        configureFieldInAllImplementations("statements") {
-            default(it, "ArrayList(2)")
-        }
-
-        configureFieldInAllImplementations(
-            "descriptor",
-            { impl -> impl.allFields.any { it.name == "symbol" } && impl.element != IrTree.errorDeclaration }
-        ) {
-            default(it, "symbol.descriptor", withGetter = true)
-        }
-
         configureFieldInAllImplementations(
             fieldName = null,
-            fieldPredicate = { it is ListField && it.isChild && it.listType == StandardTypes.mutableList }
+            fieldPredicate = { it is ListField && it.isChild && it.listType == StandardTypes.mutableList && it.implementationDefaultStrategy?.defaultValue == null }
         ) {
             default(it, "ArrayList()")
         }
 
-        // Generation of implementation classes of IrExpression are left out for subsequent MR, as a part of KT-65773.
         for (element in model.elements) {
-            if (element.category == Element.Category.Expression) {
-                for (implementation in element.implementations) {
+            for (implementation in element.implementations) {
+                // Generation of implementation classes of IrMemberAccessExpression are left out for subsequent MR, as a part of KT-65773.
+                if (element == IrTree.const || element.elementAncestorsAndSelfDepthFirst().any { it == IrTree.memberAccessExpression }) {
                     implementation.doPrint = false
+                }
+
+                if (element.category == Element.Category.Expression) {
+                    implementation.isConstructorPublic = false
                 }
             }
         }

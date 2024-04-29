@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2020 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -7,9 +7,8 @@ package org.jetbrains.kotlin.backend.jvm.lower
 
 import org.jetbrains.kotlin.backend.common.FileLoweringPass
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
-import org.jetbrains.kotlin.backend.common.phaser.makeIrFilePhase
+import org.jetbrains.kotlin.backend.common.phaser.PhaseDescription
 import org.jetbrains.kotlin.backend.jvm.JvmBackendContext
-import org.jetbrains.kotlin.backend.jvm.defaultArgumentCleanerPhase
 import org.jetbrains.kotlin.backend.jvm.ir.*
 import org.jetbrains.kotlin.backend.jvm.lower.SyntheticAccessorLowering.Companion.isAccessible
 import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
@@ -25,15 +24,6 @@ import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
 import org.jetbrains.kotlin.load.java.JvmAbi
-
-// Used from CodeFragmentCompiler for IDE Debugger Plug-In
-@Suppress("unused")
-val reflectiveAccessLowering = makeIrFilePhase(
-    ::ReflectiveAccessLowering,
-    name = "ReflectiveCalls",
-    description = "Avoid the need for accessors by replacing direct access to inaccessible members with accesses via reflection",
-    prerequisite = setOf(defaultArgumentCleanerPhase)
-)
 
 // This lowering replaces member accesses that are illegal according to JVM
 // accessibility rules with corresponding calls to the java.lang.reflect
@@ -59,13 +49,19 @@ val reflectiveAccessLowering = makeIrFilePhase(
 // *super calls, private or not, are not allowed from outside the class
 // hierarchy of the involved classes, so is emulated in fragment compilation by
 // the use of `invokespecial` - see `invokeSpecialForCall` below.
+@PhaseDescription(
+    name = "ReflectiveCalls",
+    description = "Avoid the need for accessors by replacing direct access to inaccessible members with accesses via reflection",
+    prerequisite = [JvmDefaultParameterCleaner::class]
+)
 internal class ReflectiveAccessLowering(
     val context: JvmBackendContext
 ) : IrElementTransformerVoidWithContext(), FileLoweringPass {
 
-    lateinit var inlineScopeResolver: IrInlineScopeResolver
+    private lateinit var inlineScopeResolver: IrInlineScopeResolver
 
     override fun lower(irFile: IrFile) {
+        if (context.evaluatorData == null) return
         inlineScopeResolver = irFile.findInlineCallSites(context)
         irFile.transformChildrenVoid(this)
     }
@@ -434,6 +430,7 @@ internal class ReflectiveAccessLowering(
 
     private fun shouldUseAccessor(accessor: IrSimpleFunction): Boolean {
         return (context.generatorExtensions as StubGeneratorExtensions).isAccessorWithExplicitImplementation(accessor)
+                || accessor.origin == IrDeclarationOrigin.DELEGATED_PROPERTY_ACCESSOR
     }
 
     // Returns a pair of the _type_ containing the field and the _instance_ on
@@ -450,7 +447,7 @@ internal class ReflectiveAccessLowering(
         }
 
         val type = getDeclaredClassType(call)
-        return type to call.dispatchReceiver!!
+        return type to call.dispatchReceiver
     }
 
     private fun getDeclaredClassType(call: IrCall) =

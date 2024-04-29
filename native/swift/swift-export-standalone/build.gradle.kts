@@ -16,11 +16,13 @@ dependencies {
 
     implementation(project(":native:swift:sir"))
     implementation(project(":native:swift:sir-compiler-bridge"))
-    implementation(project(":native:swift:sir-passes"))
+    implementation(project(":native:swift:sir-light-classes"))
     implementation(project(":native:swift:sir-printer"))
 
     implementation(project(":analysis:analysis-api"))
     implementation(project(":analysis:analysis-api-standalone"))
+
+    implementation(project(":native:analysis-api-klib-reader"))
 
     testApi(platform(libs.junit.bom))
     testRuntimeOnly(libs.junit.jupiter.engine)
@@ -32,6 +34,10 @@ dependencies {
     testImplementation(projectTests(":analysis:analysis-test-framework"))
     testImplementation(projectTests(":compiler:tests-common"))
     testImplementation(projectTests(":compiler:tests-common-new"))
+
+    if (!kotlinBuildProperties.isInJpsBuildIdeaSync) {
+        testApi(projectTests(":native:native.tests"))
+    }
 }
 
 sourceSets {

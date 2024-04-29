@@ -24,6 +24,7 @@ import org.jetbrains.kotlin.konan.test.blackbox.targets
 import org.jetbrains.kotlin.native.executors.RunProcessResult
 import org.jetbrains.kotlin.native.executors.runProcess
 import org.junit.jupiter.api.Assumptions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -32,6 +33,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 @Tag("driver")
 @TestDataPath("\$PROJECT_ROOT")
@@ -40,9 +42,20 @@ class KonanDriverTest : AbstractNativeSimpleTest() {
     private val konanHome get() = testRunSettings.get<KotlinNativeHome>().dir
     private val buildDir get() = testRunSettings.get<Binaries>().testBinariesDir
     private val konanc get() = konanHome.resolve("bin").resolve(if (HostManager.hostIsMingw) "konanc.bat" else "konanc")
+    private val konancTimeout = 15.minutes
 
     private val testSuiteDir = File("native/native.tests/driver/testData")
     private val source = testSuiteDir.resolve("driver0.kt")
+
+    // Driver tests are flaky on macOS hosts.
+    private fun `check for KT-67454`() {
+        Assumptions.assumeFalse(targets.hostTarget.family.isAppleFamily)
+    }
+
+    @BeforeEach
+    fun checkAssumptions() {
+        `check for KT-67454`()
+    }
 
     @Test
     fun testLLVMVariantDev() {
@@ -78,7 +91,7 @@ class KonanDriverTest : AbstractNativeSimpleTest() {
         }
 
         val compilationResult = runProcess(konanc.absolutePath, source.absolutePath, *args.toTypedArray<String>()) {
-            timeout = Duration.parse("5m")
+            timeout = konancTimeout
         }
         testRunSettings.executor.runProcess(kexe.absolutePath) // run generated executable just to check its sanity
         return compilationResult
@@ -102,7 +115,7 @@ class KonanDriverTest : AbstractNativeSimpleTest() {
             tryPassSystemCacheDirectory = true
         )
         runProcess(konanc.absolutePath, source.absolutePath, *compilation.getCompilerArgs()) {
-            timeout = Duration.parse("5m")
+            timeout = konancTimeout
         }
         val runResult: RunProcessResult = with(testRunSettings) {
             executor.runProcess(kexe.absolutePath) {
@@ -133,17 +146,15 @@ class KonanDriverTest : AbstractNativeSimpleTest() {
             tryPassSystemCacheDirectory = true
         )
         runProcess(konanc.absolutePath, source.absolutePath, *compilation.getCompilerArgs()) {
-            timeout = Duration.parse("5m")
+            timeout = konancTimeout
         }
         assertFalse(kexe.exists())
     }
 
     @Test
     fun testOverrideKonanProperties() {
-        Assumptions.assumeFalse(HostManager.hostIsMingw &&
-                                        testRunSettings.get<CacheMode>() == CacheMode.WithoutCache &&
-                                        testRunSettings.get<OptimizationMode>() == OptimizationMode.DEBUG
-        ) // KT-65963
+        // Only test with -opt enabled
+        Assumptions.assumeTrue(testRunSettings.get<OptimizationMode>() == OptimizationMode.OPT)
         // No need to test with different GC schedulers
         Assumptions.assumeFalse(testRunSettings.get<GCScheduler>() == GCScheduler.AGGRESSIVE)
 
@@ -153,7 +164,6 @@ class KonanDriverTest : AbstractNativeSimpleTest() {
             settings = testRunSettings,
             freeCompilerArgs = TestCompilerArgs(
                 listOf(
-                    "-opt",
                     "-Xverbose-phases=MandatoryBitcodeLLVMPostprocessingPhase",
                     if (HostManager.hostIsMingw)
                         "-Xoverride-konan-properties=\"llvmInlineThreshold=76\""
@@ -166,7 +176,7 @@ class KonanDriverTest : AbstractNativeSimpleTest() {
             tryPassSystemCacheDirectory = true
         )
         val compilationResult = runProcess(konanc.absolutePath, source.absolutePath, *compilation.getCompilerArgs()) {
-            timeout = Duration.parse("5m")
+            timeout = konancTimeout
         }
         val expected = "inline_threshold: 76"
         assertTrue(

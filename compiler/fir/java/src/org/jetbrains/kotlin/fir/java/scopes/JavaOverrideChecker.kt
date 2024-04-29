@@ -5,8 +5,10 @@
 
 package org.jetbrains.kotlin.fir.java.scopes
 
+import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.Modality
+import org.jetbrains.kotlin.fakeElement
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.fir.FirSession
@@ -15,6 +17,7 @@ import org.jetbrains.kotlin.fir.containingClassLookupTag
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.isStatic
 import org.jetbrains.kotlin.fir.declarations.utils.modality
+import org.jetbrains.kotlin.fir.declarations.utils.visibility
 import org.jetbrains.kotlin.fir.dispatchReceiverClassLookupTagOrNull
 import org.jetbrains.kotlin.fir.java.JavaTypeParameterStack
 import org.jetbrains.kotlin.fir.java.declarations.FirJavaClass
@@ -92,8 +95,12 @@ class JavaOverrideChecker internal constructor(
         forceBoxBaseType: Boolean,
         dontComparePrimitivity: Boolean,
     ): Boolean {
-        val candidateType = candidateTypeRef.toConeKotlinTypeProbablyFlexible(session, javaTypeParameterStack)
-        val baseType = baseTypeRef.toConeKotlinTypeProbablyFlexible(session, javaTypeParameterStack)
+        val candidateType = candidateTypeRef.toConeKotlinTypeProbablyFlexible(
+            session, javaTypeParameterStack, candidateTypeRef.source?.fakeElement(KtFakeSourceElementKind.Enhancement)
+        )
+        val baseType = baseTypeRef.toConeKotlinTypeProbablyFlexible(
+            session, javaTypeParameterStack, baseTypeRef.source?.fakeElement(KtFakeSourceElementKind.Enhancement)
+        )
 
         val candidateTypeIsPrimitive = !forceBoxCandidateType && candidateType.isPrimitiveInJava(isReturnType = false)
         val baseTypeIsPrimitive = !forceBoxBaseType && baseType.isPrimitiveInJava(isReturnType = false)
@@ -111,8 +118,12 @@ class JavaOverrideChecker internal constructor(
         val candidateTypeRef = candidate.returnTypeRef
         val baseTypeRef = base.returnTypeRef
 
-        val candidateType = candidateTypeRef.toConeKotlinTypeProbablyFlexible(session, javaTypeParameterStack)
-        val baseType = baseTypeRef.toConeKotlinTypeProbablyFlexible(session, javaTypeParameterStack)
+        val candidateType = candidateTypeRef.toConeKotlinTypeProbablyFlexible(
+            session, javaTypeParameterStack, candidateTypeRef.source?.fakeElement(KtFakeSourceElementKind.Enhancement)
+        )
+        val baseType = baseTypeRef.toConeKotlinTypeProbablyFlexible(
+            session, javaTypeParameterStack, baseTypeRef.source?.fakeElement(KtFakeSourceElementKind.Enhancement)
+        )
 
         val candidateHasPrimitiveReturnType = candidate.hasPrimitiveReturnTypeInJvm(candidateType)
         if (candidateHasPrimitiveReturnType != base.hasPrimitiveReturnTypeInJvm(baseType)) return false
@@ -136,7 +147,9 @@ class JavaOverrideChecker internal constructor(
         var foundNonPrimitiveOverridden = false
 
         baseScopes?.processOverriddenFunctions(symbol) {
-            val type = it.fir.returnTypeRef.toConeKotlinTypeProbablyFlexible(session, javaTypeParameterStack)
+            val type = it.fir.returnTypeRef.toConeKotlinTypeProbablyFlexible(
+                session, javaTypeParameterStack, source?.fakeElement(KtFakeSourceElementKind.Enhancement)
+            )
             if (!type.isPrimitiveInJava(isReturnType = true)) {
                 foundNonPrimitiveOverridden = true
                 ProcessorAction.STOP
@@ -172,7 +185,9 @@ class JavaOverrideChecker internal constructor(
             }
         }
 
-        symbol to firstBound.toConeKotlinTypeProbablyFlexible(session, javaTypeParameterStack)
+        symbol to firstBound.toConeKotlinTypeProbablyFlexible(
+            session, javaTypeParameterStack, it.source?.fakeElement(KtFakeSourceElementKind.Enhancement)
+        )
     }
 
     private fun FirTypeRef?.isTypeParameterDependent(): Boolean =
@@ -242,6 +257,7 @@ class JavaOverrideChecker internal constructor(
 
     override fun isOverriddenFunction(overrideCandidate: FirSimpleFunction, baseDeclaration: FirSimpleFunction): Boolean {
         if (overrideCandidate.isStatic != baseDeclaration.isStatic) return false
+        if (Visibilities.isPrivate(baseDeclaration.visibility)) return false
 
         overrideCandidate.lazyResolveToPhase(FirResolvePhase.TYPES)
         baseDeclaration.lazyResolveToPhase(FirResolvePhase.TYPES)
@@ -305,6 +321,7 @@ class JavaOverrideChecker internal constructor(
 
     override fun isOverriddenProperty(overrideCandidate: FirCallableDeclaration, baseDeclaration: FirProperty): Boolean {
         if (baseDeclaration.modality == Modality.FINAL) return false
+        if (Visibilities.isPrivate(baseDeclaration.visibility)) return false
 
         overrideCandidate.lazyResolveToPhase(FirResolvePhase.TYPES)
         baseDeclaration.lazyResolveToPhase(FirResolvePhase.TYPES)
@@ -350,7 +367,9 @@ class JavaOverrideChecker internal constructor(
 
         val parameter = function.valueParameters.singleOrNull() ?: return false
 
-        val parameterConeType = parameter.returnTypeRef.toConeKotlinTypeProbablyFlexible(session, javaTypeParameterStack)
+        val parameterConeType = parameter.returnTypeRef.toConeKotlinTypeProbablyFlexible(
+            session, javaTypeParameterStack, function.source?.fakeElement(KtFakeSourceElementKind.Enhancement)
+        )
         if (!parameterConeType.fullyExpandedType(session).lowerBoundIfFlexible().isInt) return false
 
         var overridesMutableCollectionRemove = false

@@ -97,20 +97,16 @@ fun FirBasedSymbol<*>.lazyResolveToPhase(toPhase: FirResolvePhase) {
  * @see lazyResolveToPhase
  */
 fun FirElementWithResolveState.lazyResolveToPhase(toPhase: FirResolvePhase) {
-    when (this) {
-        is FirSyntheticPropertyAccessor -> delegate.lazyResolveToPhase(toPhase)
-        is FirSyntheticProperty -> {
-            getter.lazyResolveToPhase(toPhase)
-            setter?.lazyResolveToPhase(toPhase)
-        }
-        else -> lazyDeclarationResolver.lazyResolveToPhase(this, toPhase)
-    }
+    invokeLazyResolveToPhase(toPhase, FirLazyDeclarationResolver::lazyResolveToPhase)
 }
 
 /**
  * Lazy resolve [FirClassSymbol] and its callable members to [FirResolvePhase].
  *
  * Might resolve additional required declarations.
+ *
+ * Note: for the [STATUS][FirResolvePhase.STATUS] phase it guarantees
+ * that all callables in [this] or superclasses are resolved to at least the [STATUS][FirResolvePhase.STATUS] phase.
  *
  * @receiver [FirClassSymbol] which should be resolved and which callable members should be resolved
  * @param toPhase the minimum phase, the declaration and callable members should be resolved
@@ -163,5 +159,23 @@ fun FirBasedSymbol<*>.lazyResolveToPhaseRecursively(toPhase: FirResolvePhase) {
  * @see lazyResolveToPhaseRecursively
  */
 fun FirElementWithResolveState.lazyResolveToPhaseRecursively(toPhase: FirResolvePhase) {
-    lazyDeclarationResolver.lazyResolveToPhaseRecursively(this, toPhase)
+    invokeLazyResolveToPhase(toPhase, FirLazyDeclarationResolver::lazyResolveToPhaseRecursively)
+}
+
+private fun FirElementWithResolveState.invokeLazyResolveToPhase(
+    toPhase: FirResolvePhase,
+    resolver: FirLazyDeclarationResolver.(FirElementWithResolveState, FirResolvePhase) -> Unit,
+) {
+    when (this) {
+        // This element is stateless, so we must not resolve it directly
+        is FirSyntheticPropertyAccessor -> delegate.invokeLazyResolveToPhase(toPhase, resolver)
+
+        // This element is stateless, so we must not resolve it directly
+        is FirSyntheticProperty -> {
+            getter.invokeLazyResolveToPhase(toPhase, resolver)
+            setter?.invokeLazyResolveToPhase(toPhase, resolver)
+        }
+
+        else -> lazyDeclarationResolver.resolver(this, toPhase)
+    }
 }

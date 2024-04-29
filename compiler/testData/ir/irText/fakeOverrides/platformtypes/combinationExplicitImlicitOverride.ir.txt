@@ -29,7 +29,7 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:nullableString visibility:public modality:FINAL [fake_override,var]
       overridden:
-        public final nullableString: @[FlexibleNullability] kotlin.String?
+        public final nullableString: @[FlexibleNullability] kotlin.String? declared in <root>.Java1
   CLASS CLASS name:B modality:FINAL visibility:public superTypes:[<root>.A]
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.B
     CONSTRUCTOR visibility:public <> () returnType:<root>.B [primary]
@@ -60,7 +60,7 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:nullableString visibility:public modality:FINAL [fake_override,var]
       overridden:
-        public final nullableString
+        public final nullableString declared in <root>.A
   CLASS CLASS name:C modality:OPEN visibility:public superTypes:[<root>.Java1]
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.C
     CONSTRUCTOR visibility:public <> () returnType:<root>.C [primary]
@@ -95,7 +95,7 @@ FILE fqName:<root> fileName:/1.kt
           CONST String type=kotlin.String value="C"
     PROPERTY FAKE_OVERRIDE name:nullableString visibility:public modality:FINAL [fake_override,var]
       overridden:
-        public final nullableString: @[FlexibleNullability] kotlin.String?
+        public final nullableString: @[FlexibleNullability] kotlin.String? declared in <root>.Java1
   CLASS CLASS name:D modality:FINAL visibility:public superTypes:[<root>.C]
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.D
     CONSTRUCTOR visibility:public <> () returnType:<root>.D [primary]
@@ -126,7 +126,7 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:nullableString visibility:public modality:FINAL [fake_override,var]
       overridden:
-        public final nullableString
+        public final nullableString declared in <root>.C
   CLASS CLASS name:E modality:FINAL visibility:public superTypes:[<root>.C]
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.E
     CONSTRUCTOR visibility:public <> () returnType:<root>.E [primary]
@@ -161,7 +161,7 @@ FILE fqName:<root> fileName:/1.kt
           CONST String type=kotlin.String value="E"
     PROPERTY FAKE_OVERRIDE name:nullableString visibility:public modality:FINAL [fake_override,var]
       overridden:
-        public final nullableString
+        public final nullableString declared in <root>.C
   FUN name:test visibility:public modality:FINAL <> (b:<root>.B, d:<root>.D, e:<root>.E) returnType:kotlin.Unit
     VALUE_PARAMETER name:b index:0 type:<root>.B
     VALUE_PARAMETER name:d index:1 type:<root>.D
@@ -173,7 +173,7 @@ FILE fqName:<root> fileName:/1.kt
       CALL 'public open fun foo (s: @[FlexibleNullability] kotlin.String?): kotlin.Unit declared in <root>.B' type=kotlin.Unit origin=null
         $this: GET_VAR 'b: <root>.B declared in <root>.test' type=<root>.B origin=null
         s: CONST String type=kotlin.String value=""
-      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public' type=kotlin.Unit origin=EQ
+      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public declared in <root>.Java1' type=kotlin.Unit superQualifierSymbol=<root>.B origin=EQ
         receiver: GET_VAR 'b: <root>.B declared in <root>.test' type=<root>.B origin=null
         value: CONST String type=kotlin.String value="B"
       VAR name:k1 type:kotlin.String [val]
@@ -182,7 +182,7 @@ FILE fqName:<root> fileName:/1.kt
             $this: GET_VAR 'b: <root>.B declared in <root>.test' type=<root>.B origin=null
       VAR name:k2 type:kotlin.String [val]
         TYPE_OP type=kotlin.String origin=IMPLICIT_NOTNULL typeOperand=kotlin.String
-          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public' type=@[FlexibleNullability] kotlin.String? origin=null
+          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public declared in <root>.Java1' type=@[FlexibleNullability] kotlin.String? superQualifierSymbol=<root>.B origin=null
             receiver: GET_VAR 'b: <root>.B declared in <root>.test' type=<root>.B origin=null
       CALL 'public open fun foo (s: kotlin.String?): kotlin.Unit declared in <root>.D' type=kotlin.Unit origin=null
         $this: GET_VAR 'd: <root>.D declared in <root>.test' type=<root>.D origin=null
@@ -190,7 +190,7 @@ FILE fqName:<root> fileName:/1.kt
       CALL 'public open fun foo (s: kotlin.String?): kotlin.Unit declared in <root>.D' type=kotlin.Unit origin=null
         $this: GET_VAR 'd: <root>.D declared in <root>.test' type=<root>.D origin=null
         s: CONST String type=kotlin.String value=""
-      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public' type=kotlin.Unit origin=EQ
+      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public declared in <root>.Java1' type=kotlin.Unit superQualifierSymbol=<root>.D origin=EQ
         receiver: GET_VAR 'd: <root>.D declared in <root>.test' type=<root>.D origin=null
         value: CONST String type=kotlin.String value="C"
       VAR name:k3 type:kotlin.String [val]
@@ -198,7 +198,7 @@ FILE fqName:<root> fileName:/1.kt
           $this: GET_VAR 'd: <root>.D declared in <root>.test' type=<root>.D origin=null
       VAR name:k4 type:kotlin.String [val]
         TYPE_OP type=kotlin.String origin=IMPLICIT_NOTNULL typeOperand=kotlin.String
-          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public' type=@[FlexibleNullability] kotlin.String? origin=null
+          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public declared in <root>.Java1' type=@[FlexibleNullability] kotlin.String? superQualifierSymbol=<root>.D origin=null
             receiver: GET_VAR 'd: <root>.D declared in <root>.test' type=<root>.D origin=null
       CALL 'public open fun foo (s: kotlin.String?): kotlin.Unit declared in <root>.E' type=kotlin.Unit origin=null
         $this: GET_VAR 'e: <root>.E declared in <root>.test' type=<root>.E origin=null
@@ -206,7 +206,7 @@ FILE fqName:<root> fileName:/1.kt
       CALL 'public open fun foo (s: kotlin.String?): kotlin.Unit declared in <root>.E' type=kotlin.Unit origin=null
         $this: GET_VAR 'e: <root>.E declared in <root>.test' type=<root>.E origin=null
         s: CONST String type=kotlin.String value=""
-      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public' type=kotlin.Unit origin=EQ
+      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public declared in <root>.Java1' type=kotlin.Unit superQualifierSymbol=<root>.E origin=EQ
         receiver: GET_VAR 'e: <root>.E declared in <root>.test' type=<root>.E origin=null
         value: CONST String type=kotlin.String value="E"
       VAR name:k5 type:kotlin.String [val]
@@ -214,5 +214,5 @@ FILE fqName:<root> fileName:/1.kt
           $this: GET_VAR 'e: <root>.E declared in <root>.test' type=<root>.E origin=null
       VAR name:k6 type:kotlin.String [val]
         TYPE_OP type=kotlin.String origin=IMPLICIT_NOTNULL typeOperand=kotlin.String
-          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public' type=@[FlexibleNullability] kotlin.String? origin=null
+          GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:nullableString type:@[FlexibleNullability] kotlin.String? visibility:public declared in <root>.Java1' type=@[FlexibleNullability] kotlin.String? superQualifierSymbol=<root>.E origin=null
             receiver: GET_VAR 'e: <root>.E declared in <root>.test' type=<root>.E origin=null

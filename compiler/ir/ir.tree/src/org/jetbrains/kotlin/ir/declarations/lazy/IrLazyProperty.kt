@@ -42,8 +42,6 @@ class IrLazyProperty(
         symbol.bind(this)
     }
 
-    override var parent: IrDeclarationParent by createLazyParent()
-
     override var annotations: List<IrConstructorCall> by createLazyAnnotations()
 
     private val hasBackingField: Boolean =

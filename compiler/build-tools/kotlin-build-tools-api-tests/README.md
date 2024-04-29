@@ -18,6 +18,8 @@ The module defines test suites using the `jvm-test-suite` plugin.
       to run the tests against the current BTA implementation
     * Avoid adding new tests here unless you can articulate their necessity as they will be executed multiple times significantly increasing
       the overall test execution time.
+* Escapable characters: a special test suit that runs against classpath and module paths containing symbols that typically should be escaped (whitespaces, hashes, etc)
+    * Use `./gradlew :compiler:build-tools:kotlin-build-tools-api-tests:testEscapableCharacters` to run them
 * Example: provides examples of the DSL usage. Excluded from the `check` task
     * Use `./gradlew :compiler:build-tools:kotlin-build-tools-api-tests:testExample` to run them
 
@@ -33,6 +35,7 @@ Few rules you should follow while writing tests:
 - Don't create one big test suit. Consider grouping test classes semantically into test suits. Adding a new test suit is as easy as adding
   an entry to `businessLogicTestSuits` in the [build.gradle.kts](./build.gradle.kts)
 - All test classes should extend [BaseTest](./src/main/kotlin/BaseTest.kt)
+- Set the `@TestMetadata(...)` annotation to provide convenient Intellij IDEA navigation to the test data. It does not support navigation to multiple test data locations, thus please put a link to at least one tested module
 
 The rules specific to compilation tests:
 

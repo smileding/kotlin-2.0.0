@@ -80,6 +80,12 @@ public class FirOldFrontendMPPDiagnosticsWithPsiTestGenerated extends AbstractFi
   }
 
   @Test
+  @TestMetadata("ambiguousActualsJavaPrimitiveIntTypeVsIntegerObject.kt")
+  public void testAmbiguousActualsJavaPrimitiveIntTypeVsIntegerObject() {
+    runTest("compiler/testData/diagnostics/tests/multiplatform/ambiguousActualsJavaPrimitiveIntTypeVsIntegerObject.kt");
+  }
+
+  @Test
   @TestMetadata("annotationArgArrayVsOutArray.kt")
   public void testAnnotationArgArrayVsOutArray() {
     runTest("compiler/testData/diagnostics/tests/multiplatform/annotationArgArrayVsOutArray.kt");
@@ -209,6 +215,12 @@ public class FirOldFrontendMPPDiagnosticsWithPsiTestGenerated extends AbstractFi
   @TestMetadata("expectOptInAnnotation_oldLanguageVersion.kt")
   public void testExpectOptInAnnotation_oldLanguageVersion() {
     runTest("compiler/testData/diagnostics/tests/multiplatform/expectOptInAnnotation_oldLanguageVersion.kt");
+  }
+
+  @Test
+  @TestMetadata("expectShouldBeJSExportable.kt")
+  public void testExpectShouldBeJSExportable() {
+    runTest("compiler/testData/diagnostics/tests/multiplatform/expectShouldBeJSExportable.kt");
   }
 
   @Test
@@ -1453,6 +1465,18 @@ public class FirOldFrontendMPPDiagnosticsWithPsiTestGenerated extends AbstractFi
     }
 
     @Test
+    @TestMetadata("expectSealedClassWithInheritorsInSeveralModules.kt")
+    public void testExpectSealedClassWithInheritorsInSeveralModules() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/exhaustiveness/expectSealedClassWithInheritorsInSeveralModules.kt");
+    }
+
+    @Test
+    @TestMetadata("expectSealedClassWithInheritorsInSeveralModules_typealiasActualization.kt")
+    public void testExpectSealedClassWithInheritorsInSeveralModules_typealiasActualization() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/exhaustiveness/expectSealedClassWithInheritorsInSeveralModules_typealiasActualization.kt");
+    }
+
+    @Test
     @TestMetadata("expectSealedInterface.kt")
     public void testExpectSealedInterface() {
       runTest("compiler/testData/diagnostics/tests/multiplatform/exhaustiveness/expectSealedInterface.kt");
@@ -1925,12 +1949,30 @@ public class FirOldFrontendMPPDiagnosticsWithPsiTestGenerated extends AbstractFi
     public void testJvmInlineExpectValueClass() {
       runTest("compiler/testData/diagnostics/tests/multiplatform/inlineClasses/jvmInlineExpectValueClass.kt");
     }
+
+    @Test
+    @TestMetadata("valueClassNotFinal.kt")
+    public void testValueClassNotFinal() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/inlineClasses/valueClassNotFinal.kt");
+    }
+
+    @Test
+    @TestMetadata("valueClassWithInapplicableParameterType.kt")
+    public void testValueClassWithInapplicableParameterType() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/inlineClasses/valueClassWithInapplicableParameterType.kt");
+    }
   }
 
   @Nested
   @TestMetadata("compiler/testData/diagnostics/tests/multiplatform/java")
   @TestDataPath("$PROJECT_ROOT")
   public class Java {
+    @Test
+    @TestMetadata("actualJavaSealedClass.kt")
+    public void testActualJavaSealedClass() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/java/actualJavaSealedClass.kt");
+    }
+
     @Test
     public void testAllFilesPresentInJava() {
       KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/tests/multiplatform/java"), Pattern.compile("^(.*)\\.kts?$"), Pattern.compile("^(.+)\\.(reversed|fir|ll)\\.kts?$"), TargetBackend.JVM_IR, true);
@@ -2103,6 +2145,42 @@ public class FirOldFrontendMPPDiagnosticsWithPsiTestGenerated extends AbstractFi
     }
 
     @Test
+    @TestMetadata("expectFunInterface.kt")
+    public void testExpectFunInterface() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/expectFunInterface.kt");
+    }
+
+    @Test
+    @TestMetadata("expectFunInterfaceIsHeirOfExpect.kt")
+    public void testExpectFunInterfaceIsHeirOfExpect() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/expectFunInterfaceIsHeirOfExpect.kt");
+    }
+
+    @Test
+    @TestMetadata("funInterfaceDiagnostics.kt")
+    public void testFunInterfaceDiagnostics() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/funInterfaceDiagnostics.kt");
+    }
+
+    @Test
+    @TestMetadata("funInterfaceIsHeirOfExpect.kt")
+    public void testFunInterfaceIsHeirOfExpect() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/funInterfaceIsHeirOfExpect.kt");
+    }
+
+    @Test
+    @TestMetadata("funInterfaceIsHeirOfExpectJK.kt")
+    public void testFunInterfaceIsHeirOfExpectJK() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/funInterfaceIsHeirOfExpectJK.kt");
+    }
+
+    @Test
+    @TestMetadata("funInterfaceIsHeirOfTwoExpect.kt")
+    public void testFunInterfaceIsHeirOfTwoExpect() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/funInterfaceIsHeirOfTwoExpect.kt");
+    }
+
+    @Test
     @TestMetadata("implicitActualFakeOverride_AbstractMap.kt")
     public void testImplicitActualFakeOverride_AbstractMap() {
       runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/implicitActualFakeOverride_AbstractMap.kt");
@@ -2127,6 +2205,12 @@ public class FirOldFrontendMPPDiagnosticsWithPsiTestGenerated extends AbstractFi
     }
 
     @Test
+    @TestMetadata("methodsConflictingOverloads.kt")
+    public void testMethodsConflictingOverloads() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/methodsConflictingOverloads.kt");
+    }
+
+    @Test
     @TestMetadata("mixedFunctionalTypesInSupertypes.kt")
     public void testMixedFunctionalTypesInSupertypes() {
       runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/mixedFunctionalTypesInSupertypes.kt");
@@ -2145,9 +2229,15 @@ public class FirOldFrontendMPPDiagnosticsWithPsiTestGenerated extends AbstractFi
     }
 
     @Test
-    @TestMetadata("scopeOfFunInterface.kt")
-    public void testScopeOfFunInterface() {
-      runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/scopeOfFunInterface.kt");
+    @TestMetadata("nestedClassesRedeclaration.kt")
+    public void testNestedClassesRedeclaration() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/nestedClassesRedeclaration.kt");
+    }
+
+    @Test
+    @TestMetadata("propertyRedeclaration.kt")
+    public void testPropertyRedeclaration() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/scopes/propertyRedeclaration.kt");
     }
   }
 
@@ -2277,6 +2367,18 @@ public class FirOldFrontendMPPDiagnosticsWithPsiTestGenerated extends AbstractFi
     }
 
     @Test
+    @TestMetadata("redeclarationBasicCases.kt")
+    public void testRedeclarationBasicCases() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/topLevelProperty/redeclarationBasicCases.kt");
+    }
+
+    @Test
+    @TestMetadata("redeclarationBasicCasesHMPP.kt")
+    public void testRedeclarationBasicCasesHMPP() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/topLevelProperty/redeclarationBasicCasesHMPP.kt");
+    }
+
+    @Test
     @TestMetadata("simpleHeaderVar.kt")
     public void testSimpleHeaderVar() {
       runTest("compiler/testData/diagnostics/tests/multiplatform/topLevelProperty/simpleHeaderVar.kt");
@@ -2287,6 +2389,12 @@ public class FirOldFrontendMPPDiagnosticsWithPsiTestGenerated extends AbstractFi
   @TestMetadata("compiler/testData/diagnostics/tests/multiplatform/typealias")
   @TestDataPath("$PROJECT_ROOT")
   public class Typealias {
+    @Test
+    @TestMetadata("actualTypealiasClassifierRedeclaration.kt")
+    public void testActualTypealiasClassifierRedeclaration() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/typealias/actualTypealiasClassifierRedeclaration.kt");
+    }
+
     @Test
     @TestMetadata("actualTypealiasToNothing.kt")
     public void testActualTypealiasToNothing() {

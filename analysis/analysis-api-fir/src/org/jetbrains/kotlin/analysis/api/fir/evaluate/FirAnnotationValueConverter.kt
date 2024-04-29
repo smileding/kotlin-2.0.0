@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.analysis.api.fir.evaluate
 
+import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.annotations.*
 import org.jetbrains.kotlin.analysis.api.base.KtConstantValue
 import org.jetbrains.kotlin.analysis.api.base.KtConstantValueFactory
@@ -13,37 +14,43 @@ import org.jetbrains.kotlin.analysis.api.fir.KtSymbolByFirBuilder
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.fir.analysis.checkers.getContainingClassSymbol
 import org.jetbrains.kotlin.fir.declarations.FirClass
-import org.jetbrains.kotlin.fir.declarations.fullyExpandedClass
-import org.jetbrains.kotlin.fir.declarations.utils.isLocal
+import org.jetbrains.kotlin.fir.declarations.getTargetType
+import org.jetbrains.kotlin.fir.diagnostics.ConeSimpleDiagnostic
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.psi
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnresolvedNameError
+import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnresolvedSymbolError
 import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeUnresolvedTypeQualifierError
+import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.symbols.impl.FirConstructorSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirEnumEntrySymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.FirTypeAliasSymbol
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.name.CallableId
+import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.FqNameUnsafe
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtCallElement
-import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.ArrayFqNames
 
 internal object FirAnnotationValueConverter {
     fun toNamedConstantValue(
+        analysisSession: KtAnalysisSession,
         argumentMapping: Map<Name, FirExpression>,
         builder: KtSymbolByFirBuilder,
     ): List<KtNamedAnnotationValue> = argumentMapping.map { (name, expression) ->
         KtNamedAnnotationValue(
             name,
-            expression.convertConstantExpression(builder) ?: KtUnsupportedAnnotationValue
+            expression.convertConstantExpression(builder) ?: KtUnsupportedAnnotationValue(analysisSession.token),
+            analysisSession.token
         )
     }
 
-    private fun <T> FirLiteralExpression<T>.convertConstantExpression(): KtConstantAnnotationValue? {
+    private fun <T> FirLiteralExpression<T>.convertConstantExpression(
+        analysisSession: KtAnalysisSession
+    ): KtConstantAnnotationValue? {
         val expression = psi as? KtElement
 
         @OptIn(UnresolvedExpressionTypeAccess::class)
@@ -67,7 +74,7 @@ internal object FirAnnotationValueConverter {
             else -> null
         }
 
-        return constantValue?.let(::KtConstantAnnotationValue)
+        return constantValue?.let { KtConstantAnnotationValue(it, analysisSession.token) }
     }
 
     private fun Collection<FirExpression>.convertVarargsExpression(
@@ -78,8 +85,8 @@ internal object FirAnnotationValueConverter {
             for (expr in this@convertVarargsExpression) {
                 val converted = expr.convertConstantExpression(builder) ?: continue
 
-                if (expr is FirSpreadArgumentExpression || expr is FirNamedArgumentExpression) {
-                    addAll((converted as KtArrayAnnotationValue).values)
+                if ((expr is FirSpreadArgumentExpression || expr is FirNamedArgumentExpression) && converted is KtArrayAnnotationValue) {
+                    addAll(converted.values)
                 } else {
                     add(converted)
                 }
@@ -97,9 +104,11 @@ internal object FirAnnotationValueConverter {
     ): KtAnnotationValue? = firExpression.convertConstantExpression(builder)
 
     private fun FirExpression.convertConstantExpression(builder: KtSymbolByFirBuilder): KtAnnotationValue? {
+        val token = builder.analysisSession.token
         val sourcePsi = psi as? KtElement
+
         return when (this) {
-            is FirLiteralExpression<*> -> convertConstantExpression()
+            is FirLiteralExpression<*> -> convertConstantExpression(builder.analysisSession)
             is FirNamedArgumentExpression -> {
                 expression.convertConstantExpression(builder)
             }
@@ -112,12 +121,12 @@ internal object FirAnnotationValueConverter {
                 // Vararg arguments may have multiple independent expressions associated.
                 // Choose one to be the representative PSI value for the entire assembled argument.
                 val (annotationValues, representativePsi) = arguments.convertVarargsExpression(builder)
-                KtArrayAnnotationValue(annotationValues, representativePsi ?: sourcePsi)
+                KtArrayAnnotationValue(annotationValues, representativePsi ?: sourcePsi, token)
             }
 
             is FirArrayLiteral -> {
                 // Desugared collection literals.
-                KtArrayAnnotationValue(argumentList.arguments.convertVarargsExpression(builder).first, sourcePsi)
+                KtArrayAnnotationValue(argumentList.arguments.convertVarargsExpression(builder).first, sourcePsi, token)
             }
 
             is FirFunctionCall -> {
@@ -136,12 +145,14 @@ internal object FirAnnotationValueConverter {
                                     resolvedSymbol.callableId.classId,
                                     psi as? KtCallElement,
                                     useSiteTarget = null,
-                                    toNamedConstantValue(resultMap, builder),
+                                    toNamedConstantValue(builder.analysisSession, resultMap, builder),
                                     index = null,
                                     constructorSymbolPointer = with(builder.analysisSession) {
                                         builder.functionLikeBuilder.buildConstructorSymbol(resolvedSymbol).createPointer()
                                     },
-                                )
+                                    token = token
+                                ),
+                                token
                             )
                         } else null
                     }
@@ -150,12 +161,12 @@ internal object FirAnnotationValueConverter {
                         // arrayOf call with a single vararg argument.
                         if (resolvedSymbol.callableId.asSingleFqName() in ArrayFqNames.ARRAY_CALL_FQ_NAMES)
                             argumentList.arguments.singleOrNull()?.convertConstantExpression(builder)
-                                ?: KtArrayAnnotationValue(emptyList(), sourcePsi)
+                                ?: KtArrayAnnotationValue(emptyList(), sourcePsi, token)
                         else null
                     }
 
                     is FirEnumEntrySymbol -> {
-                        KtEnumEntryAnnotationValue(resolvedSymbol.callableId, sourcePsi)
+                        KtEnumEntryAnnotationValue(resolvedSymbol.callableId, sourcePsi, token)
                     }
 
                     else -> null
@@ -166,53 +177,63 @@ internal object FirAnnotationValueConverter {
                 val reference = calleeReference as? FirResolvedNamedReference ?: return null
                 when (val resolvedSymbol = reference.resolvedSymbol) {
                     is FirEnumEntrySymbol -> {
-                        KtEnumEntryAnnotationValue(resolvedSymbol.callableId, sourcePsi)
+                        KtEnumEntryAnnotationValue(resolvedSymbol.callableId, sourcePsi, token)
                     }
 
                     else -> null
                 }
             }
 
-            is FirEnumEntryDeserializedAccessExpression -> KtEnumEntryAnnotationValue(CallableId(enumClassId, enumEntryName), sourcePsi)
+            is FirEnumEntryDeserializedAccessExpression -> {
+                KtEnumEntryAnnotationValue(CallableId(enumClassId, enumEntryName), sourcePsi, token)
+            }
 
             is FirGetClassCall -> {
-                var symbol = (argument as? FirResolvedQualifier)?.symbol
-                if (symbol is FirTypeAliasSymbol) {
-                    symbol = symbol.fullyExpandedClass(builder.rootSession) ?: symbol
-                }
-                when {
-                    symbol == null -> {
-                        val qualifierParts = mutableListOf<String?>()
+                val coneType = getTargetType()?.fullyExpandedType(builder.rootSession)
 
-                        fun process(expression: FirExpression) {
-                            val errorType = expression.resolvedType as? ConeErrorType
-                            val unresolvedName = when (val diagnostic = errorType?.diagnostic) {
-                                is ConeUnresolvedTypeQualifierError -> diagnostic.qualifier
-                                is ConeUnresolvedNameError -> diagnostic.qualifier
-                                else -> null
-                            }
-                            qualifierParts += unresolvedName
-                            if (errorType != null && expression is FirPropertyAccessExpression) {
-                                expression.explicitReceiver?.let { process(it) }
-                            }
-                        }
-
-                        process(argument)
-
-                        val unresolvedName = qualifierParts.asReversed().filterNotNull().takeIf { it.isNotEmpty() }?.joinToString(".")
-                        KtKClassAnnotationValue.KtErrorClassAnnotationValue(sourcePsi, unresolvedName)
-                    }
-                    symbol.isLocal -> KtKClassAnnotationValue.KtLocalKClassAnnotationValue(
-                        symbol.fir.psi as KtClassOrObject,
-                        sourcePsi
-                    )
-
-                    else -> KtKClassAnnotationValue.KtNonLocalKClassAnnotationValue(symbol.classId, sourcePsi)
+                if (coneType is ConeClassLikeType && coneType !is ConeErrorType) {
+                    val classId = coneType.lookupTag.classId
+                    val type = builder.typeBuilder.buildKtType(coneType)
+                    KtKClassAnnotationValue(type, classId, sourcePsi, token)
+                } else {
+                    val classId = computeErrorCallClassId(this)
+                    val diagnostic = classId?.let(::ConeUnresolvedSymbolError) ?: ConeSimpleDiagnostic("Unresolved class reference")
+                    val errorType = builder.typeBuilder.buildKtType(ConeErrorType(diagnostic))
+                    KtKClassAnnotationValue(errorType, classId, sourcePsi, token)
                 }
             }
 
             else -> null
         } ?: FirCompileTimeConstantEvaluator.evaluate(this, KtConstantEvaluationMode.CONSTANT_EXPRESSION_EVALUATION)
-            ?.convertConstantExpression()
+            ?.convertConstantExpression(builder.analysisSession)
+    }
+
+    private fun computeErrorCallClassId(call: FirGetClassCall): ClassId? {
+        val qualifierParts = mutableListOf<String?>()
+
+        fun process(expression: FirExpression) {
+            val errorType = expression.resolvedType as? ConeErrorType
+            val unresolvedName = when (val diagnostic = errorType?.diagnostic) {
+                is ConeUnresolvedTypeQualifierError -> diagnostic.qualifier
+                is ConeUnresolvedNameError -> diagnostic.qualifier
+                else -> null
+            }
+            qualifierParts += unresolvedName
+            if (errorType != null && expression is FirPropertyAccessExpression) {
+                expression.explicitReceiver?.let { process(it) }
+            }
+        }
+
+        process(call.argument)
+
+        val fqNameString = qualifierParts.asReversed().filterNotNull().takeIf { it.isNotEmpty() }?.joinToString(".")
+        if (fqNameString != null) {
+            val fqNameUnsafe = FqNameUnsafe(fqNameString)
+            if (fqNameUnsafe.isSafe) {
+                return ClassId.topLevel(fqNameUnsafe.toSafe())
+            }
+        }
+
+        return null
     }
 }

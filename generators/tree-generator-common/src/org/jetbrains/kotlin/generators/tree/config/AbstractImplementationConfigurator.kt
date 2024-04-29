@@ -1,22 +1,23 @@
 /*
- * Copyright 2010-2023 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
 package org.jetbrains.kotlin.generators.tree.config
 
 import org.jetbrains.kotlin.generators.tree.*
+import org.jetbrains.kotlin.generators.tree.imports.Importable
 import org.jetbrains.kotlin.generators.tree.printer.call
 
 /**
  * Provides a DSL to configure `Impl` classes for tree nodes.
  */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
-abstract class AbstractImplementationConfigurator<Implementation, Element, ImplementationField>
+abstract class AbstractImplementationConfigurator<Implementation, Element, ElementField, ImplementationField>
         where Implementation : AbstractImplementation<Implementation, Element, ImplementationField>,
-              Element : AbstractElement<Element, *, Implementation>,
-              ImplementationField : AbstractField<*>,
-              ImplementationField : AbstractFieldWithDefaultValue<*> {
+              Element : AbstractElement<Element, ElementField, Implementation>,
+              ElementField : AbstractField<ElementField>,
+              ImplementationField : AbstractField<*> {
 
     private val elementsWithImpl = mutableSetOf<Element>()
 
@@ -25,6 +26,7 @@ abstract class AbstractImplementationConfigurator<Implementation, Element, Imple
     fun configureImplementations(model: Model<Element>) {
         configure(model)
         generateDefaultImplementations(model.elements)
+        inheritImplementationFieldSpecifications(model.elements)
         configureAllImplementations(model)
     }
 
@@ -68,6 +70,14 @@ abstract class AbstractImplementationConfigurator<Implementation, Element, Imple
         return implementation
     }
 
+    /**
+     * Provides a way to fine-tune all implementations of classes deriving from [element].
+     */
+    protected fun allImplOf(element: Element, config: ElementContext.() -> Unit) {
+        val context = ElementContext(element)
+        context.apply(config)
+    }
+
     private fun generateDefaultImplementations(elements: List<Element>) {
         elements
             .filter { it.subElements.isEmpty() && it !in elementsWithImpl && !it.doesNotNeedImplementation }
@@ -75,6 +85,37 @@ abstract class AbstractImplementationConfigurator<Implementation, Element, Imple
                 impl(it)
             }
     }
+
+    /**
+     * Apply the configuration done in [allImplOf] to all actual implementation classes, choosing the
+     * most specific configuration for a given implementation, or applies default value if no
+     * customized configuration is found.
+     */
+    private fun inheritImplementationFieldSpecifications(elements: List<Element>) {
+        for (element in elements) {
+            for (implementation in element.implementations) {
+                for (field in implementation.allFields) {
+                    if (field.implementationDefaultStrategy == null) {
+                        for (ancestor in element.elementAncestorsAndSelfBreadthFirst()) {
+                            val inheritedDefaults = ancestor.elementParents
+                                .mapNotNull { it.element.getOrNull(field.name) }
+                                .mapNotNull { it.implementationDefaultStrategy }
+                            if (inheritedDefaults.isNotEmpty()) {
+                                field.implementationDefaultStrategy = inheritedDefaults.singleOrNull()
+                                    ?: error("Field $field has ambitious default value, please specify it explicitly for the ${element.name} element")
+                                break
+                            }
+                        }
+
+                        if (field.implementationDefaultStrategy == null) {
+                            field.implementationDefaultStrategy = AbstractField.ImplementationDefaultStrategy.Required
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     /**
      * Allows to batch-apply [config] to certain fields in _all_ the implementations that satisfy the given
@@ -98,7 +139,7 @@ abstract class AbstractImplementationConfigurator<Implementation, Element, Imple
                 if (fieldName != null && !implementation.allFields.any { it.name == fieldName }) continue
 
                 val fields = if (fieldName != null) {
-                    listOf(implementation.getField(fieldName))
+                    listOf(implementation[fieldName])
                 } else {
                     implementation.allFields
                 }
@@ -110,64 +151,36 @@ abstract class AbstractImplementationConfigurator<Implementation, Element, Imple
         }
     }
 
-    private fun Implementation.getField(name: String): ImplementationField {
-        val result = this[name]
-        requireNotNull(result) {
-            "Field \"$name\" not found in fields of $element\nExisting fields:\n" +
-                    allFields.joinToString(separator = "\n  ", prefix = "  ") { it.name }
+    /**
+     * Allows to batch-apply [config] to _all_ the implementations that satisfy the given
+     * [implementationPredicate].
+     *
+     * @param implementationPredicate Only implementations satisfying this predicate will be used in this configuration.
+     * @param config The configuration block. Accepts the field name as an argument.
+     * See [ImplementationContext]'s documentation for description of its DSL methods.
+     */
+    protected fun configureAllImplementations(
+        implementationPredicate: (Implementation) -> Boolean = { true },
+        config: ImplementationContext.() -> Unit,
+    ) {
+        for (element in elementsWithImpl) {
+            for (implementation in element.implementations) {
+                if (!implementationPredicate(implementation)) continue
+                ImplementationContext(implementation).config()
+            }
         }
-        return result
     }
 
-    /**
-     * A DSL for configuring one or more implementation classes.
-     */
-    protected inner class ImplementationContext(val implementation: Implementation) {
-
-        /**
-         * Call this function if you want this implementation class to be marked with an [OptIn] annotation.
-         *
-         * This is necessary if some code inside the implementation class requires that [OptIn] annotation.
-         */
-        fun optInToInternals() {
-            implementation.requiresOptIn = true
-        }
-
-        /**
-         * By default, all implementation classes are generated with `internal` visibility.
-         *
-         * This method allows to forcibly make this implementation `public`.
-         */
-        fun publicImplementation() {
-            implementation.isPublic = true
-        }
-
-        fun kDoc(kDoc: String) {
-            implementation.kDoc = kDoc
-        }
-
-        private fun getField(name: String): ImplementationField {
-            return implementation.getField(name)
-        }
-
-        /**
-         * Types/functions that you want to additionally import in the file with the implementation class.
-         *
-         * This is useful if, for example, default values of fields reference classes or functions from other packages.
-         *
-         * Note that classes referenced in field types will be imported automatically.
-         */
-        fun additionalImports(vararg importables: Importable) {
-            implementation.additionalImports.addAll(importables)
-        }
-
+    protected abstract class FieldContainerContext<Field>(
+        private val fieldContainer: FieldContainer<Field>,
+    ) where Field : AbstractField<*> {
         /**
          * Makes the specified fields in the implementation class mutable
          * (even if they were not configured as mutable in the element configurator).
          */
         fun isMutable(vararg fields: String) {
             fields.forEach {
-                val field = getField(it)
+                val field = fieldContainer[it]
                 field.isMutable = true
             }
         }
@@ -178,8 +191,8 @@ abstract class AbstractImplementationConfigurator<Implementation, Element, Imple
          */
         fun isLateinit(vararg fields: String) {
             fields.forEach {
-                val field = getField(it)
-                field.isLateinit = true
+                val field = fieldContainer[it]
+                field.implementationDefaultStrategy = AbstractField.ImplementationDefaultStrategy.Lateinit
             }
         }
 
@@ -237,7 +250,7 @@ abstract class AbstractImplementationConfigurator<Implementation, Element, Imple
                     value = "null"
                     this.withGetter = withGetter
                 }
-                require(getField(field).nullable) {
+                require(fieldContainer[field].nullable) {
                     "$field is not nullable field"
                 }
             }
@@ -250,7 +263,7 @@ abstract class AbstractImplementationConfigurator<Implementation, Element, Imple
          */
         fun defaultEmptyList(vararg fields: String, withGetter: Boolean = false) {
             for (field in fields) {
-                require(getField(field).origin is ListField) {
+                require(fieldContainer[field].origin is ListField) {
                     "$field is list field"
                 }
                 default(field) {
@@ -266,7 +279,7 @@ abstract class AbstractImplementationConfigurator<Implementation, Element, Imple
          * See the [DefaultValueContext] documentation for description of its DSL methods.
          */
         fun default(field: String, init: DefaultValueContext.() -> Unit) {
-            DefaultValueContext(getField(field)).apply(init).applyConfiguration()
+            DefaultValueContext(fieldContainer[field]).apply(init).applyConfiguration()
         }
 
         /**
@@ -290,21 +303,11 @@ abstract class AbstractImplementationConfigurator<Implementation, Element, Imple
             }
         }
 
-        /**
-         * Allows to customize this implementation class's kind (`open class`, `object` etc.).
-         *
-         * If set to `null`, will be chosen automatically by [InterfaceAndAbstractClassConfigurator].
-         */
-        var kind: ImplementationKind?
-            get() = implementation.kind
-            set(value) {
-                implementation.kind = value
-            }
 
         /**
          * A DSL for configuring a field's default value.
          */
-        inner class DefaultValueContext(private val field: ImplementationField) {
+        inner class DefaultValueContext(private val field: Field) {
 
             /**
              * The default value of this field in the implementation class. Can be arbitrary code.
@@ -381,19 +384,77 @@ abstract class AbstractImplementationConfigurator<Implementation, Element, Imple
                 }
 
             fun applyConfiguration() {
-                field.withGetter = withGetter
                 field.customSetter = customSetter
                 isMutable?.let { field.isMutable = it }
 
+                var value = value
                 when {
-                    value != null -> field.defaultValueInImplementation = value
+                    value != null -> field.implementationDefaultStrategy =
+                        AbstractField.ImplementationDefaultStrategy.DefaultValue(value, withGetter)
                     delegate != null -> {
-                        val actualDelegateField = getField(delegate!!)
+                        val actualDelegateField = fieldContainer[delegate!!]
                         val name = delegateCall ?: field.name
-                        field.defaultValueInImplementation = "${actualDelegateField.name}${actualDelegateField.call()}$name"
+                        value = "${actualDelegateField.name}${actualDelegateField.call()}$name"
+                        field.implementationDefaultStrategy =
+                            AbstractField.ImplementationDefaultStrategy.DefaultValue(value, withGetter)
                     }
                 }
             }
         }
     }
+
+    /**
+     * A DSL for configuring one or more implementation classes.
+     */
+    protected inner class ImplementationContext(val implementation: Implementation) :
+        FieldContainerContext<ImplementationField>(implementation) {
+        /**
+         * Call this function if you want this implementation class to be marked with an [OptIn] annotation.
+         *
+         * This is necessary if some code inside the implementation class requires that [OptIn] annotation.
+         */
+        fun optInToInternals() {
+            implementation.requiresOptIn = true
+        }
+
+        /**
+         * By default, all implementation classes are generated with `internal` visibility.
+         *
+         * This method allows to forcibly make this implementation `public`.
+         */
+        fun publicImplementation() {
+            implementation.isPublic = true
+        }
+
+        /**
+         * Types/functions that you want to additionally import in the file with the implementation class.
+         *
+         * This is useful if, for example, default values of fields reference classes or functions from other packages.
+         *
+         * Note that classes referenced in field types will be imported automatically.
+         */
+        fun additionalImports(vararg importables: Importable) {
+            implementation.additionalImports.addAll(importables)
+        }
+
+        /**
+         * Allows to customize this implementation class's kind (`open class`, `object` etc.).
+         *
+         * If set to `null`, will be chosen automatically by [InterfaceAndAbstractClassConfigurator].
+         */
+        var kind: ImplementationKind?
+            get() = implementation.kind
+            set(value) {
+                implementation.kind = value
+            }
+
+        fun kDoc(kDoc: String) {
+            implementation.kDoc = kDoc
+        }
+    }
+
+    /**
+     * A DSL for configuring implementations of all classes extending given element.
+     */
+    protected inner class ElementContext(val element: Element) : FieldContainerContext<ElementField>(element)
 }

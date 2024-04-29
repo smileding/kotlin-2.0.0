@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.fir.references.builder.buildErrorNamedReference
 import org.jetbrains.kotlin.fir.references.builder.buildResolvedErrorReference
 import org.jetbrains.kotlin.fir.resolve.calls.*
 import org.jetbrains.kotlin.fir.resolve.dfa.PropertyStability
+import org.jetbrains.kotlin.fir.resolve.dfa.cfg.FirAnonymousFunctionReturnExpressionInfo
 import org.jetbrains.kotlin.fir.resolve.diagnostics.*
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
 import org.jetbrains.kotlin.fir.resolve.transformers.body.resolve.resultType
@@ -57,6 +58,81 @@ import kotlin.contracts.contract
 fun FirAnonymousFunction.shouldReturnUnit(returnStatements: Collection<FirExpression>): Boolean =
     isLambda && returnStatements.any { it is FirUnitExpression }
 
+/**
+ * Infers the return type of an anonymous function from return expressions in its body.
+ *
+ * Note: this logic affects not only diagnostics, but also the runtime types of generated lambda classes (at least on JVM).
+ * See [KT-62550](https://youtrack.jetbrains.com/issue/KT-62550) and `compiler/testData/codegen/box/callableReference/kt62550.kt`
+ * for reference.
+ * Namely, this code basically decides what `T` should be in the `FunctionN<T>` interface that the lambda class will implement.
+ * This can be observed through reflection.
+ *
+ * It's important to understand that the logic is a bit different for lambdas passed to functions and for all other lambdas:
+ * - the return type of a lambda passed to a function is always inferred to [expectedReturnType],
+ *   except when the lambda's body implies that it's `Unit` — in that case, the return type is inferred to `Unit`;
+ * - the return type of other lambda expressions (e.g., assigned to a variable) is generally computed as a common supertype of
+ *   the expressions in its `return` statements.
+ */
+internal fun FirAnonymousFunction.computeReturnType(
+    session: FirSession,
+    expectedReturnType: ConeKotlinType?,
+    isPassedAsFunctionArgument: Boolean,
+    returnExpressions: Collection<FirAnonymousFunctionReturnExpressionInfo>,
+): ConeKotlinType {
+    val expandedExpectedReturnType = expectedReturnType?.fullyExpandedType(session)
+    val unitType = session.builtinTypes.unitType.type
+    if (isLambda) {
+        if (expandedExpectedReturnType?.isUnitOrFlexibleUnit == true) {
+            // If the expected type is Unit or flexible Unit, always infer the lambda's type to Unit.
+            // If a return statement in a lambda has a different type, RETURN_TYPE_MISMATCH will be reported for that return statement
+            // by FirFunctionReturnTypeMismatchChecker.
+            //
+            // For example:
+            // val f: () -> Unit = l@ {
+            //     return@l "" // RETURN_TYPE_MISMATCH reported here
+            // }
+            //
+            // Without this check, INITIALIZER_TYPE_MISMATCH would be reported on the whole lambda expression,
+            // because the return type of the lambda would be inferred to String.
+            //
+            // NOTE: If the lambda's expected type is flexible Unit, we forbid returning null from such a lambda.
+            // See KT-66909.
+            return unitType
+        }
+
+        if (returnExpressions.any { it.isExplicit && it.expression is FirUnitExpression }) {
+            // If the expected type is not Unit, and we have an explicit expressionless return, don't infer the return type to Unit.
+            // For this situation, RETURN_TYPE_MISMATCH will be reported later in FirFunctionReturnTypeMismatchChecker.
+            //
+            // For example:
+            // val f: () -> Any = l@ {
+            //    if ("".hashCode() == 42) return@l // RETURN_TYPE_MISMATCH reported here
+            //    return@l Unit
+            // }
+            //
+            // Without this check, INITIALIZER_TYPE_MISMATCH would be reported on the whole lambda expression,
+            // because the return type of the lambda would be inferred to Unit.
+            return if (expandedExpectedReturnType != null) {
+                expectedReturnType
+            } else {
+                unitType
+            }
+        }
+    }
+
+    // Here is a questionable moment where we could prefer the expected type over an inferred one.
+    // In correct code this doesn't matter, as all return expression types should be subtypes of the expected type.
+    // In incorrect code, this would change diagnostics: we can get errors either on the entire lambda, or only on its
+    // return statements. The former kind of makes more sense, but the latter is more readable.
+    val commonSuperType = session.typeContext.commonSuperTypeOrNull(returnExpressions.map { it.expression.resolvedType })
+        ?: unitType
+    return if (isPassedAsFunctionArgument && !commonSuperType.fullyExpandedType(session).isUnit) {
+        expectedReturnType ?: commonSuperType
+    } else {
+        commonSuperType
+    }
+}
+
 fun FirAnonymousFunction.addReturnToLastStatementIfNeeded(session: FirSession) {
     // If this lambda's resolved, expected return type is Unit, we don't need an explicit return statement.
     // During conversion (to backend IR), the last expression will be coerced to Unit if needed.
@@ -71,7 +147,11 @@ fun FirAnonymousFunction.addReturnToLastStatementIfNeeded(session: FirSession) {
 
     val returnTarget = FirFunctionTarget(null, isLambda = isLambda).also { it.bind(this) }
     val returnExpression = buildReturnExpression {
-        source = lastStatement.source?.fakeElement(KtFakeSourceElementKind.ImplicitReturn.FromLastStatement)
+        // Always set the source to something because ControlFlowGraphBuilder#returnExpressionsOfAnonymousFunction may query
+        // the source kind for distinguishing an implicit return from the last statement.
+        source = (lastStatement.source ?: body.source ?: this@addReturnToLastStatementIfNeeded.source)
+            ?.fakeElement(KtFakeSourceElementKind.ImplicitReturn.FromLastStatement)
+
         result = lastStatement
         target = returnTarget
     }
@@ -305,7 +385,8 @@ fun BodyResolveComponents.typeFromCallee(access: FirElement, calleeReference: Fi
         is FirErrorNamedReference ->
             buildErrorTypeRef {
                 source = access.source?.fakeElement(KtFakeSourceElementKind.ErrorTypeRef)
-                diagnostic = ConeStubDiagnostic(calleeReference.diagnostic)
+                // The diagnostic is reported on the callee reference, no need to report it again on the error type ref.
+                diagnostic = ConeUnreportedDuplicateDiagnostic(calleeReference.diagnostic)
             }
         is FirNamedReferenceWithCandidate -> {
             typeFromSymbol(calleeReference.candidateSymbol)
@@ -368,13 +449,10 @@ private fun BodyResolveComponents.typeFromSymbol(symbol: FirBasedSymbol<*>): Fir
     }
 }
 
-fun BodyResolveComponents.transformQualifiedAccessUsingSmartcastInfo(
-    qualifiedAccessExpression: FirQualifiedAccessExpression,
-): FirExpression {
-    val (stability, typesFromSmartCast) = dataFlowAnalyzer.getTypeUsingSmartcastInfo(qualifiedAccessExpression)
-        ?: return qualifiedAccessExpression
+fun BodyResolveComponents.transformExpressionUsingSmartcastInfo(expression: FirExpression): FirExpression {
+    val (stability, typesFromSmartCast) = dataFlowAnalyzer.getTypeUsingSmartcastInfo(expression) ?: return expression
 
-    return transformExpressionUsingSmartcastInfo(qualifiedAccessExpression, stability, typesFromSmartCast) ?: qualifiedAccessExpression
+    return transformExpressionUsingSmartcastInfo(expression, stability, typesFromSmartCast) ?: expression
 }
 
 fun BodyResolveComponents.transformWhenSubjectExpressionUsingSmartcastInfo(
@@ -383,7 +461,8 @@ fun BodyResolveComponents.transformWhenSubjectExpressionUsingSmartcastInfo(
     val (stability, typesFromSmartCast) = dataFlowAnalyzer.getTypeUsingSmartcastInfo(whenSubjectExpression)
         ?: return whenSubjectExpression
 
-    return transformExpressionUsingSmartcastInfo(whenSubjectExpression, stability, typesFromSmartCast) ?: whenSubjectExpression
+    return transformExpressionUsingSmartcastInfo(whenSubjectExpression, stability, typesFromSmartCast)
+        ?: whenSubjectExpression
 }
 
 fun BodyResolveComponents.transformDesugaredAssignmentValueUsingSmartcastInfo(
@@ -393,7 +472,8 @@ fun BodyResolveComponents.transformDesugaredAssignmentValueUsingSmartcastInfo(
         dataFlowAnalyzer.getTypeUsingSmartcastInfo(expression.expressionRef.value)
             ?: return expression
 
-    return transformExpressionUsingSmartcastInfo(expression, stability, typesFromSmartCast) ?: expression
+    return transformExpressionUsingSmartcastInfo(expression, stability, typesFromSmartCast)
+        ?: expression
 }
 
 private val ConeKotlinType.isKindOfNothing
@@ -528,36 +608,61 @@ fun FirCallableDeclaration.getContainingClass(session: FirSession): FirRegularCl
         session.symbolProvider.getSymbolByLookupTag(lookupTag)?.fir as? FirRegularClass
     }
 
-fun FirFunction.getAsForbiddenNamedArgumentsTarget(
-    session: FirSession,
-    // NB: with originScope given this function will try to find overridden declaration with allowed parameter names
-    // for intersection/substitution overrides
-    originScope: FirTypeScope? = null,
-): ForbiddenNamedArgumentsTarget? {
+internal fun FirFunction.areNamedArgumentsForbiddenIgnoringOverridden(): Boolean =
+    forbiddenNamedArgumentsTargetOrNullIgnoringOverridden() != null
+
+private fun FirFunction.forbiddenNamedArgumentsTargetOrNullIgnoringOverridden(): ForbiddenNamedArgumentsTarget? =
+    forbiddenNamedArgumentsTargetOrNull(originScope = null)
+
+/**
+ * Returns a non-null value when named arguments are forbidden for calls to this function.
+ *
+ * When [originScope] is provided, overrides of the function will be checked.
+ * If one of the overridden functions allows named arguments, `null` will be returned.
+ *
+ * One example of this behavior is a Java function that overrides a Kotlin function.
+ * In this case, `null` will be returned, if [originScope] is provided.
+ * Otherwise, [ForbiddenNamedArgumentsTarget.NON_KOTLIN_FUNCTION] will be returned.
+ *
+ * To check if a function allows named arguments regardless of its overrides, it is recommended to use
+ * [FirFunction.areNamedArgumentsForbiddenIgnoringOverridden].
+ */
+internal fun FirFunction.forbiddenNamedArgumentsTargetOrNull(originScope: FirTypeScope?): ForbiddenNamedArgumentsTarget? {
     if (hasStableParameterNames) return null
 
     return when (origin) {
         FirDeclarationOrigin.ImportedFromObjectOrStatic ->
-            importedFromObjectOrStaticData?.original?.getAsForbiddenNamedArgumentsTarget(session)
+            importedFromObjectOrStaticData?.original?.forbiddenNamedArgumentsTargetOrNullIgnoringOverridden()
 
         FirDeclarationOrigin.IntersectionOverride, is FirDeclarationOrigin.SubstitutionOverride, FirDeclarationOrigin.Delegated -> {
-            var result: ForbiddenNamedArgumentsTarget? =
-                unwrapFakeOverridesOrDelegated().getAsForbiddenNamedArgumentsTarget(session) ?: return null
-            originScope?.processOverriddenFunctions(symbol as FirNamedFunctionSymbol) {
-                if (it.fir.getAsForbiddenNamedArgumentsTarget(session) == null) {
-                    result = null
-                    ProcessorAction.STOP
-                } else {
-                    ProcessorAction.NEXT
-                }
-            }
-            result
+            val initial = unwrapFakeOverridesOrDelegated().forbiddenNamedArgumentsTargetOrNullIgnoringOverridden() ?: return null
+            initial.takeUnless { symbol.hasOverrideThatAllowsNamedArguments(originScope) }
+        }
+
+        FirDeclarationOrigin.Enhancement -> {
+            ForbiddenNamedArgumentsTarget.NON_KOTLIN_FUNCTION.takeUnless { symbol.hasOverrideThatAllowsNamedArguments(originScope) }
         }
 
         FirDeclarationOrigin.BuiltIns -> ForbiddenNamedArgumentsTarget.INVOKE_ON_FUNCTION_TYPE
         is FirDeclarationOrigin.Plugin -> null // TODO: figure out what to do with plugin generated functions
         else -> ForbiddenNamedArgumentsTarget.NON_KOTLIN_FUNCTION
     }
+}
+
+private fun FirFunctionSymbol<*>.hasOverrideThatAllowsNamedArguments(originScope: FirTypeScope?): Boolean {
+    var result = false
+    if (this is FirNamedFunctionSymbol) {
+        originScope?.processOverriddenFunctions(this) {
+            // If an override allows named arguments, it overrides the initial result.
+            if (!it.fir.areNamedArgumentsForbiddenIgnoringOverridden()) {
+                result = true
+                ProcessorAction.STOP
+            } else {
+                ProcessorAction.NEXT
+            }
+        }
+    }
+    return result
 }
 
 @OptIn(ExperimentalContracts::class)

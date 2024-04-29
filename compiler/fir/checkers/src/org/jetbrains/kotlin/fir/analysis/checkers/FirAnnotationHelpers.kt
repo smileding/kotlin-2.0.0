@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.fir.analysis.checkers
 
+import org.jetbrains.kotlin.KtSourceElement
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
@@ -30,6 +31,7 @@ import org.jetbrains.kotlin.resolve.UseSiteTargetsList
 import org.jetbrains.kotlin.resolve.checkers.OptInNames
 
 private val defaultAnnotationTargets = KotlinTarget.DEFAULT_TARGET_SET
+private val defaultAnnotationTargetsWithExpression = KotlinTarget.DEFAULT_TARGET_SET + KotlinTarget.EXPRESSION
 
 fun FirAnnotation.getAllowedAnnotationTargets(session: FirSession): Set<KotlinTarget> {
     if (annotationTypeRef is FirErrorTypeRef) return KotlinTarget.ALL_TARGET_SET
@@ -54,12 +56,18 @@ fun FirRegularClass.getAllowedAnnotationTargets(session: FirSession): Set<Kotlin
 
 fun FirClassLikeSymbol<*>.getAllowedAnnotationTargets(session: FirSession): Set<KotlinTarget> {
     lazyResolveToPhase(FirResolvePhase.ANNOTATION_ARGUMENTS)
-    val targetAnnotation = getTargetAnnotation(session) ?: return defaultAnnotationTargets
-    val arguments = targetAnnotation.findArgumentByName(ParameterNames.targetAllowedTargets)?.unwrapAndFlattenArgument(flattenArrays = true).orEmpty()
+    // In KT-67014, we decided to allow EXPRESSION targets for Java annotations
+    val targetAnnotation = getTargetAnnotation(session)
+        ?: return if (isJavaOrEnhancement) defaultAnnotationTargetsWithExpression else defaultAnnotationTargets
+    val arguments =
+        targetAnnotation.findArgumentByName(ParameterNames.targetAllowedTargets)?.unwrapAndFlattenArgument(flattenArrays = true).orEmpty()
 
     return arguments.mapNotNullTo(mutableSetOf()) { argument ->
         val targetName = argument.extractEnumValueArgumentInfo()?.enumEntryName?.asString() ?: return@mapNotNullTo null
         KotlinTarget.entries.firstOrNull { target -> target.name == targetName }
+    }.let {
+        // In KT-67014, we decided to allow EXPRESSION targets for Java annotations
+        if (isJavaOrEnhancement) it + KotlinTarget.EXPRESSION else it
     }
 }
 
@@ -81,7 +89,7 @@ fun FirExpression.extractClassFromArgument(session: FirSession): FirRegularClass
     if (this !is FirGetClassCall) return null
     return when (val argument = argument) {
         is FirResolvedQualifier ->
-            argument.symbol as? FirRegularClassSymbol
+            argument.symbol?.fullyExpandedClass(session)
         is FirClassReferenceExpression -> {
             val classTypeRef = argument.classTypeRef
             val coneType = classTypeRef.coneType.unwrapFlexibleAndDefinitelyNotNull()
@@ -97,11 +105,12 @@ fun checkRepeatedAnnotation(
     annotation: FirAnnotation,
     context: CheckerContext,
     reporter: DiagnosticReporter,
+    annotationSource: KtSourceElement?,
 ) {
     val duplicated = useSiteTarget in existingTargetsForAnnotation
             || existingTargetsForAnnotation.any { (it == null) != (useSiteTarget == null) }
     if (duplicated && !annotation.isRepeatable(context.session)) {
-        reporter.reportOn(annotation.source, FirErrors.REPEATED_ANNOTATION, context)
+        reporter.reportOn(annotationSource, FirErrors.REPEATED_ANNOTATION, context)
     }
 }
 
@@ -143,7 +152,9 @@ fun checkRepeatedAnnotation(
     annotationContainer: FirAnnotationContainer?,
     annotations: List<FirAnnotation>,
     context: CheckerContext,
-    reporter: DiagnosticReporter
+    reporter: DiagnosticReporter,
+    annotationSources: Map<FirAnnotation, KtSourceElement?>,
+    defaultSource: KtSourceElement?,
 ) {
     if (annotations.size <= 1) return
 
@@ -154,7 +165,8 @@ fun checkRepeatedAnnotation(
         val expandedType = annotation.annotationTypeRef.coneType.fullyExpandedType(context.session)
         val existingTargetsForAnnotation = annotationsMap.getOrPut(expandedType) { arrayListOf() }
 
-        checkRepeatedAnnotation(useSiteTarget, existingTargetsForAnnotation, annotation, context, reporter)
+        val source = annotationSources[annotation] ?: defaultSource
+        checkRepeatedAnnotation(useSiteTarget, existingTargetsForAnnotation, annotation, context, reporter, source)
         existingTargetsForAnnotation.add(useSiteTarget)
     }
 }

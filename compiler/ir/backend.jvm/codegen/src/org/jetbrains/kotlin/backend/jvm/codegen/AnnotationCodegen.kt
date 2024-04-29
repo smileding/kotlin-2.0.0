@@ -28,8 +28,6 @@ import org.jetbrains.kotlin.backend.jvm.ir.isWithFlexibleNullability
 import org.jetbrains.kotlin.backend.jvm.mapping.mapClass
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.codegen.AsmUtil
-import org.jetbrains.kotlin.codegen.TypeAnnotationCollector
-import org.jetbrains.kotlin.codegen.TypePathInfo
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.annotations.KotlinRetention
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget
@@ -41,8 +39,6 @@ import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.load.java.JvmAnnotationNames
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.types.TypeSystemCommonBackendContext
-import org.jetbrains.kotlin.types.model.KotlinTypeMarker
 import org.jetbrains.org.objectweb.asm.AnnotationVisitor
 import org.jetbrains.org.objectweb.asm.Type
 import org.jetbrains.org.objectweb.asm.TypePath
@@ -405,34 +401,12 @@ abstract class AnnotationCodegen(
         ) {
             return
         }
-        val infos: Iterable<TypePathInfo<IrConstructorCall>> =
-            IrTypeAnnotationCollector(classCodegen.typeMapper.typeSystem).collectTypeAnnotations(type)
-        for (info in infos) {
+        for (info in IrTypeAnnotationCollector().collectTypeAnnotations(type)) {
             for (annotation in info.annotations) {
                 genAnnotation(annotation, info.path, true)
             }
         }
     }
-
-    private class IrTypeAnnotationCollector(context: TypeSystemCommonBackendContext) : TypeAnnotationCollector<IrConstructorCall>(context) {
-
-        override fun KotlinTypeMarker.extractAnnotations(): List<IrConstructorCall> {
-            require(this is IrType)
-            return annotations.filter {
-                // We only generate annotations which have the TYPE_USE Java target.
-                // Those are type annotations which were compiled with JVM target bytecode version 1.8 or greater
-                (it.annotationClass.origin != IrDeclarationOrigin.IR_EXTERNAL_DECLARATION_STUB &&
-                        it.annotationClass.origin != IrDeclarationOrigin.IR_EXTERNAL_JAVA_DECLARATION_STUB) ||
-                        it.annotationClass.isCompiledToJvm8OrHigher
-            }
-        }
-
-        private val IrClass.isCompiledToJvm8OrHigher: Boolean
-            get() =
-                (origin == IrDeclarationOrigin.IR_EXTERNAL_DECLARATION_STUB || origin == IrDeclarationOrigin.IR_EXTERNAL_JAVA_DECLARATION_STUB) &&
-                        isCompiledToJvm8OrHigher(source)
-    }
-
 }
 
 private fun isBareTypeParameterWithNullableUpperBound(type: IrType): Boolean {

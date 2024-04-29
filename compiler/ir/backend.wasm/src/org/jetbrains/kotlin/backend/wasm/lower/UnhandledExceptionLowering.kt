@@ -20,8 +20,6 @@ import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.expressions.IrBlockBody
 import org.jetbrains.kotlin.ir.expressions.IrExpressionBody
 import org.jetbrains.kotlin.ir.util.toIrConst
-import org.jetbrains.kotlin.js.config.JSConfigurationKeys
-import org.jetbrains.kotlin.js.config.WasmTarget
 import org.jetbrains.kotlin.name.Name
 
 // This pass needed to wrap around unhandled exceptions from JsExport functions and throw JS exception for call from JS site
@@ -56,6 +54,7 @@ internal class UnhandledExceptionLowering(val context: WasmBackendContext) : Fil
     private fun processExportFunction(irFunction: IrFunction) {
         val body = irFunction.body ?: return
         if (body is IrBlockBody && body.statements.isEmpty()) return
+        if (irFunction in context.closureCallExports.values) return
 
         val bodyType = when (body) {
             is IrExpressionBody -> body.expression.type

@@ -8,27 +8,18 @@
 
 package org.jetbrains.kotlin.sir
 
-import org.jetbrains.kotlin.sir.visitors.SirTransformer
-import org.jetbrains.kotlin.sir.visitors.SirVisitor
-
 /**
  * Generated from: [org.jetbrains.kotlin.sir.tree.generator.SwiftIrTree.init]
  */
 abstract class SirInit : SirCallable() {
     abstract override val origin: SirOrigin
     abstract override val visibility: SirVisibility
-    abstract override var documentation: String?
+    abstract override val documentation: String?
     abstract override var parent: SirDeclarationParent
     abstract override val kind: SirCallableKind
     abstract override var body: SirFunctionBody?
     abstract val isFailable: Boolean
     abstract val parameters: List<SirParameter>
     abstract val initKind: SirInitializerKind
-
-    override fun <R, D> accept(visitor: SirVisitor<R, D>, data: D): R =
-        visitor.visitInit(this, data)
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <E : SirElement, D> transform(transformer: SirTransformer<D>, data: D): E =
-        transformer.transformInit(this, data) as E
+    abstract val isOverride: Boolean
 }

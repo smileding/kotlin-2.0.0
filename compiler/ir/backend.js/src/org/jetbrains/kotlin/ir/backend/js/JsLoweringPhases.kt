@@ -27,14 +27,14 @@ import org.jetbrains.kotlin.platform.js.JsPlatforms
 private fun List<CompilerPhase<JsIrBackendContext, IrModuleFragment, IrModuleFragment>>.toCompilerPhase() =
     reduce { acc, lowering -> acc.then(lowering) }
 
-private val validateIrBeforeLowering = makeCustomPhase<JsIrBackendContext>(
-    { context, module -> validationCallback(context, module) },
+private val validateIrBeforeLowering = makeIrModulePhase(
+    ::IrValidationPhase,
     name = "ValidateIrBeforeLowering",
     description = "Validate IR before lowering"
 )
 
-private val validateIrAfterLowering = makeCustomPhase<JsIrBackendContext>(
-    { context, module -> validationCallback(context, module) },
+private val validateIrAfterLowering = makeIrModulePhase(
+    ::IrValidationPhase,
     name = "ValidateIrAfterLowering",
     description = "Validate IR after lowering"
 )
@@ -55,6 +55,12 @@ private val preventExportOfSyntheticDeclarationsLowering = makeIrModulePhase(
     ::ExcludeSyntheticDeclarationsFromExportLowering,
     name = "ExcludeSyntheticDeclarationsFromExportLowering",
     description = "Exclude synthetic declarations which we don't want to export such as `Enum.entries` or `DataClass::componentN`",
+)
+
+private val jsStaticLowering = makeIrModulePhase(
+    ::JsStaticLowering,
+    name = "JsStaticLowering",
+    description = "Make for each @JsStatic declaration inside the companion object a proxy declaration inside its parent class static scope",
 )
 
 val createScriptFunctionsPhase = makeIrModulePhase(
@@ -153,14 +159,14 @@ private val localClassesInInlineLambdasPhase = makeIrModulePhase(
     ::LocalClassesInInlineLambdasLowering,
     name = "LocalClassesInInlineLambdasPhase",
     description = "Extract local classes from inline lambdas",
-    prerequisite = setOf(inventNamesForLocalClassesPhase)
+    prerequisite = setOf()
 )
 
 private val localClassesInInlineFunctionsPhase = makeIrModulePhase(
     ::LocalClassesInInlineFunctionsLowering,
     name = "LocalClassesInInlineFunctionsPhase",
     description = "Extract local classes from inline functions",
-    prerequisite = setOf(inventNamesForLocalClassesPhase)
+    prerequisite = setOf()
 )
 
 private val localClassesExtractionFromInlineFunctionsPhase = makeIrModulePhase(
@@ -194,7 +200,7 @@ private val saveInlineFunctionsBeforeInlining = makeIrModulePhase(
     description = "Save inline function before inlining",
     prerequisite = setOf(
         replaceSuspendIntrinsicLowering,
-        expectDeclarationsRemovingPhase, sharedVariablesLoweringPhase,
+        sharedVariablesLoweringPhase,
         localClassesInInlineLambdasPhase, localClassesExtractionFromInlineFunctionsPhase,
         syntheticAccessorLoweringPhase, wrapInlineDeclarationsWithReifiedTypeParametersLowering
     )
@@ -408,20 +414,20 @@ private val localClassExtractionPhase = makeIrModulePhase(
 )
 
 private val innerClassesLoweringPhase = makeIrModulePhase<JsIrBackendContext>(
-    { context -> InnerClassesLowering(context, context.innerClassesSupport) },
+    ::InnerClassesLowering,
     name = "InnerClassesLowering",
     description = "Capture outer this reference to inner class"
 )
 
 private val innerClassesMemberBodyLoweringPhase = makeIrModulePhase(
-    { context -> InnerClassesMemberBodyLowering(context, context.innerClassesSupport) },
+    ::InnerClassesMemberBodyLowering,
     name = "InnerClassesMemberBody",
     description = "Replace `this` with 'outer this' field references",
     prerequisite = setOf(innerClassesLoweringPhase)
 )
 
 private val innerClassConstructorCallsLoweringPhase = makeIrModulePhase<JsIrBackendContext>(
-    { context -> InnerClassConstructorCallsLowering(context, context.innerClassesSupport) },
+    ::InnerClassConstructorCallsLowering,
     name = "InnerClassConstructorCallsLowering",
     description = "Replace inner class constructor invocation"
 )
@@ -776,13 +782,6 @@ val mainFunctionCallWrapperLowering = makeIrModulePhase<JsIrBackendContext>(
 
 val loweringList = listOf<SimpleNamedCompilerPhase<JsIrBackendContext, IrModuleFragment, IrModuleFragment>>(
     validateIrBeforeLowering,
-    prepareCollectionsToExportLowering,
-    preventExportOfSyntheticDeclarationsLowering,
-    inventNamesForLocalClassesPhase,
-    collectClassIdentifiersLowering,
-    annotationInstantiationLowering,
-    expectDeclarationsRemovingPhase,
-    stripTypeAliasDeclarationsPhase,
     jsCodeOutliningPhase,
     arrayConstructorReferencePhase,
     arrayConstructorPhase,
@@ -801,6 +800,14 @@ val loweringList = listOf<SimpleNamedCompilerPhase<JsIrBackendContext, IrModuleF
     constEvaluationPhase,
     copyInlineFunctionBodyLoweringPhase,
     removeInlineDeclarationsWithReifiedTypeParametersLoweringPhase,
+    prepareCollectionsToExportLowering,
+    preventExportOfSyntheticDeclarationsLowering,
+    jsStaticLowering,
+    inventNamesForLocalClassesPhase,
+    collectClassIdentifiersLowering,
+    annotationInstantiationLowering,
+    expectDeclarationsRemovingPhase,
+    stripTypeAliasDeclarationsPhase,
     createScriptFunctionsPhase,
     stringConcatenationLoweringPhase,
     callableReferenceLowering,

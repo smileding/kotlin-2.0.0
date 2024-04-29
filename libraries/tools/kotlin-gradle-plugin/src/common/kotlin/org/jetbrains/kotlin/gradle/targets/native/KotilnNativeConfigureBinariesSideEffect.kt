@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPluginLifecycle
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.launchInStage
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.plugin.statistics.NativeLinkTaskMetrics
 import org.jetbrains.kotlin.gradle.targets.KotlinTargetSideEffect
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import org.jetbrains.kotlin.gradle.tasks.dependsOn
@@ -85,7 +86,7 @@ private fun Project.createLinkTask(binary: NativeBinary) {
         task.description = "Links ${binary.outputKind.description} '${binary.name}' for a target '${target.name}'."
         task.dependsOn(compilation.compileTaskProvider)
 
-        task.enabled = binary.konanTarget.enabledOnCurrentHost
+        task.enabled = binary.konanTarget.enabledOnCurrentHostForBinariesCompilation()
         task.konanPropertiesService.set(konanPropertiesBuildService)
         task.usesService(konanPropertiesBuildService)
         task.toolOptions.freeCompilerArgs.value(compilationCompilerOptions.options.freeCompilerArgs)
@@ -101,6 +102,7 @@ private fun Project.createLinkTask(binary: NativeBinary) {
         task.disallowSourceChanges()
     }
 
+    NativeLinkTaskMetrics.collectMetrics(this)
 
     if (binary !is TestExecutable) {
         tasks.named(binary.compilation.target.artifactsTaskName).dependsOn(linkTask)

@@ -9,14 +9,10 @@ import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.fir.tree.generator.*
 import org.jetbrains.kotlin.fir.tree.generator.model.*
 import org.jetbrains.kotlin.generators.tree.*
-import org.jetbrains.kotlin.generators.tree.printer.call
-import org.jetbrains.kotlin.generators.tree.printer.printAcceptChildrenMethod
-import org.jetbrains.kotlin.generators.tree.printer.printBlock
-import org.jetbrains.kotlin.generators.tree.printer.printTransformChildrenMethod
-import org.jetbrains.kotlin.utils.SmartPrinter
+import org.jetbrains.kotlin.generators.tree.printer.*
 import org.jetbrains.kotlin.utils.withIndent
 
-private class ImplementationFieldPrinter(printer: SmartPrinter) : AbstractFieldPrinter<FieldWithDefault>(printer) {
+private class ImplementationFieldPrinter(printer: ImportCollectingPrinter) : AbstractFieldPrinter<FieldWithDefault>(printer) {
 
     private fun Field.isMutableOrEmptyIfList(): Boolean = when (this) {
         is FieldList -> isMutableOrEmptyList
@@ -33,7 +29,7 @@ private class ImplementationFieldPrinter(printer: SmartPrinter) : AbstractFieldP
 }
 
 internal class ImplementationPrinter(
-    printer: SmartPrinter
+    printer: ImportCollectingPrinter
 ) : AbstractImplementationPrinter<Implementation, Element, FieldWithDefault>(printer) {
 
     override val implementationOptInAnnotation: ClassRef<*>
@@ -43,10 +39,9 @@ internal class ImplementationPrinter(
     override val pureAbstractElementType: ClassRef<*>
         get() = org.jetbrains.kotlin.fir.tree.generator.pureAbstractElementType
 
-    override fun makeFieldPrinter(printer: SmartPrinter): AbstractFieldPrinter<FieldWithDefault> = ImplementationFieldPrinter(printer)
+    override fun makeFieldPrinter(printer: ImportCollectingPrinter): AbstractFieldPrinter<FieldWithDefault> = ImplementationFieldPrinter(printer)
 
-    context(ImportCollector)
-    override fun SmartPrinter.printAdditionalMethods(implementation: Implementation) {
+    override fun ImportCollectingPrinter.printAdditionalMethods(implementation: Implementation) {
         fun Field.transform() {
             when (this) {
                 is FieldWithDefault -> origin.transform()
@@ -102,9 +97,9 @@ internal class ImplementationPrinter(
                         for (field in walkableFields) {
                             when (field.name) {
                                 "explicitReceiver" -> {
-                                    val explicitReceiver = implementation["explicitReceiver"]!!
-                                    val dispatchReceiver = implementation["dispatchReceiver"]!!
-                                    val extensionReceiver = implementation["extensionReceiver"]!!
+                                    val explicitReceiver = implementation["explicitReceiver"]
+                                    val dispatchReceiver = implementation["dispatchReceiver"]
+                                    val extensionReceiver = implementation["extensionReceiver"]
                                     println(
                                         """
                                     |${explicitReceiver.acceptString()}
@@ -168,9 +163,9 @@ internal class ImplementationPrinter(
                         for (field in transformableChildren) {
                             when {
                                 field.name == "explicitReceiver" -> {
-                                    val explicitReceiver = implementation["explicitReceiver"]!!
-                                    val dispatchReceiver = implementation["dispatchReceiver"]!!
-                                    val extensionReceiver = implementation["extensionReceiver"]!!
+                                    val explicitReceiver = implementation["explicitReceiver"]
+                                    val dispatchReceiver = implementation["dispatchReceiver"]
+                                    val extensionReceiver = implementation["extensionReceiver"]
                                     if (explicitReceiver.isMutable) {
                                         println("explicitReceiver = explicitReceiver${explicitReceiver.call()}transform(transformer, data)")
                                     }
@@ -300,7 +295,7 @@ internal class ImplementationPrinter(
                 val newValue = "new$capitalizedFieldName"
                 generateReplace(field, forceNullable = field.useNullableForReplace) {
                     when {
-                        field.withGetter -> {}
+                        field.implementationDefaultStrategy!!.withGetter -> {}
 
                         field.origin is FieldList && !field.isMutableOrEmptyList -> {
                             println("${field.name}.clear()")

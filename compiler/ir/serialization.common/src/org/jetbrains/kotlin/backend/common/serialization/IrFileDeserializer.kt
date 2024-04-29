@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.backend.common.serialization
 
+import org.jetbrains.kotlin.backend.common.serialization.encodings.BinarySymbolData
 import org.jetbrains.kotlin.descriptors.impl.EmptyPackageFragmentDescriptor
 import org.jetbrains.kotlin.ir.declarations.IrDeclaration
 import org.jetbrains.kotlin.ir.declarations.IrFile
@@ -17,6 +18,7 @@ import org.jetbrains.kotlin.library.IrLibrary
 import org.jetbrains.kotlin.library.encodings.WobblyTF8
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.protobuf.ExtensionRegistryLite
+import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import org.jetbrains.kotlin.backend.common.serialization.proto.IdSignature as ProtoIdSignature
 import org.jetbrains.kotlin.backend.common.serialization.proto.IrConstructorCall as ProtoConstructorCall
 import org.jetbrains.kotlin.backend.common.serialization.proto.IrDeclaration as ProtoDeclaration
@@ -73,7 +75,7 @@ class FileDeserializationState(
             ::addIdSignature,
             linker::handleExpectActualMapping,
             symbolProcessor = linker.symbolProcessor,
-            internationService = linker.internationService
+            irInterner = linker.irInterner
         ) { idSignature, symbolKind ->
             linker.deserializeOrReturnUnboundIrSymbolIfPartialLinkageEnabled(idSignature, symbolKind, moduleDeserializer)
         }
@@ -88,11 +90,24 @@ class FileDeserializationState(
         deserializeInlineFunctions,
         deserializeBodies,
         symbolDeserializer,
-        linker.fakeOverrideBuilder.platformSpecificClassFilter,
-        linker.fakeOverrideBuilder,
-        compatibilityMode = moduleDeserializer.compatibilityMode,
-        linker.partialLinkageSupport.isEnabled,
-        internationService = linker.internationService,
+        onDeserializedClass = { clazz, idSignature ->
+            linker.fakeOverrideBuilder.enqueueClass(clazz, idSignature, moduleDeserializer.compatibilityMode)
+        },
+        needToDeserializeFakeOverrides = { clazz ->
+            !linker.fakeOverrideBuilder.platformSpecificClassFilter.needToConstructFakeOverrides(clazz)
+        },
+        specialProcessingForMismatchedSymbolKind = runIf(linker.partialLinkageSupport.isEnabled) {
+            { deserializedSymbol, fallbackSymbolKind ->
+                referenceDeserializedSymbol(
+                    symbolTable = linker.symbolTable,
+                    fileSymbol = null,
+                    symbolKind = fallbackSymbolKind ?: error("No fallback symbol kind specified for symbol $deserializedSymbol"),
+                    idSig = deserializedSymbol.signature?.takeIf { it.isPubliclyVisible }
+                        ?: error("No public signature for symbol $deserializedSymbol")
+                )
+            }
+        },
+        irInterner = linker.irInterner,
     )
 
     val fileDeserializer = IrFileDeserializer(file, fileReader, fileProto, symbolDeserializer, declarationDeserializer)

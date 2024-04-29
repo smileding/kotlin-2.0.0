@@ -53,6 +53,12 @@ public class FirIdeDependentAnalysisSourceModuleReferenceResolveTestGenerated ex
   }
 
   @Test
+  @TestMetadata("AnnotationFromJava.kt")
+  public void testAnnotationFromJava() {
+    runTest("analysis/analysis-api/testData/referenceResolve/AnnotationFromJava.kt");
+  }
+
+  @Test
   @TestMetadata("AnnotationInsideFunction.kt")
   public void testAnnotationInsideFunction() {
     runTest("analysis/analysis-api/testData/referenceResolve/AnnotationInsideFunction.kt");
@@ -668,6 +674,12 @@ public class FirIdeDependentAnalysisSourceModuleReferenceResolveTestGenerated ex
   @TestMetadata("TypeAliasRHS.kt")
   public void testTypeAliasRHS() {
     runTest("analysis/analysis-api/testData/referenceResolve/TypeAliasRHS.kt");
+  }
+
+  @Test
+  @TestMetadata("UnresolvedCallArgument.kt")
+  public void testUnresolvedCallArgument() {
+    runTest("analysis/analysis-api/testData/referenceResolve/UnresolvedCallArgument.kt");
   }
 
   @Test
@@ -1491,6 +1503,12 @@ public class FirIdeDependentAnalysisSourceModuleReferenceResolveTestGenerated ex
     @TestMetadata("JavaAnnotationParameter.kt")
     public void testJavaAnnotationParameter() {
       runTest("analysis/analysis-api/testData/referenceResolve/java/JavaAnnotationParameter.kt");
+    }
+
+    @Test
+    @TestMetadata("JavaCallWithGenerics.kt")
+    public void testJavaCallWithGenerics() {
+      runTest("analysis/analysis-api/testData/referenceResolve/java/JavaCallWithGenerics.kt");
     }
 
     @Test

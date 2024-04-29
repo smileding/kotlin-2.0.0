@@ -343,11 +343,12 @@ val projectsUsedInIntelliJKotlinPlugin =
                 ":jps:jps-common",
             ) +
             arrayOf(
+                ":compiler:ir.serialization.native",
+                ":native:analysis-api-klib-reader",
                 ":native:base",
                 ":native:objcexport-header-generator",
-                ":native:objcexport-header-generator-k1",
                 ":native:objcexport-header-generator-analysis-api",
-                ":compiler:ir.serialization.native"
+                ":native:objcexport-header-generator-k1",
             )
 
 extra["projectsUsedInIntelliJKotlinPlugin"] = projectsUsedInIntelliJKotlinPlugin
@@ -477,29 +478,6 @@ val mppProjects by extra {
     )
 }
 
-val projectsWithEnabledContextReceivers by extra {
-    listOf(
-        ":core:descriptors.jvm",
-        ":compiler:resolution.common",
-        ":compiler:frontend.common",
-        ":compiler:fir:resolve",
-        ":compiler:fir:plugin-utils",
-        ":compiler:fir:fir2ir",
-        ":compiler:fir:raw-fir:raw-fir.common",
-        ":compiler:fir:raw-fir:psi2fir",
-        ":compiler:fir:raw-fir:light-tree2fir",
-        ":compiler:fir:tree:tree-generator",
-        ":compiler:ir.tree:tree-generator",
-        ":native:swift:sir:tree-generator",
-        ":generators:tree-generator-common",
-        ":kotlin-lombok-compiler-plugin.k1",
-        ":kotlinx-serialization-compiler-plugin.k2",
-        ":plugins:parcelize:parcelize-compiler:parcelize.k2",
-        ":plugins:fir-plugin-prototype",
-        ":plugins:kapt4",
-    )
-}
-
 val projectsWithOptInToUnsafeCastFunctionsFromAddToStdLib by extra {
     listOf(
         ":analysis:analysis-api-fe10",
@@ -526,6 +504,7 @@ val gradlePluginProjects = listOf(
     ":kotlin-gradle-plugin-idea-proto",
     ":kotlin-gradle-plugin-model",
     ":kotlin-gradle-plugin-tcs-android",
+    ":compose-compiler-gradle-plugin",
     ":kotlin-allopen",
     ":kotlin-noarg",
     ":kotlin-power-assert",

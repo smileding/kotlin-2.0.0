@@ -149,7 +149,7 @@ tasks.register<Task>("prepareNativeBundleForGradleIT") {
 
     if (project.kotlinBuildProperties.isKotlinNativeEnabled) {
         // Build full Kotlin Native bundle
-        dependsOn(":kotlin-native:bundle")
+        dependsOn(":kotlin-native:install")
     }
 }
 
@@ -225,7 +225,7 @@ fun Test.includeTestsWithPattern(include: Boolean, patterns: (MutableSet<String>
 }
 
 fun Test.advanceGradleVersion() {
-    val gradleVersionForTests = "8.6"
+    val gradleVersionForTests = "8.7"
     systemProperty("kotlin.gradle.version.for.tests", gradleVersionForTests)
 }
 
@@ -291,7 +291,8 @@ val gradleVersions = listOf(
     "8.3",
     "8.4",
     "8.5",
-    "8.6"
+    "8.6",
+    "8.7"
 )
 
 if (project.kotlinBuildProperties.isTeamcityBuild) {

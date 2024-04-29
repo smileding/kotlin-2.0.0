@@ -36,6 +36,8 @@ dependencies {
     implementation(project(":analysis:analysis-api-standalone:analysis-api-standalone-base"))
     implementation(project(":kotlin-scripting-compiler"))
     implementation(project(":kotlin-scripting-common"))
+    implementation(project(":kotlin-assignment-compiler-plugin.k2"))
+    implementation(project(":kotlin-assignment-compiler-plugin.cli"))
 
     // We cannot use the latest version `3.1.5` because it doesn't support Java 8.
     implementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
@@ -46,7 +48,7 @@ dependencies {
     testApi(projectTests(":compiler:test-infrastructure"))
     testImplementation(projectTests(":compiler:tests-common-new"))
 
-    testImplementation("org.opentest4j:opentest4j:1.2.0")
+    testImplementation(libs.opentest4j)
     testImplementation(project(":analysis:analysis-api-standalone:analysis-api-fir-standalone-base"))
     testImplementation(toolsJar())
     testImplementation(projectTests(":compiler:tests-common"))

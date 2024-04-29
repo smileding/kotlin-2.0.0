@@ -794,7 +794,7 @@ class ClassFileToSourceStubConverter(val kaptContext: KaptContextForStubGenerati
     private fun getConstantValue(expression: KtExpression, expectedType: KotlinType): ConstantValue<*>? {
         val moduleDescriptor = kaptContext.generationState.module
         val languageVersionSettings = kaptContext.generationState.languageVersionSettings
-        val evaluator = ConstantExpressionEvaluator(moduleDescriptor, languageVersionSettings, kaptContext.project)
+        val evaluator = ConstantExpressionEvaluator(moduleDescriptor, languageVersionSettings)
         val trace = DelegatingBindingTrace(kaptContext.bindingContext, "Kapt")
         val const = evaluator.evaluateExpression(expression, trace, expectedType)
         if (const == null || const.isError || !const.canBeUsedInAnnotations || const.usesNonConstValAsConstant) {
@@ -1224,6 +1224,7 @@ class ClassFileToSourceStubConverter(val kaptContext: KaptContextForStubGenerati
     ): JCAnnotation? {
         val annotationType = Type.getType(annotation.desc)
         val fqName = treeMaker.getQualifiedName(annotationType)
+        reportIfIllegalTypeUsage(containingClass, annotationType)
 
         if (filtered) {
             if (BLACKLISTED_ANNOTATIONS.any { fqName.startsWith(it) }) return null

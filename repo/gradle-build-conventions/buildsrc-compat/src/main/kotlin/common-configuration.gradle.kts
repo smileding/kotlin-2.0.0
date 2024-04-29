@@ -133,29 +133,15 @@ fun Project.configureKotlinCompilationOptions() {
         val useFirIC by extra(project.kotlinBuildProperties.useFirTightIC)
         val renderDiagnosticNames by extra(project.kotlinBuildProperties.renderDiagnosticNames)
 
-        val coreLibProjects: List<String> by rootProject.extra
-        val projectsWithForced19LanguageVersion = coreLibProjects + listOf(
-            ":kotlin-dom-api-compat",
-        ) - listOf(":kotlin-stdlib", ":kotlin-stdlib-common")
-
         tasks.withType<KotlinCompilationTask<*>>().configureEach {
             compilerOptions {
-
                 freeCompilerArgs.addAll(commonCompilerArgs)
-                val forced19 = project.path in projectsWithForced19LanguageVersion
-                if (forced19) {
-                    languageVersion.set(KotlinVersion.KOTLIN_1_9)
-                    apiVersion.set(KotlinVersion.KOTLIN_1_9)
-                } else {
-                    languageVersion.set(KotlinVersion.fromVersion(kotlinLanguageVersion))
-                    apiVersion.set(KotlinVersion.fromVersion(kotlinLanguageVersion))
-                    freeCompilerArgs.add("-Xskip-prerelease-check")
-                }
+                languageVersion.set(KotlinVersion.fromVersion(kotlinLanguageVersion))
+                apiVersion.set(KotlinVersion.fromVersion(kotlinLanguageVersion))
+                freeCompilerArgs.add("-Xskip-prerelease-check")
+
                 if (project.path in projectsUsedInIntelliJKotlinPlugin) {
                     apiVersion.set(KotlinVersion.fromVersion(kotlinApiVersionForProjectsUsedInIntelliJKotlinPlugin))
-                }
-                if (KotlinVersion.DEFAULT >= KotlinVersion.KOTLIN_2_0 && forced19) {
-                    progressiveMode.set(false)
                 }
             }
 
@@ -186,7 +172,6 @@ fun Project.configureKotlinCompilationOptions() {
             "-Xno-kotlin-nothing-value-exception",
         )
 
-        val projectsWithEnabledContextReceivers: List<String> by rootProject.extra
         val projectsWithOptInToUnsafeCastFunctionsFromAddToStdLib: List<String> by rootProject.extra
 
         tasks.withType<KotlinJvmCompile>().configureEach {
@@ -196,9 +181,6 @@ fun Project.configureKotlinCompilationOptions() {
                     freeCompilerArgs.add("-Xrender-internal-diagnostic-names")
                 }
                 allWarningsAsErrors.set(!kotlinBuildProperties.disableWerror)
-                if (project.path in projectsWithEnabledContextReceivers) {
-                    freeCompilerArgs.add("-Xcontext-receivers")
-                }
                 if (project.path in projectsWithOptInToUnsafeCastFunctionsFromAddToStdLib) {
                     freeCompilerArgs.add("-opt-in=org.jetbrains.kotlin.utils.addToStdlib.UnsafeCastFunction")
                 }

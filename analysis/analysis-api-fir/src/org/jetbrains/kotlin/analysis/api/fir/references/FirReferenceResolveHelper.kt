@@ -59,7 +59,9 @@ import org.jetbrains.kotlin.utils.addToStdlib.ifNotEmpty
 
 internal object FirReferenceResolveHelper {
     fun FirResolvedTypeRef.toTargetSymbol(session: FirSession, symbolBuilder: KtSymbolByFirBuilder): KtSymbol? {
-        val type = getDeclaredType() as? ConeLookupTagBasedType
+        // When you call a method from Java with type arguments, in FIR they are currently represented as flexible types.
+        // TODO Consider handling other non-ConeLookupTagBasedType types here (see KT-66418)
+        val type = getDeclaredType()?.lowerBoundIfFlexible() as? ConeLookupTagBasedType
 
         return type?.toTargetSymbol(session, symbolBuilder) ?: run {
             val diagnostic = (this as? FirErrorTypeRef)?.diagnostic
@@ -353,7 +355,7 @@ internal object FirReferenceResolveHelper {
 
         val assignmentRValue = fir.rValue
         if (expression is KtOperationReferenceExpression &&
-            assignmentRValue.source?.kind is KtFakeSourceElementKind.DesugaredCompoundAssignment
+            assignmentRValue.source?.kind is KtFakeSourceElementKind.DesugaredAugmentedAssign
         ) {
             require(assignmentRValue is FirResolvable) {
                 "Rvalue of desugared compound assignment should be resolvable, but it was ${assignmentRValue::class}"
@@ -381,7 +383,7 @@ internal object FirReferenceResolveHelper {
     }
 
     private fun FirCall.findCorrespondingParameter(name: Name): FirValueParameter? {
-        return resolvedArgumentMapping?.values?.first { it.name == name }
+        return resolvedArgumentMapping?.values?.firstOrNull { it.name == name }
     }
 
     private fun handleUnknownFirElement(

@@ -45,6 +45,7 @@ kotlin {
                 compileTaskProvider.configure {
                     compilerOptions {
                         freeCompilerArgs.empty() // avoid common options set from the root project
+                        freeCompilerArgs.addAll("-Xdont-warn-on-error-suppression")
                     }
                 }
             }
@@ -294,19 +295,6 @@ tasks {
     }
     val allTests by existing {
         dependsOn(jvmTestTasks)
-    }
-
-    // Temporary disable wasm compilation due to breaking changes.
-    // TODO: Enable after advancing bootstrap
-    val compileTestDevelopmentExecutableKotlinWasmWasi by existing {
-        onlyIf("Disabled until bootstrap is advanced") {
-            false
-        }
-    }
-    val compileTestDevelopmentExecutableKotlinWasmJs by existing {
-        onlyIf("Disabled until bootstrap is advanced") {
-            false
-        }
     }
 
     val generateProjectStructureMetadata by existing(GenerateProjectStructureMetadata::class) {

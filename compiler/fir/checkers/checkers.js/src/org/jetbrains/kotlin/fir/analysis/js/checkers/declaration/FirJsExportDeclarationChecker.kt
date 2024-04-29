@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.*
 import org.jetbrains.kotlin.fir.expressions.FirLiteralExpression
 import org.jetbrains.kotlin.fir.isEnumEntries
+import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertyAccessorSymbol
@@ -32,7 +33,7 @@ import org.jetbrains.kotlin.js.common.SPECIAL_KEYWORDS
 import org.jetbrains.kotlin.name.JsStandardClassIds
 import org.jetbrains.kotlin.name.SpecialNames.DEFAULT_NAME_FOR_COMPANION_OBJECT
 
-object FirJsExportDeclarationChecker : FirBasicDeclarationChecker(MppCheckerKind.Common) {
+object FirJsExportDeclarationChecker : FirBasicDeclarationChecker(MppCheckerKind.Platform) {
     override fun check(declaration: FirDeclaration, context: CheckerContext, reporter: DiagnosticReporter) {
         if (!declaration.symbol.isExportedObject(context) || declaration !is FirMemberDeclaration) {
             return
@@ -72,6 +73,10 @@ object FirJsExportDeclarationChecker : FirBasicDeclarationChecker(MppCheckerKind
 
         when (declaration) {
             is FirFunction -> {
+                if (declaration.isExternal && context.isTopLevel) {
+                    reportWrongExportedDeclaration("external function")
+                    return
+                }
                 for (typeParameter in declaration.typeParameters) {
                     checkTypeParameter(typeParameter)
                 }
@@ -111,6 +116,11 @@ object FirJsExportDeclarationChecker : FirBasicDeclarationChecker(MppCheckerKind
                     return
                 }
 
+                if (declaration.isExternal && context.isTopLevel) {
+                    reportWrongExportedDeclaration("external property")
+                    return
+                }
+
                 if (declaration.isExtension) {
                     reportWrongExportedDeclaration("extension property")
                     return
@@ -125,6 +135,21 @@ object FirJsExportDeclarationChecker : FirBasicDeclarationChecker(MppCheckerKind
             }
 
             is FirClass -> {
+                if (declaration.isExternal && context.isTopLevel) {
+                    val wrongDeclaration = when (declaration.classKind) {
+                        ClassKind.CLASS -> "external class"
+                        ClassKind.INTERFACE -> null // Exporting external interfaces is allowed. They are used to generate TypeScript definitions.
+                        ClassKind.ENUM_CLASS -> "external enum class"
+                        ClassKind.ENUM_ENTRY -> "external enum entry"
+                        ClassKind.ANNOTATION_CLASS -> "external annotation class"
+                        ClassKind.OBJECT -> "external object"
+                    }
+                    if (wrongDeclaration != null) {
+                        reportWrongExportedDeclaration(wrongDeclaration)
+                        return
+                    }
+                }
+
                 for (typeParameter in declaration.typeParameters) {
                     checkTypeParameter(typeParameter)
                 }
@@ -150,7 +175,11 @@ object FirJsExportDeclarationChecker : FirBasicDeclarationChecker(MppCheckerKind
                 }
             }
 
-            else -> {}
+            else -> {
+                if (declaration.isExternal) {
+                    reportWrongExportedDeclaration("external declaration")
+                }
+            }
         }
     }
 
@@ -210,7 +239,7 @@ object FirJsExportDeclarationChecker : FirBasicDeclarationChecker(MppCheckerKind
         val nonNullable = withNullability(ConeNullability.NOT_NULL, session.typeContext)
         val isPrimitiveExportableType = nonNullable.isAny || nonNullable.isNullableAny
                 || nonNullable is ConeDynamicType || nonNullable.isPrimitiveExportableConeKotlinType
-        val symbol = toSymbol(session)
+        val symbol = fullyExpandedType(session).toSymbol(session)
 
         return when {
             isPrimitiveExportableType -> true

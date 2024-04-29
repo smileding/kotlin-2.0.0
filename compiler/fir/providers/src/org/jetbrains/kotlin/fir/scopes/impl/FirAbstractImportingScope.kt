@@ -62,7 +62,7 @@ abstract class FirAbstractImportingScope(
         }
     }
 
-    private inline fun <D : FirCallableDeclaration, S : FirCallableSymbol<out D>> processCallablesFromImportsByName(
+    private inline fun <D : FirCallableDeclaration, S : FirCallableSymbol<D>> processCallablesFromImportsByName(
         name: Name?,
         imports: List<FirResolvedImport>,
         crossinline processor: (S) -> Unit,
@@ -80,7 +80,7 @@ abstract class FirAbstractImportingScope(
                 if (staticsScope != null) {
                     staticsScope.processCallablesByName(importedName) {
                         if (it.isStatic || staticsScopeOwnerSymbol.classKind == ClassKind.OBJECT) {
-                            processor(it.buildImportedCopy(parentClassId))
+                            processor(it.buildImportedCopy(staticsScopeOwnerSymbol.classId))
                         } else {
                             processor(it)
                         }

@@ -221,7 +221,7 @@ class FirSyntheticCallGenerator(
     }
 
     private fun calculateArrayOfSymbol(expectedTypeRef: FirTypeRef): FirNamedFunctionSymbol? {
-        val coneType = expectedTypeRef.coneType
+        val coneType = expectedTypeRef.coneType.fullyExpandedType(session)
         val arrayCallName = when {
             coneType.isPrimitiveArray -> {
                 val arrayElementClassId = coneType.arrayElementType()!!.classId
@@ -378,7 +378,7 @@ class FirSyntheticCallGenerator(
         val candidate = generateCandidate(callInfo, function, context)
         val applicability = components.resolutionStageRunner.processCandidate(candidate, context)
         val source = callSite.source?.fakeElement(KtFakeSourceElementKind.SyntheticCall)
-        if (!applicability.isSuccess) {
+        if (!candidate.isSuccessful) {
             return createErrorReferenceWithExistingCandidate(
                 candidate,
                 ConeInapplicableCandidateError(applicability, candidate),

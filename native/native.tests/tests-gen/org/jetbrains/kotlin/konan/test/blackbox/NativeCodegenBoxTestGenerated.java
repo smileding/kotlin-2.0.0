@@ -53,6 +53,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       }
 
       @Test
+      @TestMetadata("deserializedLocalClassArgument.kt")
+      public void testDeserializedLocalClassArgument() {
+        runTest("compiler/testData/codegen/box/annotations/deserializedLocalClassArgument.kt");
+      }
+
+      @Test
       @TestMetadata("genericAnnotations.kt")
       public void testGenericAnnotations() {
         runTest("compiler/testData/codegen/box/annotations/genericAnnotations.kt");
@@ -62,6 +68,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       @TestMetadata("intrinsicConstEvaluationInSources.kt")
       public void testIntrinsicConstEvaluationInSources() {
         runTest("compiler/testData/codegen/box/annotations/intrinsicConstEvaluationInSources.kt");
+      }
+
+      @Test
+      @TestMetadata("nativeThrows.kt")
+      public void testNativeThrows() {
+        runTest("compiler/testData/codegen/box/annotations/nativeThrows.kt");
       }
 
       @Test
@@ -2978,6 +2990,66 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
         }
 
         @Test
+        @TestMetadata("kt65300a.kt")
+        public void testKt65300a() {
+          runTest("compiler/testData/codegen/box/builderInference/issues/kt65300a.kt");
+        }
+
+        @Test
+        @TestMetadata("kt65300b.kt")
+        public void testKt65300b() {
+          runTest("compiler/testData/codegen/box/builderInference/issues/kt65300b.kt");
+        }
+
+        @Test
+        @TestMetadata("kt65300c.kt")
+        public void testKt65300c() {
+          runTest("compiler/testData/codegen/box/builderInference/issues/kt65300c.kt");
+        }
+
+        @Test
+        @TestMetadata("kt65300d.kt")
+        public void testKt65300d() {
+          runTest("compiler/testData/codegen/box/builderInference/issues/kt65300d.kt");
+        }
+
+        @Test
+        @TestMetadata("kt65300e.kt")
+        public void testKt65300e() {
+          runTest("compiler/testData/codegen/box/builderInference/issues/kt65300e.kt");
+        }
+
+        @Test
+        @TestMetadata("kt65300f.kt")
+        public void testKt65300f() {
+          runTest("compiler/testData/codegen/box/builderInference/issues/kt65300f.kt");
+        }
+
+        @Test
+        @TestMetadata("kt65300g.kt")
+        public void testKt65300g() {
+          runTest("compiler/testData/codegen/box/builderInference/issues/kt65300g.kt");
+        }
+
+        @Test
+        @TestMetadata("kt65300h.kt")
+        public void testKt65300h() {
+          runTest("compiler/testData/codegen/box/builderInference/issues/kt65300h.kt");
+        }
+
+        @Test
+        @TestMetadata("kt65300i.kt")
+        public void testKt65300i() {
+          runTest("compiler/testData/codegen/box/builderInference/issues/kt65300i.kt");
+        }
+
+        @Test
+        @TestMetadata("kt65300j.kt")
+        public void testKt65300j() {
+          runTest("compiler/testData/codegen/box/builderInference/issues/kt65300j.kt");
+        }
+
+        @Test
         @TestMetadata("kt66229.kt")
         public void testKt66229() {
           runTest("compiler/testData/codegen/box/builderInference/issues/kt66229.kt");
@@ -3825,6 +3897,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
         @TestMetadata("noNameClashForReferencesToSameFunction.kt")
         public void testNoNameClashForReferencesToSameFunction() {
           runTest("compiler/testData/codegen/box/callableReference/adaptedReferences/noNameClashForReferencesToSameFunction.kt");
+        }
+
+        @Test
+        @TestMetadata("referenceToFakeOverrideWithTypeParameter.kt")
+        public void testReferenceToFakeOverrideWithTypeParameter() {
+          runTest("compiler/testData/codegen/box/callableReference/adaptedReferences/referenceToFakeOverrideWithTypeParameter.kt");
         }
 
         @Test
@@ -7037,6 +7115,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       @Test
       public void testAllFilesPresentInCollections() {
         KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/collections"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
+      }
+
+      @Test
+      @TestMetadata("clashWithInternalMapMethod.kt")
+      public void testClashWithInternalMapMethod() {
+        runTest("compiler/testData/codegen/box/collections/clashWithInternalMapMethod.kt");
       }
 
       @Test
@@ -14942,6 +15026,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       }
 
       @Test
+      @TestMetadata("lambdaInLambda.kt")
+      public void testLambdaInLambda() {
+        runTest("compiler/testData/codegen/box/destructuringDeclInLambdaParam/lambdaInLambda.kt");
+      }
+
+      @Test
       @TestMetadata("otherParameters.kt")
       public void testOtherParameters() {
         runTest("compiler/testData/codegen/box/destructuringDeclInLambdaParam/otherParameters.kt");
@@ -14998,6 +15088,18 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       @TestMetadata("inline_getter.kt")
       public void testInline_getter() {
         runTest("compiler/testData/codegen/box/devirtualization/inline_getter.kt");
+      }
+
+      @Test
+      @TestMetadata("kt67218c.kt")
+      public void testKt67218c() {
+        runTest("compiler/testData/codegen/box/devirtualization/kt67218c.kt");
+      }
+
+      @Test
+      @TestMetadata("kt67218i.kt")
+      public void testKt67218i() {
+        runTest("compiler/testData/codegen/box/devirtualization/kt67218i.kt");
       }
 
       @Test
@@ -17092,6 +17194,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       }
 
       @Test
+      @TestMetadata("copyOnObject.kt")
+      public void testCopyOnObject() {
+        runTest("compiler/testData/codegen/box/fir/copyOnObject.kt");
+      }
+
+      @Test
       @TestMetadata("deserializedOptInDeprecated.kt")
       public void testDeserializedOptInDeprecated() {
         runTest("compiler/testData/codegen/box/fir/deserializedOptInDeprecated.kt");
@@ -17119,6 +17227,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       @TestMetadata("functionsDifferInTypeParameterBounds3.kt")
       public void testFunctionsDifferInTypeParameterBounds3() {
         runTest("compiler/testData/codegen/box/fir/functionsDifferInTypeParameterBounds3.kt");
+      }
+
+      @Test
+      @TestMetadata("initializationInLocalInnerClassWithSecondaryConstructor.kt")
+      public void testInitializationInLocalInnerClassWithSecondaryConstructor() {
+        runTest("compiler/testData/codegen/box/fir/initializationInLocalInnerClassWithSecondaryConstructor.kt");
       }
 
       @Test
@@ -17152,9 +17266,21 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       }
 
       @Test
+      @TestMetadata("multipleDefaultsFalsePositiveDelegation.kt")
+      public void testMultipleDefaultsFalsePositiveDelegation() {
+        runTest("compiler/testData/codegen/box/fir/multipleDefaultsFalsePositiveDelegation.kt");
+      }
+
+      @Test
       @TestMetadata("nestedClassTypeParameterDeserialization.kt")
       public void testNestedClassTypeParameterDeserialization() {
         runTest("compiler/testData/codegen/box/fir/nestedClassTypeParameterDeserialization.kt");
+      }
+
+      @Test
+      @TestMetadata("noRecursiveProblemWithProjection.kt")
+      public void testNoRecursiveProblemWithProjection() {
+        runTest("compiler/testData/codegen/box/fir/noRecursiveProblemWithProjection.kt");
       }
 
       @Test
@@ -18997,6 +19123,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       }
 
       @Test
+      @TestMetadata("kt67609.kt")
+      public void testKt67609() {
+        runTest("compiler/testData/codegen/box/inference/kt67609.kt");
+      }
+
+      @Test
       @TestMetadata("lambdaWithStarReturn.kt")
       public void testLambdaWithStarReturn() {
         runTest("compiler/testData/codegen/box/inference/lambdaWithStarReturn.kt");
@@ -19370,6 +19502,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       @TestMetadata("initializers8.kt")
       public void testInitializers8() {
         runTest("compiler/testData/codegen/box/initializers/initializers8.kt");
+      }
+
+      @Test
+      @TestMetadata("initializers9.kt")
+      public void testInitializers9() {
+        runTest("compiler/testData/codegen/box/initializers/initializers9.kt");
       }
 
       @Test
@@ -26490,6 +26628,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       }
 
       @Test
+      @TestMetadata("innerWithThisInDefaultArguments.kt")
+      public void testInnerWithThisInDefaultArguments() {
+        runTest("compiler/testData/codegen/box/innerNested/innerWithThisInDefaultArguments.kt");
+      }
+
+      @Test
       @TestMetadata("kt3132.kt")
       public void testKt3132() {
         runTest("compiler/testData/codegen/box/innerNested/kt3132.kt");
@@ -29760,6 +29904,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
         }
 
         @Test
+        @TestMetadata("kt67488.kt")
+        public void testKt67488() {
+          runTest("compiler/testData/codegen/box/multiplatform/defaultArguments/kt67488.kt");
+        }
+
+        @Test
         @TestMetadata("nestedEnumEntryValue.kt")
         public void testNestedEnumEntryValue() {
           runTest("compiler/testData/codegen/box/multiplatform/defaultArguments/nestedEnumEntryValue.kt");
@@ -31324,6 +31474,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       @TestMetadata("booleanHashCode.kt")
       public void testBooleanHashCode() {
         runTest("compiler/testData/codegen/box/primitiveTypes/booleanHashCode.kt");
+      }
+
+      @Test
+      @TestMetadata("charToByte.kt")
+      public void testCharToByte() {
+        runTest("compiler/testData/codegen/box/primitiveTypes/charToByte.kt");
       }
 
       @Test
@@ -40248,6 +40404,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
         runTest("compiler/testData/codegen/box/sam/kt64116.kt");
       }
 
+      @Test
+      @TestMetadata("samWithAbstractToString.kt")
+      public void testSamWithAbstractToString() {
+        runTest("compiler/testData/codegen/box/sam/samWithAbstractToString.kt");
+      }
+
       @Nested
       @TestMetadata("compiler/testData/codegen/box/sam/adapters")
       @TestDataPath("$PROJECT_ROOT")
@@ -40766,6 +40928,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       @TestMetadata("genericSet.kt")
       public void testGenericSet() {
         runTest("compiler/testData/codegen/box/smartCasts/genericSet.kt");
+      }
+
+      @Test
+      @TestMetadata("implicitCastOnAssignment.kt")
+      public void testImplicitCastOnAssignment() {
+        runTest("compiler/testData/codegen/box/smartCasts/implicitCastOnAssignment.kt");
       }
 
       @Test
@@ -43389,6 +43557,17 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
     }
 
     @Nested
+    @TestMetadata("compiler/testData/codegen/box/wasm-new-exception-handling")
+    @TestDataPath("$PROJECT_ROOT")
+    @UseExtTestCaseGroupProvider()
+    public class Wasm_new_exception_handling {
+      @Test
+      public void testAllFilesPresentInWasm_new_exception_handling() {
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/wasm-new-exception-handling"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
+      }
+    }
+
+    @Nested
     @TestMetadata("compiler/testData/codegen/box/when")
     @TestDataPath("$PROJECT_ROOT")
     @UseExtTestCaseGroupProvider()
@@ -44125,6 +44304,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       }
 
       @Test
+      @TestMetadata("capturedLocalFunTwice.kt")
+      public void testCapturedLocalFunTwice() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/capturedLocalFunTwice.kt");
+      }
+
+      @Test
       @TestMetadata("changingReturnType.kt")
       public void testChangingReturnType() {
         runTest("compiler/testData/codegen/boxInline/anonymousObject/changingReturnType.kt");
@@ -44359,6 +44544,18 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       }
 
       @Test
+      @TestMetadata("kt65503.kt")
+      public void testKt65503() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/kt65503.kt");
+      }
+
+      @Test
+      @TestMetadata("kt65503_2.kt")
+      public void testKt65503_2() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/kt65503_2.kt");
+      }
+
+      @Test
       @TestMetadata("kt6552.kt")
       public void testKt6552() {
         runTest("compiler/testData/codegen/boxInline/anonymousObject/kt6552.kt");
@@ -44428,6 +44625,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       @TestMetadata("superConstructorWithObjectParameter.kt")
       public void testSuperConstructorWithObjectParameter() {
         runTest("compiler/testData/codegen/boxInline/anonymousObject/superConstructorWithObjectParameter.kt");
+      }
+
+      @Test
+      @TestMetadata("twoAnonymousObjects.kt")
+      public void testTwoAnonymousObjects() {
+        runTest("compiler/testData/codegen/boxInline/anonymousObject/twoAnonymousObjects.kt");
       }
 
       @Test
@@ -49358,6 +49561,17 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
       @TestMetadata("varargAndDefaultParameters2.kt")
       public void testVarargAndDefaultParameters2() {
         runTest("compiler/testData/codegen/boxInline/varargs/varargAndDefaultParameters2.kt");
+      }
+    }
+
+    @Nested
+    @TestMetadata("compiler/testData/codegen/boxInline/wasm-new-exception-handling")
+    @TestDataPath("$PROJECT_ROOT")
+    @UseExtTestCaseGroupProvider()
+    public class Wasm_new_exception_handling {
+      @Test
+      public void testAllFilesPresentInWasm_new_exception_handling() {
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/wasm-new-exception-handling"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
       }
     }
   }

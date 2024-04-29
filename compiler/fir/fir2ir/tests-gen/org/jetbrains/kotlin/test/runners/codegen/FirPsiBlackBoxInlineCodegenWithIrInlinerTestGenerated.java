@@ -129,6 +129,12 @@ public class FirPsiBlackBoxInlineCodegenWithIrInlinerTestGenerated extends Abstr
     }
 
     @Test
+    @TestMetadata("capturedLocalFunTwice.kt")
+    public void testCapturedLocalFunTwice() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/capturedLocalFunTwice.kt");
+    }
+
+    @Test
     @TestMetadata("changingReturnType.kt")
     public void testChangingReturnType() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/changingReturnType.kt");
@@ -405,6 +411,18 @@ public class FirPsiBlackBoxInlineCodegenWithIrInlinerTestGenerated extends Abstr
     }
 
     @Test
+    @TestMetadata("kt65503.kt")
+    public void testKt65503() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/kt65503.kt");
+    }
+
+    @Test
+    @TestMetadata("kt65503_2.kt")
+    public void testKt65503_2() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/kt65503_2.kt");
+    }
+
+    @Test
     @TestMetadata("kt6552.kt")
     public void testKt6552() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/kt6552.kt");
@@ -480,6 +498,12 @@ public class FirPsiBlackBoxInlineCodegenWithIrInlinerTestGenerated extends Abstr
     @TestMetadata("superConstructorWithObjectParameter.kt")
     public void testSuperConstructorWithObjectParameter() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/superConstructorWithObjectParameter.kt");
+    }
+
+    @Test
+    @TestMetadata("twoAnonymousObjects.kt")
+    public void testTwoAnonymousObjects() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/twoAnonymousObjects.kt");
     }
 
     @Test
@@ -6056,6 +6080,16 @@ public class FirPsiBlackBoxInlineCodegenWithIrInlinerTestGenerated extends Abstr
     @TestMetadata("varargAndDefaultParameters2.kt")
     public void testVarargAndDefaultParameters2() {
       runTest("compiler/testData/codegen/boxInline/varargs/varargAndDefaultParameters2.kt");
+    }
+  }
+
+  @Nested
+  @TestMetadata("compiler/testData/codegen/boxInline/wasm-new-exception-handling")
+  @TestDataPath("$PROJECT_ROOT")
+  public class Wasm_new_exception_handling {
+    @Test
+    public void testAllFilesPresentInWasm_new_exception_handling() {
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/boxInline/wasm-new-exception-handling"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JVM_IR, true);
     }
   }
 }

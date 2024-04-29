@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.compilerRunner.konanHome
 import org.jetbrains.kotlin.gradle.dsl.NativeCacheKind
 import org.jetbrains.kotlin.gradle.tasks.withType
 import org.jetbrains.kotlin.gradle.utils.SingleActionPerProject
+import org.jetbrains.kotlin.gradle.utils.registerClassLoaderScopedBuildService
 import org.jetbrains.kotlin.konan.properties.resolvablePropertyList
 import org.jetbrains.kotlin.konan.target.Distribution
 import org.jetbrains.kotlin.konan.target.HostManager
@@ -27,6 +28,9 @@ internal interface UsesKonanPropertiesBuildService : Task {
     @get:Internal
     val konanPropertiesService: Property<KonanPropertiesBuildService>
 }
+
+internal val Project.konanPropertiesBuildService
+    get() = KonanPropertiesBuildService.registerIfAbsent(this)
 
 abstract class KonanPropertiesBuildService : BuildService<KonanPropertiesBuildService.Parameters> {
 
@@ -64,21 +68,15 @@ abstract class KonanPropertiesBuildService : BuildService<KonanPropertiesBuildSe
         properties.resolvablePropertyList("additionalCacheFlags", target.visibleName)
 
     companion object {
-        fun registerIfAbsent(project: Project): Provider<KonanPropertiesBuildService> =
-            project.gradle.sharedServices.registerIfAbsent(serviceName, KonanPropertiesBuildService::class.java) { service ->
-                service.parameters.konanHome.set(project.konanHome)
+        fun registerIfAbsent(project: Project): Provider<KonanPropertiesBuildService> = project.gradle
+            .registerClassLoaderScopedBuildService(KonanPropertiesBuildService::class) {
+                it.parameters.konanHome.set(project.konanHome)
             }.also { serviceProvider ->
                 SingleActionPerProject.run(project, UsesKonanPropertiesBuildService::class.java.name) {
                     project.tasks.withType<UsesKonanPropertiesBuildService>().configureEach { task ->
                         task.usesService(serviceProvider)
                     }
                 }
-            }
-
-        private val serviceName: String
-            get() {
-                val clazz = KonanPropertiesBuildService::class.java
-                return "${clazz}_${clazz.classLoader.hashCode()}"
             }
     }
 }

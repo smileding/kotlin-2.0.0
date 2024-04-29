@@ -423,9 +423,9 @@ open class FirSupertypeResolverVisitor(
         declaration.acceptChildren(this, data)
     }
 
-    inline fun <T> withClass(firClass: FirClass, body: () -> T) {
+    inline fun <T> withClass(firClass: FirClass, body: () -> T): T {
         @OptIn(PrivateForInline::class)
-        withClassDeclarationCleanup(classDeclarationsStack, firClass) {
+        return withClassDeclarationCleanup(classDeclarationsStack, firClass) {
             body()
         }
     }
@@ -484,11 +484,9 @@ open class FirSupertypeResolverVisitor(
     ) {
         if (supertypeGenerationExtensions.isEmpty()) return
         val typeResolveService = TypeResolveServiceForPlugins(typeResolveTransformer, scopeDeclaration)
-        with(FirSupertypeGenerationExtension.TypeResolveServiceContainer(typeResolveService)) {
-            for (extension in supertypeGenerationExtensions) {
-                if (extension.needTransformSupertypes(klass)) {
-                    supertypeRefs += extension.computeAdditionalSupertypes(klass, supertypeRefs)
-                }
+        for (extension in supertypeGenerationExtensions) {
+            if (extension.needTransformSupertypes(klass)) {
+                supertypeRefs += extension.computeAdditionalSupertypes(klass, supertypeRefs, typeResolveService)
             }
         }
     }
@@ -610,11 +608,6 @@ open class SupertypeComputationSession {
     private val newClassifiersForBreakingLoops = mutableListOf<FirClassLikeDeclaration>()
 
     /**
-     * @return **true** if class is already resolved and can't be a part of loops
-     */
-    protected open fun isAlreadyResolved(classLikeDeclaration: FirClassLikeDeclaration): Boolean = false
-
-    /**
      * @param supertypeRefs a collection where at least one element is [FirErrorTypeRef] for looped references
      */
     protected open fun reportLoopErrorRefs(classLikeDeclaration: FirClassLikeDeclaration, supertypeRefs: List<FirResolvedTypeRef>) {
@@ -656,7 +649,7 @@ open class SupertypeComputationSession {
             wasSubtypingInvolved: Boolean,
             wereTypeArgumentsInvolved: Boolean,
         ) {
-            if (classLikeDeclaration == null || isAlreadyResolved(classLikeDeclaration)) return
+            if (classLikeDeclaration == null) return
             require(!wasSubtypingInvolved || !wereTypeArgumentsInvolved) {
                 "This must hold by induction, because otherwise such a loop is allowed"
             }
@@ -715,7 +708,9 @@ open class SupertypeComputationSession {
                         checkIsInLoop(typeArgumentClassLikeDeclaration, wasSubtypingInvolved, wereTypeArgumentsInvolved)
                     }
                 }
-                val supertypeFir = supertypeRef.firClassLike(session)
+
+                // rhs value is required only for the Analysis API, as in the CLI mode there are no invisible dependencies
+                val supertypeFir = supertypeRef.firClassLike(session) ?: supertypeRef.firClassLike(classLikeDeclaration.moduleData.session)
                 checkIsInLoop(supertypeFir, isSubtypingInvolved, wereTypeArgumentsInvolved)
 
                 // This is an optimization that prevents collecting

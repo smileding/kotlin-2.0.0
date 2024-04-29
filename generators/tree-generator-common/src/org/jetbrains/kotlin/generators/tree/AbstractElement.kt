@@ -5,6 +5,9 @@
 
 package org.jetbrains.kotlin.generators.tree
 
+import org.jetbrains.kotlin.generators.tree.imports.ImportCollecting
+import org.jetbrains.kotlin.generators.tree.imports.Importable
+
 /**
  * Represents an abstract class/interface for a tree node in the tree generator.
  *
@@ -14,7 +17,7 @@ package org.jetbrains.kotlin.generators.tree
  */
 abstract class AbstractElement<Element, Field, Implementation>(
     val name: String,
-) : ElementOrRef<Element>, FieldContainer<Field>, ImplementationKindOwner
+) : ElementOrRef<Element>, FieldContainer<Field>, ImplementationKindOwner, ImportCollecting
         where Element : AbstractElement<Element, Field, Implementation>,
               Field : AbstractField<Field>,
               Implementation : AbstractImplementation<Implementation, Element, *> {
@@ -26,15 +29,15 @@ abstract class AbstractElement<Element, Field, Implementation>(
 
     abstract val namePrefix: String
 
-    abstract val kDoc: String?
+    var kDoc: String? = null
 
-    abstract val fields: Set<Field>
+    val fields = mutableSetOf<Field>()
 
-    abstract val params: List<TypeVariable>
+    val params = mutableListOf<TypeVariable>()
 
-    abstract val elementParents: List<ElementRef<Element>>
+    val elementParents = mutableListOf<ElementRef<Element>>()
 
-    abstract val otherParents: MutableList<ClassRef<*>>
+    val otherParents = mutableListOf<ClassRef<*>>()
 
     val parentRefs: List<ClassOrElementRef>
         get() = elementParents + otherParents
@@ -84,13 +87,9 @@ abstract class AbstractElement<Element, Field, Implementation>(
     override val typeName: String
         get() = namePrefix + name
 
-    context(ImportCollector)
-    final override fun renderTo(appendable: Appendable) {
-        addImport(this)
+    final override fun renderTo(appendable: Appendable, importCollector: ImportCollecting) {
+        importCollector.addImport(this)
         appendable.append(typeName)
-        if (params.isNotEmpty()) {
-            params.joinTo(appendable, prefix = "<", postfix = ">") { it.name }
-        }
     }
 
     override val allFields: List<Field> by lazy {
@@ -172,9 +171,23 @@ abstract class AbstractElement<Element, Field, Implementation>(
      */
     val additionalImports = mutableListOf<Importable>()
 
-    final override fun get(fieldName: String): Field? {
-        return allFields.firstOrNull { it.name == fieldName }
+    override fun addImport(importable: Importable) {
+        additionalImports.add(importable)
     }
+
+    override var kind: ImplementationKind? = null
+
+    @Suppress("UNCHECKED_CAST")
+    final override val element: Element
+        get() = this as Element
+
+    final override val args: Map<NamedTypeParameterRef, TypeRef>
+        get() = emptyMap()
+
+    final override val nullable: Boolean
+        get() = false
+
+    var doPrint = true
 
     @Suppress("UNCHECKED_CAST")
     final override fun copy(nullable: Boolean) =
@@ -188,4 +201,14 @@ abstract class AbstractElement<Element, Field, Implementation>(
     override fun substitute(map: TypeParameterSubstitutionMap): Element = this as Element
 
     fun withStarArgs(): ElementRef<Element> = copy(params.associateWith { TypeRef.Star })
+
+    fun withSelfArgs(): ElementRef<Element> = copy(params.associateWith { it })
+
+    operator fun TypeVariable.unaryPlus() = apply {
+        params.add(this)
+    }
+
+    operator fun Field.unaryPlus() = apply {
+        fields.add(this)
+    }
 }

@@ -5,16 +5,24 @@
 
 package org.jetbrains.kotlin.analysis.low.level.api.fir
 
+import org.jetbrains.kotlin.analysis.low.level.api.fir.AbstractFirLazyDeclarationResolveOverAllPhasesTest.Directives.PRE_RESOLVED_PHASE
 import org.jetbrains.kotlin.analysis.low.level.api.fir.api.LLFirResolveSession
+import org.jetbrains.kotlin.analysis.low.level.api.fir.api.resolveToFirSymbol
 import org.jetbrains.kotlin.analysis.low.level.api.fir.lazy.resolve.LLFirResolveDesignationCollector
-import org.jetbrains.kotlin.analysis.test.framework.project.structure.allKtFiles
+import org.jetbrains.kotlin.analysis.test.framework.project.structure.ktTestModuleStructure
+import org.jetbrains.kotlin.analysis.test.framework.services.expressionMarkerProvider
 import org.jetbrains.kotlin.fir.FirElementWithResolveState
 import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
 import org.jetbrains.kotlin.fir.declarations.resolvePhase
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhaseRecursively
+import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
+import org.jetbrains.kotlin.test.directives.model.SimpleDirectivesContainer
+import org.jetbrains.kotlin.test.directives.model.singleOrZeroValue
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.assertions
+import org.jetbrains.kotlin.test.services.moduleStructure
 
 /**
  * This test iterates over all [FirResolvePhase] for the selected declaration and dump output after each phase
@@ -33,12 +41,27 @@ abstract class AbstractFirLazyDeclarationResolveOverAllPhasesTest : AbstractFirL
         val resultBuilder = StringBuilder()
         val renderer = lazyResolveRenderer(resultBuilder)
 
-        resolveWithClearCaches(ktFile) { firResolveSession ->
+        resolveWithCaches(ktFile) { firResolveSession ->
             checkSession(firResolveSession)
+            val allKtFiles = testServices.ktTestModuleStructure.allMainKtFiles
+
+            val preresolvedElementCarets = testServices.expressionMarkerProvider.getElementsOfTypeAtCarets<KtDeclaration>(
+                files = allKtFiles,
+                caretTag = "preresolved",
+            )
+
+            val phase = testServices.moduleStructure.allDirectives.singleOrZeroValue(PRE_RESOLVED_PHASE)
+            if (preresolvedElementCarets.isEmpty() && phase != null) {
+                error("$PRE_RESOLVED_PHASE is declared, but there is not any pre-resolved carets")
+            }
+
+            preresolvedElementCarets.forEach { (declaration, _) ->
+                declaration.resolveToFirSymbol(firResolveSession, phase ?: FirResolvePhase.BODY_RESOLVE)
+            }
 
             val (elementToResolve, resolver) = resolverProvider(firResolveSession)
             val filesToRender = if (renderAllFiles) {
-                testServices.allKtFiles().map(firResolveSession::getOrBuildFirFile)
+                allKtFiles.map(firResolveSession::getOrBuildFirFile)
             } else {
                 val firFile = firResolveSession.getOrBuildFirFile(ktFile)
                 val designation = LLFirResolveDesignationCollector.getDesignationToResolve(elementToResolve)
@@ -84,5 +107,14 @@ abstract class AbstractFirLazyDeclarationResolveOverAllPhasesTest : AbstractFirL
             resultBuilder.toString(),
             extension = outputExtension,
         )
+    }
+
+    override fun configureTest(builder: TestConfigurationBuilder) {
+        super.configureTest(builder)
+        builder.useDirectives(Directives)
+    }
+
+    private object Directives : SimpleDirectivesContainer() {
+        val PRE_RESOLVED_PHASE by enumDirective<FirResolvePhase>("Describes which phase should have pre-resolved element")
     }
 }

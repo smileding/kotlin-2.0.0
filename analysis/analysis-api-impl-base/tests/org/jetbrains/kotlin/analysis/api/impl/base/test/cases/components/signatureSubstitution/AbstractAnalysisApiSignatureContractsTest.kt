@@ -15,17 +15,17 @@ import org.jetbrains.kotlin.analysis.api.signatures.KtVariableLikeSignature
 import org.jetbrains.kotlin.analysis.api.symbols.*
 import org.jetbrains.kotlin.analysis.api.types.KtSubstitutor
 import org.jetbrains.kotlin.analysis.test.framework.base.AbstractAnalysisApiBasedTest
+import org.jetbrains.kotlin.analysis.test.framework.project.structure.KtTestModule
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
-import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.assertions
 import kotlin.math.pow
 
 abstract class AbstractAnalysisApiSignatureContractsTest : AbstractAnalysisApiBasedTest() {
-    override fun doTestByMainFile(mainFile: KtFile, mainModule: TestModule, testServices: TestServices) {
+    override fun doTestByMainFile(mainFile: KtFile, mainModule: KtTestModule, testServices: TestServices) {
         mainFile.collectDescendantsOfType<KtCallableDeclaration>().forEach {
             testContractsOnDeclaration(it, testServices)
         }
@@ -41,7 +41,7 @@ abstract class AbstractAnalysisApiSignatureContractsTest : AbstractAnalysisApiBa
                 add(buildClassType(StandardClassIds.List) { argument(builtinTypes.LONG) })
             }
 
-            val symbol = callableDeclaration.getSymbolOfType<KtCallableSymbol>()
+            val symbol = callableDeclaration.getSymbol() as KtCallableSymbol
             val typeParameters = buildList {
                 addAll(symbol.typeParameters)
                 (symbol.getContainingSymbol() as? KtClassOrObjectSymbol)?.let { addAll(it.typeParameters) }

@@ -7,8 +7,6 @@ package org.jetbrains.kotlin.backend.common.serialization
 
 import org.jetbrains.kotlin.backend.common.linkage.issues.IrDisallowedErrorNode
 import org.jetbrains.kotlin.backend.common.linkage.issues.IrSymbolTypeMismatchException
-import org.jetbrains.kotlin.backend.common.overrides.FakeOverrideClassFilter
-import org.jetbrains.kotlin.backend.common.overrides.IrLinkerFakeOverrideProvider
 import org.jetbrains.kotlin.backend.common.serialization.encodings.*
 import org.jetbrains.kotlin.backend.common.serialization.encodings.BinarySymbolData.SymbolKind
 import org.jetbrains.kotlin.backend.common.serialization.encodings.BinarySymbolData.SymbolKind.*
@@ -25,7 +23,6 @@ import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.expressions.impl.IrCompositeImpl
 import org.jetbrains.kotlin.ir.symbols.*
-import org.jetbrains.kotlin.ir.symbols.impl.IrPublicSymbolBase
 import org.jetbrains.kotlin.ir.symbols.impl.IrTypeParameterSymbolImpl
 import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.types.impl.*
@@ -75,22 +72,15 @@ class IrDeclarationDeserializer(
     private val deserializeInlineFunctions: Boolean,
     private var deserializeBodies: Boolean,
     val symbolDeserializer: IrSymbolDeserializer,
-    private val platformFakeOverrideClassFilter: FakeOverrideClassFilter,
-    private val fakeOverrideBuilder: IrLinkerFakeOverrideProvider,
-    private val compatibilityMode: CompatibilityMode,
-    private val partialLinkageEnabled: Boolean,
-    private val internationService: IrInterningService,
+    private val onDeserializedClass: (IrClass, IdSignature) -> Unit,
+    private val needToDeserializeFakeOverrides: (IrClass) -> Boolean,
+    private val specialProcessingForMismatchedSymbolKind: ((deserializedSymbol: IrSymbol, fallbackSymbolKind: SymbolKind?) -> IrSymbol)?,
+    private val irInterner: IrInterningService,
 ) {
 
     private val bodyDeserializer = IrBodyDeserializer(builtIns, allowErrorNodes, irFactory, libraryFile, this)
 
-    private fun deserializeString(index: Int): String {
-        return libraryFile.string(index)
-    }
-
-    private fun deserializeName(index: Int): Name {
-        return internationService.name(Name.guessByFirstCharacter(deserializeString(index)))
-    }
+    private fun deserializeName(index: Int): Name = irInterner.name(Name.guessByFirstCharacter(libraryFile.string(index)))
 
     private val irTypeCache = hashMapOf<Int, IrType>()
 
@@ -385,7 +375,8 @@ class IrDeclarationDeserializer(
                 withExternalValue(isExternal) {
                     val oldDeclarations = declarations.toSet()
                     proto.declarationList
-                        .filterNot { isSkippableFakeOverride(it, this) }
+                        .asSequence()
+                        .filterNot { isSkippedFakeOverride(it, this) }
                         // On JVM, deserialization may fill bodies of existing declarations, so avoid adding duplicates.
                         .mapNotNullTo(declarations) { declProto -> deserializeDeclaration(declProto).takeIf { it !in oldDeclarations } }
                 }
@@ -405,7 +396,7 @@ class IrDeclarationDeserializer(
                 // It has been decided not to deserialize the list of sealed subclasses because of KT-54028
                 // sealedSubclasses = proto.sealedSubclassList.memoryOptimizedMap { deserializeIrSymbol(it).checkSymbolType(CLASS_SYMBOL) }
 
-                fakeOverrideBuilder.enqueueClass(this, signature, compatibilityMode)
+                onDeserializedClass(this, signature)
             }
         }
 
@@ -835,21 +826,20 @@ class IrDeclarationDeserializer(
 
     // Depending on deserialization strategy we either deserialize public api fake overrides
     // or reconstruct them after IR linker completes.
-    private fun isSkippableFakeOverride(proto: ProtoDeclaration, parent: IrClass): Boolean {
-        if (!platformFakeOverrideClassFilter.needToConstructFakeOverrides(parent)) return false
+    private fun isSkippedFakeOverride(fakeOverrideProto: ProtoDeclaration, parent: IrClass): Boolean {
+        if (needToDeserializeFakeOverrides(parent)) return false
 
-        val symbol = when (proto.declaratorCase!!) {
-            IR_FUNCTION -> symbolDeserializer.deserializeIrSymbol(proto.irFunction.base.base.symbol)
-            IR_PROPERTY -> symbolDeserializer.deserializeIrSymbol(proto.irProperty.base.symbol)
+        val symbol = when (fakeOverrideProto.declaratorCase!!) {
+            IR_FUNCTION -> symbolDeserializer.deserializeIrSymbol(fakeOverrideProto.irFunction.base.base.symbol)
+            IR_PROPERTY -> symbolDeserializer.deserializeIrSymbol(fakeOverrideProto.irProperty.base.symbol)
             // Don't consider IR_FIELDS here.
             else -> return false
         }
-        if (symbol !is IrPublicSymbolBase<*>) return false
-        if (!symbol.signature.isPubliclyVisible) return false
+        if (symbol.signature?.isPubliclyVisible != true) return false
 
-        return when (proto.declaratorCase!!) {
-            IR_FUNCTION -> FunctionFlags.decode(proto.irFunction.base.base.flags).isFakeOverride
-            IR_PROPERTY -> PropertyFlags.decode(proto.irProperty.base.flags).isFakeOverride
+        return when (fakeOverrideProto.declaratorCase!!) {
+            IR_FUNCTION -> FunctionFlags.decode(fakeOverrideProto.irFunction.base.base.flags).isFakeOverride
+            IR_PROPERTY -> PropertyFlags.decode(fakeOverrideProto.irProperty.base.flags).isFakeOverride
             // Don't consider IR_FIELDS here.
             else -> false
         }
@@ -870,14 +860,10 @@ class IrDeclarationDeserializer(
     internal inline fun <reified S : IrSymbol> IrSymbol.checkSymbolType(fallbackSymbolKind: SymbolKind?): S {
         if (this is S) return this // Fast pass.
 
-        if (!partialLinkageEnabled)
-            throw IrSymbolTypeMismatchException(S::class.java, this)
+        specialProcessingForMismatchedSymbolKind?.let {
+            return it(this, fallbackSymbolKind) as S
+        }
 
-        return referenceDeserializedSymbol(
-            symbolTable = symbolDeserializer.symbolTable,
-            fileSymbol = null,
-            symbolKind = fallbackSymbolKind ?: error("No fallback symbol kind specified for symbol $this"),
-            idSig = signature?.takeIf { it.isPubliclyVisible } ?: error("No public signature for symbol $this")
-        ) as S
+        throw IrSymbolTypeMismatchException(S::class.java, this)
     }
 }

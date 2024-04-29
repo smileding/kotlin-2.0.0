@@ -12,15 +12,15 @@ import org.jetbrains.kotlin.analysis.api.impl.base.test.configurators.AnalysisAp
 import org.jetbrains.kotlin.analysis.test.framework.project.structure.KtTestModuleFactory
 import org.jetbrains.kotlin.analysis.test.framework.project.structure.KtSourceTestModuleFactory
 import org.jetbrains.kotlin.analysis.test.framework.project.structure.KtTestModule
-import org.jetbrains.kotlin.analysis.test.framework.project.structure.KtTestModuleProjectStructure
+import org.jetbrains.kotlin.analysis.test.framework.project.structure.KtTestModuleStructure
 import org.jetbrains.kotlin.analysis.test.framework.project.structure.TestModuleStructureFactory
 import org.jetbrains.kotlin.analysis.test.framework.services.configuration.AnalysisApiBinaryLibraryIndexingMode
 import org.jetbrains.kotlin.analysis.test.framework.services.configuration.AnalysisApiJvmEnvironmentConfigurator
 import org.jetbrains.kotlin.analysis.test.framework.services.configuration.AnalysisApiIndexingConfiguration
+import org.jetbrains.kotlin.analysis.test.framework.services.libraries.*
 import org.jetbrains.kotlin.analysis.test.framework.test.configurators.AnalysisApiTestConfigurator
 import org.jetbrains.kotlin.analysis.test.framework.test.configurators.AnalysisApiTestServiceRegistrar
 import org.jetbrains.kotlin.analysis.test.framework.test.configurators.FrontendKind
-import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.lazy.JvmResolveUtil
 import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
 import org.jetbrains.kotlin.test.services.TestModuleStructure
@@ -49,6 +49,7 @@ object AnalysisApiFe10TestConfigurator : AnalysisApiTestConfigurator() {
                 ::AnalysisApiJvmEnvironmentConfigurator,
                 ::JsEnvironmentConfigurator
             )
+            configureLibraryCompilationSupport()
         }
     }
 
@@ -62,7 +63,7 @@ object AnalysisApiFe10TestConfigurator : AnalysisApiTestConfigurator() {
         moduleStructure: TestModuleStructure,
         testServices: TestServices,
         project: Project,
-    ): KtTestModuleProjectStructure {
+    ): KtTestModuleStructure {
         return TestModuleStructureFactory.createProjectStructureByTestStructure(moduleStructure, testServices, project)
     }
 
@@ -72,7 +73,7 @@ object AnalysisApiFe10TestConfigurator : AnalysisApiTestConfigurator() {
         val compilerConfiguration = compilerConfigurationProvider.getCompilerConfiguration(testModule)
         val project = compilerConfigurationProvider.getProject(testModule)
         val packageProviderFactory = compilerConfigurationProvider.getPackagePartProviderFactory(testModule)
-        JvmResolveUtil.analyze(project, ktTestModule.files.filterIsInstance<KtFile>(), compilerConfiguration, packageProviderFactory)
+        JvmResolveUtil.analyze(project, ktTestModule.ktFiles, compilerConfiguration, packageProviderFactory)
     }
 
     override fun computeTestDataPath(path: Path): Path {

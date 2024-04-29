@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.fir.scopes.processOverriddenFunctions
 import org.jetbrains.kotlin.fir.symbols.ConeTypeParameterLookupTag
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.SyntheticCallableId.ACCEPT_SPECIFIC_TYPE
-import org.jetbrains.kotlin.fir.symbols.SyntheticSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.fir.types.*
@@ -131,6 +130,7 @@ object CheckExtensionReceiver : ResolutionStage() {
             context = context,
             isReceiver = true,
             isDispatch = false,
+            sourceForReceiver = candidate.callInfo.callSite.source
         )
 
         candidate.chosenExtensionReceiver = receiver.expression
@@ -175,13 +175,7 @@ object CheckDispatchReceiver : ResolutionStage() {
 
         val dispatchReceiverValueType = candidate.dispatchReceiver?.resolvedType ?: return
 
-        // TODO (KT-63959): Actually, we should treat stub types as non-nullable for the isReceiverNullable check
-        // Otherwise, we won't able to resolve to member toString/hashCode due to UnsafeCall error
-        // It was possible in K1, due to the fact that K1 doesn't use AbstractNullabilityChecker directly
-        // But, AbstractNullabilityChecker.isSubtypeOfAny doesn't respect stubTypeEqualToAnything
-        val isStubType = dispatchReceiverValueType is ConeStubTypeForChainInference
-        val isReceiverNullable =
-            !AbstractNullabilityChecker.isSubtypeOfAny(context.session.typeContext, dispatchReceiverValueType) && !isStubType
+        val isReceiverNullable = !AbstractNullabilityChecker.isSubtypeOfAny(context.session.typeContext, dispatchReceiverValueType)
 
 
         val isCandidateFromUnstableSmartcast =
@@ -208,10 +202,11 @@ object CheckDispatchReceiver : ResolutionStage() {
                 UnstableSmartCast(
                     smartcastedReceiver,
                     targetType,
-                    context.session.typeContext.isTypeMismatchDueToNullability(
+                    isCastToNotNull = context.session.typeContext.isTypeMismatchDueToNullability(
                         smartcastedReceiver.originalExpression.resolvedType,
                         targetType
-                    )
+                    ),
+                    isImplicitInvokeReceiver = callInfo.isImplicitInvoke,
                 )
             )
         } else if (isReceiverNullable) {
@@ -558,7 +553,7 @@ private val Candidate.isInvokeFromExtensionFunctionType: Boolean
             && (symbol as? FirNamedFunctionSymbol)?.name == OperatorNameConventions.INVOKE
 
 internal fun Candidate.shouldHaveLowPriorityDueToSAM(bodyResolveComponents: BodyResolveComponents): Boolean {
-    if (!usesSAM || isJavaApplicableCandidate()) return false
+    if (!usesSamConversion || isJavaApplicableCandidate()) return false
     return argumentMapping!!.values.any {
         val coneType = it.returnTypeRef.coneType
         bodyResolveComponents.samResolver.isSamType(coneType) &&
@@ -622,9 +617,9 @@ internal object EagerResolveOfCallableReferences : CheckerStage() {
     }
 }
 
-internal object DiscriminateSynthetics : CheckerStage() {
+internal object DiscriminateSyntheticProperties : CheckerStage() {
     override suspend fun check(candidate: Candidate, callInfo: CallInfo, sink: CheckerSink, context: ResolutionContext) {
-        if (candidate.symbol is SyntheticSymbol) {
+        if (candidate.symbol is FirSimpleSyntheticPropertySymbol) {
             sink.reportDiagnostic(ResolvedWithSynthetic)
         }
     }
@@ -754,10 +749,17 @@ internal object CheckHiddenDeclaration : ResolutionStage() {
         val symbol = candidate.symbol as? FirCallableSymbol<*> ?: return
         /** Actual declarations are checked by [FirDeprecationChecker] */
         if (symbol.isActual) return
-        val deprecation = symbol.getDeprecation(context.session, callInfo.callSite)
-        if (deprecation?.deprecationLevel == DeprecationLevelValue.HIDDEN || isHiddenForThisCallSite(symbol, callInfo, candidate, context.session, sink)) {
+        if (symbol.isDeprecatedHidden(context, callInfo) ||
+            (symbol is FirConstructorSymbol && symbol.typeAliasForConstructor?.isDeprecatedHidden(context, callInfo) == true) ||
+            isHiddenForThisCallSite(symbol, callInfo, candidate, context.session, sink)
+        ) {
             sink.yieldDiagnostic(HiddenCandidate)
         }
+    }
+
+    private fun FirBasedSymbol<*>.isDeprecatedHidden(context: ResolutionContext, callInfo: CallInfo): Boolean {
+        val deprecation = getDeprecation(context.session, callInfo.callSite)
+        return deprecation?.deprecationLevel == DeprecationLevelValue.HIDDEN
     }
 
     private fun isHiddenForThisCallSite(

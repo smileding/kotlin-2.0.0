@@ -5,7 +5,10 @@
 
 package org.jetbrains.kotlin.generators.tree
 
+import org.jetbrains.kotlin.generators.tree.imports.Importable
+
 abstract class AbstractField<Field : AbstractField<Field>> {
+    abstract val origin: Field
 
     abstract val name: String
 
@@ -16,13 +19,13 @@ abstract class AbstractField<Field : AbstractField<Field>> {
 
     var kDoc: String? = null
 
-    abstract val isVolatile: Boolean
+    open val isVolatile: Boolean
+        get() = false
 
     abstract val isFinal: Boolean
 
-    open var isLateinit: Boolean = false
-
-    abstract val isParameter: Boolean
+    open val isParameter: Boolean
+        get() = false
 
     open val arbitraryImportables: MutableList<Importable> = mutableListOf()
 
@@ -30,8 +33,6 @@ abstract class AbstractField<Field : AbstractField<Field>> {
     open var replaceOptInAnnotation: ClassRef<*>? = null
 
     abstract var isMutable: Boolean
-    open val withGetter: Boolean get() = false
-    open val customSetter: String? get() = null
 
     open var customInitializationCall: String? = null
 
@@ -50,7 +51,20 @@ abstract class AbstractField<Field : AbstractField<Field>> {
     open val containsElement: Boolean
         get() = typeRef is ElementOrRef<*> || this is ListField && baseType is ElementOrRef<*>
 
-    open val defaultValueInImplementation: String? get() = null
+    /**
+     * Indicates how the field will be initialized.
+     *
+     * Null value means that the initialization strategy has not been explicitly configured,
+     * and it will be inherited from an ancestor element, or assigned a default strategy
+     * of [ImplementationDefaultStrategy.Required].
+     *
+     * @see org.jetbrains.kotlin.generators.tree.config.AbstractImplementationConfigurator.inheritImplementationFieldSpecifications .
+     */
+    open var implementationDefaultStrategy: ImplementationDefaultStrategy? = null
+
+    abstract var defaultValueInBuilder: String?
+
+    abstract var customSetter: String?
 
     /**
      * @see org.jetbrains.kotlin.generators.tree.detectBaseTransformerTypes
@@ -99,7 +113,6 @@ abstract class AbstractField<Field : AbstractField<Field>> {
 
     protected open fun updateFieldsInCopy(copy: Field) {
         copy.kDoc = kDoc
-        copy.isLateinit = isLateinit
         copy.arbitraryImportables += arbitraryImportables
         copy.optInAnnotation = optInAnnotation
         copy.replaceOptInAnnotation = replaceOptInAnnotation
@@ -109,5 +122,49 @@ abstract class AbstractField<Field : AbstractField<Field>> {
         copy.fromParent = fromParent
         copy.useInBaseTransformerDetection = useInBaseTransformerDetection
         copy.overriddenTypes += overriddenTypes
+        copy.implementationDefaultStrategy = implementationDefaultStrategy
+    }
+
+    sealed interface ImplementationDefaultStrategy {
+        open val defaultValue: String?
+            get() = null
+        open val withGetter: Boolean
+            get() = false
+
+
+        /**
+         * The field will have to be initialized explicitly in the implementation class constructor.
+         */
+        data object Required : ImplementationDefaultStrategy
+
+        /**
+         * The field will be `lateinit var`.
+         */
+        data object Lateinit : ImplementationDefaultStrategy
+
+        /**
+         * - If [withGetter] == false - the field will be a stored property, initialized to [defaultValue].
+         * - If [withGetter] == true - the field will be a computed property, with getter returning [defaultValue].
+         */
+        data class DefaultValue(
+            override val defaultValue: String,
+            override val withGetter: Boolean,
+        ) : ImplementationDefaultStrategy
+    }
+
+    /**
+     * If this field represents a symbol of a declaration ([org.jetbrains.kotlin.ir.symbols.IrSymbol] or
+     * [org.jetbrains.kotlin.fir.symbols.FirBasedSymbol]), determines whether this symbol corresponds to the element containing this field
+     * or some other element.
+     *
+     * In other words, for element `someElement` the following is true:
+     * [symbolFieldRole] == [SymbolFieldRole.DECLARED] iff `someElement.symbol.owner === someElement`.
+     *
+     * If this field does not represent a symbol, this property should be `null`.
+     */
+    var symbolFieldRole: SymbolFieldRole? = null
+
+    enum class SymbolFieldRole {
+        DECLARED, REFERENCED
     }
 }

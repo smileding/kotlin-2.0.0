@@ -149,11 +149,11 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
             return delegatedConstructorCall
         }
 
-        override fun transformAugmentedArraySetCall(
-            augmentedArraySetCall: FirAugmentedArraySetCall,
+        override fun transformIndexedAccessAugmentedAssignment(
+            indexedAccessAugmentedAssignment: FirIndexedAccessAugmentedAssignment,
             data: ResolutionMode,
         ): FirStatement {
-            return augmentedArraySetCall
+            return indexedAccessAugmentedAssignment
         }
 
         override fun transformArrayLiteral(arrayLiteral: FirArrayLiteral, data: ResolutionMode): FirStatement {
@@ -207,7 +207,7 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
                 val receiverCalleeReference = receiver.calleeReference as? FirSimpleNamedReference ?: return
                 val receiverName = receiverCalleeReference.name.takeIf { !it.isSpecial } ?: return
 
-                val symbol = scopes.filterIsInstance<FirAbstractImportingScope>().firstNotNullOfOrNull {
+                val symbol = scopes.firstNotNullOfOrNull {
                     it.getSingleClassifier(receiverName) as? FirClassSymbol<*>
                 } ?: return
 

@@ -8,12 +8,14 @@ package org.jetbrains.kotlin.backend.jvm.lower
 import org.jetbrains.kotlin.backend.common.FileLoweringPass
 import org.jetbrains.kotlin.backend.common.ir.*
 import org.jetbrains.kotlin.backend.common.lower.createIrBuilder
-import org.jetbrains.kotlin.backend.common.phaser.makeIrFilePhase
+import org.jetbrains.kotlin.backend.common.phaser.PhaseDescription
 import org.jetbrains.kotlin.backend.jvm.JvmBackendContext
-import org.jetbrains.kotlin.backend.jvm.irInlinerIsEnabled
 import org.jetbrains.kotlin.codegen.AsmUtil
-import org.jetbrains.kotlin.codegen.inline.*
+import org.jetbrains.kotlin.codegen.inline.INLINE_FUN_VAR_SUFFIX
+import org.jetbrains.kotlin.codegen.inline.addScopeInfo
 import org.jetbrains.kotlin.codegen.inline.coroutines.FOR_INLINE_SUFFIX
+import org.jetbrains.kotlin.codegen.inline.getInlineScopeInfo
+import org.jetbrains.kotlin.codegen.inline.isFakeLocalVariableForInline
 import org.jetbrains.kotlin.config.JVMConfigurationKeys.USE_INLINE_SCOPES_NUMBERS
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.IrStatement
@@ -22,7 +24,9 @@ import org.jetbrains.kotlin.ir.builders.irInt
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.IrBlock
 import org.jetbrains.kotlin.ir.expressions.IrInlinedFunctionBlock
-import org.jetbrains.kotlin.ir.util.*
+import org.jetbrains.kotlin.ir.util.inlineDeclaration
+import org.jetbrains.kotlin.ir.util.isFunctionInlining
+import org.jetbrains.kotlin.ir.util.isLambdaInlining
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
@@ -31,16 +35,11 @@ import org.jetbrains.kotlin.load.java.JvmAbi
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 
-internal val fakeLocalVariablesForIrInlinerLowering = makeIrFilePhase<JvmBackendContext>(
-    { context ->
-        if (!context.irInlinerIsEnabled()) return@makeIrFilePhase FileLoweringPass.Empty
-        FakeLocalVariablesForIrInlinerLowering(context)
-    },
+@PhaseDescription(
     name = "FakeLocalVariablesForIrInlinerLowering",
-    description = """Add fake locals to identify the range of inlined functions and lambdas. 
-        |This lowering adds fake locals into already inlined blocks.""".trimMargin()
+    description = "Add fake locals to identify the range of inlined functions and lambdas. " +
+            "This lowering adds fake locals into already inlined blocks."
 )
-
 internal class FakeLocalVariablesForIrInlinerLowering(
     override val context: JvmBackendContext
 ) : IrElementVisitorVoid, FakeInliningLocalVariables<IrInlinedFunctionBlock>, FileLoweringPass {
@@ -54,6 +53,8 @@ internal class FakeLocalVariablesForIrInlinerLowering(
     }
 
     override fun lower(irFile: IrFile) {
+        if (!context.config.enableIrInliner) return
+
         irFile.accept(this, null)
         if (context.configuration.getBoolean(USE_INLINE_SCOPES_NUMBERS)) {
             irFile.acceptVoid(ScopeNumberVariableProcessor())

@@ -12,22 +12,27 @@ import org.jetbrains.kotlin.analysis.api.renderer.declarations.renderers.KtClass
 import org.jetbrains.kotlin.analysis.api.symbols.KtDeclarationSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolWithMembers
 import org.jetbrains.kotlin.analysis.test.framework.base.AbstractAnalysisApiBasedTest
+import org.jetbrains.kotlin.analysis.test.framework.project.structure.KtTestModule
 import org.jetbrains.kotlin.analysis.test.framework.utils.executeOnPooledThreadInReadAction
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.assertions
 
 abstract class AbstractRendererTest : AbstractAnalysisApiBasedTest() {
-    override fun doTestByMainFile(mainFile: KtFile, mainModule: TestModule, testServices: TestServices) {
+    override fun doTestByMainFile(mainFile: KtFile, mainModule: KtTestModule, testServices: TestServices) {
         val renderer = KtDeclarationRendererForSource.WITH_SHORT_NAMES.with {
             classifierBodyRenderer = KtClassifierBodyRenderer.BODY_WITH_MEMBERS
             bodyMemberScopeSorter = object : KtRendererBodyMemberScopeSorter {
-                context(KtAnalysisSession)
-                override fun sortMembers(members: List<KtDeclarationSymbol>, owner: KtSymbolWithMembers): List<KtDeclarationSymbol> {
-                    return KtRendererBodyMemberScopeSorter.ENUM_ENTRIES_AT_BEGINING
-                        .sortMembers(members, owner)
-                        .sortedBy { it.render() }
+                override fun sortMembers(
+                    analysisSession: KtAnalysisSession,
+                    members: List<KtDeclarationSymbol>,
+                    owner: KtSymbolWithMembers,
+                ): List<KtDeclarationSymbol> {
+                    with(analysisSession) {
+                        return KtRendererBodyMemberScopeSorter.ENUM_ENTRIES_AT_BEGINING
+                            .sortMembers(analysisSession, members, owner)
+                            .sortedBy { it.render() }
+                    }
                 }
             }
         }

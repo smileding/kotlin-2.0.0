@@ -2,7 +2,7 @@ Usage: kotlinc-js <options> <source files>
 where advanced options include:
   -Xcache-directory=<path>   Path to the cache directory.
   -Xenable-js-scripting      Enable experimental support for .kts files using K/JS (with '-Xir' only).
-  -Xerror-tolerance-policy   Set up an error tolerance policy (NONE, SEMANTIC, SYNTAX, ALL).
+  -Xerror-tolerance-policy   Set up an error tolerance policy (NONE, SEMANTIC, SYNTAX, ALL). Deprecated, will be removed in next compiler version.
   -Xenable-extension-functions-in-externals
                              Enable extension function members in external interfaces.
   -Xfake-override-validator  Enable the IR fake override validator.
@@ -60,6 +60,8 @@ where advanced options include:
   -Xwasm-generate-wat        Generate a .wat file.
   -Xwasm-kclass-fqn          Enable support for 'KClass.qualifiedName'.
   -Xwasm-target              Set up the Wasm target (wasm-js or wasm-wasi).
+  -Xwasm-use-new-exception-proposal
+                             Use an updated version of the exception proposal with try_table.
   -Xwasm-use-traps-instead-of-exceptions
                              Use traps instead of throwing exceptions.
   -Xallow-any-scripts-in-source-roots
@@ -70,6 +72,8 @@ where advanced options include:
                              Run sticky condition checks on subsequent phases. Implicitly enables '-Xcheck-phase-conditions'.
   -Xcommon-sources=<path>    Sources of the common module that need to be compiled together with this module in multiplatform mode.
                              They should be a subset of sources passed as free arguments.
+  -Xconsistent-data-class-copy-visibility
+                             The effect of this compiler flag is the same as applying @ConsistentCopyVisibility annotation to all data classes in the module. See https://youtrack.jetbrains.com/issue/KT-11914
   -Xcontext-receivers        Enable experimental context receivers.
   -Xdisable-default-scripting-plugin
                              Don't enable the scripting plugin by default.
@@ -124,6 +128,7 @@ where advanced options include:
   -Xklib-relative-path-base  Provide a base path to compute the source's relative paths in klib (default is empty).
   -Xrender-internal-diagnostic-names
                              Render the internal names of warnings and errors.
+  -Xreport-all-warnings      Report all warnings even if errors are found.
   -Xreport-output-files      Report the source-to-output file mapping.
   -Xreport-perf              Report detailed performance statistics.
   -Xself-upper-bound-inference Support inferring type arguments from the self-type upper bounds of the corresponding type parameters.

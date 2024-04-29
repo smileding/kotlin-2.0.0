@@ -301,8 +301,8 @@ fun FirBasedSymbol<*>.isVisibleInClass(parentClassSymbol: FirClassSymbol<*>): Bo
     return isVisibleInClass(parentClassSymbol, status)
 }
 
-fun FirBasedSymbol<*>.isVisibleInClass(parentClassSymbol: FirClassSymbol<*>, status: FirDeclarationStatus): Boolean {
-    val classPackage = parentClassSymbol.classId.packageFqName
+fun FirBasedSymbol<*>.isVisibleInClass(classSymbol: FirClassSymbol<*>, status: FirDeclarationStatus): Boolean {
+    val classPackage = classSymbol.classId.packageFqName
     val packageName = when (this) {
         is FirCallableSymbol<*> -> callableId.packageName
         is FirClassLikeSymbol<*> -> classId.packageFqName
@@ -310,10 +310,15 @@ fun FirBasedSymbol<*>.isVisibleInClass(parentClassSymbol: FirClassSymbol<*>, sta
     }
     val visibility = status.visibility
     if (visibility == Visibilities.Private || !visibility.visibleFromPackage(classPackage, packageName)) return false
-    if (
-        visibility == Visibilities.Internal &&
-        (moduleData != parentClassSymbol.moduleData || parentClassSymbol.moduleData in moduleData.friendDependencies)
-    ) return false
+    if (visibility == Visibilities.Internal) {
+        val containingClassModuleData = classSymbol.moduleData
+        return when (moduleData) {
+            containingClassModuleData -> true
+            in containingClassModuleData.friendDependencies -> true
+            in containingClassModuleData.dependsOnDependencies -> true
+            else -> false
+        }
+    }
     return true
 }
 
@@ -527,7 +532,7 @@ fun checkTypeMismatch(
 }
 
 internal fun checkCondition(condition: FirExpression, context: CheckerContext, reporter: DiagnosticReporter) {
-    val coneType = condition.resolvedType.lowerBoundIfFlexible()
+    val coneType = condition.resolvedType.fullyExpandedType(context.session).lowerBoundIfFlexible()
     if (coneType !is ConeErrorType && !coneType.isSubtypeOf(context.session.typeContext, context.session.builtinTypes.booleanType.type)) {
         reporter.reportOn(
             condition.source,
@@ -724,7 +729,7 @@ fun ConeKotlinType.getInlineClassUnderlyingType(session: FirSession): ConeKotlin
     return toRegularClassSymbol(session)!!.primaryConstructorSymbol(session)!!.valueParameterSymbols[0].resolvedReturnTypeRef.coneType
 }
 
-fun FirCallableDeclaration.getDirectOverriddenSymbols(context: CheckerContext): List<FirCallableSymbol<out FirCallableDeclaration>> {
+fun FirCallableDeclaration.getDirectOverriddenSymbols(context: CheckerContext): List<FirCallableSymbol<FirCallableDeclaration>> {
     if (!this.isOverride) return emptyList()
     val classSymbol = this.containingClassLookupTag()?.toSymbol(context.session) as? FirClassSymbol<*> ?: return emptyList()
     val scope = classSymbol.unsubstitutedScope(context)
@@ -842,3 +847,8 @@ fun FirResolvedQualifier.isStandalone(
 
     return true
 }
+
+fun isExplicitTypeArgumentSource(source: KtSourceElement?): Boolean =
+    source != null && source.kind !is KtFakeSourceElementKind.ImplicitTypeArgument
+
+val FirTypeProjection.isExplicit: Boolean get() = isExplicitTypeArgumentSource(source)

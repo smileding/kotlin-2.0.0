@@ -1,5 +1,4 @@
 // WITH_STDLIB
-// FIR_IDENTICAL
 // FILE: test.kt
 import kotlinx.serialization.*
 

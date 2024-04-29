@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.fir.tree.generator.model
 
 import org.jetbrains.kotlin.fir.tree.generator.BASE_PACKAGE
 import org.jetbrains.kotlin.generators.tree.*
+import org.jetbrains.kotlin.generators.tree.imports.ImportCollecting
 import org.jetbrains.kotlin.generators.tree.ElementOrRef as GenericElementOrRef
 import org.jetbrains.kotlin.generators.tree.ElementRef as GenericElementRef
 
@@ -20,36 +21,18 @@ class Element(name: String, override val propertyName: String, kind: Kind) : Abs
         )
     }
 
-    override val element: Element
-        get() = this
-
-    override val args: Map<NamedTypeParameterRef, TypeRef>
-        get() = emptyMap()
-
-    override val nullable: Boolean
-        get() = false
-
-    override var kDoc: String? = null
-
-    override val fields = mutableSetOf<Field>()
-
     override val namePrefix: String
         get() = "Fir"
 
     override val packageName: String = BASE_PACKAGE + kind.packageName.let { if (it.isBlank()) it else "." + it }
 
-    override val elementParents = mutableListOf<ElementRef>()
-
-    override val otherParents = mutableListOf<ClassRef<*>>()
-
-    override val params = mutableListOf<TypeVariable>()
-
-    override var kind: ImplementationKind? = null
+    override var kind: ImplementationKind?
+        get() = super.kind
         set(value) {
             if (value !in allowedKinds) {
                 throw IllegalArgumentException(value.toString())
             }
-            field = value
+            super.kind = value
         }
     var _needTransformOtherChildren: Boolean = false
 
@@ -77,7 +60,7 @@ class Element(name: String, override val propertyName: String, kind: Kind) : Abs
     val needTransformOtherChildren: Boolean get() = _needTransformOtherChildren || elementParents.any { it.element.needTransformOtherChildren }
 
     override fun toString(): String {
-        return with(ImportCollector("")) { render() }
+        return buildString { renderTo(this, ImportCollecting.Empty) }
     }
 
     enum class Kind(val packageName: String) {

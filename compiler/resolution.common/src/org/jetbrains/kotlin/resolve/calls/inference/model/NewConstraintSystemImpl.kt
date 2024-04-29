@@ -337,10 +337,10 @@ class NewConstraintSystemImpl(
     }
 
     fun replaceContentWith(otherSystem: ConstraintStorage) {
-        addOtherSystem(otherSystem, isAddingOuter = false, clearNotFixedTypeVariables = true)
+        addOtherSystem(otherSystem, isAddingOuter = false, replacingContent = true)
     }
 
-    private fun addOtherSystem(otherSystem: ConstraintStorage, isAddingOuter: Boolean, clearNotFixedTypeVariables: Boolean = false) {
+    private fun addOtherSystem(otherSystem: ConstraintStorage, isAddingOuter: Boolean, replacingContent: Boolean = false) {
         @OptIn(AssertionsOnly::class)
         runOuterCSRelatedAssertions(otherSystem, isAddingOuter)
 
@@ -352,21 +352,25 @@ class NewConstraintSystemImpl(
             notProperTypesCache.clear()
         }
 
-        // `clearNotFixedTypeVariables` means that we're mostly replacing the content, thus we need to remove variables that have been fixed
-        // in `otherSystem` from `this.notFixedTypeVariables`, too
-        if (clearNotFixedTypeVariables) {
+        if (replacingContent) {
             notFixedTypeVariables.clear()
+            typeVariableDependencies.clear()
+            storage.initialConstraints.clear()
+            storage.errors.clear()
+            storage.constraintsFromAllForkPoints.clear()
+            // NB: `postponedTypeVariables` can't be non-empty in K2/PCLA, thus no need to clear it
         }
 
         for ((variable, constraints) in otherSystem.notFixedTypeVariables) {
             notFixedTypeVariables[variable] = MutableVariableWithConstraints(this, constraints)
         }
 
-        val currentInitialConstraints = storage.initialConstraints.toSet()
-
-        otherSystem.initialConstraints.filterTo(storage.initialConstraints) {
-            it !in currentInitialConstraints
+        for ((variable, variablesThatReferenceGivenOne) in otherSystem.typeVariableDependencies) {
+            typeVariableDependencies[variable] = variablesThatReferenceGivenOne.toMutableSet()
         }
+
+
+        storage.initialConstraints.addAll(otherSystem.initialConstraints)
 
         storage.maxTypeDepthFromInitialConstraints =
             max(storage.maxTypeDepthFromInitialConstraints, otherSystem.maxTypeDepthFromInitialConstraints)
@@ -376,7 +380,6 @@ class NewConstraintSystemImpl(
         storage.constraintsFromAllForkPoints.addAll(otherSystem.constraintsFromAllForkPoints)
 
     }
-
 
     @AssertionsOnly
     private fun runOuterCSRelatedAssertions(otherSystem: ConstraintStorage, isAddingOuter: Boolean) {
@@ -456,6 +459,15 @@ class NewConstraintSystemImpl(
         get() {
             checkState(State.BUILDING, State.COMPLETION, State.TRANSACTION)
             return storage.notFixedTypeVariables
+        }
+
+    /**
+     * @see org.jetbrains.kotlin.resolve.calls.inference.model.ConstraintStorage.typeVariableDependencies
+     */
+    override val typeVariableDependencies: MutableMap<TypeConstructorMarker, MutableSet<TypeConstructorMarker>>
+        get() {
+            checkState(State.BUILDING, State.COMPLETION, State.TRANSACTION)
+            return storage.typeVariableDependencies
         }
 
     override val fixedTypeVariables: MutableMap<TypeConstructorMarker, KotlinTypeMarker>
@@ -547,9 +559,9 @@ class NewConstraintSystemImpl(
                     position,
                 )
 
-                if (constraintsFromAllForkPoints.isNotEmpty()) {
-                    resolveForkPointsConstraints()
-                }
+                // Some new fork points constraints might be introduced, and we apply them immediately because we anyway at the
+                // completion state (as we already started resolving them)
+                resolveForkPointsConstraints()
 
                 !hasContradiction
             }
@@ -582,7 +594,14 @@ class NewConstraintSystemImpl(
         checkMissedConstraints()
 
         val freshTypeConstructor = variable.freshTypeConstructor()
-        val variableWithConstraints = notFixedTypeVariables.remove(freshTypeConstructor)
+        val variableWithConstraints =
+            notFixedTypeVariables.remove(freshTypeConstructor) ?: error("Seems that $variable is being fixed second time")
+
+        outerTypeVariables?.let { outerVariables ->
+            require(freshTypeConstructor !in outerVariables) {
+                "Outer type variables are not assumed to be fixed during nested calls analysis, but $variable is being fixed"
+            }
+        }
 
         for (otherVariableWithConstraints in notFixedTypeVariables.values) {
             otherVariableWithConstraints.removeConstrains { containsTypeVariable(it.type, freshTypeConstructor) }
@@ -792,5 +811,13 @@ class NewConstraintSystemImpl(
                 constraint.type.contains { it is StubTypeMarker && it.getOriginalTypeVariable() in postponedTypeVariables }
             }
         }
+    }
+
+    override fun recordTypeVariableReferenceInConstraint(
+        constraintOwner: TypeConstructorMarker,
+        referencedVariable: TypeConstructorMarker,
+    ) {
+        typeVariableDependencies.getOrPut(referencedVariable) { mutableSetOf() }
+            .add(constraintOwner)
     }
 }

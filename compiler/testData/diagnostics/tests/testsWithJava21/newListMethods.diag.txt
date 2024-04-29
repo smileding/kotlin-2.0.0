@@ -1,9 +1,3 @@
-/newListMethods.kt:38:22: error: unresolved reference: getFirst
-        return super.getFirst()
-                     ^^^^^^^^
-/newListMethods.kt:42:22: error: unresolved reference: getLast
-        return super.getLast()
-                     ^^^^^^^
 /newListMethods.kt:49:7: error: unresolved reference: getFirst
     x.getFirst()
       ^^^^^^^^

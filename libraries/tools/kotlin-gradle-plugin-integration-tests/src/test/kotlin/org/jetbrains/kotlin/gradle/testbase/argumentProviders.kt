@@ -10,6 +10,7 @@ import org.gradle.util.GradleVersion
 import org.junit.jupiter.api.extension.ConditionEvaluationResult
 import org.junit.jupiter.api.extension.ExecutionCondition
 import org.junit.jupiter.api.extension.ExtensionContext
+import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
@@ -21,6 +22,7 @@ import java.io.File
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
+
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class GradleTestVersions(
@@ -28,6 +30,22 @@ annotation class GradleTestVersions(
     val maxVersion: String = TestVersions.Gradle.MAX_SUPPORTED,
     val additionalVersions: Array<String> = [],
 )
+
+/**
+ * Parameterized test against different Gradle versions.
+ * Test should accept [GradleVersion] as a parameter.
+ *
+ * By default, [TestVersions.Gradle.MIN_SUPPORTED] and [TestVersions.Gradle.MAX_SUPPORTED] Gradle versions are provided.
+ * To modify it use additional [GradleTestVersions] annotation on the test method.
+ *
+ * @see [GradleTestVersions]
+ */
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+@GradleTestVersions
+@ParameterizedTest(name = "{0}: {displayName}")
+@ArgumentsSource(GradleArgumentsProvider::class)
+annotation class GradleTest
 
 inline fun <reified T : Annotation> findAnnotation(context: ExtensionContext): T {
     var nextSuperclass: Class<*>? = context.testClass.get().superclass
@@ -110,6 +128,27 @@ annotation class JdkVersions(
     }
 }
 
+/**
+ * Parameterized test against different Gradle and JDK versions.
+ * Test should accept [GradleVersion] and [JdkVersions.ProvidedJdk] as a parameters.
+ *
+ * By default, [TestVersions.Gradle.MIN_SUPPORTED] and [TestVersions.Gradle.MAX_SUPPORTED] Gradle versions are provided.
+ * To modify it use additional [GradleTestVersions] annotation on the test method.
+ *
+ * By default, [JavaVersion.VERSION_1_8] and either maximum compatible with given Gradle release
+ * or [JavaVersion.VERSION_21] JDK versions are provided. To modify it use additional [JdkVersions] annotation on the test method.
+ *
+ * @see [GradleTestVersions]
+ * @see [JdkVersions]
+ */
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+@GradleTestVersions
+@JdkVersions
+@ParameterizedTest(name = "{1} with {0}: {displayName}")
+@ArgumentsSource(GradleAndJdkArgumentsProvider::class)
+annotation class GradleWithJdkTest
+
 class GradleAndJdkArgumentsProvider : GradleArgumentsProvider() {
     override fun provideArguments(
         context: ExtensionContext,
@@ -169,6 +208,23 @@ annotation class AndroidTestVersions(
     val maxVersion: String = TestVersions.AGP.MAX_SUPPORTED,
     val additionalVersions: Array<String> = [],
 )
+
+/**
+ * Parameterized test against different Android Gradle plugin versions.
+ * Test should accept [GradleVersion], [String] (AGP version) and [JdkVersions.ProvidedJdk] as a parameters.
+ *
+ * By default, [TestVersions.AGP.MIN_SUPPORTED] and [TestVersions.AGP.MAX_SUPPORTED] AGP versions are provided.
+ * To modify it use additional [AndroidTestVersions] annotation on the test method.
+ *
+ * @see [AndroidTestVersions]
+ */
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+@GradleTestVersions
+@AndroidTestVersions
+@ParameterizedTest(name = "AGP {1} with {0}: {displayName}")
+@ArgumentsSource(GradleAndAgpArgumentsProvider::class)
+annotation class GradleAndroidTest
 
 class GradleAndAgpArgumentsProvider : GradleArgumentsProvider() {
     override fun provideArguments(

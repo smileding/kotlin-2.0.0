@@ -41,7 +41,7 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:b visibility:public modality:ABSTRACT [fake_override,var]
       overridden:
-        public abstract b: kotlin.Boolean
+        public abstract b: kotlin.Boolean declared in <root>.KotlinInterface
       FUN FAKE_OVERRIDE name:<get-b> visibility:public modality:ABSTRACT <> ($this:<root>.KotlinInterface) returnType:kotlin.Boolean [fake_override]
         correspondingProperty: PROPERTY FAKE_OVERRIDE name:b visibility:public modality:ABSTRACT [fake_override,var]
         overridden:
@@ -57,7 +57,7 @@ FILE fqName:<root> fileName:/1.kt
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.B
     PROPERTY name:b visibility:public modality:OPEN [var]
       overridden:
-        public abstract b: kotlin.Boolean
+        public abstract b: kotlin.Boolean declared in <root>.KotlinInterface
       FIELD PROPERTY_BACKING_FIELD name:b type:kotlin.Boolean visibility:private
         EXPRESSION_BODY
           CONST Boolean type=kotlin.Boolean value=false
@@ -121,7 +121,7 @@ FILE fqName:<root> fileName:/1.kt
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.C
     PROPERTY name:b visibility:public modality:OPEN [var]
       overridden:
-        public abstract b: kotlin.Boolean
+        public abstract b: kotlin.Boolean declared in <root>.KotlinInterface
       FIELD PROPERTY_BACKING_FIELD name:b type:kotlin.Boolean visibility:private
         EXPRESSION_BODY
           GET_VAR 'b: kotlin.Boolean declared in <root>.C.<init>' type=kotlin.Boolean origin=INITIALIZE_PROPERTY_FROM_PARAMETER
@@ -317,7 +317,7 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:b visibility:public modality:ABSTRACT [fake_override,var]
       overridden:
-        public abstract b: kotlin.Boolean
+        public abstract b: kotlin.Boolean declared in <root>.Java4
       FUN FAKE_OVERRIDE name:<get-b> visibility:public modality:ABSTRACT <> ($this:<root>.Java4) returnType:kotlin.Boolean [fake_override]
         correspondingProperty: PROPERTY FAKE_OVERRIDE name:b visibility:public modality:ABSTRACT [fake_override,var]
         overridden:
@@ -333,7 +333,7 @@ FILE fqName:<root> fileName:/1.kt
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.G
     PROPERTY name:b visibility:public modality:OPEN [var]
       overridden:
-        public abstract b: kotlin.Boolean
+        public abstract b: kotlin.Boolean declared in <root>.Java4
       FIELD PROPERTY_BACKING_FIELD name:b type:kotlin.Boolean visibility:private
         EXPRESSION_BODY
           GET_VAR 'b: kotlin.Boolean declared in <root>.G.<init>' type=kotlin.Boolean origin=INITIALIZE_PROPERTY_FROM_PARAMETER
@@ -421,7 +421,7 @@ FILE fqName:<root> fileName:/1.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:b visibility:public modality:ABSTRACT [fake_override,var]
       overridden:
-        public abstract b: kotlin.Boolean
+        public abstract b: kotlin.Boolean declared in <root>.Java4
       FUN FAKE_OVERRIDE name:<get-b> visibility:public modality:ABSTRACT <> ($this:<root>.Java4) returnType:kotlin.Boolean [fake_override]
         correspondingProperty: PROPERTY FAKE_OVERRIDE name:b visibility:public modality:ABSTRACT [fake_override,var]
         overridden:
@@ -437,7 +437,7 @@ FILE fqName:<root> fileName:/1.kt
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.I
     PROPERTY name:b visibility:public modality:OPEN [var]
       overridden:
-        public abstract b: kotlin.Boolean
+        public abstract b: kotlin.Boolean declared in <root>.Java4
       FIELD PROPERTY_BACKING_FIELD name:b type:kotlin.Boolean visibility:private
         EXPRESSION_BODY
           CONST Boolean type=kotlin.Boolean value=false
@@ -770,7 +770,7 @@ FILE fqName:<root> fileName:/1.kt
         CALL 'public open fun getA (): kotlin.Int declared in <root>.D' type=kotlin.Int origin=GET_PROPERTY
           $this: GET_VAR 'd: <root>.D declared in <root>.test' type=<root>.D origin=null
       TYPE_OP type=kotlin.Unit origin=IMPLICIT_COERCION_TO_UNIT typeOperand=kotlin.Unit
-        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:b type:kotlin.Boolean visibility:protected/*protected and package*/' type=kotlin.Boolean origin=null
+        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:b type:kotlin.Boolean visibility:protected/*protected and package*/ declared in <root>.Java2' type=kotlin.Boolean origin=null
           receiver: GET_VAR 'd: <root>.D declared in <root>.test' type=<root>.D origin=null
       TYPE_OP type=kotlin.Unit origin=IMPLICIT_COERCION_TO_UNIT typeOperand=kotlin.Unit
         CALL 'public open fun isB (): kotlin.Boolean declared in <root>.D' type=kotlin.Boolean origin=GET_PROPERTY
@@ -779,7 +779,7 @@ FILE fqName:<root> fileName:/1.kt
         CALL 'public open fun getA (): kotlin.Int declared in <root>.E' type=kotlin.Int origin=GET_PROPERTY
           $this: GET_VAR 'e: <root>.E declared in <root>.test' type=<root>.E origin=null
       TYPE_OP type=kotlin.Unit origin=IMPLICIT_COERCION_TO_UNIT typeOperand=kotlin.Unit
-        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:b type:kotlin.Boolean visibility:protected/*protected and package*/' type=kotlin.Boolean origin=null
+        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:b type:kotlin.Boolean visibility:protected/*protected and package*/ declared in <root>.Java2' type=kotlin.Boolean origin=null
           receiver: GET_VAR 'e: <root>.E declared in <root>.test' type=<root>.E origin=null
       TYPE_OP type=kotlin.Unit origin=IMPLICIT_COERCION_TO_UNIT typeOperand=kotlin.Unit
         CALL 'public open fun isB (): kotlin.Boolean declared in <root>.E' type=kotlin.Boolean origin=GET_PROPERTY

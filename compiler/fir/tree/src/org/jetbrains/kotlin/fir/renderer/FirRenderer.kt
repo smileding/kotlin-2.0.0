@@ -1064,14 +1064,14 @@ class FirRenderer(
             variableAssignment.rValue.accept(visitor)
         }
 
-        override fun visitAugmentedArraySetCall(augmentedArraySetCall: FirAugmentedArraySetCall) {
-            annotationRenderer?.render(augmentedArraySetCall)
+        override fun visitIndexedAccessAugmentedAssignment(indexedAccessAugmentedAssignment: FirIndexedAccessAugmentedAssignment) {
+            annotationRenderer?.render(indexedAccessAugmentedAssignment)
             print("ArraySet:[")
-            augmentedArraySetCall.lhsGetCall.accept(this)
+            indexedAccessAugmentedAssignment.lhsGetCall.accept(this)
             print(" ")
-            print(augmentedArraySetCall.operation.operator)
+            print(indexedAccessAugmentedAssignment.operation.operator)
             print(" ")
-            augmentedArraySetCall.rhs.accept(this)
+            indexedAccessAugmentedAssignment.rhs.accept(this)
             print("]")
         }
 
@@ -1097,13 +1097,13 @@ class FirRenderer(
             print(")")
         }
 
-        override fun visitAssignmentOperatorStatement(assignmentOperatorStatement: FirAssignmentOperatorStatement) {
-            annotationRenderer?.render(assignmentOperatorStatement)
-            print(assignmentOperatorStatement.operation.operator)
+        override fun visitAugmentedAssignment(augmentedAssignment: FirAugmentedAssignment) {
+            annotationRenderer?.render(augmentedAssignment)
+            print(augmentedAssignment.operation.operator)
             print("(")
-            assignmentOperatorStatement.leftArgument.accept(visitor)
+            augmentedAssignment.leftArgument.accept(visitor)
             print(", ")
-            assignmentOperatorStatement.rightArgument.accept(visitor)
+            augmentedAssignment.rightArgument.accept(visitor)
             print(")")
         }
 

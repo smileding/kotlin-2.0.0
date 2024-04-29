@@ -560,6 +560,7 @@ class SirAsSwiftSourcesPrinterTests {
                             initKind = SirInitializerKind.ORDINARY
                             visibility = SirVisibility.PUBLIC
                             isFailable = true
+                            isOverride = false
                             parameters.addAll(
                                 listOf(
                                     SirParameter(
@@ -602,6 +603,7 @@ class SirAsSwiftSourcesPrinterTests {
                             initKind = SirInitializerKind.ORDINARY
                             visibility = SirVisibility.PUBLIC
                             isFailable = false
+                            isOverride = false
                             parameters.addAll(
                                 listOf(
                                     SirParameter(
@@ -632,6 +634,7 @@ class SirAsSwiftSourcesPrinterTests {
                             initKind = SirInitializerKind.REQUIRED
                             visibility = SirVisibility.PUBLIC
                             isFailable = false
+                            isOverride = false
                             parameters.addAll(
                                 listOf(
                                     SirParameter(
@@ -662,6 +665,7 @@ class SirAsSwiftSourcesPrinterTests {
                             initKind = SirInitializerKind.CONVENIENCE
                             visibility = SirVisibility.PUBLIC
                             isFailable = false
+                            isOverride = false
                             parameters.addAll(
                                 listOf(
                                     SirParameter(
@@ -733,10 +737,163 @@ class SirAsSwiftSourcesPrinterTests {
         )
     }
 
+    @Test
+    fun `should print typealias`() {
+        val sampleType = buildStruct {
+            origin = SirOrigin.ExternallyDefined(name = "Baz.Bar")
+            visibility = SirVisibility.PUBLIC
+            name = "Bar"
+        }
+
+        val `typealias` = buildTypealias {
+            origin = SirOrigin.Unknown
+            name = "Foo"
+            type = SirNominalType(sampleType)
+        }
+
+        val module = buildModule {
+            name = "Test"
+            declarations.add(`typealias`)
+            declarations.add(sampleType)
+        }.apply {
+            `typealias`.parent = this
+            sampleType.parent = this
+        }
+
+        runTest(
+            module,
+            "testData/typealias"
+        )
+    }
+
+    @Test
+    fun `should print extensions`() {
+
+        val externalDefinedEnum: SirEnum
+        val externalModule = buildModule {
+            name = "MyDependencyModule"
+            externalDefinedEnum = buildEnum {
+                name = "my_external_enum"
+                origin = SirOrigin.Unknown
+            }
+            declarations.add(
+                externalDefinedEnum
+            )
+        }.apply {
+            externalDefinedEnum.parent = this
+        }
+
+        val enum: SirEnum
+        val module = buildModule {
+            name = "Test"
+            declarations.add(
+                buildExtension {
+                    origin = SirOrigin.Unknown
+
+                    extendedType = SirNominalType(SirSwiftModule.int32)
+                    visibility = SirVisibility.PUBLIC
+                }
+            )
+            declarations.add(
+                buildExtension {
+                    origin = SirOrigin.Unknown
+
+                    extendedType = SirNominalType(SirSwiftModule.int32)
+                    visibility = SirVisibility.PRIVATE
+                }
+            )
+            declarations.add(
+                buildExtension {
+                    origin = SirOrigin.Unknown
+
+                    extendedType = SirNominalType(SirSwiftModule.int32)
+                    visibility = SirVisibility.PUBLIC
+                    documentation = """
+                        ///
+                        /// this is a documented extension 
+                        /// (is it even possible? Printer don't actually care)
+                        ///
+                    """.trimIndent()
+                }
+            )
+            declarations.add(
+                buildExtension {
+                    origin = SirOrigin.Unknown
+
+                    extendedType = SirNominalType(SirSwiftModule.int32)
+                    declarations.add(
+                        buildClass {
+                            name = "Foo"
+                        }
+                    )
+
+                    declarations.add(
+                        buildFunction {
+                            origin = SirOrigin.Unknown
+                            kind = SirCallableKind.FUNCTION
+                            visibility = SirVisibility.PUBLIC
+                            name = "foo"
+                            returnType = SirNominalType(SirSwiftModule.bool)
+                        }
+                    )
+
+                    declarations.add(
+                        buildVariable {
+                            name = "my_variable1"
+                            type = SirNominalType(SirSwiftModule.bool)
+                            getter = buildGetter {
+                                kind = SirCallableKind.INSTANCE_METHOD
+                            }
+                        }
+                    )
+                }
+            )
+
+            enum = buildEnum {
+                name = "my_enum"
+                origin = SirOrigin.Namespace(listOf("my_enum"))
+            }
+            declarations.add(
+                enum
+            )
+            declarations.add(
+                buildExtension {
+                    origin = SirOrigin.Unknown
+
+                    extendedType = SirNominalType(enum)
+                    declarations.add(
+                        buildClass {
+                            name = "Foo"
+                        }
+                    )
+                }
+            )
+
+            declarations.add(
+                buildExtension {
+                    origin = SirOrigin.Unknown
+
+                    extendedType = SirNominalType(externalDefinedEnum)
+                    declarations.add(
+                        buildClass {
+                            name = "Foo"
+                        }
+                    )
+                }
+            )
+        }.apply {
+            enum.parent = this
+        }
+
+        runTest(
+            module,
+            "testData/extension"
+        )
+    }
+
     private fun runTest(module: SirModule, goldenDataFile: String) {
         val expectedSwiftSrc = File(KtTestUtil.getHomeDirectory()).resolve("$goldenDataFile.golden.swift")
-
-        val actualSwiftSrc = SirAsSwiftSourcesPrinter().print(module)
+        val actualSwiftSrc = SirAsSwiftSourcesPrinter.print(module, stableDeclarationsOrder = false, renderDocComments = true)
         JUnit5Assertions.assertEqualsToFile(expectedSwiftSrc, actualSwiftSrc)
     }
 }

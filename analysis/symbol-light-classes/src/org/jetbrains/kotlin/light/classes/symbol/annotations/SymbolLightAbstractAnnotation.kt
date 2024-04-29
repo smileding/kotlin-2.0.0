@@ -47,6 +47,15 @@ internal abstract class SymbolLightAbstractAnnotation(parent: PsiElement) :
         kotlinOrigin?.delete()
     }
 
+    override fun getText(): String {
+        kotlinOrigin?.text?.let { return it }
+
+        val parameterAttributes = parameterList.attributes
+        if (parameterAttributes.isEmpty()) return toString()
+
+        return "@$qualifiedName(" + parameterAttributes.joinToString { it.name + "=" + it.value?.text } + ")"
+    }
+
     override fun toString() = "@$qualifiedName"
 
     abstract override fun equals(other: Any?): Boolean
@@ -73,7 +82,8 @@ internal abstract class SymbolLightAbstractAnnotation(parent: PsiElement) :
                 when (val psi = valueParameter?.psi) {
                     is KtParameter -> {
                         psi.defaultValue?.let { defaultValue ->
-                            defaultValue.evaluateAsAnnotationValue()?.toAnnotationMemberValue(parameterList)
+                            val annotationValue = defaultValue.evaluateAsAnnotationValue()?.toLightClassAnnotationValue()
+                            annotationValue?.toAnnotationMemberValue(parameterList)
                         }
                     }
                     is PsiAnnotationMethod -> psi.defaultValue

@@ -20,7 +20,6 @@ import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilat
 import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilationFactory
 import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilationResult.Companion.assertSuccess
 import org.jetbrains.kotlin.konan.test.blackbox.support.runner.TestExecutable
-import org.jetbrains.kotlin.konan.test.blackbox.support.runner.TestRunCheck
 import org.jetbrains.kotlin.konan.test.blackbox.support.runner.TestRunChecks
 import org.jetbrains.kotlin.konan.test.blackbox.support.settings.BinaryLibraryKind
 import org.jetbrains.kotlin.konan.test.blackbox.support.settings.Timeouts
@@ -36,7 +35,7 @@ import org.junit.jupiter.api.Tag
 import java.io.File
 
 @Tag("swiftexport")
-abstract class AbstractNativeSwiftExportTest() : AbstractNativeSimpleTest() {
+abstract class AbstractNativeSwiftExportTest : AbstractNativeSimpleTest() {
 
     private val testCompilationFactory = TestCompilationFactory()
     private val testSuiteDir = File("native/native.tests/testData/framework")
@@ -44,9 +43,12 @@ abstract class AbstractNativeSwiftExportTest() : AbstractNativeSimpleTest() {
     protected fun runTest(@TestDataFile testDir: String) {
         Assumptions.assumeTrue(targets.testTarget.family.isAppleFamily)
         val testPathFull = getAbsoluteFile(testDir)
-        val swiftExportOutput = runSwiftExport(testPathFull)
 
         val testName = testPathFull.name
+        val swiftModuleName = testName.capitalizeAsciiOnly()
+
+        val swiftExportOutput = runSwiftExport(swiftModuleName, testPathFull)
+
         val kotlinFiles = testPathFull.walk().filter { it.extension == "kt" }.map { testPathFull.resolve(it) }.toList()
         val testCase = generateSwiftExportTestCase(testName, kotlinFiles + swiftExportOutput.kotlinBridges.toFile())
         val kotlinBinaryLibrary = testCompilationFactory.testCaseToBinaryLibrary(
@@ -55,33 +57,41 @@ abstract class AbstractNativeSwiftExportTest() : AbstractNativeSimpleTest() {
         ).result.assertSuccess().resultingArtifact
 
         val bridgeModuleFile = createModuleMap(buildDir, swiftExportOutput.cHeaderBridges.toFile())
-        val swiftModuleName = testName.capitalizeAsciiOnly()
-        val swiftModule = compileSwiftModule(swiftModuleName, listOf(swiftExportOutput.swiftApi.toFile()), bridgeModuleFile, kotlinBinaryLibrary)
+        val swiftModule = compileSwiftModule(
+            swiftModuleName,
+            listOf(swiftExportOutput.swiftApi.toFile()),
+            bridgeModuleFile,
+            kotlinBinaryLibrary
+        )
 
         val swiftTestFiles = testPathFull.walk().filter { it.extension == "swift" }.map { testPathFull.resolve(it) }.toList()
         val testExecutable = compileTestExecutable(testName, swiftTestFiles, swiftModule.rootDir, swiftModuleName, bridgeModuleFile)
         runExecutableAndVerify(testCase, testExecutable)
     }
 
-    private fun runSwiftExport(testPathFull: File): SwiftExportOutput {
-        val swiftExportInput = SwiftExportInput(
-            testPathFull.toPath(),
-            libraries = emptyList()
+    private fun runSwiftExport(
+        moduleName: String,
+        testPathFull: File
+    ): SwiftExportFiles {
+        val swiftExportInput = InputModule.Source(
+            name = moduleName,
+            path = testPathFull.toPath(),
         )
         val exportResultsPath = buildDir.toPath().resolve("swift_export_results")
-        val swiftExportOutput = SwiftExportOutput(
-            swiftApi = exportResultsPath.resolve("result.swift"),
-            kotlinBridges = exportResultsPath.resolve("result.kt"),
-            cHeaderBridges = exportResultsPath.resolve("result.h"),
-        )
+
         val swiftExportConfig = SwiftExportConfig(
             settings = mapOf(
                 SwiftExportConfig.BRIDGE_MODULE_NAME to SwiftExportConfig.DEFAULT_BRIDGE_MODULE_NAME,
+                SwiftExportConfig.STABLE_DECLARATIONS_ORDER to "true",
             ),
-            logger = createDummyLogger()
+            logger = createDummyLogger(),
+            outputPath = exportResultsPath
         )
-        runSwiftExport(swiftExportInput, swiftExportConfig, swiftExportOutput)
-        return swiftExportOutput
+
+        return runSwiftExport(
+            swiftExportInput,
+            swiftExportConfig
+        ).getOrThrow().first().files
     }
 
     private fun compileSwiftModule(

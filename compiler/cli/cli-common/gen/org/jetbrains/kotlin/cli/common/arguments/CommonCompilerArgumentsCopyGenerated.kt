@@ -18,6 +18,7 @@ fun copyCommonCompilerArguments(from: CommonCompilerArguments, to: CommonCompile
     to.checkPhaseConditions = from.checkPhaseConditions
     to.checkStickyPhaseConditions = from.checkStickyPhaseConditions
     to.commonSources = from.commonSources?.copyOf()
+    to.consistentDataClassCopyVisibility = from.consistentDataClassCopyVisibility
     to.contextReceivers = from.contextReceivers
     to.disableDefaultScriptingPlugin = from.disableDefaultScriptingPlugin
     to.disablePhases = from.disablePhases?.copyOf()
@@ -30,6 +31,7 @@ fun copyCommonCompilerArguments(from: CommonCompilerArguments, to: CommonCompile
     to.expectActualClasses = from.expectActualClasses
     to.experimental = from.experimental?.copyOf()
     to.explicitApi = from.explicitApi
+    to.explicitReturnTypes = from.explicitReturnTypes
     to.extendedCompilerChecks = from.extendedCompilerChecks
     to.fragmentRefines = from.fragmentRefines?.copyOf()
     to.fragmentSources = from.fragmentSources?.copyOf()
@@ -64,6 +66,7 @@ fun copyCommonCompilerArguments(from: CommonCompilerArguments, to: CommonCompile
     to.progressiveMode = from.progressiveMode
     to.relativePathBases = from.relativePathBases?.copyOf()
     to.renderInternalDiagnosticNames = from.renderInternalDiagnosticNames
+    to.reportAllWarnings = from.reportAllWarnings
     to.reportOutputFiles = from.reportOutputFiles
     to.reportPerf = from.reportPerf
     to.script = from.script

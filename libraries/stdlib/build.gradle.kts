@@ -721,9 +721,11 @@ tasks {
 
     val wasmJsJar by existing(Jar::class) {
         manifestAttributes(manifest, "Main")
+        manifest.attributes(mapOf("Implementation-Title" to "kotlin-stdlib-wasm-js"))
     }
     val wasmWasiJar by existing(Jar::class) {
         manifestAttributes(manifest, "Main")
+        manifest.attributes(mapOf("Implementation-Title" to "kotlin-stdlib-wasm-wasi"))
     }
 
     artifacts {
@@ -778,19 +780,6 @@ tasks {
     val wasmWasiNodeTest by existing {
         if (!kotlinBuildProperties.getBoolean("kotlin.stdlib.wasi.tests")) {
             enabled = false
-        }
-    }
-
-    // Temporary disable wasm compilation due to breaking changes.
-    // TODO: Enable after advancing bootstrap
-    val compileTestDevelopmentExecutableKotlinWasmWasi by existing {
-        onlyIf("Disabled until bootstrap is advanced") {
-            false
-        }
-    }
-    val compileTestDevelopmentExecutableKotlinWasmJs by existing {
-        onlyIf("Disabled until bootstrap is advanced") {
-            false
         }
     }
 

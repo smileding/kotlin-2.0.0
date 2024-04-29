@@ -463,7 +463,7 @@ object PositioningStrategies {
             val elementToMark = when (element) {
                 is KtObjectDeclaration -> element.getObjectKeyword()!!
                 is KtPropertyAccessor -> element.namePlaceholder
-                is KtAnonymousInitializer -> element
+                is KtAnonymousInitializer, is KtPrimaryConstructor -> element
                 else -> throw IllegalArgumentException(
                     "Can't find text range for element '${element::class.java.canonicalName}' with the text '${element.text}'"
                 )
@@ -1124,6 +1124,13 @@ object PositioningStrategies {
                 result = result.expression ?: break
             }
             return super.mark(result)
+        }
+    }
+
+    val TYPE_ARGUMENT_LIST_OR_SELF = object : PositioningStrategy<PsiElement>() {
+        override fun mark(element: PsiElement): List<TextRange> {
+            element.getChildOfType<KtTypeArgumentList>()?.let { return markElement(it) }
+            return super.mark(element)
         }
     }
 }

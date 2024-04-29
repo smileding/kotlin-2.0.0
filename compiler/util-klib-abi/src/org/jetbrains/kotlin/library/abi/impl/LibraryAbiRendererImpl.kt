@@ -49,8 +49,10 @@ internal class AbiRendererImpl(
 
                 listOfNotNull(
                     platform?.let { "Platform" to it },
-                    nativeTargets.takeIf { it.isNotEmpty() }?.let { "Native targets" to it.joinToString(separator = ", ") },
-                    wasmTargets.takeIf { it.isNotEmpty() }?.let { "WASM targets" to it.joinToString(separator = ", ") },
+                    nativeTargets.takeIf { it.isNotEmpty() }
+                        ?.let { "Native targets" to it.joinToString(separator = ", ", transform = LibraryTarget.Native::name) },
+                    wasmTargets.takeIf { it.isNotEmpty() }
+                        ?.let { "WASM targets" to it.joinToString(separator = ", ", transform = LibraryTarget.WASM::name) },
                     compilerVersion?.let { "Compiler version" to it },
                     abiVersion?.let { "ABI version" to it },
                     libraryVersion?.let { "Library version" to it },
@@ -422,7 +424,7 @@ internal class AbiRendererImpl(
                 if (valueParameter.isCrossinline) append("crossinline ")
                 appendType(valueParameter.type)
                 if (valueParameter.isVararg) append("...")
-                if (valueParameter.hasDefaultArg) append(" =...")
+                if (valueParameter.hasDefaultArg) append(" = ...")
                 return ""
             }
 

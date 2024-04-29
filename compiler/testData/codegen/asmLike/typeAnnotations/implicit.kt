@@ -1,9 +1,9 @@
-// IR_DIFFERENCE
 // EMIT_JVM_TYPE_ANNOTATIONS
 // RENDER_ANNOTATIONS
-// TARGET_BACKEND: JVM
-// JVM_TARGET: 1.8
 // WITH_STDLIB
+
+// FIR_DIFFERENCE
+// With FIR, the backend generates lambdas via invokedynamic by default.
 
 package foo
 

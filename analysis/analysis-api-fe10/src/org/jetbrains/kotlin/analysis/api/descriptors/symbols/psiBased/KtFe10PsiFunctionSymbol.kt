@@ -5,7 +5,6 @@
 
 package org.jetbrains.kotlin.analysis.api.descriptors.symbols.psiBased
 
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.base.KtContextReceiver
 import org.jetbrains.kotlin.analysis.api.contracts.description.KtContractEffectDeclaration
 import org.jetbrains.kotlin.analysis.api.descriptors.Fe10AnalysisContext
@@ -77,6 +76,9 @@ internal class KtFe10PsiFunctionSymbol(
     override val isStatic: Boolean
         get() = withValidityAssertion { false }
 
+    override val isTailRec: Boolean
+        get() = withValidityAssertion { psi.hasModifier(KtTokens.TAILREC_KEYWORD) }
+
     override val isBuiltinFunctionInvoke: Boolean
         get() = withValidityAssertion { callableIdIfNonLocal in kotlinFunctionInvokeCallableIds }
 
@@ -128,7 +130,6 @@ internal class KtFe10PsiFunctionSymbol(
     override val visibility: Visibility
         get() = withValidityAssertion { psi.ktVisibility ?: descriptor?.ktVisibility ?: Visibilities.Public }
 
-    context(KtAnalysisSession)
     override fun createPointer(): KtSymbolPointer<KtFunctionSymbol> = withValidityAssertion {
         KtPsiBasedSymbolPointer.createForSymbolFromSource<KtFunctionSymbol>(this) ?: KtFe10NeverRestoringSymbolPointer()
     }

@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.sir.providers
 
+import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.scopes.KtScope
 import org.jetbrains.kotlin.analysis.api.symbols.KtDeclarationSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KtSymbol
@@ -25,6 +26,7 @@ import org.jetbrains.kotlin.sir.*
 public interface SirSession :
     SirDeclarationNamer,
     SirDeclarationProvider,
+    SirParentProvider,
     SirModuleProvider,
     SirEnumGenerator,
     SirTypeProvider,
@@ -36,13 +38,17 @@ public interface SirSession :
 
     public val declarationNamer: SirDeclarationNamer
     public val declarationProvider: SirDeclarationProvider
+    public val parentProvider: SirParentProvider
     public val moduleProvider: SirModuleProvider
     public val enumGenerator: SirEnumGenerator
     public val typeProvider: SirTypeProvider
     public val visibilityChecker: SirVisibilityChecker
     public val childrenProvider: SirChildrenProvider
 
-    public val bridgeModuleName: String
+    override val errorTypeStrategy: SirTypeProvider.ErrorTypeStrategy
+        get() = typeProvider.errorTypeStrategy
+    override val unsupportedTypeStrategy: SirTypeProvider.ErrorTypeStrategy
+        get() = typeProvider.unsupportedTypeStrategy
 
     override fun FqName.sirPackageEnum(module: SirModule): SirEnum = with(enumGenerator) { this@sirPackageEnum.sirPackageEnum(module) }
 
@@ -50,13 +56,24 @@ public interface SirSession :
 
     override fun KtDeclarationSymbol.sirDeclaration(): SirDeclaration = with(declarationProvider) { this@sirDeclaration.sirDeclaration() }
 
+    override fun KtDeclarationSymbol.getSirParent(ktAnalysisSession: KtAnalysisSession): SirDeclarationParent =
+        with(parentProvider) { this@getSirParent.getSirParent(ktAnalysisSession) }
+
     override fun KtModule.sirModule(): SirModule = with(moduleProvider) { this@sirModule.sirModule() }
 
-    override fun KtType.translateType(): SirType = with(typeProvider) { this@translateType.translateType() }
+    override fun KtType.translateType(
+        ktAnalysisSession: KtAnalysisSession,
+        reportErrorType: (String) -> Nothing,
+        reportUnsupportedType: () -> Nothing,
+        processTypeImports: (List<SirImport>) -> Unit,
+    ): SirType =
+        with(typeProvider) { this@translateType.translateType(ktAnalysisSession, reportErrorType, reportUnsupportedType, processTypeImports) }
 
-    override fun KtSymbolWithVisibility.sirVisibility(): SirVisibility? = with(visibilityChecker) { this@sirVisibility.sirVisibility() }
+    override fun KtSymbolWithVisibility.sirVisibility(ktAnalysisSession: KtAnalysisSession): SirVisibility? =
+        with(visibilityChecker) { this@sirVisibility.sirVisibility(ktAnalysisSession) }
 
-    override fun KtScope.extractDeclarations(): Sequence<SirDeclaration> = with(childrenProvider) { this@extractDeclarations.extractDeclarations() }
+    override fun KtScope.extractDeclarations(ktAnalysisSession: KtAnalysisSession): Sequence<SirDeclaration> =
+        with(childrenProvider) { this@extractDeclarations.extractDeclarations(ktAnalysisSession) }
 }
 
 /**
@@ -82,6 +99,17 @@ public interface SirDeclarationProvider {
 }
 
 /**
+ * Given [KtDeclarationSymbol] will produce [SirDeclarationParent], representing the parent for corresponding sir node.
+ *
+ * For example, given the top level function without a package - will return SirModule that should declare that declarations.
+ * Or, given the top level function with a package - will return SirExtension for that package.
+ *
+ */
+public interface SirParentProvider {
+    public fun KtDeclarationSymbol.getSirParent(ktAnalysisSession: KtAnalysisSession): SirDeclarationParent
+}
+
+/**
  * Translates the given [KtModule] to the corresponding [SirModule].
  * Note that it is not always a 1-1 mapping.
  */
@@ -91,15 +119,31 @@ public interface SirModuleProvider {
 }
 
 public interface SirChildrenProvider {
-    public fun KtScope.extractDeclarations(): Sequence<SirDeclaration>
+    public fun KtScope.extractDeclarations(ktAnalysisSession: KtAnalysisSession): Sequence<SirDeclaration>
 }
 
 public interface SirTypeProvider {
 
+    public val errorTypeStrategy: ErrorTypeStrategy
+    public val unsupportedTypeStrategy: ErrorTypeStrategy
+
+    public enum class ErrorTypeStrategy {
+        Fail, ErrorType
+    }
+
     /**
      * Translates the given [KtType] to [SirType].
+     * Calls [reportErrorType] / [reportUnsupportedType] if error/unsupported type
+     * is encountered and [errorTypeStrategy] / [unsupportedTypeStrategy] instructs to fail.
+     *
+     * [processTypeImports] is called with the imports required to use the resulting type properly.
      */
-    public fun KtType.translateType(): SirType
+    public fun KtType.translateType(
+        ktAnalysisSession: KtAnalysisSession,
+        reportErrorType: (String) -> Nothing,
+        reportUnsupportedType: () -> Nothing,
+        processTypeImports: (List<SirImport>) -> Unit,
+    ): SirType
 }
 
 public interface SirVisibilityChecker {
@@ -107,5 +151,5 @@ public interface SirVisibilityChecker {
      * Determines visibility of the given [KtSymbolWithVisibility].
      * @return null if symbol should not be exposed to SIR completely.
      */
-    public fun KtSymbolWithVisibility.sirVisibility(): SirVisibility?
+    public fun KtSymbolWithVisibility.sirVisibility(ktAnalysisSession: KtAnalysisSession): SirVisibility?
 }

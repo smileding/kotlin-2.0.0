@@ -2526,6 +2526,11 @@ public class KlibIrTextTestCaseGenerated extends AbstractKlibIrTextTestCase {
       runTest("compiler/testData/ir/irText/firProblems/kt59102.kt");
     }
 
+    @TestMetadata("kt65642.kt")
+    public void testKt65642() {
+      runTest("compiler/testData/ir/irText/firProblems/kt65642.kt");
+    }
+
     @TestMetadata("lambdaInEnumEntryConstructorCall.kt")
     public void testLambdaInEnumEntryConstructorCall() {
       runTest("compiler/testData/ir/irText/firProblems/lambdaInEnumEntryConstructorCall.kt");
@@ -2589,6 +2594,11 @@ public class KlibIrTextTestCaseGenerated extends AbstractKlibIrTextTestCase {
     @TestMetadata("timesInBuilder.kt")
     public void testTimesInBuilder() {
       runTest("compiler/testData/ir/irText/firProblems/timesInBuilder.kt");
+    }
+
+    @TestMetadata("TypeAliasInImport.kt")
+    public void testTypeAliasInImport() {
+      runTest("compiler/testData/ir/irText/firProblems/TypeAliasInImport.kt");
     }
 
     @TestMetadata("TypeParameterBounds.kt")
@@ -2826,11 +2836,6 @@ public class KlibIrTextTestCaseGenerated extends AbstractKlibIrTextTestCase {
       runTest("compiler/testData/ir/irText/lambdas/justLambda.kt");
     }
 
-    @TestMetadata("lambdaReturningUnit.kt")
-    public void testLambdaReturningUnit() {
-      runTest("compiler/testData/ir/irText/lambdas/lambdaReturningUnit.kt");
-    }
-
     @TestMetadata("localFunction.kt")
     public void testLocalFunction() {
       runTest("compiler/testData/ir/irText/lambdas/localFunction.kt");
@@ -2857,6 +2862,11 @@ public class KlibIrTextTestCaseGenerated extends AbstractKlibIrTextTestCase {
 
     public void testAllFilesPresentInProperties() {
       KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/ir/irText/properties"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JS_IR, true);
+    }
+
+    @TestMetadata("targetOnPrimaryCtorParameter.kt")
+    public void testTargetOnPrimaryCtorParameter() {
+      runTest("compiler/testData/ir/irText/properties/targetOnPrimaryCtorParameter.kt");
     }
 
     @TestMetadata("compiler/testData/ir/irText/properties/backingField")

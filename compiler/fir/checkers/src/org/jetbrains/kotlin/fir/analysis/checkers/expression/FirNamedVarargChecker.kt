@@ -19,6 +19,8 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.languageVersionSettings
 import org.jetbrains.kotlin.fir.references.FirErrorNamedReference
+import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
+import org.jetbrains.kotlin.fir.references.FirResolvedErrorReference
 import org.jetbrains.kotlin.fir.types.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -42,12 +44,12 @@ object FirNamedVarargChecker : FirCallChecker(MppCheckerKind.Common) {
         fun checkArgument(argument: FirExpression, isVararg: Boolean, expectedArrayType: ConeKotlinType) {
             if (!isNamedSpread(argument)) return
             if (!argument.isFakeSpread && argument.isNamed) {
-                if (isVararg && (expression as? FirResolvable)?.calleeReference !is FirErrorNamedReference) {
+                if (isVararg && (expression as? FirResolvable)?.calleeReference !is FirResolvedErrorReference) {
                     reporter.reportOn(argument.expression.source, redundantSpreadWarningFactory, context)
                 }
                 return
             }
-            val type = argument.expression.resolvedType
+            val type = argument.expression.resolvedType.fullyExpandedType(context.session).lowerBoundIfFlexible()
             if (type is ConeErrorType) return
             if (argument.expression is FirArrayLiteral) return
 

@@ -153,13 +153,6 @@ allprojects {
 }
 testOutputExternal.mkdirs()
 
-konanArtifacts {
-    library('baseTestClass', targets: [target]) {
-        srcFiles 'testing/library.kt'
-    }
-    UtilsKt.dependsOnDist(UtilsKt.findKonanBuildTask(project, "baseTestClass", target))
-}
-
 void konanc(String[] args) {
     String kotlincNative = PlatformInfo.isWindows() ? "kotlinc-native.bat" : "kotlinc-native"
     String allArgs = args.join(" ")
@@ -277,50 +270,6 @@ Task dynamicTest(String name, Closure<KonanDynamicTest> configureClosure) {
     }
 }
 
-// This test checks object layout can't be done in
-// KonanLocalTest paradigm
-//tasks.register("constructor", UnitKonanTest) {
-//    source = "codegen/object/constructor.kt"
-//}
-
-standaloneTest("initializers_testInfrastructure") {
-    source = "codegen/initializers/testInfrastructure.kt"
-    flags = ["-tr"]
-}
-
-tasks.register("sanity_assertions_enabled_for_local_tests", KonanLocalTest) {
-    source = "sanity/assertions_enabled_for_local_tests.kt"
-}
-
-tasks.register("immutable_binary_blob_in_lambda", KonanLocalTest) {
-    source = "lower/immutable_blob_in_lambda.kt"
-    useGoldenData = true
-}
-
-tasks.register("abstract_super", KonanLocalTest) {
-    source = "datagen/rtti/abstract_super.kt"
-}
-
-tasks.register("vtable1", KonanLocalTest) {
-    source = "datagen/rtti/vtable1.kt"
-}
-
-tasks.register("vtable_any", KonanLocalTest) {
-    source = "datagen/rtti/vtable_any.kt"
-    useGoldenData = true
-}
-
-tasks.register("empty_string", KonanLocalTest) {
-    useGoldenData = true
-    source = "datagen/literals/empty_string.kt"
-}
-
-standaloneTest("link_default_libs") {
-    useGoldenData = true
-    source = "link/default/default.kt"
-    UtilsKt.dependsOnPlatformLibs(it)
-}
-
 standaloneTest("check_stacktrace_format_coresymbolication") {
     disabled = !PlatformInfo.supportsCoreSymbolication(project) || project.globalTestArgs.contains('-opt')
     flags = ['-g', '-Xbinary=sourceInfoType=coresymbolication']
@@ -380,39 +329,6 @@ standaloneTest("throw_from_except_constr") {
     source = "runtime/exceptions/throw_from_except_constr.kt"
 }
 
-standaloneTest("program_name") {
-    source = "runtime/program_name/runtime_program_name.kt"
-}
-
-tasks.register("vararg0", KonanLocalTest) {
-    source = "lower/vararg.kt"
-}
-
-tasks.register("vararg_of_literals", KonanLocalTest) {
-    enabled = false
-    useGoldenData = true
-    source = "lower/vararg_of_literals.kt"
-}
-
-standaloneTest('tailrec') {
-    disabled = isAggressiveGC // TODO: Investigate why too slow
-    useGoldenData = true
-    source = "lower/tailrec.kt"
-    flags = ['-XXLanguage:-ProhibitTailrecOnVirtualMember', '-e', 'lower.tailrec.main']
-}
-
-tasks.register("deserialized_inline0", KonanLocalTest) {
-    source = "serialization/deserialized_inline0.kt"
-}
-
-tasks.register("deserialized_listof0", KonanLocalTest) {
-    source = "serialization/deserialized_listof0.kt"
-}
-
-tasks.register("deserialized_fields", KonanLocalTest) {
-    source = "serialization/deserialized_fields.kt"
-}
-
 KotlinNativeTestKt.createTest(project, "kt39548", KonanStandaloneTest) { task ->
     // Test infrastructure doesn't support generated source;
     // workaround by specifying dummy source:
@@ -432,199 +348,6 @@ KotlinNativeTestKt.createTest(project, "kt39548", KonanStandaloneTest) { task ->
         doBeforeBuild {
             GenTestKT39548Kt.genTestKT39548(ktFile)
         }
-    }
-}
-
-standaloneTest("serialized_no_typemap") {
-    source = "serialization/regression/no_type_map.kt"
-    useGoldenData = true
-}
-
-standaloneTest("testing_annotations") {
-    source = "testing/annotations.kt"
-    flags = ['-tr']
-    arguments = ['--ktest_logger=SIMPLE']
-    useGoldenData = true
-}
-
-standaloneTest("testing_assertions") {
-    source = "testing/assertions.kt"
-    flags = ['-tr']
-    expectedExitStatus = 0
-}
-
-standaloneTest("testing_custom_main") {
-    source = "testing/custom_main.kt"
-    flags = ['-tr', '-e', 'kotlin.test.tests.main']
-    arguments = ['--ktest_logger=SIMPLE', '--ktest_repeat=2']
-    useGoldenData = true
-}
-
-standaloneTest("testing_library_usage") {
-    def target = project.testTarget ?: 'host'
-    dependsOn konanArtifacts.baseTestClass.getByTarget(target)
-    def klib = konanArtifacts.baseTestClass.getArtifactByTarget(target)
-    source = 'testing/library_user.kt'
-    flags = ['-tr', '-e', 'main', '-l', klib.absolutePath]
-    arguments = ['--ktest_logger=SILENT']
-}
-
-class Filter {
-    List<String> positive
-    List<String> negative
-    List<String> expectedTests
-
-    Filter(List<String> positive, List<String> negative, List<String> expectedTests) {
-        this.positive = positive
-        this.negative = negative
-        this.expectedTests = expectedTests
-    }
-
-    List<String> args() {
-        List<String> result = []
-        if (positive != null && !positive.isEmpty()) {
-            result += "--ktest_gradle_filter=${asListOfPatterns(positive)}"
-        }
-        if (negative != null && !negative.isEmpty()) {
-            result += "--ktest_negative_gradle_filter=${asListOfPatterns(negative)}"
-        }
-        return result
-    }
-
-    static private String asListOfPatterns(List<String> input) {
-        return input.collect { "kotlin.test.tests.$it" }.join(",")
-    }
-}
-
-standaloneTest("testing_filters") {
-    source = "testing/filters.kt"
-    flags = ['-tr', '-ea']
-    def filters = [
-        new Filter(["A.foo1", "B", "FiltersKt.foo1"], [], ["A.foo1", "B.foo1", "B.foo2", "B.bar", "FiltersKt.foo1"]),
-        new Filter([], ["A.foo1", "B", "FiltersKt.foo1"], ["A.foo2", "A.bar", "FiltersKt.foo2", "FiltersKt.bar"]),
-        new Filter(["A", "FiltersKt"], ["A.foo1", "FiltersKt.foo1"], ["A.foo2", "A.bar", "FiltersKt.foo2", "FiltersKt.bar"]),
-        new Filter(["A.foo*", "B.*"], [], ["A.foo1", "A.foo2", "B.foo1", "B.foo2", "B.bar"]),
-        new Filter([], ["A.foo*", "B.*"], ["A.bar", "FiltersKt.foo1", "FiltersKt.foo2", "FiltersKt.bar"]),
-        new Filter(["*.foo*"], ["B"], ["A.foo1", "A.foo2", "FiltersKt.foo1", "FiltersKt.foo2"]),
-        new Filter(["A"], ["*.foo*"], ["A.bar"])
-    ]
-    multiRuns = true
-    multiArguments = filters.collect { it.args() + '--ktest_logger=SIMPLE' }
-    outputChecker = { String output ->
-        // The first chunk is empty - drop it.
-        def outputs = output.split("Starting testing\n").drop(1)
-        if (outputs.size() != filters.size()) {
-            println("Incorrect number of test runs. Expected: ${filters.size()}, actual: ${outputs.size()}")
-            return false
-        }
-
-        // Check the correct set of tests was executed in each run.
-        for (int i = 0; i < outputs.size(); i++) {
-            def actualMessages = outputs[i].split('\n').findAll { it.startsWith("Passed: ") }
-            def expectedMessages = filters[i].expectedTests.collect { String test ->
-                def method = test.substring(test.lastIndexOf('.') + 1)
-                def suite = test.substring(0, test.lastIndexOf('.'))
-                "Passed: $method (kotlin.test.tests.$suite)".toString()
-            }
-
-            if (actualMessages.size() != expectedMessages.size()) {
-                println("Incorrect number of tests executed for filters[$i]. Expected: ${expectedMessages.size()}. Actual: ${actualMessages.size()}")
-                return false
-            }
-
-            for (message in expectedMessages) {
-                if (!actualMessages.contains(message)) {
-                    println("Test run output for filters[$i] doesn't contain the expected message '$message'")
-                    return false
-                }
-            }
-        }
-        return true
-    }
-}
-
-standaloneTest("testing_filtered_suites") {
-    source = "testing/filtered_suites.kt"
-    flags = ["-tr", "-ea"]
-
-    def filters = [
-            ["Filtered_suitesKt.*"],    // filter out a class.
-            ["A.*"],                    // filter out a top-level suite.
-            ["*.common"],               // run a test from all suites -> all hooks executed.
-            ["Ignored.*"],              // an ignored suite -> no hooks executed.
-            ["A.ignored"]               // a suite with only ignored tests -> no hooks executed.
-    ]
-    def expectedHooks = [
-            ["Filtered_suitesKt.before", "Filtered_suitesKt.after"],
-            ["A.before", "A.after"],
-            ["A.before", "A.after", "Filtered_suitesKt.before", "Filtered_suitesKt.after"],
-            [],
-            []
-    ]
-
-    multiRuns = true
-    multiArguments = filters.collect {
-        def filter = it.collect { "kotlin.test.tests.$it" }.join(",")
-        ["--ktest_gradle_filter=$filter", "--ktest_logger=SIMPLE"]
-    }
-    outputChecker = { String output ->
-        // The first chunk is empty - drop it.
-        def outputs = output.split("Starting testing\n").drop(1)
-        if (outputs.size() != expectedHooks.size()) {
-            println("Incorrect number of test runs. Expected: ${expectedHooks.size()}, actual: ${outputs.size()}")
-            return false
-        }
-
-        // Check the correct set of hooks was executed on each run.
-        for (int i = 0; i < outputs.size(); i++) {
-            def actual = outputs[i].split('\n')
-                    .findAll { it.startsWith("Hook:") }
-                    .collect { it.replace("Hook: ", "") }
-            def expected = expectedHooks[i]
-
-            if (actual.size() != expected.size()) {
-                println("Incorrect number of executed hooks for run #$i. Expected: ${expected.size()}. Actual: ${actual.size()}")
-                println("Expected hooks: $expected")
-                println("Actual hooks: $actual")
-                return false
-            }
-
-            for (expectedHook in expected) {
-                if (!actual.contains(expectedHook)) {
-                    println("Expected hook wasn't executed for run #$i: $expectedHook")
-                    println("Expected hooks: $expected")
-                    println("Actual hooks: $actual")
-                    return false
-                }
-            }
-        }
-        return true
-    }
-}
-
-// Check that stacktraces and ignored suite are correctly reported in the TC logger.
-standaloneTest("testing_stacktrace") {
-    source = "testing/stacktrace.kt"
-    flags = ['-tr', '-ea']
-    arguments = ["--ktest_logger=TEAMCITY", "--ktest_no_exit_code"]
-    // This test prints TeamCity service messages about failed test causing false negative failure at CI.
-    // So we need to suppress printing these messages to stdout.
-//    printOutput = false
-    outputChecker = { String output ->
-        def ignoredOutput = """\
-            |##teamcity[testSuiteStarted name='kotlin.test.tests.Ignored' locationHint='ktest:suite://kotlin.test.tests.Ignored']
-            |##teamcity[testIgnored name='foo']
-            |##teamcity[testSuiteFinished name='kotlin.test.tests.Ignored']""".stripMargin()
-        def failedOutput = """\
-            |##teamcity[testSuiteStarted name='kotlin.test.tests.Failed' locationHint='ktest:suite://kotlin.test.tests.Failed']
-            |##teamcity[testStarted name='bar' locationHint='ktest:test://kotlin.test.tests.Failed.bar']
-            |##teamcity[testFailed name='bar' message='Bar' details='kotlin.Exception: Bar|n""".stripMargin()
-
-        def shownInnerException = output.readLines()
-                .find { it.startsWith("##teamcity[testFailed name='bar'") }
-                ?.contains("Caused by: kotlin.Exception: Baz") ?: false
-
-        return output.contains(ignoredOutput) && output.contains(failedOutput) && shownInnerException
     }
 }
 
@@ -664,11 +387,6 @@ createInterop("kt43502") {
     }
 }
 
-createInterop("exceptions_throwThroughBridge") {
-    it.defFile "interop/exceptions/throwThroughBridge.def"
-    it.extraOpts "-Xcompile-source", "$projectDir/interop/exceptions/throwThroughBridgeInterop.cpp"
-}
-
 standaloneTest("interop_objc_allocException") {
     disabled = !PlatformInfo.isAppleTarget(project)
     expectedExitStatus = 0
@@ -702,14 +420,6 @@ if (PlatformInfo.isAppleTarget(project)) {
         useGoldenData = true
         flags = ["-native-library", bcFile.toString()]
     }
-
-    standaloneTest("interop_kt55653") {
-        // Test depends on macOS-specific AppKit
-        enabled = (project.testTarget == 'macos_x64' || project.testTarget == 'macos_arm64' || project.testTarget == null)
-        source = "interop/objc/kt55653/main.kt"
-        useGoldenData = true
-        UtilsKt.dependsOnPlatformLibs(it)
-    }
 }
 
 tasks.register("KT-50983", KonanDriverTest) {
@@ -728,174 +438,10 @@ tasks.register("KT-50983", KonanDriverTest) {
     flags = ['-linker-option', resFile.toString()]
 }
 
-standaloneTest("interop_libiconv") {
-    enabled = (project.testTarget == null)
-    source = "interop/libiconv.kt"
-    useGoldenData = true
-    UtilsKt.dependsOnPlatformLibs(it)
-}
-
-standaloneTest("interop_objc_illegal_sharing") {
-    disabled = !PlatformInfo.isAppleTarget(project)
-    source = "interop/objc/illegal_sharing.kt"
-    UtilsKt.dependsOnPlatformLibs(it)
-    outputChecker = {
-        it.startsWith("Before") && it.contains("After")
-    }
-}
-
-dynamicTest("produce_dynamic") {
-    source = "produce_dynamic/simple/hello.kt"
-    cSource = "$projectDir/produce_dynamic/simple/main.c"
-    useGoldenData = true
-}
-
-dynamicTest("kt36878") {
-    source = "produce_dynamic/kt-36878/hello.kt"
-    cSource = "$projectDir/produce_dynamic/kt-36878/main.c"
-    useGoldenData = true
-}
-
-dynamicTest("kt39015") {
-    source = "produce_dynamic/kt-39015/hello.kt"
-    cSource = "$projectDir/produce_dynamic/kt-39015/main.c"
-    useGoldenData = true
-}
-
-dynamicTest("kt39496") {
-    source = "produce_dynamic/kt-39496/hello.kt"
-    cSource = "$projectDir/produce_dynamic/kt-39496/main.c"
-    useGoldenData = true
-}
-
-dynamicTest("kt41904") {
-    source = "produce_dynamic/kt-41904/hello.kt"
-    cSource = "$projectDir/produce_dynamic/kt-41904/main.c"
-    useGoldenData = true
-}
-
-for (i in 0..2) {
-    dynamicTest("kt42796_$i") {
-        clangTool = "clang++"
-        source = "produce_dynamic/kt-42796/main-${i}.kt"
-        cSource = "$projectDir/produce_dynamic/kt-42796/main.cpp"
-        useGoldenData = true
-        clangFlags = ["-DTEST=$i", "-Werror"]
-    }
-}
-
-dynamicTest("kt42830") {
-    source = "produce_dynamic/kt-42830/box_unbox.kt"
-    cSource = "$projectDir/produce_dynamic/kt-42830/main.c"
-    useGoldenData = true
-}
-
-dynamicTest("kt64508") {
-    source = "produce_dynamic/kt-64508/hello.kt"
-    cSource = "$projectDir/produce_dynamic/kt-64508/main.c"
-    useGoldenData = true
-}
-
-dynamicTest("produce_dynamic_unhandledException") {
-    disabled = (cacheTesting != null) // Disabled due to KT-47828.
-    source = "produce_dynamic/unhandledException/unhandled.kt"
-    cSource = "$projectDir/produce_dynamic/unhandledException/main.cpp"
-    clangTool = "clang++"
-    expectedExitStatusChecker = { it != 0 }
-    outputChecker = { str -> str.startsWith("Kotlin hook: Exception. Runnable state: true") }
-    flags = ['-opt-in=kotlin.native.internal.InternalForKotlinNative']
-}
-
-dynamicTest("interop_concurrentRuntime") {
-    source = "interop/concurrentTerminate/reverseInterop.kt"
-    cSource = "$projectDir/interop/concurrentTerminate/main.cpp"
-    clangTool = "clang++"
-    if (project.testTarget == 'mingw_x64') {
-        // Our sysroot for mingw_x64 still requires -femulated-tls. For C++ code as well. See KT-46612.
-        clangFlags += "-femulated-tls"
-    }
-    outputChecker = { str -> str.startsWith("Uncaught Kotlin exception: kotlin.RuntimeException: Example") }
-    expectedExitStatus = 99
-}
-
-for (i in ["kt42397", "kt56182_root", "kt56182_package1lvl", "kt56182_subpackage2lvl", "kt56182_root_package1lvl", "kt56182_root_subpackage2lvl"]) {
-    // note: kt56182_package1lvl is same as kt42397
-    // note: kt56182_root_package1lvl is similar as kt41904
-    // note: kt56182_subpackage2lvl is similar as kt42796_1
-    dynamicTest("interop_$i") {
-        source = "interop/$i/knlibrary.kt"
-        cSource = "$projectDir/interop/$i/test.cpp"
-        clangTool = "clang++"
-    }
-}
-
-dynamicTest("interop_cleaners_main_thread") {
-    disabled = isNoopGC
-    source = "interop/cleaners/cleaners.kt"
-    cSource = "$projectDir/interop/cleaners/main_thread.cpp"
-    clangTool = "clang++"
-    useGoldenData = true
-    flags = ['-opt-in=kotlin.native.internal.InternalForKotlinNative']
-}
-
-dynamicTest("interop_cleaners_second_thread") {
-    disabled = isNoopGC
-    source = "interop/cleaners/cleaners.kt"
-    cSource = "$projectDir/interop/cleaners/second_thread.cpp"
-    clangTool = "clang++"
-    useGoldenData = true
-    flags = ['-opt-in=kotlin.native.internal.InternalForKotlinNative']
-}
-
-dynamicTest("interop_cleaners_leak") {
-    source = "interop/cleaners/cleaners.kt"
-    cSource = "$projectDir/interop/cleaners/leak.cpp"
-    clangTool = "clang++"
-    useGoldenData = true
-    flags = ['-opt-in=kotlin.native.internal.InternalForKotlinNative']
-}
-
-dynamicTest("interop_migrating_main_thread") {
-    source = "interop/migrating_main_thread/lib.kt"
-    clangFlags = ['-DEXPERIMENTAL_MM']
-    cSource = "$projectDir/interop/migrating_main_thread/main.cpp"
-    clangTool = "clang++"
-}
-
-dynamicTest("interop_exceptions_throwThroughBridge") {
-    source = "interop/exceptions/throwThroughBridge.kt"
-    cSource = "$projectDir/interop/exceptions/throwThroughBridge.cpp"
-    clangTool = "clang++"
-    expectedExitStatusChecker = { it != 0 }
-    outputChecker = { s -> !s.contains("Should not happen") }
-    interop = "exceptions_throwThroughBridge"
-}
-
-dynamicTest("interop_kotlin_exception_hook") {
-    source = "interop/exceptions/exceptionHook.kt"
-    cSource = "$projectDir/interop/exceptions/exceptionHook.cpp"
-    clangTool = "clang++"
-    expectedExitStatusChecker = { it != 0 }
-    outputChecker = { s -> s.contains("OK. Kotlin unhandled exception hook") }
-}
-
 standaloneTest("kt51302") {
     enabled = project.target.name == PlatformInfo.hostName
     source = "serialization/KT-51302/main.kt"
     flags = ["-l", "$projectDir/serialization/KT-51302/kt51302_dependency"]
-}
-
-standaloneTest("fake_override_0") {
-    def sources = "$projectDir/link/fake_overrides"
-    doBeforeBuild {
-        konanc("$sources/base.kt -p library -target ${target.name} -o $outputDirectory/base.klib")
-        konanc("$sources/move.kt -p library -target ${target.name} -o $outputDirectory/move.klib -l $outputDirectory/base.klib")
-        konanc("$sources/use.kt -p library -target ${target.name} -o $outputDirectory/use.klib -l $outputDirectory/move.klib -l $outputDirectory/base.klib")
-        konanc("$sources/move2.kt -p library -target ${target.name} -o $outputDirectory/move.klib -l $outputDirectory/base.klib")
-    }
-    source = "$sources/main.kt"
-    flags = ["-l", "$outputDirectory/use.klib", "-l", "$outputDirectory/move.klib", "-l", "$outputDirectory/base.klib"]
-    useGoldenData = true
 }
 
 standaloneTest("split_compilation_pipeline") {
@@ -916,48 +462,6 @@ standaloneTest("split_compilation_pipeline") {
     flags = ["-Xread-dependencies-from=${dir}/split_compilation_pipeline.deps", "-Xcompile-from-bitcode=${dir}/tmp/split/out.bc"]
     useGoldenData = true
 }
-
-/**
- * Builds tests into a single binary with TestRunner
- */
-task buildKonanTests { t ->
-    def compileList = [ "codegen", "datagen", "lower", "runtime", "serialization", "sanity" ]
-
-    // These tests should not be built into the TestRunner's test executable
-    def excludeList = [ "codegen/inline/returnLocalClassFromBlock.kt" ]
-    project.tasks
-            .withType(KonanStandaloneTest.class)
-            .each {
-                // add library and source files
-                if (it.source != null) {
-                    excludeList += it.source
-                }
-            }
-    def sources = UtilsKt.getFilesToCompile(project, compileList, excludeList)
-
-    konanArtifacts {
-        program('localTest', targets: [target.name]) {
-            srcFiles sources
-            baseDir testOutputLocal
-            extraOpts '-ea' // Without this option assertions would remain inactive.
-            extraOpts '-tr'
-            extraOpts '-Xverify-ir=error'
-            extraOpts project.globalTestArgs
-        }
-    }
-
-    // Set build dependencies.
-    dependsOn compileKonanLocalTest
-    def buildTask = UtilsKt.findKonanBuildTask(project, "localTest", target)
-    UtilsKt.dependsOnDist(buildTask)
-
-    // Local tests build into a single binary should depend on this task
-    project.tasks
-            .withType(KonanLocalTest.class)
-            .matching { !(it instanceof KonanStandaloneTest) }
-            .configureEach { it.dependsOn(t) }
-}
-
 
 sourceSets {
     nopPlugin {

@@ -12,6 +12,8 @@ import org.junit.jupiter.api.DisplayName
 import java.nio.file.Files
 import kotlin.io.path.writeText
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.condition.OS
 
 @MppGradlePluginTests
 class KotlinWasmGradlePluginIT : KGPBaseTest() {
@@ -196,6 +198,43 @@ class KotlinWasmGradlePluginIT : KGPBaseTest() {
                 assertTasksExecuted(":lib:compileKotlinWasmWasi")
                 assertTasksExecuted(":app:compileProductionExecutableKotlinWasmJs")
                 assertTasksExecuted(":app:compileProductionExecutableKotlinWasmWasi")
+            }
+        }
+    }
+
+    @DisplayName("Wasi library")
+    @GradleTest
+    fun wasiLibrary(gradleVersion: GradleVersion) {
+        project("wasm-wasi-library", gradleVersion) {
+            buildGradleKts.modify(::transformBuildScriptWithPluginsDsl)
+
+            build(":build") {
+                assertTasksExecuted(":compileProductionLibraryKotlinWasmWasi")
+                assertTasksExecuted(":compileKotlinWasmWasi")
+                assertTasksExecuted(":wasmWasiNodeTest")
+                assertTasksExecuted(":wasmWasiNodeProductionLibraryDistribution")
+
+                val dist = "build/dist/wasmWasi/productionLibrary"
+                assertFileExists(projectPath.resolve("$dist/foo.txt"))
+                assertFileExists(projectPath.resolve("$dist/wasm-wasi-library-wasm-wasi.wasm"))
+                assertFileExists(projectPath.resolve("$dist/wasm-wasi-library-wasm-wasi.wasm.map"))
+                assertFileExists(projectPath.resolve("$dist/wasm-wasi-library-wasm-wasi.mjs"))
+            }
+        }
+    }
+
+
+    @DisplayName("Browser print works with null type")
+    @GradleTest
+    @GradleTestVersions(minVersion = TestVersions.Gradle.G_7_6)
+    @OsCondition(
+        supportedOn = [OS.LINUX, OS.MAC, OS.WINDOWS],
+        enabledOnCI = []
+    ) // The CI can't run the test, so, ignore it until we add headless Chrome browser to our CI
+    fun testBrowserNullPrint(gradleVersion: GradleVersion) {
+        project("kt-63230", gradleVersion) {
+            build("check", "-Pkotlin.tests.individualTaskReports=true") {
+                assertTestResults(projectPath.resolve("TEST-wasm.xml"), "wasmJsBrowserTest")
             }
         }
     }

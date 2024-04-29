@@ -62,6 +62,12 @@ public class FirIdeDependentAnalysisSourceModuleExitPointSnapshotTestGenerated e
     }
 
     @Test
+    @TestMetadata("breakContinue2.kt")
+    public void testBreakContinue2() {
+      runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/controlFlow/breakContinue2.kt");
+    }
+
+    @Test
     @TestMetadata("breakReturn.kt")
     public void testBreakReturn() {
       runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/controlFlow/breakReturn.kt");
@@ -227,6 +233,12 @@ public class FirIdeDependentAnalysisSourceModuleExitPointSnapshotTestGenerated e
       }
 
       @Test
+      @TestMetadata("breakAndReturn2.kt")
+      public void testBreakAndReturn2() {
+        runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/controlFlow/exitPointEquivalence/breakAndReturn2.kt");
+      }
+
+      @Test
       @TestMetadata("breakContinueAndDefault.kt")
       public void testBreakContinueAndDefault() {
         runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/controlFlow/exitPointEquivalence/breakContinueAndDefault.kt");
@@ -307,6 +319,12 @@ public class FirIdeDependentAnalysisSourceModuleExitPointSnapshotTestGenerated e
       public void testBreak4() {
         runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/controlFlow/unconditionalJumps/break4.kt");
       }
+
+      @Test
+      @TestMetadata("nonLocalReturn.kt")
+      public void testNonLocalReturn() {
+        runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/controlFlow/unconditionalJumps/nonLocalReturn.kt");
+      }
     }
   }
 
@@ -317,6 +335,18 @@ public class FirIdeDependentAnalysisSourceModuleExitPointSnapshotTestGenerated e
     @Test
     public void testAllFilesPresentInDefaultValues() {
       KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("annotationInfixOperatorProperty.kt")
+    public void testAnnotationInfixOperatorProperty() {
+      runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/annotationInfixOperatorProperty.kt");
+    }
+
+    @Test
+    @TestMetadata("annotationValueCode.kt")
+    public void testAnnotationValueCode() {
+      runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/annotationValueCode.kt");
     }
 
     @Test
@@ -350,6 +380,12 @@ public class FirIdeDependentAnalysisSourceModuleExitPointSnapshotTestGenerated e
     }
 
     @Test
+    @TestMetadata("conditionCheck.kt")
+    public void testConditionCheck() {
+      runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/conditionCheck.kt");
+    }
+
+    @Test
     @TestMetadata("errorDefaultType.kt")
     public void testErrorDefaultType() {
       runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/errorDefaultType.kt");
@@ -380,9 +416,27 @@ public class FirIdeDependentAnalysisSourceModuleExitPointSnapshotTestGenerated e
     }
 
     @Test
+    @TestMetadata("incrementPostfix.kt")
+    public void testIncrementPostfix() {
+      runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/incrementPostfix.kt");
+    }
+
+    @Test
     @TestMetadata("infixOperator.kt")
     public void testInfixOperator() {
       runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/infixOperator.kt");
+    }
+
+    @Test
+    @TestMetadata("infixOperatorProperty.kt")
+    public void testInfixOperatorProperty() {
+      runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/infixOperatorProperty.kt");
+    }
+
+    @Test
+    @TestMetadata("infixOperatorVariable.kt")
+    public void testInfixOperatorVariable() {
+      runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/infixOperatorVariable.kt");
     }
 
     @Test
@@ -392,9 +446,21 @@ public class FirIdeDependentAnalysisSourceModuleExitPointSnapshotTestGenerated e
     }
 
     @Test
+    @TestMetadata("lambdaImplicitReturn.kt")
+    public void testLambdaImplicitReturn() {
+      runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/lambdaImplicitReturn.kt");
+    }
+
+    @Test
     @TestMetadata("nullableDefaultType.kt")
     public void testNullableDefaultType() {
       runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/nullableDefaultType.kt");
+    }
+
+    @Test
+    @TestMetadata("objectQualifier.kt")
+    public void testObjectQualifier() {
+      runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/objectQualifier.kt");
     }
 
     @Test
@@ -425,6 +491,12 @@ public class FirIdeDependentAnalysisSourceModuleExitPointSnapshotTestGenerated e
     @TestMetadata("variableDeclaration.kt")
     public void testVariableDeclaration() {
       runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/variableDeclaration.kt");
+    }
+
+    @Test
+    @TestMetadata("whenCondition.kt")
+    public void testWhenCondition() {
+      runTest("analysis/analysis-api/testData/components/dataFlowInfoProvider/exitPointSnapshot/defaultValues/whenCondition.kt");
     }
 
     @Test

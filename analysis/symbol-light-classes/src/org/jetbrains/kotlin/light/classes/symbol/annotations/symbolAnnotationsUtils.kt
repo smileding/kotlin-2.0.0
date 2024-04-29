@@ -10,20 +10,22 @@ import com.intellij.psi.impl.light.LightReferenceListBuilder
 import org.jetbrains.kotlin.analysis.api.KtAnalysisNonPublicApi
 import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.annotations.*
-import org.jetbrains.kotlin.analysis.api.annotations.KtKClassAnnotationValue.KtNonLocalKClassAnnotationValue
-import org.jetbrains.kotlin.analysis.api.components.buildClassType
 import org.jetbrains.kotlin.analysis.api.symbols.KtDeclarationSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KtFunctionSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KtPropertySymbol
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KtAnnotatedSymbol
+import org.jetbrains.kotlin.analysis.api.types.KtFlexibleType
 import org.jetbrains.kotlin.analysis.api.types.KtNonErrorClassType
 import org.jetbrains.kotlin.analysis.api.types.KtType
 import org.jetbrains.kotlin.analysis.api.types.KtTypeMappingMode
+import org.jetbrains.kotlin.analysis.api.types.KtTypeNullability
 import org.jetbrains.kotlin.asJava.classes.annotateByTypeAnnotationProvider
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.light.classes.symbol.classes.SymbolLightClassBase
 import org.jetbrains.kotlin.light.classes.symbol.getContainingSymbolsWithSelf
+import org.jetbrains.kotlin.light.classes.symbol.getTypeNullability
+import org.jetbrains.kotlin.light.classes.symbol.asAnnotationQualifier
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.JvmStandardClassIds.JVM_OVERLOADS_CLASS_ID
@@ -139,23 +141,28 @@ internal fun KtAnnotatedSymbol.computeThrowsList(
 
     val annoApp = findAnnotation(JvmStandardClassIds.Annotations.Throws, useSiteTargetFilter) ?: return
 
-    fun handleAnnotationValue(annotationValue: KtAnnotationValue) = when (annotationValue) {
-        is KtArrayAnnotationValue -> {
-            annotationValue.values.forEach(::handleAnnotationValue)
-        }
-
-        is KtNonLocalKClassAnnotationValue -> {
-            val psiType = buildClassType(annotationValue.classId).asPsiType(
-                useSitePosition,
-                allowErrorTypes = true,
-                KtTypeMappingMode.DEFAULT,
-                containingClass.isAnnotationType,
-            )
-            (psiType as? PsiClassType)?.let {
-                builder.addReference(it)
+    fun handleAnnotationValue(annotationValue: KtAnnotationValue) {
+        when (annotationValue) {
+            is KtArrayAnnotationValue -> {
+                annotationValue.values.forEach(::handleAnnotationValue)
             }
+
+            is KtKClassAnnotationValue -> {
+                if (annotationValue.type is KtNonErrorClassType) {
+                    val psiType = annotationValue.type.asPsiType(
+                        useSitePosition,
+                        allowErrorTypes = true,
+                        KtTypeMappingMode.DEFAULT,
+                        containingClass.isAnnotationType,
+                    )
+                    (psiType as? PsiClassType)?.let {
+                        builder.addReference(it)
+                    }
+                }
+            }
+
+            else -> {}
         }
-        else -> {}
     }
 
     annoApp.arguments.forEach { handleAnnotationValue(it.expression) }
@@ -166,26 +173,45 @@ context(KtAnalysisSession)
 fun annotateByKtType(
     psiType: PsiType,
     ktType: KtType,
-    psiContext: PsiTypeElement,
+    annotationParent: PsiElement,
 ): PsiType {
-    fun KtType.getAnnotationsSequence(): Sequence<List<PsiAnnotation>> = sequence {
-        yield(
-            annotations.map { annoApp ->
-                SymbolLightSimpleAnnotation(
-                    annoApp.classId?.asFqNameString(),
-                    psiContext,
-                    annoApp.arguments,
-                    annoApp.psi,
-                )
-            }
-        )
+    fun getAnnotationsSequence(type: KtType): Sequence<List<PsiAnnotation>> = sequence {
+        val unwrappedType = when (type) {
+            // We assume that flexible types have to have the same set of annotations on upper and lower bound.
+            // Also, the upper bound is more similar to the resulting PsiType as it has fewer restrictions.
+            is KtFlexibleType -> type.upperBound
+            else -> type
+        }
 
-        (this@getAnnotationsSequence as? KtNonErrorClassType)?.ownTypeArguments?.forEach { typeProjection ->
-            typeProjection.type?.let {
-                yieldAll(it.getAnnotationsSequence())
+        val explicitTypeAnnotations = unwrappedType.annotations.map { annotationApplication ->
+            SymbolLightSimpleAnnotation(
+                annotationApplication.classId?.asFqNameString(),
+                annotationParent,
+                annotationApplication.arguments.map { it.toLightClassAnnotationArgument() },
+                annotationApplication.psi,
+            )
+        }
+
+        // Original type should be used to infer nullability
+        val typeNullability = when {
+            psiType !is PsiPrimitiveType && type.isPrimitiveBacked -> KtTypeNullability.NON_NULLABLE
+            else -> getTypeNullability(type)
+        }
+
+        val nullabilityAnnotation = typeNullability.asAnnotationQualifier?.let {
+            SymbolLightSimpleAnnotation(it, annotationParent)
+        }
+
+        yield(explicitTypeAnnotations + listOfNotNull(nullabilityAnnotation))
+
+        if (unwrappedType is KtNonErrorClassType) {
+            unwrappedType.ownTypeArguments.forEach { typeProjection ->
+                typeProjection.type?.let {
+                    yieldAll(getAnnotationsSequence(it))
+                }
             }
         }
     }
 
-    return psiType.annotateByTypeAnnotationProvider(ktType.getAnnotationsSequence())
+    return psiType.annotateByTypeAnnotationProvider(getAnnotationsSequence(ktType))
 }

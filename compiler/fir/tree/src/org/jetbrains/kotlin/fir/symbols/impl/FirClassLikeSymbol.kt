@@ -5,8 +5,8 @@
 
 package org.jetbrains.kotlin.fir.symbols.impl
 
-import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.descriptors.ClassKind
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.symbols.ConeClassLikeLookupTag
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
@@ -22,17 +22,17 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.SpecialNames
 
-sealed class FirClassLikeSymbol<D : FirClassLikeDeclaration>(
+sealed class FirClassLikeSymbol<out D : FirClassLikeDeclaration>(
     val classId: ClassId,
 ) : FirClassifierSymbol<D>(), ClassLikeSymbolMarker {
     abstract override fun toLookupTag(): ConeClassLikeLookupTag
 
     val name get() = classId.shortClassName
 
-    fun getOwnDeprecation(languageVersionSettings: LanguageVersionSettings): DeprecationsPerUseSite? {
+    fun getOwnDeprecation(session: FirSession): DeprecationsPerUseSite? {
         if (annotations.isEmpty() && fir.versionRequirements.isNullOrEmpty()) return null
         lazyResolveToPhase(FirResolvePhase.COMPILER_REQUIRED_ANNOTATIONS)
-        return fir.deprecationsProvider.getDeprecationsInfo(languageVersionSettings)
+        return fir.deprecationsProvider.getDeprecationsInfo(session)
     }
 
     val rawStatus: FirDeclarationStatus
@@ -50,7 +50,7 @@ sealed class FirClassLikeSymbol<D : FirClassLikeDeclaration>(
     override fun toString(): String = "${this::class.simpleName} ${classId.asString()}"
 }
 
-sealed class FirClassSymbol<C : FirClass>(classId: ClassId) : FirClassLikeSymbol<C>(classId) {
+sealed class FirClassSymbol<out C : FirClass>(classId: ClassId) : FirClassLikeSymbol<C>(classId) {
     private val lookupTag: ConeClassLikeLookupTag =
         if (classId.isLocal) ConeClassLookupTagWithFixedSymbol(classId, this)
         else classId.toLookupTag()

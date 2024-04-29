@@ -33,6 +33,7 @@ private const val SWIFT_EXPORT_EMBEDDABLE = ":native:swift:swift-export-embeddab
 
 val kotlinGradlePluginAndItsRequired = arrayOf(
     ":kotlin-assignment",
+    ":compose-compiler-gradle-plugin",
     ":kotlin-allopen",
     ":kotlin-noarg",
     ":kotlin-power-assert",
@@ -76,6 +77,7 @@ val kotlinGradlePluginAndItsRequired = arrayOf(
     ":kotlin-lombok-compiler-plugin.embeddable",
     ":kotlinx-serialization-compiler-plugin.embeddable",
     ":kotlin-annotation-processing-embeddable",
+    ":plugins:compose-compiler-plugin:compiler",
     ":kotlin-script-runtime",
     ":kotlin-scripting-common",
     ":kotlin-scripting-jvm",
@@ -108,13 +110,18 @@ fun Task.dependsOnKotlinGradlePluginInstall() {
 }
 
 fun Task.dependsOnKotlinGradlePluginPublish() {
-    kotlinGradlePluginAndItsRequired.forEach { dependency ->
-        processDependent(dependency) {
-            project.rootProject.tasks.findByPath("${dependency}:publish")?.let { task ->
-                dependsOn(task)
+    kotlinGradlePluginAndItsRequired
+        .filter {
+            // Compose compiler plugin does not assemble with LV 1.9 and should not be a part of the dist bundle for now
+            it != ":plugins:compose-compiler-plugin:compiler"
+        }
+        .forEach { dependency ->
+            processDependent(dependency) {
+                project.rootProject.tasks.findByPath("${dependency}:publish")?.let { task ->
+                    dependsOn(task)
+                }
             }
         }
-    }
 }
 
 // Mixing JUnit4 and Junit5 in one module proved to be problematic, consider using separate modules instead
@@ -216,6 +223,7 @@ fun Project.projectTest(
             "-XX:+UseCodeCacheFlushing",
             "-XX:ReservedCodeCacheSize=${reservedCodeCacheSizeMb}m",
             "-XX:MaxMetaspaceSize=${maxMetaspaceSizeMb}m",
+            "-XX:CICompilerCount=2",
             "-Djna.nosys=true"
         )
 

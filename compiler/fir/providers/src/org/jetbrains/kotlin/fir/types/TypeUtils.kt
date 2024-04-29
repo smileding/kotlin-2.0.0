@@ -216,7 +216,6 @@ fun <T : ConeKotlinType> T.withNullability(
             ConeNullability.NOT_NULL -> this
         }
 
-        is ConeStubTypeForChainInference -> ConeStubTypeForChainInference(constructor, nullability)
         is ConeStubTypeForTypeVariableInSubtyping -> ConeStubTypeForTypeVariableInSubtyping(constructor, nullability)
         is ConeDefinitelyNotNullType -> when (nullability) {
             ConeNullability.NOT_NULL -> this
@@ -291,7 +290,7 @@ fun ConeKotlinType.toFirResolvedTypeRef(
 fun FirTypeRef.hasEnhancedNullability(): Boolean =
     coneTypeSafe<ConeKotlinType>()?.hasEnhancedNullability == true
 
-fun FirTypeRef.withoutEnhancedNullability(): FirTypeRef {
+fun FirTypeRef.withoutEnhancedNullability(): FirResolvedTypeRef {
     require(this is FirResolvedTypeRef)
     if (!hasEnhancedNullability()) return this
     return buildResolvedTypeRef {
@@ -361,8 +360,7 @@ fun FirDeclaration.visibilityForApproximation(container: FirDeclaration?): Visib
     val containerVisibility =
         if (container == null || container is FirFile || container is FirScript) Visibilities.Public
         else (container as? FirRegularClass)?.visibility ?: Visibilities.Local
-    if (containerVisibility == Visibilities.Local || visibility == Visibilities.Local) return Visibilities.Local
-    if (containerVisibility == Visibilities.Private) return Visibilities.Private
+    if (containerVisibility == Visibilities.Local) return Visibilities.Local
     return visibility
 }
 
@@ -414,7 +412,7 @@ fun ConeTypeContext.captureArguments(type: ConeKotlinType, status: CaptureStatus
 
         val parameter = typeConstructor.getParameter(index)
         (parameter as? ConeTypeParameterLookupTag)?.typeParameterSymbol?.lazyResolveToPhase(FirResolvePhase.TYPES)
-        val upperBounds = (0 until parameter.upperBoundCount()).mapTo(mutableListOf()) { paramIndex ->
+        val upperBounds = (0 until parameter.upperBoundCount()).mapTo(mutableSetOf()) { paramIndex ->
             substitutor.safeSubstitute(
                 this as TypeSystemInferenceExtensionContext, parameter.getUpperBound(paramIndex)
             )
@@ -443,7 +441,7 @@ fun ConeTypeContext.captureArguments(type: ConeKotlinType, status: CaptureStatus
             }
         } else {
             @Suppress("UNCHECKED_CAST")
-            upperBounds as List<ConeKotlinType>
+            upperBounds.toList() as List<ConeKotlinType>
         }
     }
     return newArguments

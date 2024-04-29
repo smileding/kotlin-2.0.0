@@ -11,21 +11,13 @@
 package org.jetbrains.kotlin.sir.impl
 
 import org.jetbrains.kotlin.sir.*
-import org.jetbrains.kotlin.sir.visitors.SirTransformer
-import org.jetbrains.kotlin.sir.visitors.SirVisitor
 
 internal class SirGetterImpl(
     override val origin: SirOrigin,
     override val visibility: SirVisibility,
-    override var documentation: String?,
+    override val documentation: String?,
     override val kind: SirCallableKind,
     override var body: SirFunctionBody?,
 ) : SirGetter() {
     override lateinit var parent: SirDeclarationParent
-
-    override fun <R, D> acceptChildren(visitor: SirVisitor<R, D>, data: D) {
-    }
-
-    override fun <D> transformChildren(transformer: SirTransformer<D>, data: D) {
-    }
 }

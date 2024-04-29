@@ -248,6 +248,18 @@
     public static boolean iterateChildrenRecursively(com.intellij.openapi.vfs.VirtualFile,com.intellij.openapi.vfs.VirtualFileFilter,com.intellij.openapi.roots.ContentIterator);
 }
 
+-keep class com.intellij.openapi.extensions.DefaultPluginDescriptor {
+    public DefaultPluginDescriptor(java.lang.String);
+}
+
+-keep class com.intellij.ide.plugins.ContainerDescriptor {
+    public java.util.List getServices();
+}
+
+-keep class com.intellij.util.messages.impl.MessageBusEx {
+    void setLazyListeners(java.util.Map);
+}
+
 
 -keepclassmembers class com.intellij.util.PathUtil {
     public static java.lang.String getJarPathForClass(java.lang.Class);
@@ -272,12 +284,6 @@
 # Should be removed after after 26.04.2024
 -keepclassmembers class com.intellij.openapi.extensions.ExtensionsArea {
     public void registerExtensionPoint(java.lang.String, java.lang.String, com.intellij.openapi.extensions.ExtensionPoint$Kind);
-}
-
-# Serialization plugin
-
--keep class com.intellij.openapi.util.io.JarUtil {
-    public static java.lang.String getJarAttribute(java.io.File, java.util.jar.Attributes$Name);
 }
 
 # used in REPL
@@ -328,6 +334,12 @@
     kotlinx.collections.immutable.PersistentMap toPersistentHashMap(java.util.Map);
     kotlinx.collections.immutable.PersistentMap persistentHashMapOf(kotlin.Pair[]);
     kotlinx.collections.immutable.PersistentSet persistentHashSetOf(java.lang.Object[]);
+}
+-keepclassmembers class kotlinx.collections.immutable.PersistentMap {
+    public *;
+}
+-keepclassmembers class kotlinx.collections.immutable.PersistentSet {
+    public *;
 }
 -keepclassmembers class com.intellij.lang.jvm.JvmParameter {
     com.intellij.lang.jvm.types.JvmType getType();

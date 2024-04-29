@@ -23,7 +23,7 @@ FILE fqName:<root> fileName:/jvmFieldWithIntersectionTypes.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:f visibility:public modality:FINAL [fake_override,var]
       overridden:
-        public final f: kotlin.Int
+        public final f: kotlin.Int declared in <root>.JFieldOwner
   CLASS CLASS name:Derived2 modality:FINAL visibility:public superTypes:[<root>.JFieldOwner; <root>.IFoo]
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.Derived2
     CONSTRUCTOR visibility:public <> () returnType:<root>.Derived2 [primary]
@@ -48,7 +48,7 @@ FILE fqName:<root> fileName:/jvmFieldWithIntersectionTypes.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:f visibility:public modality:FINAL [fake_override,var]
       overridden:
-        public final f: kotlin.Int
+        public final f: kotlin.Int declared in <root>.JFieldOwner
   CLASS CLASS name:DerivedThroughMid1 modality:FINAL visibility:public superTypes:[<root>.Mid; <root>.IFoo]
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.DerivedThroughMid1
     CONSTRUCTOR visibility:public <> () returnType:<root>.DerivedThroughMid1 [primary]
@@ -73,7 +73,7 @@ FILE fqName:<root> fileName:/jvmFieldWithIntersectionTypes.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:f visibility:public modality:FINAL [fake_override,var]
       overridden:
-        public final f
+        public final f declared in <root>.Mid
   CLASS CLASS name:DerivedThroughMid2 modality:FINAL visibility:public superTypes:[<root>.Mid; <root>.IFoo]
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.DerivedThroughMid2
     CONSTRUCTOR visibility:public <> () returnType:<root>.DerivedThroughMid2 [primary]
@@ -98,7 +98,7 @@ FILE fqName:<root> fileName:/jvmFieldWithIntersectionTypes.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:f visibility:public modality:FINAL [fake_override,var]
       overridden:
-        public final f
+        public final f declared in <root>.Mid
   CLASS CLASS name:Mid modality:OPEN visibility:public superTypes:[<root>.JFieldOwner]
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.Mid
     CONSTRUCTOR visibility:public <> () returnType:<root>.Mid [primary]
@@ -120,7 +120,7 @@ FILE fqName:<root> fileName:/jvmFieldWithIntersectionTypes.kt
       $this: VALUE_PARAMETER name:<this> type:kotlin.Any
     PROPERTY FAKE_OVERRIDE name:f visibility:public modality:FINAL [fake_override,var]
       overridden:
-        public final f: kotlin.Int
+        public final f: kotlin.Int declared in <root>.JFieldOwner
   CLASS INTERFACE name:IFoo modality:ABSTRACT visibility:public superTypes:[kotlin.Any]
     $this: VALUE_PARAMETER INSTANCE_RECEIVER name:<this> type:<root>.IFoo
     FUN FAKE_OVERRIDE name:equals visibility:public modality:OPEN <> ($this:kotlin.Any, other:kotlin.Any?) returnType:kotlin.Boolean [fake_override,operator]
@@ -151,12 +151,12 @@ FILE fqName:<root> fileName:/jvmFieldWithIntersectionTypes.kt
           BRANCH
             if: CONST Boolean type=kotlin.Boolean value=true
             then: GET_VAR 'val d2: <root>.Derived2 declared in <root>.test' type=<root>.Derived2 origin=null
-      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:f type:kotlin.Int visibility:public' type=kotlin.Unit origin=EQ
+      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:f type:kotlin.Int visibility:public declared in <root>.JFieldOwner' type=kotlin.Unit superQualifierSymbol=<root>.JFieldOwner origin=EQ
         receiver: TYPE_OP type=<root>.JFieldOwner origin=IMPLICIT_CAST typeOperand=<root>.JFieldOwner
           GET_VAR 'val k: kotlin.Any declared in <root>.test' type=kotlin.Any origin=null
         value: CONST Int type=kotlin.Int value=42
       TYPE_OP type=kotlin.Unit origin=IMPLICIT_COERCION_TO_UNIT typeOperand=kotlin.Unit
-        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:f type:kotlin.Int visibility:public' type=kotlin.Int origin=null
+        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:f type:kotlin.Int visibility:public declared in <root>.JFieldOwner' type=kotlin.Int superQualifierSymbol=<root>.JFieldOwner origin=null
           receiver: TYPE_OP type=<root>.JFieldOwner origin=IMPLICIT_CAST typeOperand=<root>.JFieldOwner
             GET_VAR 'val k: kotlin.Any declared in <root>.test' type=kotlin.Any origin=null
       VAR name:md1 type:<root>.DerivedThroughMid1 [val]
@@ -171,11 +171,11 @@ FILE fqName:<root> fileName:/jvmFieldWithIntersectionTypes.kt
           BRANCH
             if: CONST Boolean type=kotlin.Boolean value=true
             then: GET_VAR 'val md2: <root>.DerivedThroughMid2 declared in <root>.test' type=<root>.DerivedThroughMid2 origin=null
-      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:f type:kotlin.Int visibility:public' type=kotlin.Unit origin=EQ
+      SET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:f type:kotlin.Int visibility:public declared in <root>.JFieldOwner' type=kotlin.Unit superQualifierSymbol=<root>.Mid origin=EQ
         receiver: TYPE_OP type=<root>.Mid origin=IMPLICIT_CAST typeOperand=<root>.Mid
           GET_VAR 'val mk: kotlin.Any declared in <root>.test' type=kotlin.Any origin=null
         value: CONST Int type=kotlin.Int value=44
       TYPE_OP type=kotlin.Unit origin=IMPLICIT_COERCION_TO_UNIT typeOperand=kotlin.Unit
-        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:f type:kotlin.Int visibility:public' type=kotlin.Int origin=null
+        GET_FIELD 'FIELD IR_EXTERNAL_JAVA_DECLARATION_STUB name:f type:kotlin.Int visibility:public declared in <root>.JFieldOwner' type=kotlin.Int superQualifierSymbol=<root>.Mid origin=null
           receiver: TYPE_OP type=<root>.Mid origin=IMPLICIT_CAST typeOperand=<root>.Mid
             GET_VAR 'val mk: kotlin.Any declared in <root>.test' type=kotlin.Any origin=null

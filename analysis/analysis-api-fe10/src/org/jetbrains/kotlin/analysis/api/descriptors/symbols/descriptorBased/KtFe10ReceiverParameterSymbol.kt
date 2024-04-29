@@ -1,11 +1,10 @@
 /*
- * Copyright 2010-2022 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
 package org.jetbrains.kotlin.analysis.api.descriptors.symbols.descriptorBased
 
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
 import org.jetbrains.kotlin.analysis.api.descriptors.Fe10AnalysisContext
 import org.jetbrains.kotlin.analysis.api.descriptors.symbols.calculateHashCode
 import org.jetbrains.kotlin.analysis.api.descriptors.symbols.descriptorBased.base.KtFe10DescSymbol
@@ -22,19 +21,18 @@ import org.jetbrains.kotlin.analysis.api.types.KtType
 import org.jetbrains.kotlin.descriptors.ReceiverParameterDescriptor
 
 class KtFe10ReceiverParameterSymbol(
-    private val _descriptor: ReceiverParameterDescriptor,
-    override val analysisContext: Fe10AnalysisContext
+    override val descriptor: ReceiverParameterDescriptor,
+    override val analysisContext: Fe10AnalysisContext,
 ) : KtReceiverParameterSymbol(), KtFe10DescSymbol<ReceiverParameterDescriptor> {
 
     override val type: KtType
-        get() = withValidityAssertion { _descriptor.returnType?.toKtType(analysisContext) ?: error("expect return type for $_descriptor") }
-    override val descriptor: ReceiverParameterDescriptor
-        get() = withValidityAssertion { _descriptor }
+        get() = withValidityAssertion {
+            descriptor.returnType?.toKtType(analysisContext) ?: error("expect return type for $descriptor")
+        }
 
     override val owningCallableSymbol: KtCallableSymbol
-        get() = withValidityAssertion { _descriptor.containingDeclaration.toKtSymbol(analysisContext) as KtCallableSymbol }
+        get() = withValidityAssertion { descriptor.containingDeclaration.toKtSymbol(analysisContext) as KtCallableSymbol }
 
-    context(KtAnalysisSession)
     override fun createPointer(): KtSymbolPointer<KtReceiverParameterSymbol> = withValidityAssertion {
         KtPsiBasedSymbolPointer.createForSymbolFromSource<KtReceiverParameterSymbol>(this) ?: KtFe10NeverRestoringSymbolPointer()
     }

@@ -651,12 +651,12 @@ abstract class FirTransformer<in D> : FirVisitor<FirElement, D>() {
         return transformTypeOperatorCall(typeOperatorCall, data)
     }
 
-    open fun transformAssignmentOperatorStatement(assignmentOperatorStatement: FirAssignmentOperatorStatement, data: D): FirStatement {
-        return transformElement(assignmentOperatorStatement, data)
+    open fun transformAugmentedAssignment(augmentedAssignment: FirAugmentedAssignment, data: D): FirStatement {
+        return transformElement(augmentedAssignment, data)
     }
 
-    final override fun visitAssignmentOperatorStatement(assignmentOperatorStatement: FirAssignmentOperatorStatement, data: D): FirStatement {
-        return transformAssignmentOperatorStatement(assignmentOperatorStatement, data)
+    final override fun visitAugmentedAssignment(augmentedAssignment: FirAugmentedAssignment, data: D): FirStatement {
+        return transformAugmentedAssignment(augmentedAssignment, data)
     }
 
     open fun transformIncrementDecrementExpression(incrementDecrementExpression: FirIncrementDecrementExpression, data: D): FirStatement {
@@ -723,12 +723,12 @@ abstract class FirTransformer<in D> : FirVisitor<FirElement, D>() {
         return transformArrayLiteral(arrayLiteral, data)
     }
 
-    open fun transformAugmentedArraySetCall(augmentedArraySetCall: FirAugmentedArraySetCall, data: D): FirStatement {
-        return transformElement(augmentedArraySetCall, data)
+    open fun transformIndexedAccessAugmentedAssignment(indexedAccessAugmentedAssignment: FirIndexedAccessAugmentedAssignment, data: D): FirStatement {
+        return transformElement(indexedAccessAugmentedAssignment, data)
     }
 
-    final override fun visitAugmentedArraySetCall(augmentedArraySetCall: FirAugmentedArraySetCall, data: D): FirStatement {
-        return transformAugmentedArraySetCall(augmentedArraySetCall, data)
+    final override fun visitIndexedAccessAugmentedAssignment(indexedAccessAugmentedAssignment: FirIndexedAccessAugmentedAssignment, data: D): FirStatement {
+        return transformIndexedAccessAugmentedAssignment(indexedAccessAugmentedAssignment, data)
     }
 
     open fun transformClassReferenceExpression(classReferenceExpression: FirClassReferenceExpression, data: D): FirStatement {

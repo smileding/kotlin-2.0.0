@@ -41,7 +41,6 @@ internal class KlibToolArgumentsParser(private val output: KlibToolOutput) {
         return KlibToolArguments(
                 commandName = rawArgs[0],
                 libraryNameOrPath = rawArgs[1],
-                repository = extraArgs[ExtraOption.REPOSITORY]?.last(),
                 printSignatures = extraArgs[ExtraOption.PRINT_SIGNATURES]?.last()?.toBoolean() == true,
                 signatureVersion,
                 testMode = extraArgs[ExtraOption.INTERNAL_TEST_MODE]?.last()?.toBoolean() == true
@@ -73,10 +72,6 @@ internal class KlibToolArgumentsParser(private val output: KlibToolOutput) {
 
                 where the commands are:
                    info                      General information about the library
-                   install                   [DEPRECATED] Local KLIB repositories to be dropped soon. See https://youtrack.jetbrains.com/issue/KT-61098
-                                               Install the library to the local repository.
-                   remove                    [DEPRECATED] Local KLIB repositories to be dropped soon. See https://youtrack.jetbrains.com/issue/KT-61098
-                                               Remove the library from the local repository.
                    dump-abi                  Dump the ABI snapshot of the library. Each line in the snapshot corresponds exactly to one
                                                declaration. Whenever an ABI-incompatible change happens to a declaration, this should
                                                be visible in the corresponding line of the snapshot.
@@ -90,14 +85,10 @@ internal class KlibToolArgumentsParser(private val output: KlibToolOutput) {
                                                between output of these two commands. However, if IR transforming compiler plugins
                                                (such as Compose) were used during compilation of the library, there would be different
                                                signatures for patched declarations.
-                   signatures                [DEPRECATED] Renamed to "dump-metadata-signatures". Please, use new command name.
                    dump-metadata             Dump the metadata of all declarations in the library. The output of this command is intended
                                                to be used for debugging purposes only.
-                   contents                  [DEPRECATED] Reworked and renamed to "dump-metadata". Please, use new command name.
 
                 and the options are:
-                   -repository <path>        [DEPRECATED] Local KLIB repositories to be dropped soon. See https://youtrack.jetbrains.com/issue/KT-61098
-                                               Work with the specified repository.
                    -signature-version {${KotlinIrSignatureVersion.CURRENTLY_SUPPORTED_VERSIONS.joinToString("|") { it.number.toString() }}}
                                              Render IR signatures of a specific version. By default, the most up-to-date signature version
                                                that is supported in the library is used.
@@ -109,7 +100,6 @@ internal class KlibToolArgumentsParser(private val output: KlibToolOutput) {
 }
 
 private enum class ExtraOption(val option: String) {
-    REPOSITORY("-repository"),
     PRINT_SIGNATURES("-print-signatures"),
     SIGNATURE_VERSION("-signature-version"),
 

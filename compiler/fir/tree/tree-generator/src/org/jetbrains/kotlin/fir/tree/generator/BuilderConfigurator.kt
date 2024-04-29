@@ -151,7 +151,7 @@ object BuilderConfigurator : AbstractFirBuilderConfigurator<FirTreeBuilder>(FirT
             parents += callBuilder
         }
 
-        builder(augmentedArraySetCall) {
+        builder(indexedAccessAugmentedAssignment) {
             default("calleeReference", "FirStubReference")
             additionalImports(stubReferenceType)
         }
@@ -422,7 +422,7 @@ object BuilderConfigurator : AbstractFirBuilderConfigurator<FirTreeBuilder>(FirT
 
         configureFieldInAllLeafBuilders(
             field = "resolvePhase",
-            fieldPredicate = { it.defaultValueInImplementation == null }
+            fieldPredicate = { it.implementationDefaultStrategy!!.defaultValue == null }
         ) {
             default(it, "FirResolvePhase.RAW_FIR")
         }

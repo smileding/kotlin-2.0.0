@@ -5,46 +5,19 @@
 
 package org.jetbrains.kotlin.sir.tree.generator.printer
 
-import org.jetbrains.kotlin.generators.tree.*
-import org.jetbrains.kotlin.generators.tree.printer.*
-import org.jetbrains.kotlin.sir.tree.generator.*
+import org.jetbrains.kotlin.generators.tree.AbstractElementPrinter
+import org.jetbrains.kotlin.generators.tree.AbstractFieldPrinter
+import org.jetbrains.kotlin.generators.tree.printer.ImportCollectingPrinter
 import org.jetbrains.kotlin.sir.tree.generator.model.Element
 import org.jetbrains.kotlin.sir.tree.generator.model.Field
-import org.jetbrains.kotlin.utils.SmartPrinter
 
-internal class ElementPrinter(printer: SmartPrinter) : AbstractElementPrinter<Element, Field>(printer) {
+internal class ElementPrinter(printer: ImportCollectingPrinter) : AbstractElementPrinter<Element, Field>(printer) {
 
-    override fun makeFieldPrinter(printer: SmartPrinter) = object : AbstractFieldPrinter<Field>(printer) {
+    override fun makeFieldPrinter(printer: ImportCollectingPrinter) = object : AbstractFieldPrinter<Field>(printer) {
         override fun forceMutable(field: Field): Boolean = field.isMutable
     }
 
-    context(ImportCollector)
-    override fun SmartPrinter.printAdditionalMethods(element: Element) {
-        val treeName = "Swift IR"
-        if (element.isRootElement || element.parentInVisitor != null) {
-            printAcceptMethod(element, elementVisitorType, hasImplementation = !element.isRootElement, treeName)
-            printTransformMethod(
-                element,
-                elementTransformerType,
-                implementation = "transformer.transform${element.name}(this, data)",
-                returnType = TypeVariable("E", listOf(SwiftIrTree.rootElement)),
-                treeName
-            )
-        }
-
-        if (element.isRootElement) {
-            println()
-            printAcceptVoidMethod(elementVisitorVoidType, treeName)
-            printAcceptChildrenMethod(element, elementVisitorType, TypeVariable("R"))
-            println()
-            println()
-            printAcceptChildrenVoidMethod(elementVisitorVoidType)
-            println()
-            printTransformVoidMethod(element, elementTransformerVoidType, treeName)
-            printTransformChildrenMethod(element, elementTransformerType, StandardTypes.unit)
-            println()
-            println()
-            printTransformChildrenVoidMethod(element, elementTransformerVoidType, StandardTypes.unit)
-        }
+    override fun ImportCollectingPrinter.printAdditionalMethods(element: Element) {
+        // do nothing
     }
 }

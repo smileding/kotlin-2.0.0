@@ -10,35 +10,37 @@ import org.jetbrains.kotlin.sir.bridge.BridgeRequest
 import org.jetbrains.kotlin.sir.bridge.createBridgeGenerator
 import org.jetbrains.kotlin.sir.bridge.createCBridgePrinter
 import org.jetbrains.kotlin.sir.bridge.createKotlinBridgePrinter
-import org.jetbrains.kotlin.swiftexport.standalone.SwiftExportOutput
+import org.jetbrains.kotlin.swiftexport.standalone.SwiftExportFiles
 import org.jetbrains.sir.printer.SirAsSwiftSourcesPrinter
 import java.io.File
 
 
-internal fun SirModule.dumpResultToFiles(requests: List<BridgeRequest>, output: SwiftExportOutput) {
+internal fun SirModule.dumpResultToFiles(
+    requests: List<BridgeRequest>,
+    output: SwiftExportFiles,
+    stableDeclarationsOrder: Boolean,
+    renderDocComments: Boolean,
+) {
     val cHeaderFile = output.cHeaderBridges.toFile()
     val ktBridgeFile = output.kotlinBridges.toFile()
     val swiftFile = output.swiftApi.toFile()
 
-    val bridges = generateBridgeSources(requests)
-    val swiftSrc = generateSwiftSrc()
+    val bridges = generateBridgeSources(requests, stableDeclarationsOrder)
+    val swiftSrc = SirAsSwiftSourcesPrinter.print(this, stableDeclarationsOrder, renderDocComments)
 
     dumpTextAtFile(bridges.ktSrc, ktBridgeFile)
     dumpTextAtFile(bridges.cSrc, cHeaderFile)
     dumpTextAtFile(sequenceOf(swiftSrc), swiftFile)
 }
 
-private fun SirModule.generateSwiftSrc(): String {
-    return SirAsSwiftSourcesPrinter().print(this)
-}
-
-private fun generateBridgeSources(requests: List<BridgeRequest>): BridgeSources {
+private fun generateBridgeSources(requests: List<BridgeRequest>, stableDeclarationsOrder: Boolean): BridgeSources {
 
     val generator = createBridgeGenerator()
     val kotlinBridgePrinter = createKotlinBridgePrinter()
     val cBridgePrinter = createCBridgePrinter()
 
     requests
+        .let { if (stableDeclarationsOrder) it.sortedBy { it.bridgeName } else it }
         .map(generator::generate)
         .forEach {
             kotlinBridgePrinter.add(it)

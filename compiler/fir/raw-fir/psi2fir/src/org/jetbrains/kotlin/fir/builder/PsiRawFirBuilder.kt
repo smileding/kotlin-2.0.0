@@ -90,6 +90,10 @@ open class PsiRawFirBuilder(
         }
     }
 
+    fun buildTypeReference(reference: KtTypeReference): FirTypeRef {
+        return reference.accept(Visitor(), null) as FirTypeRef
+    }
+
     override fun PsiElement.toFirSourceElement(kind: KtFakeSourceElementKind?): KtPsiSourceElement {
         val actualKind = kind ?: KtRealSourceElementKind
         return this.toKtPsiSourceElement(actualKind)
@@ -1308,7 +1312,9 @@ open class PsiRawFirBuilder(
                                 val destructuringContainerVar = buildScriptDestructuringDeclaration(declaration)
                                 declarations.add(destructuringContainerVar)
 
-                                declarations.addDestructuringVariables(
+                                addDestructuringVariables(
+                                    declarations,
+                                    this@Visitor,
                                     moduleData,
                                     declaration,
                                     destructuringContainerVar,
@@ -1877,7 +1883,9 @@ open class PsiRawFirBuilder(
                             isNoinline = false
                             isVararg = false
                         }
-                        destructuringVariables.addDestructuringVariables(
+                        addDestructuringVariables(
+                            destructuringVariables,
+                            this@Visitor,
                             baseModuleData,
                             multiDeclaration,
                             multiParameter,
@@ -2038,7 +2046,9 @@ open class PsiRawFirBuilder(
                 this@PsiRawFirBuilder.context.calleeNamesForLambda += null
 
                 val expression = buildOrLazyExpression(null) {
-                    initializer.toFirExpression("Should have initializer")
+                    withForcedLocalContext {
+                        initializer.toFirExpression("Should have initializer")
+                    }
                 }
 
                 this@PsiRawFirBuilder.context.calleeNamesForLambda.removeLast()
@@ -2775,7 +2785,7 @@ open class PsiRawFirBuilder(
                     target = prepareTarget(expression)
                 }.configure(target) {
                     val blockBuilder = FirBlockBuilder().apply {
-                        source = expression.toFirSourceElement(KtFakeSourceElementKind.DesugaredForLoop)
+                        source = expression.toFirSourceElement()
                     }
                     if (ktParameter != null) {
                         val multiDeclaration = ktParameter.destructuringDeclaration
@@ -2796,7 +2806,9 @@ open class PsiRawFirBuilder(
                             extractedAnnotations = ktParameter.modifierList?.annotationEntries?.map { it.convert<FirAnnotation>() },
                         )
                         if (multiDeclaration != null) {
-                            blockBuilder.statements.addDestructuringVariables(
+                            addDestructuringVariables(
+                                blockBuilder.statements,
+                                this@Visitor,
                                 baseModuleData,
                                 multiDeclaration = multiDeclaration,
                                 container = firLoopParameter,
@@ -3182,6 +3194,7 @@ open class PsiRawFirBuilder(
                 extractAnnotationsTo = { extractAnnotationsTo(it) }
             )
             return generateDestructuringBlock(
+                this@Visitor,
                 baseModuleData,
                 multiDeclaration,
                 baseVariable,

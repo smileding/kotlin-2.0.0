@@ -33,6 +33,10 @@ import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
 // ---------------------------------------------- is type is a function type ----------------------------------------------
 
 fun ConeKotlinType.functionTypeKind(session: FirSession): FunctionTypeKind? {
+    return lowerBoundIfFlexible().functionTypeKind(session)
+}
+
+fun ConeSimpleKotlinType.functionTypeKind(session: FirSession): FunctionTypeKind? {
     if (this !is ConeClassLikeType) return null
     return fullyExpandedType(session).lookupTag.functionTypeKind(session)
 }
@@ -113,11 +117,16 @@ fun ConeKotlinType.customFunctionTypeToSimpleFunctionType(session: FirSession): 
     return createFunctionTypeWithNewKind(session, newKind)
 }
 
-private fun ConeKotlinType.createFunctionTypeWithNewKind(session: FirSession, kind: FunctionTypeKind): ConeClassLikeType {
+fun ConeKotlinType.createFunctionTypeWithNewKind(
+    session: FirSession,
+    kind: FunctionTypeKind,
+    updateTypeArguments: (Array<out ConeTypeProjection>.() -> Array<out ConeTypeProjection>)? = null,
+): ConeClassLikeType {
     val expandedType = fullyExpandedType(session)
     val functionTypeId = ClassId(kind.packageFqName, kind.numberedClassName(expandedType.typeArguments.size - 1))
+    val typeArguments = expandedType.typeArguments
     return functionTypeId.toLookupTag().constructClassType(
-        expandedType.typeArguments,
+        updateTypeArguments?.let { typeArguments.updateTypeArguments() } ?: typeArguments,
         isNullable = expandedType.isNullable,
         attributes = expandedType.attributes
     )

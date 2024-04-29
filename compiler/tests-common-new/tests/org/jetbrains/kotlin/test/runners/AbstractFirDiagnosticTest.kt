@@ -19,12 +19,15 @@ import org.jetbrains.kotlin.test.builders.firHandlersStep
 import org.jetbrains.kotlin.test.builders.irHandlersStep
 import org.jetbrains.kotlin.test.directives.CodegenTestDirectives
 import org.jetbrains.kotlin.test.directives.ConfigurationDirectives.WITH_STDLIB
+import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives.DUMP_VFIR
 import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives.FIR_DUMP
 import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives.WITH_EXTENDED_CHECKERS
 import org.jetbrains.kotlin.test.directives.JvmEnvironmentConfigurationDirectives.JDK_KIND
 import org.jetbrains.kotlin.test.directives.JvmEnvironmentConfigurationDirectives.WITH_REFLECT
 import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives
 import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives.ALLOW_KOTLIN_PACKAGE
+import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives.EXPLICIT_API_MODE
+import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives.EXPLICIT_RETURN_TYPES_MODE
 import org.jetbrains.kotlin.test.directives.LanguageSettingsDirectives.LANGUAGE
 import org.jetbrains.kotlin.test.directives.configureFirParser
 import org.jetbrains.kotlin.test.frontend.classic.handlers.FirTestDataConsistencyHandler
@@ -138,6 +141,7 @@ fun TestConfigurationBuilder.baseFirDiagnosticTestConfiguration(
             ::FirDiagnosticsHandler,
             ::FirDumpHandler,
             ::FirCfgDumpHandler,
+            ::FirVFirDumpHandler,
             ::FirCfgConsistencyHandler,
             ::FirResolvedTypesVerifier,
             ::FirScopeDumpHandler,
@@ -153,6 +157,12 @@ fun TestConfigurationBuilder.baseFirDiagnosticTestConfiguration(
     forTestsMatching("compiler/fir/analysis-tests/testData/*") {
         defaultDirectives {
             +FIR_DUMP
+        }
+    }
+
+    forTestsMatching("compiler/fir/analysis-tests/testData/resolve/vfir/*") {
+        defaultDirectives {
+            +DUMP_VFIR
         }
     }
 
@@ -174,7 +184,13 @@ fun TestConfigurationBuilder.baseFirDiagnosticTestConfiguration(
 
     forTestsMatching("compiler/testData/diagnostics/tests/testsWithExplicitApi/*") {
         defaultDirectives {
-            LanguageSettingsDirectives.EXPLICIT_API_MODE with ExplicitApiMode.STRICT
+            EXPLICIT_API_MODE with ExplicitApiMode.STRICT
+        }
+    }
+
+    forTestsMatching("compiler/testData/diagnostics/tests/testsWithExplicitReturnTypes/*") {
+        defaultDirectives {
+            EXPLICIT_RETURN_TYPES_MODE with ExplicitApiMode.STRICT
         }
     }
 

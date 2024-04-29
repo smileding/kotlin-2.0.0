@@ -1,12 +1,12 @@
 /*
- * Copyright 2010-2023 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
 package org.jetbrains.kotlin.generators.tree.config
 
 import org.jetbrains.kotlin.generators.tree.*
-import org.jetbrains.kotlin.generators.tree.config.AbstractImplementationConfigurator.ImplementationContext.DefaultValueContext
+import org.jetbrains.kotlin.generators.tree.imports.Importable
 import org.jetbrains.kotlin.utils.DummyDelegate
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -20,7 +20,6 @@ abstract class AbstractBuilderConfigurator<Element, Implementation, BuilderField
 ) where Element : AbstractElement<Element, ElementField, Implementation>,
         Implementation : AbstractImplementation<Implementation, Element, BuilderField>,
         BuilderField : AbstractField<*>,
-        BuilderField : AbstractFieldWithDefaultValue<*>,
         ElementField : AbstractField<ElementField> {
 
     /**
@@ -122,7 +121,7 @@ abstract class AbstractBuilderConfigurator<Element, Implementation, BuilderField
             .mapNotNullTo(mutableSetOf()) { implementation ->
                 if (!implementationPredicate(implementation)) return@mapNotNullTo null
                 if (implementation.element == element) return@mapNotNullTo null
-                val hasElementInParents = implementation.element.traverseParentsUntil { it == element }
+                val hasElementInParents = implementation.element.elementAncestorsAndSelfDepthFirst().any { it == element }
                 implementation.takeIf { hasElementInParents }
             }
     }

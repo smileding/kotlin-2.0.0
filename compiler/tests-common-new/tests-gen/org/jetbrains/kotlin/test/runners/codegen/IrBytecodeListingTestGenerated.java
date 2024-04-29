@@ -248,6 +248,12 @@ public class IrBytecodeListingTestGenerated extends AbstractIrBytecodeListingTes
   }
 
   @Test
+  @TestMetadata("nullabilityAnnotationInInnerClasses.kt")
+  public void testNullabilityAnnotationInInnerClasses() {
+    runTest("compiler/testData/codegen/bytecodeListing/nullabilityAnnotationInInnerClasses.kt");
+  }
+
+  @Test
   @TestMetadata("overrideWithPrimitiveUpperBound.kt")
   public void testOverrideWithPrimitiveUpperBound() {
     runTest("compiler/testData/codegen/bytecodeListing/overrideWithPrimitiveUpperBound.kt");
@@ -2408,6 +2414,12 @@ public class IrBytecodeListingTestGenerated extends AbstractIrBytecodeListingTes
     @Test
     public void testAllFilesPresentInSpecialBridges() {
       KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/bytecodeListing/specialBridges"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JVM_IR, true);
+    }
+
+    @Test
+    @TestMetadata("bridgeForIntersectionBetweenRenamedMethodAndProperty.kt")
+    public void testBridgeForIntersectionBetweenRenamedMethodAndProperty() {
+      runTest("compiler/testData/codegen/bytecodeListing/specialBridges/bridgeForIntersectionBetweenRenamedMethodAndProperty.kt");
     }
 
     @Test

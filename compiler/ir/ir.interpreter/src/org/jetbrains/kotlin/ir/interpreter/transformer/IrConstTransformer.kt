@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.ir.interpreter.transformer
 
+import com.intellij.openapi.progress.ProcessCanceledException
 import org.jetbrains.kotlin.constant.ErrorValue
 import org.jetbrains.kotlin.constant.EvaluatedConstTracker
 import org.jetbrains.kotlin.incremental.components.InlineConstTracker
@@ -113,7 +114,7 @@ internal abstract class IrConstTransformer(
             onError(irFile, original, this)
             return when (mode) {
                 // need to pass any const value to be able to get some bytecode and then report error
-                EvaluationMode.ONLY_INTRINSIC_CONST -> IrConstImpl.constNull(startOffset, endOffset, type)
+                is EvaluationMode.OnlyIntrinsicConst -> IrConstImpl.constNull(startOffset, endOffset, type)
                 else -> original
             }
         }
@@ -123,6 +124,8 @@ internal abstract class IrConstTransformer(
     protected fun IrExpression.canBeInterpreted(): Boolean {
         return try {
             this.accept(checker, IrInterpreterCheckerData(irFile, mode, interpreter.irBuiltIns))
+        } catch (e: ProcessCanceledException) {
+            throw e
         } catch (e: Throwable) {
             if (suppressExceptions) {
                 return false
@@ -134,6 +137,8 @@ internal abstract class IrConstTransformer(
     protected fun IrExpression.interpret(failAsError: Boolean): IrExpression {
         val result = try {
             interpreter.interpret(this, irFile)
+        } catch (e: ProcessCanceledException) {
+            throw e
         } catch (e: Throwable) {
             if (suppressExceptions) {
                 return this
@@ -141,17 +146,20 @@ internal abstract class IrConstTransformer(
             throw AssertionError("Error occurred while optimizing an expression:\n${this.dump()}", e)
         }
 
-        evaluatedConstTracker?.save(
-            result.startOffset, result.endOffset, irFile.nameWithPackage,
-            constant = if (result is IrErrorExpression) ErrorValue.create(result.description)
-            else (result as IrConst<*>).toConstantValue()
-        )
+        result.saveInConstTracker()
 
         if (result is IrConst<*>) {
             reportInlinedJavaConst(result)
         }
 
         return if (failAsError) result.reportIfError(this) else result.warningIfError(this)
+    }
+
+    protected fun IrExpression.saveInConstTracker() {
+        evaluatedConstTracker?.save(
+            startOffset, endOffset, irFile.nameWithPackage,
+            constant = if (this is IrErrorExpression) ErrorValue.create(description) else this.toConstantValue()
+        )
     }
 
     private fun IrExpression.reportInlinedJavaConst(result: IrConst<*>) {

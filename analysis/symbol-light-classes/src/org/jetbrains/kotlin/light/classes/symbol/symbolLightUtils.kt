@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.light.classes.symbol.classes.SymbolLightClassForClas
 import org.jetbrains.kotlin.light.classes.symbol.classes.SymbolLightClassForInterface
 import org.jetbrains.kotlin.light.classes.symbol.classes.SymbolLightClassForInterfaceDefaultImpls
 import org.jetbrains.kotlin.light.classes.symbol.classes.modificationTrackerForClassInnerStuff
+import org.jetbrains.kotlin.load.java.JvmAnnotationNames
 import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.psi.KtTypeParameterListOwner
 import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
@@ -49,30 +50,16 @@ internal fun KtDeclarationSymbol.getContainingSymbolsWithSelf(): Sequence<KtDecl
 internal fun KtAnalysisSession.mapType(
     type: KtType,
     psiContext: PsiElement,
-    mode: KtTypeMappingMode
+    mode: KtTypeMappingMode,
 ): PsiClassType? {
     val psiType = type.asPsiType(
-        psiContext,
+        useSitePosition = psiContext,
         allowErrorTypes = true,
-        mode,
+        mode = mode,
     )
 
     return psiType as? PsiClassType
 }
-
-internal enum class NullabilityType {
-    Nullable,
-    NotNull,
-    Unknown
-}
-
-//todo get rid of NullabilityType as it corresponds to KtTypeNullability
-internal val KtType.nullabilityType: NullabilityType
-    get() = when (nullability) {
-        KtTypeNullability.NULLABLE -> NullabilityType.Nullable
-        KtTypeNullability.NON_NULLABLE -> NullabilityType.NotNull
-        KtTypeNullability.UNKNOWN -> NullabilityType.Unknown
-    }
 
 internal fun KtSymbolWithModality.computeSimpleModality(): String? = when (modality) {
     Modality.SEALED -> PsiModifier.ABSTRACT
@@ -147,27 +134,35 @@ internal fun KtLightElement<*, *>.isOriginEquivalentTo(that: PsiElement?): Boole
     return kotlinOrigin?.isEquivalentTo(that) == true
 }
 
-internal fun KtAnalysisSession.getTypeNullability(type: KtType): NullabilityType {
-    if (type is KtClassErrorType) return NullabilityType.NotNull
+internal fun KtAnalysisSession.getTypeNullability(type: KtType): KtTypeNullability {
+    if (type is KtClassErrorType) return KtTypeNullability.NON_NULLABLE
 
     val ktType = type.fullyExpandedType
-    if (ktType.nullabilityType != NullabilityType.NotNull) return ktType.nullabilityType
+    if (ktType.nullability != KtTypeNullability.NON_NULLABLE) return ktType.nullability
 
-    if (ktType.isUnit) return NullabilityType.NotNull
+    if (ktType.isUnit) return KtTypeNullability.NON_NULLABLE
 
-    if (ktType.isPrimitiveBacked) return NullabilityType.Unknown
+    if (ktType.isPrimitiveBacked) return KtTypeNullability.UNKNOWN
 
     if (ktType is KtTypeParameterType) {
-        if (ktType.isMarkedNullable) return NullabilityType.Nullable
+        if (ktType.isMarkedNullable) return KtTypeNullability.NULLABLE
         val subtypeOfNullableSuperType = ktType.symbol.upperBounds.all { upperBound -> upperBound.canBeNull }
-        return if (!subtypeOfNullableSuperType) NullabilityType.NotNull else NullabilityType.Unknown
+        return if (!subtypeOfNullableSuperType) KtTypeNullability.NON_NULLABLE else KtTypeNullability.UNKNOWN
     }
-    if (ktType !is KtNonErrorClassType) return NullabilityType.NotNull
-    if (ktType.ownTypeArguments.any { it.type is KtClassErrorType }) return NullabilityType.NotNull
-    if (ktType.classId.shortClassName.asString() == SpecialNames.ANONYMOUS_STRING) return NullabilityType.NotNull
 
-    return ktType.nullabilityType
+    if (ktType !is KtNonErrorClassType) return KtTypeNullability.NON_NULLABLE
+    if (ktType.ownTypeArguments.any { it.type is KtClassErrorType }) return KtTypeNullability.NON_NULLABLE
+    if (ktType.classId.shortClassName.asString() == SpecialNames.ANONYMOUS_STRING) return KtTypeNullability.NON_NULLABLE
+
+    return ktType.nullability
 }
+
+internal val KtTypeNullability.asAnnotationQualifier: String?
+    get() = when (this) {
+        KtTypeNullability.NON_NULLABLE -> JvmAnnotationNames.JETBRAINS_NOT_NULL_ANNOTATION
+        KtTypeNullability.NULLABLE -> JvmAnnotationNames.JETBRAINS_NULLABLE_ANNOTATION
+        else -> null
+    }?.asString()
 
 private fun escapeString(s: String): String = buildString {
     s.forEach {
@@ -186,22 +181,24 @@ private fun escapeString(s: String): String = buildString {
     }
 }
 
-internal fun KtAnnotationValue.toAnnotationMemberValue(parent: PsiElement): PsiAnnotationMemberValue? = when (this) {
-    is KtArrayAnnotationValue ->
+internal fun AnnotationValue.toAnnotationMemberValue(parent: PsiElement): PsiAnnotationMemberValue? = when (this) {
+    is AnnotationValue.Array -> {
         SymbolPsiArrayInitializerMemberValue(sourcePsi, parent) { arrayLiteralParent ->
             values.mapNotNull { element -> element.toAnnotationMemberValue(arrayLiteralParent) }
         }
+    }
 
-    is KtAnnotationApplicationValue -> {
+    is AnnotationValue.Annotation -> {
         SymbolLightSimpleAnnotation(
-            fqName = annotationValue.classId?.asFqNameString(),
+            fqName = classId?.asFqNameString(),
             parent = parent,
-            arguments = annotationValue.normalizedArguments(),
-            kotlinOrigin = annotationValue.psi,
+            arguments = normalizedArguments(),
+            kotlinOrigin = sourcePsi,
         )
     }
-    is KtConstantAnnotationValue -> {
-        constantValue.createPsiExpression(parent)?.let {
+
+    is AnnotationValue.Constant -> {
+        constant.createPsiExpression(parent)?.let {
             when (it) {
                 is PsiLiteralExpression -> SymbolPsiLiteral(sourcePsi, parent, it)
                 else -> SymbolPsiExpression(sourcePsi, parent, it)
@@ -209,15 +206,17 @@ internal fun KtAnnotationValue.toAnnotationMemberValue(parent: PsiElement): PsiA
         }
     }
 
-    is KtEnumEntryAnnotationValue -> asPsiReferenceExpression(parent)
-    is KtKClassAnnotationValue -> toAnnotationMemberValue(parent)
-    KtUnsupportedAnnotationValue -> null
+    is AnnotationValue.EnumValue -> asPsiReferenceExpression(parent)
+
+    is AnnotationValue.KClass -> toAnnotationMemberValue(parent)
+
+    is AnnotationValue.Unsupported -> null
 }
 
-internal fun KtAnnotationApplicationWithArgumentsInfo.normalizedArguments(): List<KtNamedAnnotationValue> {
+internal fun AnnotationValue.Annotation.normalizedArguments(): List<AnnotationArgument> {
     val args = arguments
     val ctorSymbolPointer = constructorSymbolPointer ?: return args
-    val element = psi ?: return args // May work incorrectly. See KT-63568
+    val element = sourcePsi ?: return args // May work incorrectly. See KT-63568
 
     return analyzeForLightClasses(element) {
         val constructorSymbol = ctorSymbolPointer.restoreSymbolOrThrowIfDisposed()
@@ -225,12 +224,12 @@ internal fun KtAnnotationApplicationWithArgumentsInfo.normalizedArguments(): Lis
         val missingVarargParameterName =
             params.singleOrNull { it.isVararg && !it.hasDefaultValue }?.name?.takeIf { name -> args.none { it.name == name } }
         if (missingVarargParameterName == null) args
-        else args + KtNamedAnnotationValue(missingVarargParameterName, KtArrayAnnotationValue(emptyList(), null))
+        else args + AnnotationArgument(missingVarargParameterName, AnnotationValue.Array(emptyList(), null))
     }
 }
 
 
-private fun KtEnumEntryAnnotationValue.asPsiReferenceExpression(parent: PsiElement): SymbolPsiReference? {
+private fun AnnotationValue.EnumValue.asPsiReferenceExpression(parent: PsiElement): SymbolPsiReference? {
     val fqName = this.callableId?.asSingleFqName()?.asString() ?: return null
     val psiReference = parent.project.withElementFactorySafe {
         createExpressionFromText(fqName, parent) as? PsiReferenceExpression
@@ -239,12 +238,8 @@ private fun KtEnumEntryAnnotationValue.asPsiReferenceExpression(parent: PsiEleme
     return SymbolPsiReference(sourcePsi, parent, psiReference)
 }
 
-private fun KtKClassAnnotationValue.toAnnotationMemberValue(parent: PsiElement): SymbolPsiClassObjectAccessExpression? {
-    val typeString = when (this) {
-        is KtKClassAnnotationValue.KtNonLocalKClassAnnotationValue -> classId.asSingleFqName().asString()
-        is KtKClassAnnotationValue.KtLocalKClassAnnotationValue -> null
-        is KtKClassAnnotationValue.KtErrorClassAnnotationValue -> unresolvedQualifierName
-    } ?: return null
+private fun AnnotationValue.KClass.toAnnotationMemberValue(parent: PsiElement): SymbolPsiClassObjectAccessExpression? {
+    val typeString = classId?.asSingleFqName()?.asString() ?: return null
 
     val psiType = psiType(
         kotlinFqName = typeString,

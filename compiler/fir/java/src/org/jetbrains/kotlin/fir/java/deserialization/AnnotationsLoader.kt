@@ -20,7 +20,6 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.resolve.constants.ClassLiteralValue
-import org.jetbrains.kotlin.resolve.jvm.JvmPrimitiveType
 import org.jetbrains.kotlin.utils.toMetadataVersion
 
 internal class AnnotationsLoader(private val session: FirSession, private val kotlinClassFinder: KotlinClassFinder) {
@@ -29,13 +28,16 @@ internal class AnnotationsLoader(private val session: FirSession, private val ko
 
         abstract val visitNullNames: Boolean
 
-        abstract fun guessArrayTypeIfNeeded(name: Name?, arrayOfElements: List<FirExpression>): FirTypeRef?
-
         override fun visit(name: Name?, value: Any?) {
             visitExpression(name, createConstant(value))
         }
 
-        private fun ClassLiteralValue.toFirClassReferenceExpression(): FirClassReferenceExpression {
+        private fun ClassLiteralValue.toFirClassReferenceExpression(): FirClassReferenceExpression? {
+            // toLookupTag will throw an exception if classId is local.
+            // This should only happen in annotations of local declarations, in which we aren't interested anyway, so it should be fine
+            // to just skip some of their arguments.
+            if (classId.isLocal) return null
+
             val resolvedClassTypeRef = classId.toLookupTag().toDefaultResolvedTypeRef()
             return buildClassReferenceExpression {
                 classTypeRef = resolvedClassTypeRef
@@ -44,8 +46,9 @@ internal class AnnotationsLoader(private val session: FirSession, private val ko
         }
 
         override fun visitClassLiteral(name: Name?, value: ClassLiteralValue) {
+            val argument = value.toFirClassReferenceExpression() ?: return
+
             visitExpression(name, buildGetClassCall {
-                val argument = value.toFirClassReferenceExpression()
                 argumentList = buildUnaryArgumentList(argument)
                 coneTypeOrNull = argument.resolvedType
             })
@@ -70,8 +73,8 @@ internal class AnnotationsLoader(private val session: FirSession, private val ko
                 }
 
                 override fun visitClassLiteral(value: ClassLiteralValue) {
+                    val argument = value.toFirClassReferenceExpression() ?: return
                     elements.add(buildGetClassCall {
-                        val argument = value.toFirClassReferenceExpression()
                         argumentList = buildUnaryArgumentList(argument)
                         coneTypeOrNull = argument.resolvedType
                     })
@@ -91,23 +94,11 @@ internal class AnnotationsLoader(private val session: FirSession, private val ko
                 override fun visitEnd() {
                     visitExpression(name, buildArrayLiteral {
                         @OptIn(UnresolvedExpressionTypeAccess::class)
-                        // 1. Calculate array literal type using its element, if any
-                        // 2. If array literal is empty, try to "guess" type (works only for default values)
-                        // 3. If both ways don't work, use Array<Any> as an approximation; later FIR2IR will calculate more precise type
+                        // For the array literal type, we use Array<Any> as an approximation; later FIR2IR will calculate more precise type
                         // See KT-62598
-                        // Note: we suppose that (1) can be dropped without real semantic changes;
-                        // in this case array literal argument types will be always Array<Any> at FIR level (even for non-empty literals),
-                        // but at IR level we will still have a real array type, like Array<String> or IntArray
-                        // Maybe we can drop also (2), see KT-62929, with the same consequences
-                        // Anyway, FIR provides no guarantees on having exact type of deserialized array literals in annotations,
+                        // FIR provides no guarantees on having exact type of deserialized array literals in annotations,
                         // including non-empty ones.
-                        elements.firstOrNull()?.coneTypeOrNull?.createOutArrayType()?.let {
-                            coneTypeOrNull = it
-                        } ?: guessArrayTypeIfNeeded(name, elements)?.let {
-                            coneTypeOrNull = it.coneTypeOrNull
-                        } ?: run {
-                            coneTypeOrNull = StandardClassIds.Any.constructClassLikeType().createOutArrayType()
-                        }
+                        coneTypeOrNull = StandardClassIds.Any.constructClassLikeType().createOutArrayType()
                         argumentList = buildArgumentList {
                             arguments += elements
                         }
@@ -148,12 +139,6 @@ internal class AnnotationsLoader(private val session: FirSession, private val ko
 
             override val visitNullNames: Boolean = false
 
-            override fun guessArrayTypeIfNeeded(name: Name?, arrayOfElements: List<FirExpression>): FirTypeRef? {
-                // Array<Any> will be created, later FIR2IR will use more precise type
-                // See KT-62598
-                return null
-            }
-
             override fun visitEnd() {
                 // Do not load the @java.lang.annotation.Repeatable annotation instance generated automatically by the compiler for
                 // Kotlin-repeatable annotation classes. Otherwise the reference to the implicit nested "Container" class cannot be
@@ -171,7 +156,6 @@ internal class AnnotationsLoader(private val session: FirSession, private val ko
     }
 
     internal fun loadAnnotationMethodDefaultValue(
-        methodSignature: MemberSignature,
         consumeResult: (FirExpression) -> Unit
     ): KotlinJvmBinaryClass.AnnotationArgumentVisitor {
         return object : AnnotationsLoaderVisitorImpl() {
@@ -182,17 +166,6 @@ internal class AnnotationsLoader(private val session: FirSession, private val ko
             }
 
             override val visitNullNames: Boolean = true
-
-            override fun guessArrayTypeIfNeeded(name: Name?, arrayOfElements: List<FirExpression>): FirTypeRef {
-                val descName = methodSignature.signature.substringAfterLast(')').removePrefix("[")
-                val targetClassId = JvmPrimitiveType.getByDesc(descName)?.primitiveType?.typeFqName?.let { ClassId.topLevel(it) }
-                    ?: FileBasedKotlinClass.resolveNameByInternalName(
-                        descName.removePrefix("L").removeSuffix(";"),
-                        // It seems that some inner classes info is required, but so far there are no problems with them (see six() in multimoduleCreation test)
-                        FileBasedKotlinClass.InnerClassesInfo()
-                    )
-                return targetClassId.toLookupTag().constructClassType(arrayOf(), false).createOutArrayType().toFirResolvedTypeRef()
-            }
 
             override fun visitEnd() {
                 defaultValue?.let(consumeResult)

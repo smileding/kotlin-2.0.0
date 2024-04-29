@@ -485,6 +485,48 @@ public class FirIdeNormalAnalysisSourceModuleResolveCallTestGenerated extends Ab
   }
 
   @Test
+  @TestMetadata("functionWithPostDecPropertyArgument.kt")
+  public void testFunctionWithPostDecPropertyArgument() {
+    runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/functionWithPostDecPropertyArgument.kt");
+  }
+
+  @Test
+  @TestMetadata("functionWithPostIncPropertyArgument.kt")
+  public void testFunctionWithPostIncPropertyArgument() {
+    runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/functionWithPostIncPropertyArgument.kt");
+  }
+
+  @Test
+  @TestMetadata("functionWithPreDecArrayAccessArgument.kt")
+  public void testFunctionWithPreDecArrayAccessArgument() {
+    runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/functionWithPreDecArrayAccessArgument.kt");
+  }
+
+  @Test
+  @TestMetadata("functionWithPreDecPropertyArgument.kt")
+  public void testFunctionWithPreDecPropertyArgument() {
+    runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/functionWithPreDecPropertyArgument.kt");
+  }
+
+  @Test
+  @TestMetadata("functionWithPreIncArrayAccessArgument.kt")
+  public void testFunctionWithPreIncArrayAccessArgument() {
+    runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/functionWithPreIncArrayAccessArgument.kt");
+  }
+
+  @Test
+  @TestMetadata("functionWithPreIncPropertyArgument.kt")
+  public void testFunctionWithPreIncPropertyArgument() {
+    runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/functionWithPreIncPropertyArgument.kt");
+  }
+
+  @Test
+  @TestMetadata("functionWithPropertyArgument.kt")
+  public void testFunctionWithPropertyArgument() {
+    runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/functionWithPropertyArgument.kt");
+  }
+
+  @Test
   @TestMetadata("functionWithReceiverCall.kt")
   public void testFunctionWithReceiverCall() {
     runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/functionWithReceiverCall.kt");
@@ -524,6 +566,12 @@ public class FirIdeNormalAnalysisSourceModuleResolveCallTestGenerated extends Ab
   @TestMetadata("implicitJavaConstuctorCall.kt")
   public void testImplicitJavaConstuctorCall() {
     runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/implicitJavaConstuctorCall.kt");
+  }
+
+  @Test
+  @TestMetadata("implicitTypeSubstituteOverrideFromOtherModule.kt")
+  public void testImplicitTypeSubstituteOverrideFromOtherModule() {
+    runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/implicitTypeSubstituteOverrideFromOtherModule.kt");
   }
 
   @Test
@@ -860,6 +908,12 @@ public class FirIdeNormalAnalysisSourceModuleResolveCallTestGenerated extends Ab
   @TestMetadata("typecheckerRecursiveError.kt")
   public void testTypecheckerRecursiveError() {
     runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/typecheckerRecursiveError.kt");
+  }
+
+  @Test
+  @TestMetadata("unitTypeFromOtherModule.kt")
+  public void testUnitTypeFromOtherModule() {
+    runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/unitTypeFromOtherModule.kt");
   }
 
   @Test
@@ -1297,6 +1351,18 @@ public class FirIdeNormalAnalysisSourceModuleResolveCallTestGenerated extends Ab
     @Test
     public void testAllFilesPresentInWithTestCompilerPluginEnabled() {
       KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("analysis/analysis-api/testData/components/callResolver/resolveCall/withTestCompilerPluginEnabled"), Pattern.compile("^(.+)\\.kt$"), null, true);
+    }
+
+    @Test
+    @TestMetadata("annotationFromOtherModule.kt")
+    public void testAnnotationFromOtherModule() {
+      runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/withTestCompilerPluginEnabled/annotationFromOtherModule.kt");
+    }
+
+    @Test
+    @TestMetadata("companionWithFoo_commonModule.kt")
+    public void testCompanionWithFoo_commonModule() {
+      runTest("analysis/analysis-api/testData/components/callResolver/resolveCall/withTestCompilerPluginEnabled/companionWithFoo_commonModule.kt");
     }
 
     @Test

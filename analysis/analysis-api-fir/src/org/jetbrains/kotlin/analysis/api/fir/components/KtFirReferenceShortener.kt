@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.analysis.api.fir.components
 
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPsiElementPointer
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.analysis.api.components.*
@@ -85,6 +84,7 @@ internal class KtFirReferenceShortener(
             ?: file
 
         val firDeclaration = declarationToVisit.getCorrespondingFirElement() ?: return ShortenCommandImpl(
+            @Suppress("DEPRECATION")
             file.createSmartPointer(),
             importsToAdd = emptySet(),
             starImportsToAdd = emptySet(),
@@ -128,6 +128,7 @@ internal class KtFirReferenceShortener(
         )
         kDocCollector.visitElement(declarationToVisit)
 
+        @Suppress("DEPRECATION")
         return ShortenCommandImpl(
             file.createSmartPointer(),
             additionalImports.simpleImports,
@@ -229,7 +230,7 @@ private enum class ImportKind {
     /** Star imported (star import) by Kotlin default. */
     DEFAULT_STAR;
 
-    infix fun hasHigherPriorityThan(that: ImportKind): Boolean = this < that
+    fun hasHigherPriorityThan(that: ImportKind): Boolean = this < that
 
     companion object {
         fun fromScope(scope: FirScope): ImportKind {
@@ -1037,7 +1038,7 @@ private class ElementsToShortenCollector(
             firResolveSession, fakeFirQualifiedAccess, name, expressionInScope, ResolutionMode.ContextIndependent,
         )
         return candidates.filter { overloadCandidate ->
-            when (overloadCandidate.candidate.currentApplicability) {
+            when (overloadCandidate.candidate.lowestApplicability) {
                 CandidateApplicability.RESOLVED -> true
                 CandidateApplicability.K2_SYNTHETIC_RESOLVED -> true // SAM constructor call
                 else -> false
@@ -1061,7 +1062,7 @@ private class ElementsToShortenCollector(
             firResolveSession, fakeFirQualifiedAccess, name, elementInScope, ResolutionMode.ContextIndependent,
         )
         return candidates.filter { overloadCandidate ->
-            overloadCandidate.candidate.currentApplicability == CandidateApplicability.RESOLVED
+            overloadCandidate.candidate.lowestApplicability == CandidateApplicability.RESOLVED
         }
     }
 
@@ -1526,7 +1527,8 @@ private class KDocQualifiersToShortenCollector(
             val shortFqName = FqName.topLevel(fqName.shortName())
             val owner = kDocName.getContainingDoc().owner
 
-            KDocReferenceResolver.resolveKdocFqName(shortFqName, shortFqName, owner ?: kDocName.containingKtFile)
+            val contextElement = owner ?: kDocName.containingKtFile
+            KDocReferenceResolver.resolveKdocFqName(analysisSession, shortFqName, shortFqName, contextElement)
         }
 
         resolvedSymbols.firstIsInstanceOrNull<KtCallableSymbol>()?.firSymbol?.let { availableCallable ->

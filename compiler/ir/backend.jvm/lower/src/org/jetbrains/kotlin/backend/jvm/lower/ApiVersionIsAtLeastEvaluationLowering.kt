@@ -6,9 +6,11 @@
 package org.jetbrains.kotlin.backend.jvm.lower
 
 import org.jetbrains.kotlin.backend.common.FileLoweringPass
+import org.jetbrains.kotlin.backend.common.phaser.PhaseDescription
 import org.jetbrains.kotlin.backend.jvm.JvmBackendContext
 import org.jetbrains.kotlin.backend.jvm.ir.createJvmIrBuilder
 import org.jetbrains.kotlin.backend.jvm.ir.getIntConstArgumentOrNull
+import org.jetbrains.kotlin.backend.jvm.lower.ApiVersionIsAtLeastEvaluationLowering.Data
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.config.MavenComparableVersion
 import org.jetbrains.kotlin.ir.IrStatement
@@ -25,15 +27,20 @@ import org.jetbrains.kotlin.ir.util.getPackageFragment
 import org.jetbrains.kotlin.ir.util.isTopLevelInPackage
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformer
 
-internal class ApiVersionIsAtLeastEvaluationLowering(val context: JvmBackendContext) : FileLoweringPass,
-    IrElementTransformer<ApiVersionIsAtLeastEvaluationLowering.Data> {
-
+@PhaseDescription(
+    name = "ApiVersionIsAtLeastEvaluationLowering",
+    description = "Evaluate inlined invocations of `apiVersionIsAtLeast`",
+    prerequisite = [JvmIrInliner::class]
+)
+internal class ApiVersionIsAtLeastEvaluationLowering(val context: JvmBackendContext) : FileLoweringPass, IrElementTransformer<Data> {
     private val apiVersion = context.config.languageVersionSettings.apiVersion.version
 
     data class Data(val currentFunction: IrFunction?, val isInsideInlinedBlock: Boolean)
 
     override fun lower(irFile: IrFile) {
-        irFile.accept(this, Data(currentFunction = null, isInsideInlinedBlock = false))
+        if (context.config.enableIrInliner) {
+            irFile.accept(this, Data(currentFunction = null, isInsideInlinedBlock = false))
+        }
     }
 
     override fun visitBlock(expression: IrBlock, data: Data): IrExpression {

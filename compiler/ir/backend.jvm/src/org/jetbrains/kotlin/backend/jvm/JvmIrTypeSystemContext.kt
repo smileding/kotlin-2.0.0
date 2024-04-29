@@ -20,7 +20,7 @@ import org.jetbrains.kotlin.ir.types.isMarkedNullable as irIsMarkedNullable
 
 class JvmIrTypeSystemContext(override val irBuiltIns: IrBuiltIns) : IrTypeSystemContext {
     override fun KotlinTypeMarker.asFlexibleType(): FlexibleTypeMarker? =
-        (this as IrType).asJvmFlexibleType(irBuiltIns)
+        (this as IrType).asJvmFlexibleType(irBuiltIns, JvmIrSpecialAnnotationSymbolProvider)
 
     override fun FlexibleTypeMarker.upperBound(): SimpleTypeMarker {
         return when (this) {

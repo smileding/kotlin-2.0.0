@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.fir.resolve.dfa.cfg.BlockExitNode
 import org.jetbrains.kotlin.fir.resolve.dfa.cfg.CFGNode
 import org.jetbrains.kotlin.fir.resolve.dfa.cfg.ControlFlowGraph
 import org.jetbrains.kotlin.fir.resolve.dfa.cfg.JumpNode
+import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertyAccessorSymbol
@@ -77,8 +78,7 @@ object FirReturnsImpliesAnalyzer : FirControlFlowChecker(MppCheckerKind.Common) 
                 isWrongConditionOnNode(it, coneEffect, returnValue, function, logicSystem, dataFlowInfo, argumentIdentifiers, context)
             }
             if (wrongCondition) {
-                // TODO, KT-59813: reportOn(firEffect.source, ...)
-                reporter.reportOn(contractDescription.source, FirErrors.WRONG_IMPLIES_CONDITION, context)
+                reporter.reportOn(firEffect.source, FirErrors.WRONG_IMPLIES_CONDITION, context)
             }
         }
     }
@@ -100,7 +100,7 @@ object FirReturnsImpliesAnalyzer : FirControlFlowChecker(MppCheckerKind.Common) 
         @Suppress("USELESS_CAST") // K2 warning suppression, TODO: KT-62472
         val resultExpression = if (isReturn) (node.fir as FirReturnExpression).result else node.fir
 
-        val expressionType = (resultExpression as? FirExpression)?.resolvedType
+        val expressionType = (resultExpression as? FirExpression)?.resolvedType?.fullyExpandedType(context.session)
         if (expressionType == builtinTypes.nothingType.type) return false
 
         if (isReturn && resultExpression is FirWhenExpression) {
@@ -118,7 +118,8 @@ object FirReturnsImpliesAnalyzer : FirControlFlowChecker(MppCheckerKind.Common) 
                 if (expressionType != null && !operation.canBeTrueFor(context.session, expressionType)) return false
                 // TODO: avoid modifying the storage
                 val variableStorage = dataFlowInfo.variableStorage as VariableStorageImpl
-                val resultVar = variableStorage.getOrCreateIfReal(flow, resultExpression)
+                val resultVar =
+                    variableStorage.getOrCreateIfReal(resultExpression, unwrapAlias = { variable, _ -> flow.unwrapVariable(variable) })
                 if (resultVar != null) {
                     val impliedByReturnValue = logicSystem.approveOperationStatement(flow, OperationStatement(resultVar, operation))
                     if (impliedByReturnValue.isNotEmpty()) {

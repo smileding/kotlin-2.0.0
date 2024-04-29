@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.types.*
+import org.jetbrains.kotlin.ir.types.impl.IrCapturedType
 import org.jetbrains.kotlin.ir.types.impl.originalKotlinType
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
@@ -73,8 +74,13 @@ open class RenderIrElementVisitor(private val options: DumpIrTreeOptions = DumpI
         override fun visitEnumEntry(declaration: IrEnumEntry, data: Nothing?) =
             renderEnumEntry(declaration, options)
 
-        override fun visitField(declaration: IrField, data: Nothing?) =
-            renderField(declaration, null, options)
+        override fun visitField(declaration: IrField, data: Nothing?) = buildTrimEnd {
+            append(renderField(declaration, null, options))
+            if (declaration.origin != IrDeclarationOrigin.PROPERTY_BACKING_FIELD) {
+                append(" ")
+                renderDeclaredIn(declaration)
+            }
+        }
 
         override fun visitVariable(declaration: IrVariable, data: Nothing?) =
             buildTrimEnd {
@@ -183,11 +189,13 @@ open class RenderIrElementVisitor(private val options: DumpIrTreeOptions = DumpI
                     append(": ")
                     append(type.renderTypeWithRenderer(null, options))
                 }
+                append(' ')
 
                 if (options.printFlagsInDeclarationReferences) {
-                    append(' ')
                     append(declaration.renderPropertyFlags())
                 }
+
+                renderDeclaredIn(declaration)
             }
 
         override fun visitLocalDelegatedProperty(declaration: IrLocalDelegatedProperty, data: Nothing?): String =
@@ -416,11 +424,23 @@ open class RenderIrElementVisitor(private val options: DumpIrTreeOptions = DumpI
     override fun visitSetValue(expression: IrSetValue, data: Nothing?): String =
         "SET_VAR '${expression.symbol.renderReference()}' type=${expression.type.render()} origin=${expression.origin}"
 
-    override fun visitGetField(expression: IrGetField, data: Nothing?): String =
-        "GET_FIELD '${expression.symbol.renderReference()}' type=${expression.type.render()} origin=${expression.origin}"
+    override fun visitGetField(expression: IrGetField, data: Nothing?): String = buildTrimEnd {
+        append("GET_FIELD '${expression.symbol.renderReference()}' type=${expression.type.render()}")
+        appendSuperQualifierSymbol(expression)
+        append(" origin=${expression.origin}")
+    }
 
-    override fun visitSetField(expression: IrSetField, data: Nothing?): String =
-        "SET_FIELD '${expression.symbol.renderReference()}' type=${expression.type.render()} origin=${expression.origin}"
+    override fun visitSetField(expression: IrSetField, data: Nothing?): String = buildTrimEnd {
+        append("SET_FIELD '${expression.symbol.renderReference()}' type=${expression.type.render()}")
+        appendSuperQualifierSymbol(expression)
+        append(" origin=${expression.origin}")
+    }
+
+    private fun StringBuilder.appendSuperQualifierSymbol(expression: IrFieldAccessExpression) {
+        val superQualifierSymbol = expression.superQualifierSymbol ?: return
+        append(" superQualifierSymbol=")
+        superQualifierSymbol.owner.renderDeclarationFqn(this, options)
+    }
 
     override fun visitGetObjectValue(expression: IrGetObjectValue, data: Nothing?): String =
         "GET_OBJECT '${expression.symbol.renderReference()}' type=${expression.type.render()}"
@@ -772,6 +792,8 @@ private fun IrType.renderTypeInner(renderer: RenderIrElementVisitor?, options: D
         is IrDynamicType -> "dynamic"
 
         is IrErrorType -> "IrErrorType(${options.verboseErrorTypes.ifTrue { originalKotlinType }})"
+
+        is IrCapturedType -> "IrCapturedType(${constructor.argument.render()}"
 
         is IrSimpleType -> buildTrimEnd {
             val isDefinitelyNotNullType =

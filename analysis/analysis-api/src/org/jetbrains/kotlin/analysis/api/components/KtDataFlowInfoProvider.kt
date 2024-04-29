@@ -33,9 +33,12 @@ public class KtDataFlowExitPointSnapshot(
     public val defaultExpressionInfo: DefaultExpressionInfo?,
 
     /**
-     * A list of [KtReturnExpression]s that return a value.
+     * A list of expressions that return a value.
+     *
+     * Returned expressions are not necessarily [KtReturnExpression]s.
+     * For instance, implicit return from a lambda can be an arbitrary expression.
      */
-    public val valuedReturnExpressions: List<KtReturnExpression>,
+    public val valuedReturnExpressions: List<KtExpression>,
 
     /**
      * A common supertype of values returned in [valuedReturnExpressions].
@@ -43,10 +46,10 @@ public class KtDataFlowExitPointSnapshot(
     public val returnValueType: KtType?,
 
     /**
-     * `break` and `continue` jump expressions.
+     * All jump expressions.
      * @see [hasJumps] for the definition of jumps.
      */
-    public val loopJumpExpressions: List<KtExpression>,
+    public val jumpExpressions: List<KtExpression>,
 
     /**
      * `true` if there are any control-flow statements that jump outside given statements.
@@ -66,7 +69,8 @@ public class KtDataFlowExitPointSnapshot(
     public val hasMultipleJumpKinds: Boolean,
 
     /**
-     * `true` if two or more jumps have different next-executed instructions. Such as, there are both inner and outer loop `break`s.
+     * `true` if two or more jumps have different next-executed instructions.
+     * Such as, there are both inner and outer loop `break`, or a `break` and `continue` for the same loop.
      */
     public val hasMultipleJumpTargets: Boolean,
 

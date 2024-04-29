@@ -39,11 +39,12 @@ public:
 
     void AddToFinalizerQueue(FinalizerQueue queue) noexcept;
     FinalizerQueue ExtractFinalizerQueue() noexcept;
-    size_t EstimateOverheadPerThread() noexcept;
 
     // Test method
     std::vector<ObjHeader*> GetAllocatedObjects() noexcept;
     void ClearForTests() noexcept;
+
+    auto& allocatedSizeTracker() noexcept { return allocatedSizeTracker_; }
 
 private:
     PageStore<FixedBlockPage> fixedBlockPages_[FIXED_BLOCK_PAGE_MAX_BLOCK_SIZE + 1];
@@ -55,6 +56,8 @@ private:
     std::mutex pendingFinalizerQueueMutex_;
 
     std::atomic<std::size_t> concurrentSweepersCount_ = 0;
+
+    AllocatedSizeTracker::Heap allocatedSizeTracker_{};
 };
 
 } // namespace kotlin::alloc

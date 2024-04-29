@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.backend.common.BodyLoweringPass
 import org.jetbrains.kotlin.backend.common.CommonBackendContext
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.lower.createIrBuilder
-import org.jetbrains.kotlin.backend.common.phaser.makeIrFilePhase
+import org.jetbrains.kotlin.backend.common.phaser.PhaseDescription
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.IrDeclaration
@@ -28,12 +28,6 @@ import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.ir.visitors.*
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.util.OperatorNameConventions
-
-val forLoopsPhase = makeIrFilePhase(
-    ::ForLoopsLowering,
-    name = "ForLoopsLowering",
-    description = "For loops lowering"
-)
 
 /**
  * This lowering pass optimizes for-loops.
@@ -104,10 +98,13 @@ val forLoopsPhase = makeIrFilePhase(
  *   }
  * ```
  */
-class ForLoopsLowering(
-    val context: CommonBackendContext,
-    private val loopBodyTransformer: ForLoopBodyTransformer? = null
-) : BodyLoweringPass {
+@PhaseDescription(
+    name = "ForLoopsLowering",
+    description = "For loops lowering"
+)
+open class ForLoopsLowering(val context: CommonBackendContext) : BodyLoweringPass {
+    open val loopBodyTransformer: ForLoopBodyTransformer?
+        get() = null
 
     override fun lower(irBody: IrBody, container: IrDeclaration) {
         val oldLoopToNewLoop = mutableMapOf<IrLoop, IrLoop>()

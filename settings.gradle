@@ -231,6 +231,7 @@ include ":kotlin-imports-dumper-compiler-plugin",
         ":libraries:tools:gradle:fus-statistics-gradle-plugin",
         ":kotlin-tooling-metadata",
         ":kotlin-tooling-core",
+        ":compose-compiler-gradle-plugin",
         ":kotlin-allopen",
         ":kotlin-noarg",
         ":kotlin-power-assert",
@@ -418,16 +419,19 @@ include ":compiler:build-tools:kotlin-build-tools-api",
         ":compiler:build-tools:kotlin-build-tools-impl",
         ":compiler:build-tools:kotlin-build-tools-api-tests"
 
-// Experimental modules, should be placed into plugins/compose-compiler-plugin folder
-include ":plugins:compose-compiler-plugin:compiler",
-        ":plugins:compose-compiler-plugin:compiler:integration-tests",
-        ":plugins:compose-compiler-plugin:compiler-hosted",
-        ":plugins:compose-compiler-plugin:testutils-gradle-plugin"
+if (!buildProperties.inJpsBuildIdeaSync) {
+    include ":plugins:compose-compiler-plugin",
+            ":plugins:compose-compiler-plugin:compiler",
+            ":plugins:compose-compiler-plugin:compiler:integration-tests",
+            ":plugins:compose-compiler-plugin:compiler-hosted",
+            ":plugins:compose-compiler-plugin:compiler-hosted:integration-tests",
+            ":plugins:compose-compiler-plugin:compiler-hosted:integration-tests:protobuf-test-classes"
+}
 
 // Swift Export modules
 include ":native:swift:sir",
         ":native:swift:sir:tree-generator",
-        ":native:swift:sir-passes",
+        ":native:swift:sir-light-classes",
         ":native:swift:sir-printer",
         ":native:swift:sir-compiler-bridge",
         ":native:swift:sir-providers",
@@ -797,6 +801,7 @@ project(":gradle:regression-benchmark-templates").projectDir = "$rootDir/librari
 project(":gradle:regression-benchmarks").projectDir = "$rootDir/libraries/tools/gradle/regression-benchmarks" as File
 project(':kotlin-tooling-metadata').projectDir = "$rootDir/libraries/tools/kotlin-tooling-metadata" as File
 project(':kotlin-tooling-core').projectDir = "$rootDir/libraries/tools/kotlin-tooling-core" as File
+project(':compose-compiler-gradle-plugin').projectDir = "$rootDir/libraries/tools/kotlin-compose-compiler" as File
 project(':kotlin-allopen').projectDir = "$rootDir/libraries/tools/kotlin-allopen" as File
 project(':kotlin-noarg').projectDir = "$rootDir/libraries/tools/kotlin-noarg" as File
 project(':kotlin-power-assert').projectDir = "$rootDir/libraries/tools/kotlin-power-assert" as File
@@ -860,6 +865,16 @@ project(':kotlin-atomicfu-compiler-plugin').projectDir = file("$rootDir/plugins/
 project(':kotlin-atomicfu-compiler-plugin-embeddable').projectDir = file("$rootDir/plugins/atomicfu/atomicfu-compiler-embeddable")
 project(':kotlinx-atomicfu-runtime').projectDir = file("$rootDir/plugins/atomicfu/atomicfu-runtime")
 project(':atomicfu').projectDir = file("$rootDir/libraries/tools/atomicfu")
+
+if (!buildProperties.inJpsBuildIdeaSync) {
+    project(':plugins:compose-compiler-plugin').projectDir = file("$rootDir/plugins/compose")
+    project(':plugins:compose-compiler-plugin:compiler').projectDir = file("$rootDir/plugins/compose/compiler")
+    project(':plugins:compose-compiler-plugin:compiler:integration-tests').projectDir = file("$rootDir/plugins/compose/compiler/integration-tests")
+    project(':plugins:compose-compiler-plugin:compiler-hosted').projectDir = file("$rootDir/plugins/compose/compiler-hosted")
+    project(':plugins:compose-compiler-plugin:compiler-hosted:integration-tests').projectDir = file("$rootDir/plugins/compose/compiler-hosted/integration-tests")
+    project(':plugins:compose-compiler-plugin:compiler-hosted:integration-tests:protobuf-test-classes').projectDir =
+            file("$rootDir/plugins/compose/compiler-hosted/integration-tests/protobuf-test-classes")
+}
 
 project(':kotlin-scripting-ide-services-unshaded').projectDir = "$rootDir/plugins/scripting/scripting-ide-services" as File
 project(':kotlin-scripting-ide-services-test').projectDir = "$rootDir/plugins/scripting/scripting-ide-services-test" as File

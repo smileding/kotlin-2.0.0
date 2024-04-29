@@ -29,9 +29,6 @@ import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.java.FirProjectSessionProvider
 import org.jetbrains.kotlin.fir.session.*
 import org.jetbrains.kotlin.fir.session.environment.AbstractProjectEnvironment
-import org.jetbrains.kotlin.js.config.JSConfigurationKeys
-import org.jetbrains.kotlin.js.config.WasmTarget
-import org.jetbrains.kotlin.js.config.wasmTarget
 import org.jetbrains.kotlin.load.kotlin.PackageAndMetadataPartProvider
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.platform.TargetPlatform
@@ -40,6 +37,7 @@ import org.jetbrains.kotlin.platform.isJs
 import org.jetbrains.kotlin.platform.isWasm
 import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.platform.konan.isNative
+import org.jetbrains.kotlin.platform.wasm.WasmTarget
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.test.FirParser
 import org.jetbrains.kotlin.test.directives.FirDiagnosticsDirectives
@@ -56,6 +54,8 @@ import org.jetbrains.kotlin.test.services.configuration.JsEnvironmentConfigurato
 import org.jetbrains.kotlin.test.services.configuration.NativeEnvironmentConfigurator
 import org.jetbrains.kotlin.test.services.configuration.WasmEnvironmentConfigurator
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
+import org.jetbrains.kotlin.wasm.config.WasmConfigurationKeys
+import org.jetbrains.kotlin.wasm.config.wasmTarget
 import java.nio.file.Paths
 
 open class FirFrontendFacade(
@@ -131,12 +131,11 @@ open class FirFrontendFacade(
         val mainModule = modules.last()
 
         val targetPlatform = mainModule.targetPlatform
-        val analyzerServices = targetPlatform.getAnalyzerServices()
 
         // the special name is required for `KlibMetadataModuleDescriptorFactoryImpl.createDescriptorOptionalBuiltIns`
         // it doesn't seem convincingly legitimate, probably should be refactored
         val moduleName = Name.special("<${mainModule.name}>")
-        val binaryModuleData = BinaryModuleData.initialize(moduleName, targetPlatform, analyzerServices)
+        val binaryModuleData = BinaryModuleData.initialize(moduleName, targetPlatform)
 
         val compilerConfigurationProvider = testServices.compilerConfigurationProvider
         val configuration = compilerConfigurationProvider.getCompilerConfiguration(mainModule)
@@ -157,7 +156,6 @@ open class FirFrontendFacade(
                 dependsOnModules,
                 friendModules,
                 mainModule.targetPlatform,
-                mainModule.targetPlatform.getAnalyzerServices(),
                 isCommon = module.targetPlatform.isCommon(),
             )
 
@@ -447,7 +445,7 @@ open class FirFrontendFacade(
                     }
                     targetPlatform.isWasm() -> {
                         val runtimeKlibsPaths = WasmEnvironmentConfigurator.getRuntimePathsForModule(
-                            configuration.get(JSConfigurationKeys.WASM_TARGET, WasmTarget.JS)
+                            configuration.get(WasmConfigurationKeys.WASM_TARGET, WasmTarget.JS)
                         )
                         val (transitiveLibraries, friendLibraries) = getTransitivesAndFriends(mainModule, testServices)
                         dependencies(runtimeKlibsPaths.map { Paths.get(it).toAbsolutePath() })

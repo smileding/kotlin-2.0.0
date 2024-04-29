@@ -563,7 +563,7 @@ default: 'indy-with-constants' for JVM targets 9 or greater, 'inline' otherwise.
         value = "-Xjdk-release",
         valueDescription = "<version>",
         description = """Compile against the specified JDK API version, similarly to javac's '-release'. This requires JDK 9 or newer.
-The supported versions depend on the JDK used; for JDK 17+, the supported versions are 1.8 and 9–21.
+The supported versions depend on the JDK used; for JDK 17+, the supported versions are 1.8 and 9–22.
 This also sets the value of '-jvm-target' to be equal to the selected JDK version."""
     )
     var jdkRelease: String? = null
@@ -670,17 +670,6 @@ If it's not on the classpath, the compiler will attempt to load async-profiler.j
 Example: -Xprofile=<PATH_TO_ASYNC_PROFILER>/async-profiler/build/libasyncProfiler.so:event=cpu,interval=1ms,threads,start:<SNAPSHOT_DIR_PATH>"""
     )
     var profileCompilerCommand: String? = null
-        set(value) {
-            checkFrozen()
-            field = if (value.isNullOrEmpty()) null else value
-        }
-
-    @Argument(
-        value = "-Xrepeat",
-        valueDescription = "<number>",
-        description = "Debug option: Repeat module compilation <number> times."
-    )
-    var repeatCompileModules: String? = null
         set(value) {
             checkFrozen()
             field = if (value.isNullOrEmpty()) null else value

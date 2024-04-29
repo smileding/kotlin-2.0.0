@@ -98,13 +98,14 @@ class ResultTypeResolver(
         val superType = c.findSuperType(variableWithConstraints)
         val approximatedSuperType = superType?.approximateToSubTypeOrSelf(TypeApproximatorConfiguration.InternalTypesApproximation)
 
-        // The general approach to approximation (in K2) is to
+        // The general approach to approximation of resulting types (in K2) is to
         // - always approximate ILTs
         // - always approximate captured types unless this leads to a contradiction.
         // A contradiction can appear if we have some captured type C = CapturedType(*) in the subtype and in the supertype.
         // Example: A<C> <: T <: A<C>
         // If we were to approximate the result type, we would end up with a contradiction
         // A<*> </: A<C>
+        // In comparison, types from equality constraints are never approximated because it would always lead to a contradiction.
 
         val preparedSubType = when {
             approximatedSubType == null -> null
@@ -143,6 +144,26 @@ class ResultTypeResolver(
         }
     }
 
+    /**
+     * Determines whether captured types should be preserved (i.e., not approximated) in the type determined from lower constraints.
+     * [approximatedSubType] must be the result of calling [AbstractTypeApproximator.approximateToSuperType] with
+     * [TypeApproximatorConfiguration.InternalTypesApproximation] on [subType].
+     *
+     * If `false` is returned, [approximatedSubType] should be used as the resulting type.
+     * Otherwise, [subType] should be used, approximated with [TypeApproximatorConfiguration.InternalTypesApproximationNoCapturedTypes],
+     * so that integer literal types (ILTs) are approximated even when captured types aren't.
+     *
+     * Returns `true` if [approximatedSubType] is not a subtype of [superType].
+     * This implies that [superType] is not `null`.
+     *
+     * If [subType] and [approximatedSubType] are referentially equal, it means there is nothing to approximate in the first place.
+     * Therefore `false` is returned so that an additional approximation with
+     * [TypeApproximatorConfiguration.InternalTypesApproximationNoCapturedTypes] can be saved.
+     *
+     * Because [TypeApproximatorConfiguration.InternalTypesApproximation] also approximates ILTs,
+     * if [subType] is an ILT, `false` is returned.
+     * This also lets us save a redundant approximation call, since in ILTs will be approximated in either configuration.
+     */
     private fun shouldKeepCapturedTypesInSubtype(
         subType: KotlinTypeMarker,
         approximatedSubType: KotlinTypeMarker,
@@ -155,6 +176,9 @@ class ResultTypeResolver(
         return !AbstractTypeChecker.isSubtypeOf(c, approximatedSubType, superType)
     }
 
+    /**
+     * @see shouldKeepCapturedTypesInSubtype
+     */
     private fun shouldKeepCapturedTypesInSuperType(
         subType: KotlinTypeMarker?,
         superType: KotlinTypeMarker,

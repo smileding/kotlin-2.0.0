@@ -75,10 +75,6 @@ class KotlinWasmGradlePluginIT : KGPBaseTest() {
                 """.trimIndent()
             )
 
-            projectPath.resolve(".yarnrc").toFile().writeText(
-                "--ignore-engines true"
-            )
-
             build("build") {
                 assertTasksExecuted(":kotlinNodeJsSetup")
                 assertTasksExecuted(":compileKotlinWasmJs")
@@ -235,6 +231,24 @@ class KotlinWasmGradlePluginIT : KGPBaseTest() {
         project("kt-63230", gradleVersion) {
             build("check", "-Pkotlin.tests.individualTaskReports=true") {
                 assertTestResults(projectPath.resolve("TEST-wasm.xml"), "wasmJsBrowserTest")
+            }
+        }
+    }
+
+    @DisplayName("Wasm JS variant does not contain file:// in webpack and works in Node.JS")
+    @GradleTest
+    fun wasmJsImportMetaUrlLibrary(gradleVersion: GradleVersion) {
+        project("mpp-wasm-js-browser-nodejs", gradleVersion) {
+            build(":assemble", ":wasmJsNodeTest") {
+                assertTasksExecuted(":compileProductionExecutableKotlinWasmJs")
+                assertTasksExecuted(":compileKotlinWasmJs")
+                assertTasksExecuted(":wasmJsNodeTest")
+                assertTasksExecuted(":wasmJsBrowserDistribution")
+
+                val dist = "build/dist/wasmJs/productionExecutable"
+                val uninstantiatedFile = projectPath.resolve("$dist/mpp-wasm-js-browser-nodejs.js")
+                assertFileExists(uninstantiatedFile)
+                assertFileDoesNotContain(uninstantiatedFile, "file://")
             }
         }
     }

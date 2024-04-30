@@ -2,7 +2,6 @@ package org.jetbrains.kotlin.konan.test.blackbox
 
 import org.jetbrains.kotlin.konan.test.blackbox.support.*
 import org.jetbrains.kotlin.konan.test.blackbox.support.compilation.TestCompilationResult.Companion.assertSuccess
-import org.jetbrains.kotlin.konan.test.blackbox.support.runner.TestExecutable
 import org.jetbrains.kotlin.konan.test.blackbox.support.util.ClangDistribution
 import org.jetbrains.kotlin.konan.test.blackbox.support.util.compileWithClang
 import org.jetbrains.kotlin.native.executors.runProcess
@@ -54,6 +53,11 @@ class ProgramNameTest : AbstractNativeSimpleTest() {
         // Simulate a custom program name, see e.g. https://busybox.net/downloads/BusyBox.html#usage
         validate("programName: customProgramName\nargs:", "customProgramName")
         validate("programName: customProgramName\nargs: firstArg, secondArg", "customProgramName", "firstArg", "secondArg")
+
+        // No program name - this would not be POSIX compliant, see https://pubs.opengroup.org/onlinepubs/9699919799/functions/exec.html:
+        // "[...] requires a Strictly Conforming POSIX Application to pass at least one argument to the exec function"
+        // However, we should not crash the Kotlin runtime because of this.
+        validate("programName: null\nargs:")
     }
 
     companion object {

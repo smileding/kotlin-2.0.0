@@ -30,10 +30,12 @@ using namespace kotlin;
 //--- Setup args --------------------------------------------------------------//
 
 OBJ_GETTER(setupArgs, int argc, const char** argv) {
-  kotlin::programName = argv[0];
+  if (argc > 0) {
+    kotlin::programName = argv[0];
+  }
 
   // The count is one less, because we skip argv[0] which is the binary name.
-  ObjHeader* result = AllocArrayInstance(theArrayTypeInfo, argc - 1, OBJ_RESULT);
+  ObjHeader* result = AllocArrayInstance(theArrayTypeInfo, std::max(0, argc - 1), OBJ_RESULT);
   ArrayHeader* array = result->array();
   for (int index = 1; index < argc; index++) {
     ObjHolder result;
@@ -59,6 +61,8 @@ extern "C" RUNTIME_USED int Init_and_run_start(int argc, const char** argv, int 
   if (memoryDeInit) {
       Kotlin_shutdownRuntime();
   }
+
+  kotlin::programName = nullptr; // argv[0] might not be valid after this point
 
   return exitStatus;
 }

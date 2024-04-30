@@ -338,7 +338,12 @@ KBoolean Konan_Platform_isFreezingEnabled() {
 }
 
 OBJ_GETTER0(Konan_Platform_getProgramName) {
-  RETURN_RESULT_OF(CreateStringFromCString, kotlin::programName)
+    if (kotlin::programName == nullptr) {
+        // null in case Platform.getProgramName is called from within a library and the main function of the binary is not built with Kotlin
+        RETURN_OBJ(nullptr)
+    } else {
+        RETURN_RESULT_OF(CreateStringFromCString, kotlin::programName)
+    }
 }
 
 bool Kotlin_memoryLeakCheckerEnabled() {

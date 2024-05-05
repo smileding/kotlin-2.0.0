@@ -130,6 +130,14 @@ if (HostManager.hostIsMac) {
             }
         }
     }
+} else {
+    // if invoked when no targets defined, it will fail with
+    // e: Please initialize at least one Kotlin target in
+    // 'kotlin-test-native-xctest (:native:kotlin-test-native-xctest)'.
+    tasks.compileKotlinMetadata {
+        enabled = false
+        setDependsOn(emptyList<Task>())
+    }
 }
 
 // endregion

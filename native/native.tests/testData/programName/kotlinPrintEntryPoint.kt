@@ -3,8 +3,8 @@
 import kotlin.native.Platform
 
 fun main(args: Array<String>) {
-    // Remove path and extension (.kexe or .exe)
-    val programFileName = Platform.programName?.substringAfterLast("/")?.substringBeforeLast(".")
+    // Remove path (using both unix/win path seperators) and extension (.kexe or .exe)
+    val programFileName = Platform.programName?.substringAfterLast("/")?.substringAfterLast("\\")?.substringBeforeLast(".")
 
     println("programName: $programFileName")
     println("args: ${args.joinToString()}")

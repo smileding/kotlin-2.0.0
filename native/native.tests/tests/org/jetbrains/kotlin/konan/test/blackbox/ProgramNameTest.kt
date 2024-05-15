@@ -45,7 +45,8 @@ class ProgramNameTest : AbstractNativeSimpleTest() {
             val result = testRunSettings.executor.runProcess(cExecutable.absolutePath, binaryName, *args) {
                 timeout = 60.seconds
             }
-            assertEquals("calling exec...\n$expected", result.stdout)
+            val sanitizedStdout = result.stdout.replace("\r\n", "\n") // Ignore if we have unix or windows line endings
+            assertEquals("calling exec...\n$expected", sanitizedStdout)
             assertEquals("", result.stderr)
         }
 

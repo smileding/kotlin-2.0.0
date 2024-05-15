@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.fir.backend
 
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.backend.utils.InjectedValue
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.utils.hasBackingField
@@ -56,7 +57,7 @@ interface Fir2IrExtensions {
         override fun generateOrGetFacadeClass(declaration: IrMemberWithContainerSource, components: Fir2IrComponents): IrClass? = null
         override fun deserializeToplevelClass(irClass: IrClass, components: Fir2IrComponents): Boolean = false
         override fun registerDeclarations(symbolTable: SymbolTable) {}
-        override fun findInjectedValue(calleeReference: FirReference, conversionScope: Fir2IrConversionScope) = null
+        override fun findInjectedValue(calleeReference: FirReference, conversionScope: Fir2IrConversionScope): Nothing? = null
         override fun hasBackingField(property: FirProperty, session: FirSession): Boolean = property.hasBackingField
         override fun isTrueStatic(declaration: FirCallableDeclaration, session: FirSession): Boolean = false
     }

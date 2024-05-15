@@ -63,7 +63,7 @@ abstract class FirJavaFacade(
     private val classFinder: JavaClassFinder
 ) {
     companion object {
-        val VALUE_METHOD_NAME = Name.identifier("value")
+        val VALUE_METHOD_NAME: Name = Name.identifier("value")
         private const val PACKAGE_INFO_CLASS_NAME = "package-info"
     }
 
@@ -176,23 +176,15 @@ abstract class FirJavaFacade(
         // will be observed in a state where we've not done the enhancement yet. For those cases, we must publish
         // at least unenhanced resolved types, or else FIR may crash upon encountering a FirJavaTypeRef where FirResolvedTypeRef
         // is expected.
-        // TODO: some (all?) of those loops can be avoided, e.g. we don't actually need to resolve class arguments of annotations
-        //   to determine whether they set default nullability - but without laziness, breaking those loops is somewhat hard,
-        //   as we have a nested ordering here.
-
-        val enhancement = FirSignatureEnhancement(firJavaClass, session) { emptyList() }
-        val fakeSource = classSymbol.source?.fakeElement(KtFakeSourceElementKind.Enhancement)
-        val (initialBounds, enhancedTypeParameters) = enhancement.performFirstRoundOfBoundsResolution(
-            firJavaClass.typeParameters, fakeSource
-        )
-        firJavaClass.typeParameters.clear()
-        firJavaClass.typeParameters += enhancedTypeParameters
 
         // 1. (will happen lazily in FirJavaClass.annotations) Resolve annotations
         // 2. Enhance type parameter bounds - may refer to each other, take default nullability from annotations
         // 3. (will happen lazily in FirJavaClass.superTypeRefs) Enhance super types - may refer to type parameter bounds, take default nullability from annotations
-
-        enhancement.enhanceTypeParameterBoundsAfterFirstRound(firJavaClass.typeParameters, initialBounds, fakeSource)
+        val enhancement = FirSignatureEnhancement(firJavaClass, session) { emptyList() }
+        val fakeSource = classSymbol.source?.fakeElement(KtFakeSourceElementKind.Enhancement)
+        val enhancedTypeParameters = enhancement.performBoundsResolution(firJavaClass.typeParameters, fakeSource)
+        firJavaClass.typeParameters.clear()
+        firJavaClass.typeParameters += enhancedTypeParameters
 
         updateStatuses(firJavaClass, parentClassSymbol)
 

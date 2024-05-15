@@ -8,6 +8,9 @@ package org.jetbrains.kotlin.fir.backend.generators
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.backend.*
+import org.jetbrains.kotlin.fir.backend.utils.*
+import org.jetbrains.kotlin.fir.backend.utils.convertCatching
+import org.jetbrains.kotlin.fir.backend.utils.convertWithOffsets
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.impl.FirDefaultPropertyGetter
 import org.jetbrains.kotlin.fir.declarations.impl.FirDefaultPropertySetter
@@ -126,7 +129,7 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
                 isSuspend = isSuspend,
                 isOperator = simpleFunction?.isOperator == true,
                 isInfix = simpleFunction?.isInfix == true,
-                isExternal = simpleFunction?.isExternal == true,
+                isExternal = isEffectivelyExternal(simpleFunction, irParent),
                 containerSource = simpleFunction?.containerSource,
             ).apply {
                 metadata = FirMetadataSource.Function(function)
@@ -197,7 +200,7 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
                 returnType = constructor.returnTypeRef.toIrType(c),
                 symbol = symbol,
                 isPrimary = isPrimary,
-                isExternal = false,
+                isExternal = isEffectivelyExternal(constructor, irParent),
             ).apply {
                 metadata = FirMetadataSource.Function(constructor)
                 annotationGenerator.generate(this, constructor)
@@ -257,7 +260,7 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
                 isConst = property.isConst,
                 isLateinit = property.isLateInit,
                 isDelegated = property.delegate != null,
-                isExternal = property.isExternal,
+                isExternal = isEffectivelyExternal(property, irParent),
                 containerSource = property.containerSource,
                 isExpect = property.isExpect,
             ).apply {
@@ -431,7 +434,7 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
             isSuspend = false,
             isOperator = false,
             isInfix = false,
-            isExternal = propertyAccessor?.isExternal == true,
+            isExternal = isEffectivelyExternal(propertyAccessor, irParent),
             containerSource = containerSource,
         ).apply {
             correspondingPropertySymbol = (correspondingProperty as? IrProperty)?.symbol
@@ -500,7 +503,7 @@ class Fir2IrCallableDeclarationsGenerator(private val c: Fir2IrComponents) : Fir
                 type = inferredType,
                 isFinal = isFinal,
                 isStatic = firProperty.isStatic || !(irProperty.parent is IrClass || irProperty.parent is IrScript),
-                isExternal = firProperty.isExternal,
+                isExternal = firProperty.isExternal || irProperty.isExternal,
             ).also {
                 it.correspondingPropertySymbol = irProperty.symbol
             }.apply {
@@ -1031,3 +1034,6 @@ internal fun IrDeclarationParent?.isExternalParent(): Boolean {
 internal fun FirCallableDeclaration?.shouldParametersBeAssignable(c: Fir2IrComponents): Boolean {
     return c.extensions.parametersAreAssignable && this?.isTailRec == true
 }
+
+internal fun isEffectivelyExternal(memberDeclaration: FirMemberDeclaration?, irParent: IrDeclarationParent?): Boolean =
+    memberDeclaration?.isExternal == true || (irParent as? IrPossiblyExternalDeclaration)?.isExternal == true

@@ -19,13 +19,14 @@ import org.jetbrains.kotlin.analysis.providers.impl.declarationProviders.Composi
 import org.jetbrains.kotlin.analysis.providers.impl.packageProviders.CompositeKotlinPackageProvider
 import org.jetbrains.kotlin.builtins.StandardNames
 import org.jetbrains.kotlin.config.AnalysisFlags
+import org.jetbrains.kotlin.fir.caches.FirCache
 import org.jetbrains.kotlin.fir.caches.firCachesFactory
-import org.jetbrains.kotlin.fir.caches.getValue
 import org.jetbrains.kotlin.fir.declarations.FirCallableDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirClassLikeDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirFile
 import org.jetbrains.kotlin.fir.languageVersionSettings
 import org.jetbrains.kotlin.fir.resolve.providers.FirCompositeCachedSymbolNamesProvider
+import org.jetbrains.kotlin.fir.smartPlus
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
@@ -73,31 +74,76 @@ internal class LLFirProviderHelper(
     val allowKotlinPackage: Boolean = canContainKotlinPackage ||
             firSession.languageVersionSettings.getFlag(AnalysisFlags.allowKotlinPackage)
 
-    private val classifierByClassId =
-        firSession.firCachesFactory.createCache<ClassId, FirClassLikeDeclaration?, KtClassLikeDeclaration?> { classId, context ->
-            require(context == null || context.isPhysical)
-            val ktClass = context ?: declarationProvider.getClassLikeDeclarationByClassId(classId) ?: return@createCache null
-
-            if (ktClass.getClassId() == null) return@createCache null
-            val firFile = firFileBuilder.buildRawFirFileWithCaching(ktClass.containingKtFile)
-            FirElementFinder.findClassifierWithClassId(firFile, classId)
-                ?: errorWithAttachment("Classifier was found in KtFile but was not found in FirFile") {
-                    withEntry("classifierClassId", classId) { it.asString() }
-                    withVirtualFileEntry("virtualFile", ktClass.containingKtFile.virtualFile)
-                }
+    private val classifierByClassId: FirCache<ClassId, FirClassLikeDeclaration?, KtClassLikeDeclaration?> =
+        firSession.firCachesFactory.createCache { classId, context ->
+            computeClassifierByClassId(classId, context)
         }
 
-    private val callablesByCallableId =
-        firSession.firCachesFactory.createCache<CallableId, List<FirCallableSymbol<*>>, Collection<KtFile>?> { callableId, context ->
-            require(context == null || context.all { it.isPhysical })
-            val files = context ?: declarationProvider.getTopLevelCallableFiles(callableId).ifEmpty { return@createCache emptyList() }
-            buildList {
-                files.forEach { ktFile ->
-                    val firFile = firFileBuilder.buildRawFirFileWithCaching(ktFile)
-                    firFile.collectCallableDeclarationsTo(this, callableId.callableName)
-                }
+    /**
+     * Locates the [FirClassLikeDeclaration] with the matching [classId].
+     * Uses the passed [context] files to avoid index access if available; falls back to the [declarationProvider] otherwise.
+     *
+     * To work correctly with the [FirCache], this function has to obey the following contract:
+     *
+     * It can be called with some [classId] and a non-null [context] **if and only if** the returned value
+     * is going to be the same for the `null` context.
+     */
+    private fun computeClassifierByClassId(classId: ClassId, context: KtClassLikeDeclaration?): FirClassLikeDeclaration? {
+        require(context == null || context.isPhysical)
+        val ktClass = context ?: declarationProvider.getClassLikeDeclarationByClassId(classId) ?: return null
+
+        if (ktClass.getClassId() == null) return null
+        val firFile = firFileBuilder.buildRawFirFileWithCaching(ktClass.containingKtFile)
+        return FirElementFinder.findClassifierWithClassId(firFile, classId)
+            ?: errorWithAttachment("Classifier was found in KtFile but was not found in FirFile") {
+                withEntry("classifierClassId", classId) { it.asString() }
+                withVirtualFileEntry("virtualFile", ktClass.containingKtFile.virtualFile)
+            }
+    }
+
+    private val functionsByCallableId: FirCache<CallableId, List<FirNamedFunctionSymbol>, Collection<KtFile>?> =
+        firSession.firCachesFactory.createCache { callableId, context ->
+            computeCallableSymbolsByCallableId<FirNamedFunctionSymbol>(callableId, context)
+        }
+
+    private val propertiesByCallableId: FirCache<CallableId, List<FirPropertySymbol>, Collection<KtFile>?> =
+        firSession.firCachesFactory.createCache { callableId, context ->
+            computeCallableSymbolsByCallableId<FirPropertySymbol>(callableId, context)
+        }
+
+    /**
+     * Locates all the callable symbols of required [TYPE] with the matching [callableId] within a specific set of files.
+     * Uses the passed [context] files to avoid index access if available; falls back to the [declarationProvider] otherwise.
+     *
+     * To work correctly with the [FirCache], this function has to obey the following contract:
+     *
+     * It can be called with some [callableId] and a non-null [context] **if and only if** the returned value
+     * is going to be the same for the `null` context.
+     */
+    private inline fun <reified TYPE : FirCallableSymbol<*>> computeCallableSymbolsByCallableId(
+        callableId: CallableId,
+        context: Collection<KtFile>?,
+    ): List<TYPE> {
+        require(context == null || context.all { it.isPhysical })
+
+        val files = if (context != null) {
+            context
+        } else {
+            // we want to use `getTopLevelCallableFiles` instead of
+            // `getTopLevelFunctions/Properties`, because it is highly optimized
+            // to retrieve the files in the IDE mode
+            declarationProvider.getTopLevelCallableFiles(callableId)
+        }
+
+        if (files.isEmpty()) return emptyList()
+
+        return buildList {
+            files.forEach { ktFile ->
+                val firFile = firFileBuilder.buildRawFirFileWithCaching(ktFile)
+                firFile.collectCallableSymbolsOfTypeTo<TYPE>(this, callableId.callableName)
             }
         }
+    }
 
     val symbolNameCache = FirCompositeCachedSymbolNamesProvider.create(
         firSession,
@@ -107,6 +153,13 @@ internal class LLFirProviderHelper(
         )
     )
 
+    /**
+     * [classLikeDeclaration] is a [KtClassLikeDeclaration] which corresponds to the desired class.
+     *
+     * If already known, it can be provided to avoid index accesses.
+     * But it has to be coherent with [KotlinDeclarationProvider.getClassLikeDeclarationByClassId]'s result,
+     * see [computeClassifierByClassId].
+     */
     fun getFirClassifierByFqNameAndDeclaration(
         classId: ClassId,
         classLikeDeclaration: KtClassLikeDeclaration?,
@@ -117,40 +170,59 @@ internal class LLFirProviderHelper(
     }
 
     fun getTopLevelCallableSymbols(packageFqName: FqName, name: Name): List<FirCallableSymbol<*>> {
-        if (!allowKotlinPackage && packageFqName.isKotlinPackage()) return emptyList()
-        val callableId = CallableId(packageFqName, name)
-        return callablesByCallableId.getValue(callableId)
+        return getTopLevelCallableSymbols(CallableId(packageFqName, name), callableFiles = null)
     }
 
     /**
-     * [callableFiles] are the [KtFile]s which contain callables of the given package and name. If already known, they can be provided to
-     * avoid index accesses.
+     * [callableFiles] are the [KtFile]s which contain callables of the given package and name.
+     *
+     * If already known, they can be provided to avoid index accesses.
+     * But they have to be coherent with [KotlinDeclarationProvider.getTopLevelCallableFiles] content,
+     * see [computeCallableSymbolsByCallableId].
      */
     fun getTopLevelCallableSymbols(callableId: CallableId, callableFiles: Collection<KtFile>?): List<FirCallableSymbol<*>> {
         if (!allowKotlinPackage && callableId.packageName.isKotlinPackage()) return emptyList()
-        return callablesByCallableId.getValue(callableId, callableFiles)
+
+        val functions = getTopLevelFunctionSymbols(callableId, callableFiles)
+        val properties = getTopLevelPropertySymbols(callableId, callableFiles)
+
+        return functions.smartPlus(properties)
     }
 
     fun getTopLevelFunctionSymbols(packageFqName: FqName, name: Name): List<FirNamedFunctionSymbol> {
-        return getTopLevelCallableSymbols(packageFqName, name).filterIsInstance<FirNamedFunctionSymbol>()
+        return getTopLevelFunctionSymbols(CallableId(packageFqName, name), callableFiles = null)
     }
 
-    fun getTopLevelFunctionSymbols(callableId: CallableId, callableFiles: Collection<KtFile>): List<FirNamedFunctionSymbol> {
-        return getTopLevelCallableSymbols(callableId, callableFiles).filterIsInstance<FirNamedFunctionSymbol>()
+    /**
+     * [callableFiles] are the [KtFile]s which contain functions of the given package and name.
+     *
+     * If already known, they can be provided to avoid index accesses.
+     * But they have to be coherent with [KotlinDeclarationProvider.getTopLevelFunctions] content,
+     * see [computeCallableSymbolsByCallableId].
+     */
+    fun getTopLevelFunctionSymbols(callableId: CallableId, callableFiles: Collection<KtFile>?): List<FirNamedFunctionSymbol> {
+        return functionsByCallableId.getValue(callableId, callableFiles)
     }
 
     fun getTopLevelPropertySymbols(packageFqName: FqName, name: Name): List<FirPropertySymbol> {
-        return getTopLevelCallableSymbols(packageFqName, name).filterIsInstance<FirPropertySymbol>()
+        return getTopLevelPropertySymbols(CallableId(packageFqName, name), callableFiles = null)
     }
 
-    fun getTopLevelPropertySymbols(callableId: CallableId, callableFiles: Collection<KtFile>): List<FirPropertySymbol> {
-        return getTopLevelCallableSymbols(callableId, callableFiles).filterIsInstance<FirPropertySymbol>()
+    /**
+     * [callableFiles] are the [KtFile]s which contain properties of the given package and name.
+     *
+     * If already known, they can be provided to avoid index accesses.
+     * But they have to be coherent with [KotlinDeclarationProvider.getTopLevelProperties] content,
+     * see [computeCallableSymbolsByCallableId].
+     */
+    fun getTopLevelPropertySymbols(callableId: CallableId, callableFiles: Collection<KtFile>?): List<FirPropertySymbol> {
+        return propertiesByCallableId.getValue(callableId, callableFiles)
     }
 
-    private fun FirFile.collectCallableDeclarationsTo(list: MutableList<FirCallableSymbol<*>>, name: Name) {
+    private inline fun <reified TYPE : FirCallableSymbol<*>> FirFile.collectCallableSymbolsOfTypeTo(list: MutableList<TYPE>, name: Name) {
         declarations.mapNotNullTo(list) { declaration ->
             if (declaration is FirCallableDeclaration && declaration.symbol.callableId.callableName == name) {
-                declaration.symbol
+                declaration.symbol as? TYPE
             } else null
         }
     }

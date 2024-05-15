@@ -16,7 +16,7 @@ import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.backend.Fir2IrComponents
 import org.jetbrains.kotlin.fir.backend.Fir2IrConversionScope
 import org.jetbrains.kotlin.fir.backend.Fir2IrExtensions
-import org.jetbrains.kotlin.fir.backend.InjectedValue
+import org.jetbrains.kotlin.fir.backend.utils.InjectedValue
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.references.FirReference
 import org.jetbrains.kotlin.ir.IrBuiltIns
@@ -45,7 +45,8 @@ class JvmFir2IrExtensions(
         get() = listOf(IrJavaIncompatibilityRulesOverridabilityCondition())
 
     override val classNameOverride: MutableMap<IrClass, JvmClassName> = mutableMapOf()
-    override val cachedFields = CachedFieldsForObjectInstances(IrFactoryImpl, configuration.languageVersionSettings)
+    override val cachedFields: CachedFieldsForObjectInstances =
+        CachedFieldsForObjectInstances(IrFactoryImpl, configuration.languageVersionSettings)
 
     private val kotlinIrInternalPackage =
         IrExternalPackageFragmentImpl(DescriptorlessExternalPackageFragmentSymbol(), IrBuiltIns.KOTLIN_INTERNAL_IR_FQN)

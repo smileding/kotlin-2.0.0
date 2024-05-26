@@ -30,7 +30,7 @@ using namespace kotlin;
 //--- Setup args --------------------------------------------------------------//
 
 OBJ_GETTER(setupArgs, int argc, const char** argv) {
-  if (argc > 0) {
+  if (argc > 0 && argv[0][0] != '\0') {
     kotlin::programName = argv[0];
   }
 

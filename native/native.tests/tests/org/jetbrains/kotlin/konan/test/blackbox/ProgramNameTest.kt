@@ -61,6 +61,23 @@ class ProgramNameTest : AbstractNativeSimpleTest() {
         // "[...] requires a Strictly Conforming POSIX Application to pass at least one argument to the exec function"
         // However, we should not crash the Kotlin runtime because of this.
         validate("programName: null\nargs:")
+
+        /*
+        An empty programName is treated as "no program name", because of the following reasoning:
+
+        When providing no program name (see above validation), both macOS and windows result in an empty argv (argv=[]).
+        However, linux behaves differently and sets argv=[""].
+
+        The C standard in section "5.1.2.2.1 Program startup" states:
+        "argv[0][0] shall be the null character if the program name is not available from the host environment".
+
+        It is discussable if en empty program name is considered as "not available from the host environment",
+        however in the sake of consistency across platforms we decided to treat it as such.
+
+        Therefore, the following test with an empty program name is expected to result in programName=null.
+        */
+
+        validate("programName: null\nargs:", "")
     }
 
     companion object {

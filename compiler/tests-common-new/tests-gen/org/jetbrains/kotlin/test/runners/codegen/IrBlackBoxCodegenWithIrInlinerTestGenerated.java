@@ -34645,6 +34645,18 @@ public class IrBlackBoxCodegenWithIrInlinerTestGenerated extends AbstractIrBlack
       }
 
       @Test
+      @TestMetadata("packagePrivateInCst.kt")
+      public void testPackagePrivateInCst() {
+        runTest("compiler/testData/codegen/box/javaVisibility/package/packagePrivateInCst.kt");
+      }
+
+      @Test
+      @TestMetadata("packagePrivateInCst2.kt")
+      public void testPackagePrivateInCst2() {
+        runTest("compiler/testData/codegen/box/javaVisibility/package/packagePrivateInCst2.kt");
+      }
+
+      @Test
       @TestMetadata("packageProperty.kt")
       public void testPackageProperty() {
         runTest("compiler/testData/codegen/box/javaVisibility/package/packageProperty.kt");

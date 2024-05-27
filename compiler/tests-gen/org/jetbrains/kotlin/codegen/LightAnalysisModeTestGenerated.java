@@ -29389,6 +29389,16 @@ public class LightAnalysisModeTestGenerated extends AbstractLightAnalysisModeTes
         runTest("compiler/testData/codegen/box/javaVisibility/package/packageFun.kt");
       }
 
+      @TestMetadata("packagePrivateInCst.kt")
+      public void testPackagePrivateInCst() {
+        runTest("compiler/testData/codegen/box/javaVisibility/package/packagePrivateInCst.kt");
+      }
+
+      @TestMetadata("packagePrivateInCst2.kt")
+      public void testPackagePrivateInCst2() {
+        runTest("compiler/testData/codegen/box/javaVisibility/package/packagePrivateInCst2.kt");
+      }
+
       @TestMetadata("packageProperty.kt")
       public void testPackageProperty() {
         runTest("compiler/testData/codegen/box/javaVisibility/package/packageProperty.kt");

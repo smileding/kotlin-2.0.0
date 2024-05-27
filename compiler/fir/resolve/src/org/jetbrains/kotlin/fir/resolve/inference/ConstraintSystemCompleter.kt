@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.fir.resolve.inference
 
+import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.diagnostics.ConeCannotInferTypeParameterType
 import org.jetbrains.kotlin.fir.diagnostics.ConeSimpleDiagnostic
@@ -32,10 +33,10 @@ import org.jetbrains.kotlin.utils.addIfNotNull
 import org.jetbrains.kotlin.utils.addToStdlib.filterIsInstanceWithChecker
 
 class ConstraintSystemCompleter(components: BodyResolveComponents) {
-    private val inferenceComponents = components.session.inferenceComponents
-    private val variableFixationFinder = inferenceComponents.variableFixationFinder
-    private val postponedArgumentsInputTypesResolver = inferenceComponents.postponedArgumentInputTypesResolver
-    private val languageVersionSettings = components.session.languageVersionSettings
+    private val inferenceComponents: InferenceComponents = components.session.inferenceComponents
+    private val variableFixationFinder: VariableFixationFinder = inferenceComponents.variableFixationFinder
+    private val postponedArgumentsInputTypesResolver: PostponedArgumentInputTypesResolver = inferenceComponents.postponedArgumentInputTypesResolver
+    private val languageVersionSettings: LanguageVersionSettings = components.session.languageVersionSettings
 
     fun interface PostponedAtomAnalyzer {
         fun analyze(postponedResolvedAtom: PostponedResolvedAtom, withPCLASession: Boolean)

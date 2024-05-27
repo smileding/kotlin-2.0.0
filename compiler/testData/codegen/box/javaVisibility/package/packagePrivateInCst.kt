@@ -1,5 +1,4 @@
 // TARGET_BACKEND: JVM
-// IGNORE_BACKEND_K2: ANY
 // ISSUE: KT-68401
 // FILE: other/AClass.java
 package other;

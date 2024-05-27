@@ -568,7 +568,7 @@ open class FirDeclarationsResolveTransformer(
             // Just for the inspiration, take a look at ResultTypeResolver.Context.buildNotFixedVariablesToStubTypesSubstitutor usages:
             // it seems like they do something relevant.
             resultType = inferenceComponents.resultTypeResolver.findResultTypeOrNull(
-                candidateSystem, variableWithConstraints, TypeVariableDirectionCalculator.ResolveDirection.UNKNOWN
+                candidateSystem, variableWithConstraints, TypeVariableDirectionCalculator.ResolveDirection.UNKNOWN, components.typeVisibilityFilter,
             ) as? ConeKotlinType ?: return@withTypeVariablesThatAreCountedAsProperTypes
 
 

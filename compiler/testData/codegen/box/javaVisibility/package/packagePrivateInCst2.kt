@@ -1,5 +1,5 @@
 // TARGET_BACKEND: JVM
-// IGNORE_BACKEND: ANY
+// IGNORE_BACKEND_K1: ANY
 // ^ Was always broken in K1
 // ISSUE: KT-68401
 // FILE: other/AClass.java

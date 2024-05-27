@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.fir.resolve.transformers.IntegerLiteralAndOperatorAp
 import org.jetbrains.kotlin.fir.resolve.transformers.ReturnTypeCalculator
 import org.jetbrains.kotlin.fir.scopes.FirScope
 import org.jetbrains.kotlin.fir.types.FirTypeRef
+import org.jetbrains.kotlin.resolve.calls.TypeVisibilityFilter
 
 data class SessionHolderImpl(override val session: FirSession, override val scopeSession: ScopeSession) : SessionHolder {
     companion object {
@@ -45,6 +46,7 @@ abstract class BodyResolveComponents : SessionHolder {
     abstract val dataFlowAnalyzer: FirDataFlowAnalyzer
     abstract val outerClassManager: FirOuterClassManager
     abstract val integerLiteralAndOperatorApproximationTransformer: IntegerLiteralAndOperatorApproximationTransformer
+    abstract val typeVisibilityFilter: TypeVisibilityFilter
 }
 
 // --------------------------------------- Utils ---------------------------------------

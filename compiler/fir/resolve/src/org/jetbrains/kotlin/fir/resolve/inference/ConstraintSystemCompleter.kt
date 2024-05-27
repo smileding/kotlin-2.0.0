@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
 import org.jetbrains.kotlin.fir.types.ConeErrorType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.ConeTypeVariable
+import org.jetbrains.kotlin.resolve.calls.TypeVisibilityFilter
 import org.jetbrains.kotlin.resolve.calls.inference.components.*
 import org.jetbrains.kotlin.resolve.calls.inference.model.NewConstraintSystemImpl
 import org.jetbrains.kotlin.resolve.calls.inference.model.NotEnoughInformationForTypeParameter
@@ -37,6 +38,7 @@ class ConstraintSystemCompleter(components: BodyResolveComponents) {
     private val variableFixationFinder: VariableFixationFinder = inferenceComponents.variableFixationFinder
     private val postponedArgumentsInputTypesResolver: PostponedArgumentInputTypesResolver = inferenceComponents.postponedArgumentInputTypesResolver
     private val languageVersionSettings: LanguageVersionSettings = components.session.languageVersionSettings
+    private val typeVisibilityFilter: TypeVisibilityFilter = components.typeVisibilityFilter
 
     fun interface PostponedAtomAnalyzer {
         fun analyze(postponedResolvedAtom: PostponedResolvedAtom, withPCLASession: Boolean)
@@ -405,7 +407,8 @@ class ConstraintSystemCompleter(components: BodyResolveComponents) {
         val resultType = inferenceComponents.resultTypeResolver.findResultType(
             c,
             variableWithConstraints,
-            TypeVariableDirectionCalculator.ResolveDirection.UNKNOWN
+            TypeVariableDirectionCalculator.ResolveDirection.UNKNOWN,
+            typeVisibilityFilter,
         )
 
         val variable = variableWithConstraints.typeVariable

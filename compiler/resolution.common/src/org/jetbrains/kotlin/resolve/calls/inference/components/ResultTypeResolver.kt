@@ -8,6 +8,7 @@ package org.jetbrains.kotlin.resolve.calls.inference.components
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.resolve.calls.NewCommonSuperTypeCalculator
+import org.jetbrains.kotlin.resolve.calls.TypeVisibilityFilter
 import org.jetbrains.kotlin.resolve.calls.inference.components.TypeVariableDirectionCalculator.ResolveDirection
 import org.jetbrains.kotlin.resolve.calls.inference.extractTypeForGivenRecursiveTypeParameter
 import org.jetbrains.kotlin.resolve.calls.inference.hasRecursiveTypeParametersWithGivenSelfType
@@ -59,8 +60,13 @@ class ResultTypeResolver(
         return if (direction == ResolveDirection.TO_SUBTYPE) nothingType() else nullableAnyType()
     }
 
-    fun findResultType(c: Context, variableWithConstraints: VariableWithConstraints, direction: ResolveDirection): KotlinTypeMarker {
-        findResultTypeOrNull(c, variableWithConstraints, direction)?.let { return it }
+    fun findResultType(
+        c: Context,
+        variableWithConstraints: VariableWithConstraints,
+        direction: ResolveDirection,
+        filter: TypeVisibilityFilter = TypeVisibilityFilter.Noop,
+    ): KotlinTypeMarker {
+        findResultTypeOrNull(c, variableWithConstraints, direction, filter)?.let { return it }
 
         // no proper constraints
         return c.getDefaultType(direction, variableWithConstraints.constraints, variableWithConstraints.typeVariable)
@@ -70,6 +76,7 @@ class ResultTypeResolver(
         c: Context,
         variableWithConstraints: VariableWithConstraints,
         direction: ResolveDirection,
+        filter: TypeVisibilityFilter,
     ): KotlinTypeMarker? {
         val resultTypeFromEqualConstraint = findResultIfThereIsEqualsConstraint(c, variableWithConstraints)
         if (resultTypeFromEqualConstraint != null) {
@@ -84,7 +91,7 @@ class ResultTypeResolver(
             }
         }
 
-        val subType = c.findSubType(variableWithConstraints)
+        val subType = c.findSubType(variableWithConstraints, filter)
         val superType = c.findSuperType(variableWithConstraints)
 
         val similarCapturedTypesInK2 = with(c) {
@@ -308,13 +315,13 @@ class ResultTypeResolver(
         return constraints.singleOrNull { it.kind.isLower() }?.isNullabilityConstraint ?: false
     }
 
-    private fun Context.findSubType(variableWithConstraints: VariableWithConstraints): KotlinTypeMarker? {
+    private fun Context.findSubType(variableWithConstraints: VariableWithConstraints, filter: TypeVisibilityFilter): KotlinTypeMarker? {
         val lowerConstraintTypes = prepareLowerConstraints(variableWithConstraints.constraints)
 
         if (lowerConstraintTypes.isNotEmpty()) {
             val types = sinkIntegerLiteralTypes(lowerConstraintTypes)
             // TODO Improve handling of flexible types with recursive captured type arguments to not produce giant multi-level-deep types KT-65704
-            var commonSuperType = computeCommonSuperType(types)
+            var commonSuperType = computeCommonSuperType(types, filter)
 
             if (commonSuperType.contains { it.asSimpleType()?.isStubTypeForVariableInSubtyping() == true }) {
                 val typesWithoutStubs = types.filter { lowerType ->
@@ -323,7 +330,7 @@ class ResultTypeResolver(
 
                 when {
                     typesWithoutStubs.isNotEmpty() -> {
-                        commonSuperType = computeCommonSuperType(typesWithoutStubs)
+                        commonSuperType = computeCommonSuperType(typesWithoutStubs, filter)
                     }
                     // `typesWithoutStubs.isEmpty()` means that there are no lower constraints without type variables.
                     // It's only possible for the PCLA case, because otherwise none of the constraints would be considered as proper.
@@ -343,8 +350,8 @@ class ResultTypeResolver(
         return null
     }
 
-    private fun Context.computeCommonSuperType(types: List<KotlinTypeMarker>): KotlinTypeMarker =
-        with(NewCommonSuperTypeCalculator) { commonSuperType(types) }
+    private fun Context.computeCommonSuperType(types: List<KotlinTypeMarker>, filter: TypeVisibilityFilter): KotlinTypeMarker =
+        with(NewCommonSuperTypeCalculator) { commonSuperType(types, filter) }
 
     private fun Context.prepareLowerConstraints(constraints: List<Constraint>): List<KotlinTypeMarker> {
         var atLeastOneProper = false

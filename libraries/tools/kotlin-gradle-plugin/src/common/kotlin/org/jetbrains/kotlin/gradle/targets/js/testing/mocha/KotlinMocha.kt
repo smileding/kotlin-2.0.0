@@ -31,8 +31,13 @@ class KotlinMocha(@Transient override val compilation: KotlinJsIrCompilation, pr
     private val versions = project.rootProject.kotlinNodeJsRootExtension.versions
     private val npmProjectDir by project.provider { npmProject.dir }
 
+    @Transient
+    private val nodeJs = project.rootProject.kotlinNodeJsExtension
+
     override val workingDir: Provider<Directory>
         get() = npmProjectDir
+
+    override val executable: Provider<String> = project.provider { nodeJs.requireConfigured().executable }
 
     override val settingsState: String
         get() = "mocha"

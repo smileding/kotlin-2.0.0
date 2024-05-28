@@ -154,7 +154,7 @@ constructor(
     override fun createTestExecutionSpec(): TCServiceMessagesTestExecutionSpec {
         val forkOptions = DefaultProcessForkOptions(fileResolver)
         forkOptions.workingDir = testFramework!!.workingDir.getFile()
-        forkOptions.executable = nodeExecutable.get()
+        forkOptions.executable = testFramework!!.executable.get()
 
         environment.forEach { (key, value) ->
             forkOptions.environment(key, value)

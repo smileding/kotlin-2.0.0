@@ -6,17 +6,20 @@
 package org.jetbrains.kotlin.gradle.targets.js.dsl
 
 import org.gradle.api.Action
+import org.gradle.api.NamedDomainObjectContainer
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
-import org.jetbrains.kotlin.gradle.targets.js.binaryen.BinaryenExec
 import org.jetbrains.kotlin.gradle.targets.js.d8.D8Exec
+import org.jetbrains.kotlin.gradle.targets.js.ir.IKotlinJsIrSubTarget
+import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinD8Ir
 
 interface KotlinWasmSubTargetContainerDsl : KotlinTarget {
+    val subTargets: NamedDomainObjectContainer<IKotlinJsIrSubTarget>
+
     val d8: KotlinWasmD8Dsl
 
     val isD8Configured: Boolean
-
-    fun whenD8Configured(body: KotlinWasmD8Dsl.() -> Unit)
+        get() = subTargets.filterIsInstance<KotlinD8Ir>().isNotEmpty()
 }
 
 interface KotlinWasmJsTargetDsl : KotlinWasmTargetDsl, KotlinJsTargetDsl {
@@ -31,5 +34,5 @@ interface KotlinWasmJsTargetDsl : KotlinWasmTargetDsl, KotlinJsTargetDsl {
 
 @OptIn(ExperimentalWasmDsl::class)
 interface KotlinWasmD8Dsl : KotlinJsSubTargetDsl {
-    fun runTask(body: D8Exec.() -> Unit)
+    fun runTask(body: Action<D8Exec>)
 }

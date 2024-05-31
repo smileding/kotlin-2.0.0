@@ -1,4 +1,5 @@
 // TARGET_BACKEND: JVM
+// LANGUAGE: +CheckVisibilityOfTypesInCommonSuperTypeCalculation
 // ISSUE: KT-68401
 // FILE: other/AClass.java
 package other;

@@ -1,5 +1,6 @@
 // TARGET_BACKEND: JVM
 // IGNORE_BACKEND_K1: ANY
+// LANGUAGE: +CheckVisibilityOfTypesInCommonSuperTypeCalculation
 // ^ Was always broken in K1
 // ISSUE: KT-68401
 // FILE: other/AClass.java

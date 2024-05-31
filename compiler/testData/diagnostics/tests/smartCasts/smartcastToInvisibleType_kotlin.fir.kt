@@ -38,6 +38,6 @@ fun testSmartcast(x: Any) {
 }
 
 fun testInference(a: A, b: B) {
-    val x = <!DEBUG_INFO_EXPRESSION_TYPE("kotlin.Any")!>select(a, b)<!>
-    x.<!UNRESOLVED_REFERENCE!>foo<!>()
+    val x = <!DEBUG_INFO_EXPRESSION_TYPE("foo.PrivateInterface")!>select(a, b)<!>
+    x.<!INVISIBLE_REFERENCE!>foo<!>()
 }

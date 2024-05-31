@@ -13,10 +13,10 @@ import org.jetbrains.kotlin.types.TypeCheckerState
 import org.jetbrains.kotlin.types.model.*
 
 interface TypeVisibilityFilter {
-    fun isAccessible(type: KotlinTypeMarker): Boolean
+    fun isAccessible(type: TypeConstructorMarker): Boolean
 
     object Noop : TypeVisibilityFilter {
-        override fun isAccessible(type: KotlinTypeMarker): Boolean = true
+        override fun isAccessible(type: TypeConstructorMarker): Boolean = true
     }
 }
 
@@ -35,14 +35,14 @@ object NewCommonSuperTypeCalculator {
         types.singleOrNull()?.let { return it }
 
         val maxDepth = types.maxOfOrNull { it.typeDepth() } ?: 0
-        return commonSuperType(types, -maxDepth, true, filter).replaceCustomAttributes(unionTypeAttributes(types))
+        return commonSuperType(types, -maxDepth, filter, isTopLevelType = true).replaceCustomAttributes(unionTypeAttributes(types))
     }
 
     private fun TypeSystemCommonSuperTypesContext.commonSuperType(
         types: List<KotlinTypeMarker>,
         depth: Int,
-        isTopLevelType: Boolean = false,
         filter: TypeVisibilityFilter,
+        isTopLevelType: Boolean = false,
     ): KotlinTypeMarker {
         if (types.isEmpty()) throw IllegalStateException("Empty collection for input")
 
@@ -319,7 +319,7 @@ object NewCommonSuperTypeCalculator {
         LinkedHashSet<TypeConstructorMarker>().apply {
             stateStubTypesEqualToAnything.anySupertype(
                 type,
-                { if (filter.isAccessible(it)) add(it.typeConstructor()); false },
+                { if (filter.isAccessible(it.typeConstructor())) add(it.typeConstructor()); false },
                 { TypeCheckerState.SupertypesPolicy.LowerIfFlexible }
             )
         }
@@ -518,7 +518,7 @@ object NewCommonSuperTypeCalculator {
             val parameterIsNotInv = parameter.getVariance() != TypeVariance.INV
 
             if (parameterIsNotInv) {
-                return commonSuperType(argumentTypes, depth = depth + 1, filter = filter).asTypeArgument()
+                return commonSuperType(argumentTypes, depth + 1, filter).asTypeArgument()
             }
 
             val equalToEachOtherType = arguments.firstOrNull { potentialSuperType ->
@@ -528,7 +528,7 @@ object NewCommonSuperTypeCalculator {
             }
 
             return if (equalToEachOtherType == null) {
-                createTypeArgument(commonSuperType(argumentTypes, depth = depth + 1, filter = filter), TypeVariance.OUT)
+                createTypeArgument(commonSuperType(argumentTypes, depth + 1, filter), TypeVariance.OUT)
             } else {
                 val thereIsNotInv = arguments.any { it.getVariance() != TypeVariance.INV }
                 createTypeArgument(equalToEachOtherType.getType(), if (thereIsNotInv) TypeVariance.OUT else TypeVariance.INV)

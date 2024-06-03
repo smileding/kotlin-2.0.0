@@ -32,7 +32,7 @@ import org.jetbrains.kotlin.fir.types.ConeErrorType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.typeContext
-import org.jetbrains.kotlin.fir.unwrapSubstitutionOverrides
+import org.jetbrains.kotlin.fir.unwrapFakeOverrides
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.types.AbstractTypeChecker
 import org.jetbrains.kotlin.types.TypeCheckerState
@@ -258,8 +258,8 @@ sealed class FirImplementationMismatchChecker(mppKind: MppCheckerKind) : FirClas
         for (clash in clashes) {
             val (first, second) = clash
 
-            val firstClassLookupTag = first.containingClassLookupTag()
-            val secondClassLookupTag = second.containingClassLookupTag()
+            val firstClassLookupTag = first.unwrapFakeOverrides().containingClassLookupTag()
+            val secondClassLookupTag = second.unwrapFakeOverrides().containingClassLookupTag()
 
             if (firstClassLookupTag == secondClassLookupTag) {
                 // Don't report if both declarations came from the same class because either CONFLICTING_OVERLOADS was reported in the

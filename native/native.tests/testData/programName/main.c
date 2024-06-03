@@ -10,5 +10,5 @@ int main(int argc, char *argv[]) {
     execv(argv[1], &(argv[2]));
 
     printf("exec failed\n");
-    return 0;
+    return 1;
 }

@@ -26999,6 +26999,12 @@ public class FirPsiOldFrontendDiagnosticsTestGenerated extends AbstractFirPsiDia
       }
 
       @Test
+      @TestMetadata("falsePositiveConflictingOverloads.kt")
+      public void testFalsePositiveConflictingOverloads() {
+        runTest("compiler/testData/diagnostics/tests/override/falsePositiveConflictingOverloads.kt");
+      }
+
+      @Test
       @TestMetadata("Generics.kt")
       public void testGenerics() {
         runTest("compiler/testData/diagnostics/tests/override/Generics.kt");

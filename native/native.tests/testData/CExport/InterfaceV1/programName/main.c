@@ -4,4 +4,5 @@
 int main() {
     programName();
     fflush(NULL);
+    return 0;
 }

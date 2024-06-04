@@ -18342,9 +18342,21 @@ public class FirPsiOldFrontendDiagnosticsTestGenerated extends AbstractFirPsiDia
         }
 
         @Test
+        @TestMetadata("capturedApproximationWithInproperUpperConstraint.kt")
+        public void testCapturedApproximationWithInproperUpperConstraint() {
+          runTest("compiler/testData/diagnostics/tests/inference/capturedTypes/capturedApproximationWithInproperUpperConstraint.kt");
+        }
+
+        @Test
         @TestMetadata("capturedAssignment.kt")
         public void testCapturedAssignment() {
           runTest("compiler/testData/diagnostics/tests/inference/capturedTypes/capturedAssignment.kt");
+        }
+
+        @Test
+        @TestMetadata("capturedAssignmentAfter.kt")
+        public void testCapturedAssignmentAfter() {
+          runTest("compiler/testData/diagnostics/tests/inference/capturedTypes/capturedAssignmentAfter.kt");
         }
 
         @Test

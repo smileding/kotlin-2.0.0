@@ -15,6 +15,7 @@
   */
 
 #include <cstdlib>
+#include <string.h>
 
 #include "Memory.h"
 #include "Natives.h"

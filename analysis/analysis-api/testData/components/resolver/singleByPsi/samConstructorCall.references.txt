@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in kotlin) <T> Comparator(function: (T!, T!) -> kotlin.Int): java.util.Comparator<T>

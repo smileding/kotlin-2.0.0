@@ -16,9 +16,9 @@ scopes:
   PackageMemberScope, index = 2
     packages: 0
     classifiers: 2
-      KtNamedClassOrObjectSymbol:
+      KaNamedClassOrObjectSymbol:
         annotationsList: []
-        classIdIfNonLocal: test/Base
+        classId: test/Base
         classKind: CLASS
         companionObject: null
         contextReceivers: []
@@ -33,17 +33,17 @@ scopes:
         name: Base
         origin: SOURCE
         superTypes: [
-          KtUsualClassType:
+          KaUsualClassType:
             annotationsList: []
-            ownTypeArguments: []
+            typeArguments: []
             type: kotlin/Any
         ]
         symbolKind: TOP_LEVEL
         typeParameters: []
         visibility: Public
-      KtNamedClassOrObjectSymbol:
+      KaNamedClassOrObjectSymbol:
         annotationsList: []
-        classIdIfNonLocal: test/Child
+        classId: test/Child
         classKind: CLASS
         companionObject: null
         contextReceivers: []
@@ -58,9 +58,9 @@ scopes:
         name: Child
         origin: SOURCE
         superTypes: [
-          KtUsualClassType:
+          KaUsualClassType:
             annotationsList: []
-            ownTypeArguments: []
+            typeArguments: []
             type: test/Base
         ]
         symbolKind: TOP_LEVEL

@@ -1,7 +1,7 @@
-KtConstructorSymbol:
+KaConstructorSymbol:
   annotationsList: []
-  callableIdIfNonLocal: null
-  containingClassIdIfNonLocal: java/util/ArrayList
+  callableId: null
+  containingClassId: java/util/ArrayList
   contextReceivers: []
   hasStableParameterNames: false
   isActual: false
@@ -10,22 +10,22 @@ KtConstructorSymbol:
   isPrimary: false
   origin: JAVA
   receiverParameter: null
-  returnType: KtUsualClassType:
+  returnType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: [
-      KtTypeParameterType:
+    typeArguments: [
+      KaTypeParameterType:
         annotationsList: []
         type: E
     ]
     type: java/util/ArrayList<E>
   symbolKind: CLASS_MEMBER
   typeParameters: [
-    KtTypeParameterSymbol(E)
+    KaTypeParameterSymbol(E)
   ]
   valueParameters: [
-    KtValueParameterSymbol:
+    KaValueParameterSymbol:
       annotationsList: []
-      callableIdIfNonLocal: null
+      callableId: null
       contextReceivers: []
       generatedPrimaryConstructorProperty: null
       hasDefaultValue: false
@@ -34,10 +34,10 @@ KtConstructorSymbol:
       isImplicitLambdaParameter: false
       isNoinline: false
       isVararg: false
-      name: c
+      name: p0
       origin: JAVA
       receiverParameter: null
-      returnType: KtFlexibleType:
+      returnType: KaFlexibleType:
         annotationsList: []
         type: (kotlin/collections/MutableCollection<out E!>..kotlin/collections/Collection<E!>?)
       symbolKind: LOCAL

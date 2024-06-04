@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  abc: kotlin.Int [fake.kt]

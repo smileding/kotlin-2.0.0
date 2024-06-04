@@ -7,6 +7,7 @@
 package org.jetbrains.kotlin.gradle.tasks
 
 import org.gradle.api.Action
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
@@ -16,12 +17,13 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
-import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.cli.common.arguments.K2NativeCompilerArguments
 import org.jetbrains.kotlin.compilerRunner.*
 import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.CreateCompilerArgumentsContext
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerArgumentsProducer.CreateCompilerArgumentsContext.Companion.create
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
@@ -29,7 +31,6 @@ import org.jetbrains.kotlin.gradle.plugin.categoryByName
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.asValidFrameworkName
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.UsesXcodeVersion
-import org.jetbrains.kotlin.gradle.plugin.usesPlatformOf
 import org.jetbrains.kotlin.gradle.report.UsesBuildMetricsService
 import org.jetbrains.kotlin.gradle.targets.native.UsesKonanPropertiesBuildService
 import org.jetbrains.kotlin.gradle.targets.native.tasks.CompilerPluginData
@@ -53,7 +54,6 @@ constructor(
     @Transient // This property can't be accessed in the execution phase
     val binary: NativeBinary,
     private val objectFactory: ObjectFactory,
-    private val execOperations: ExecOperations,
 ) : AbstractKotlinCompileTool<K2NativeCompilerArguments>(objectFactory),
     UsesKonanPropertiesBuildService,
     UsesBuildMetricsService,
@@ -102,7 +102,8 @@ constructor(
     internal val binaryName: String by lazyConvention { binary.name }
 
     @Suppress("DEPRECATION")
-    private val konanTarget = compilation.konanTarget
+    @get:Internal
+    internal val konanTarget = compilation.konanTarget
 
     @Suppress("DEPRECATION")
     @Deprecated("Use toolOptions to configure the task")
@@ -194,16 +195,21 @@ constructor(
         (binary as? Framework)?.embedBitcodeMode ?: objectFactory.property()
 
     @get:Internal
-    val apiFiles = project
-        .configurations
-        .detachedResolvable()
-        .apply @Suppress("DEPRECATION") {
-            val apiConfiguration = project.configurations.getByName(compilation.apiConfigurationName)
-            dependencies.addAll(apiConfiguration.allDependencies)
-            usesPlatformOf(compilation.target)
-            attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.consumerApiUsage(compilation.target))
-            attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, project.categoryByName(Category.LIBRARY))
-        }.filterKlibsPassedToCompiler()
+    internal val apiFilesConfiguration: Configuration
+        get() = project
+            .configurations
+            .detachedResolvable()
+            .apply @Suppress("DEPRECATION") {
+                compilation.internal.configurations.apiConfiguration.allDependencies.all { dependency ->
+                    dependencies.add(dependency)
+                }
+                usesPlatformOf(compilation.target)
+                attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.consumerApiUsage(compilation.target))
+                attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, project.categoryByName(Category.LIBRARY))
+            }
+
+    @get:Internal
+    val apiFiles: FileCollection = apiFilesConfiguration.filterKlibsPassedToCompiler()
 
     private val externalDependenciesArgs by lazy {
         @Suppress("DEPRECATION")
@@ -363,9 +369,14 @@ constructor(
     var kotlinPluginData: Provider<KotlinCompilerPluginData>? = null
 
     @get:Nested
-    internal val kotlinNativeProvider: Provider<KotlinNativeProvider> = project.provider {
-        KotlinNativeProvider(project, konanTarget, kotlinNativeBundleBuildService)
-    }
+    internal val kotlinNativeProvider: Property<KotlinNativeProvider> =
+        project.objects.propertyWithConvention<KotlinNativeProvider>(
+            // For KT-66452 we need to get rid of invocation of 'Task.project'.
+            // That is why we moved setting this property to task registration
+            // and added convention for backwards compatibility.
+            project.provider {
+                KotlinNativeProvider(project, konanTarget, kotlinNativeBundleBuildService)
+            })
 
     @Deprecated(
         message = "This property will be removed in future releases. Don't use it in your code.",
@@ -395,7 +406,6 @@ constructor(
             val output = outputFile.get()
             output.parentFile.mkdirs()
 
-            val executionContext = KotlinToolRunner.GradleExecutionContext.fromTaskContext(objectFactory, execOperations, logger)
             val additionalOptions = mutableListOf<String>().apply {
                 addAll(externalDependenciesArgs)
                 when (cacheSettings.orchestration) {
@@ -418,12 +428,12 @@ constructor(
                     }
                     NativeCacheOrchestration.Gradle -> {
                         if (cacheSettings.icEnabled) {
-                            executionContext.logger.warn(
+                            logger.warn(
                                 "K/N incremental compilation only works in conjunction with kotlin.native.cacheOrchestration=compiler"
                             )
                         }
                         val cacheBuilder = CacheBuilder(
-                            executionContext = executionContext,
+                            objectFactory = objectFactory,
                             settings = cacheBuilderSettings,
                             konanPropertiesService = konanPropertiesService.get(),
                             metricsReporter = metricsReporter
@@ -436,11 +446,9 @@ constructor(
             val arguments = createCompilerArguments()
             val buildArguments = ArgumentUtils.convertArgumentsToStringList(arguments) + additionalOptions
 
-            KotlinNativeCompilerRunner(
+            objectFactory.KotlinNativeCompilerRunner(
                 settings = runnerSettings,
-                executionContext = executionContext,
                 metricsReporter = metricsReporter
-
             ).run(buildArguments)
         }
     }

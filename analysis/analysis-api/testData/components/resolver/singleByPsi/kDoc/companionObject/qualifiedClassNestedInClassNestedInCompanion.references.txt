@@ -1,0 +1,2 @@
+KDocReference:
+  (in C.X.Companion.YY) class ZZ

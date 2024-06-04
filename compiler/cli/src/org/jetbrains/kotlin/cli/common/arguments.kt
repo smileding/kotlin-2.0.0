@@ -24,7 +24,7 @@ fun CompilerConfiguration.setupCommonArguments(
     arguments: CommonCompilerArguments,
     createMetadataVersion: ((IntArray) -> BinaryVersion)? = null
 ) {
-    val messageCollector = getNotNull(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY)
+    val messageCollector = getNotNull(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY)
 
     put(CommonConfigurationKeys.DISABLE_INLINE, arguments.noInline)
     put(CommonConfigurationKeys.USE_FIR_EXTENDED_CHECKERS, arguments.useFirExtendedCheckers)
@@ -34,7 +34,17 @@ fun CompilerConfiguration.setupCommonArguments(
     put(CommonConfigurationKeys.INCREMENTAL_COMPILATION, incrementalCompilationIsEnabled(arguments))
     put(CommonConfigurationKeys.ALLOW_ANY_SCRIPTS_IN_SOURCE_ROOTS, arguments.allowAnyScriptsInSourceRoots)
     put(CommonConfigurationKeys.IGNORE_CONST_OPTIMIZATION_ERRORS, arguments.ignoreConstOptimizationErrors)
-    put(CommonConfigurationKeys.USE_FIR_BASED_FAKE_OVERRIDE_GENERATOR, arguments.useFirFakeOverrideBuilder)
+
+    put(
+        CommonConfigurationKeys.VERIFY_IR,
+        arguments.verifyIr?.let { verifyIrString ->
+            IrVerificationMode.resolveMode(verifyIrString).also {
+                if (it == null) {
+                    messageCollector.report(CompilerMessageSeverity.ERROR, "Unsupported IR verification mode $verifyIrString")
+                }
+            }
+        } ?: IrVerificationMode.NONE
+    )
 
     val metadataVersionString = arguments.metadataVersion
     if (metadataVersionString != null) {
@@ -86,7 +96,7 @@ private fun switchToFallbackModeIfNecessary(arguments: CommonCompilerArguments, 
 }
 
 fun CompilerConfiguration.setupLanguageVersionSettings(arguments: CommonCompilerArguments) {
-    languageVersionSettings = arguments.toLanguageVersionSettings(getNotNull(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY))
+    languageVersionSettings = arguments.toLanguageVersionSettings(getNotNull(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY))
 }
 
 const val KOTLIN_HOME_PROPERTY = "kotlin.home"
@@ -167,7 +177,7 @@ private fun CompilerConfiguration.buildHmppModuleStructure(arguments: CommonComp
     val rawFragmentSources = arguments.fragmentSources
     val rawFragmentRefines = arguments.fragmentRefines
 
-    val messageCollector = getNotNull(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY)
+    val messageCollector = getNotNull(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY)
 
     fun reportError(message: String) {
         messageCollector.report(CompilerMessageSeverity.ERROR, message)

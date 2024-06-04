@@ -20,9 +20,6 @@ import org.jetbrains.kotlin.fir.declarations.utils.correspondingValueParameterFr
 import org.jetbrains.kotlin.fir.declarations.utils.isData
 import org.jetbrains.kotlin.fir.declarations.utils.nameOrSpecialName
 import org.jetbrains.kotlin.fir.expressions.FirLiteralExpression
-import org.jetbrains.kotlin.fir.expressions.toReference
-import org.jetbrains.kotlin.fir.references.FirErrorNamedReference
-import org.jetbrains.kotlin.fir.references.FirNamedReference
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.resolve.toFirRegularClassSymbol
 import org.jetbrains.kotlin.fir.resolve.toSymbol
@@ -281,7 +278,7 @@ object FirOptInUsageBaseChecker {
         val levelName = levelArgument?.extractEnumValueArgumentInfo()?.enumEntryName?.asString()
 
         val severity = Experimentality.Severity.entries.firstOrNull { it.name == levelName } ?: Experimentality.DEFAULT_SEVERITY
-        val message = (experimental.findArgumentByName(MESSAGE) as? FirLiteralExpression<*>)?.value as? String
+        val message = (experimental.findArgumentByName(MESSAGE) as? FirLiteralExpression)?.value as? String
         return Experimentality(symbol.classId, severity, message, annotatedOwnerClassName)
     }
 
@@ -299,7 +296,11 @@ object FirOptInUsageBaseChecker {
                     Experimentality.Severity.ERROR -> FirErrors.OPT_IN_USAGE_ERROR to "must"
                 }
                 val reportedMessage = message?.takeIf { it.isNotBlank() }
-                    ?: OptInNames.buildDefaultDiagnosticMessage(OptInNames.buildMessagePrefix(verb), annotationClassId.asFqNameString())
+                    ?: OptInNames.buildDefaultDiagnosticMessage(
+                        OptInNames.buildMessagePrefix(verb),
+                        annotationClassId.asFqNameString(),
+                        isSubclassOptInApplicable = fromSupertype
+                    )
                 reporter.reportOn(source, diagnostic, annotationClassId, reportedMessage, context)
             }
         }

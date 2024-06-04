@@ -1,0 +1,10 @@
+<caret_1>:
+  KDocReference: Nothing (Unresolved reference)
+
+<caret_2>:
+  KDocReference:
+    (in test.WithMember) fun Foo()
+
+<caret_3>:
+  KDocReference:
+    (in test.WithMember) fun Foo()

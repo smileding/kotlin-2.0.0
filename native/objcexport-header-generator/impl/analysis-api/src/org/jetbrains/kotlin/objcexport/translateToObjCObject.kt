@@ -91,7 +91,7 @@ private fun KtClassOrObjectSymbol.toPropertyType() = ObjCClassType(
     typeArguments = emptyList(),
     extras = objCTypeExtras {
         requiresForwardDeclaration = true
-        originClassId = classIdIfNonLocal
+        originClassId = classId
     }
 )
 
@@ -100,8 +100,7 @@ private fun KtClassOrObjectSymbol.toPropertyType() = ObjCClassType(
  */
 context(KtAnalysisSession, KtObjCExportSession)
 private fun getObjectInstanceSelector(objectSymbol: KtClassOrObjectSymbol): String {
-    return if (objectSymbol.isCompanion) ObjCPropertyNames.companionObjectPropertyName
-    else objectSymbol.getObjCClassOrProtocolName().objCName.lowercase()
+    return objectSymbol.getObjCClassOrProtocolName(bareName = true).objCName.replaceFirstChar(Char::lowercaseChar)
 }
 
 /**

@@ -1,6 +1,6 @@
-KtFunctionSymbol:
+KaFunctionSymbol:
   annotationsList: []
-  callableIdIfNonLocal: /foo
+  callableId: /foo
   contextReceivers: []
   contractEffects: []
   hasStableParameterNames: true
@@ -19,11 +19,11 @@ KtFunctionSymbol:
   modality: FINAL
   name: foo
   origin: SOURCE
-  receiverParameter: KtReceiverParameterSymbol:
+  receiverParameter: KaReceiverParameterSymbol:
     annotationsList: []
     origin: SOURCE
-    owningCallableSymbol: KtFunctionSymbol(/foo)
-    type: KtUsualClassType:
+    owningCallableSymbol: KaFunctionSymbol(/foo)
+    type: KaUsualClassType:
       annotationsList: [
         Anno1()
           psi: KtAnnotationEntry
@@ -32,20 +32,20 @@ KtFunctionSymbol:
         Anno3()
           psi: KtAnnotationEntry
       ]
-      ownTypeArguments: []
+      typeArguments: []
       type: @R|Anno1|()  @R|Anno2|()  @R|Anno3|()  BaseInterface
-    getContainingFileSymbol: KtFileSymbol(typeAnnotationsOnFunctionReceiverType.kt)
+    getContainingFileSymbol: KaFileSymbol(typeAnnotationsOnFunctionReceiverType.kt)
     getContainingModule: KtSourceModule "Sources of main"
     deprecationStatus: null
-  returnType: KtUsualClassType:
+  returnType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: []
+    typeArguments: []
     type: kotlin/Unit
   symbolKind: TOP_LEVEL
   typeParameters: []
   valueParameters: []
   visibility: Public
-  getContainingFileSymbol: KtFileSymbol(typeAnnotationsOnFunctionReceiverType.kt)
+  getContainingFileSymbol: KaFileSymbol(typeAnnotationsOnFunctionReceiverType.kt)
   getContainingJvmClassName: TypeAnnotationsOnFunctionReceiverTypeKt
   getContainingModule: KtSourceModule "Sources of main"
   deprecationStatus: null

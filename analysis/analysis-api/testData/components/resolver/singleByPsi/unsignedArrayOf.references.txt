@@ -1,0 +1,4 @@
+KtSimpleNameReference:
+  (in kotlin) inline fun uintArrayOf(vararg elements: kotlin.UInt): kotlin.UIntArray
+
+KtInvokeFunctionReference: Nothing (Unresolved reference)

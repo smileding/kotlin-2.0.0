@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in test.Annotation) constructor()

@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  extension receiver with type kotlin.String

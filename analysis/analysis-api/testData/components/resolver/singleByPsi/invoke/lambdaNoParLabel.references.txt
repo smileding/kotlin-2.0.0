@@ -1,0 +1,2 @@
+KtInvokeFunctionReference:
+  (in Foo) operator fun invoke(a: kotlin.Any)

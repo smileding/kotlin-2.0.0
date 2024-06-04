@@ -1,0 +1,2 @@
+KDocReference:
+  (in dependency.JavaBase) open fun myFun()

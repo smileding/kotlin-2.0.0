@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in testPackage.testOtherPackage) class A

@@ -466,7 +466,7 @@ interface ClassicTypeSystemContext : TypeSystemInferenceExtensionContext, TypeSy
     val builtIns: KotlinBuiltIns
         get() = throw UnsupportedOperationException("Not supported")
 
-    override fun KotlinTypeMarker.makeDefinitelyNotNullOrNotNull(): KotlinTypeMarker {
+    override fun KotlinTypeMarker.makeDefinitelyNotNullOrNotNull(preserveAttributes: Boolean): KotlinTypeMarker {
         require(this is UnwrappedType, this::errorMessage)
         return makeDefinitelyNotNullOrNotNullInternal(this)
     }
@@ -847,7 +847,7 @@ interface ClassicTypeSystemContext : TypeSystemInferenceExtensionContext, TypeSy
         return descriptor is ClassDescriptor && (descriptor.kind == ClassKind.INTERFACE || descriptor.kind == ClassKind.ANNOTATION_CLASS)
     }
 
-    override fun createTypeWithAlternativeForIntersectionResult(
+    override fun createTypeWithUpperBoundForIntersectionResult(
         firstCandidate: KotlinTypeMarker,
         secondCandidate: KotlinTypeMarker,
     ): KotlinTypeMarker {

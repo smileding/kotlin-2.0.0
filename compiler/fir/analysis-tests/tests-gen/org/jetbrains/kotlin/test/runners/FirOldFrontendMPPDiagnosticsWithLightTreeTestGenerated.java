@@ -21,6 +21,12 @@ import java.util.regex.Pattern;
 @TestDataPath("$PROJECT_ROOT")
 public class FirOldFrontendMPPDiagnosticsWithLightTreeTestGenerated extends AbstractFirLightTreeWithActualizerDiagnosticsTest {
   @Test
+  @TestMetadata("abstractEnumInIr.kt")
+  public void testAbstractEnumInIr() {
+    runTest("compiler/testData/diagnostics/tests/multiplatform/abstractEnumInIr.kt");
+  }
+
+  @Test
   @TestMetadata("actualClassDelegationWithImplicitType.kt")
   public void testActualClassDelegationWithImplicitType() {
     runTest("compiler/testData/diagnostics/tests/multiplatform/actualClassDelegationWithImplicitType.kt");
@@ -236,6 +242,12 @@ public class FirOldFrontendMPPDiagnosticsWithLightTreeTestGenerated extends Abst
   }
 
   @Test
+  @TestMetadata("expectsWithJsExport.kt")
+  public void testExpectsWithJsExport() {
+    runTest("compiler/testData/diagnostics/tests/multiplatform/expectsWithJsExport.kt");
+  }
+
+  @Test
   @TestMetadata("extraNestedClassOnActualViaActualTypealias.kt")
   public void testExtraNestedClassOnActualViaActualTypealias() {
     runTest("compiler/testData/diagnostics/tests/multiplatform/extraNestedClassOnActualViaActualTypealias.kt");
@@ -374,9 +386,27 @@ public class FirOldFrontendMPPDiagnosticsWithLightTreeTestGenerated extends Abst
   }
 
   @Test
+  @TestMetadata("packageConflictsWithClassifierInMultiplatform.kt")
+  public void testPackageConflictsWithClassifierInMultiplatform() {
+    runTest("compiler/testData/diagnostics/tests/multiplatform/packageConflictsWithClassifierInMultiplatform.kt");
+  }
+
+  @Test
   @TestMetadata("platformRedeclarationOfExpect.kt")
   public void testPlatformRedeclarationOfExpect() {
     runTest("compiler/testData/diagnostics/tests/multiplatform/platformRedeclarationOfExpect.kt");
+  }
+
+  @Test
+  @TestMetadata("privateExpectFakeOverride.kt")
+  public void testPrivateExpectFakeOverride() {
+    runTest("compiler/testData/diagnostics/tests/multiplatform/privateExpectFakeOverride.kt");
+  }
+
+  @Test
+  @TestMetadata("privateExpectFakeOverride_incompatibleReturnType.kt")
+  public void testPrivateExpectFakeOverride_incompatibleReturnType() {
+    runTest("compiler/testData/diagnostics/tests/multiplatform/privateExpectFakeOverride_incompatibleReturnType.kt");
   }
 
   @Test
@@ -413,6 +443,12 @@ public class FirOldFrontendMPPDiagnosticsWithLightTreeTestGenerated extends Abst
   @TestMetadata("smartcastOnMemberPropertyFromCommonClass.kt")
   public void testSmartcastOnMemberPropertyFromCommonClass() {
     runTest("compiler/testData/diagnostics/tests/multiplatform/smartcastOnMemberPropertyFromCommonClass.kt");
+  }
+
+  @Test
+  @TestMetadata("stdlibWithActualizationErrors.kt")
+  public void testStdlibWithActualizationErrors() {
+    runTest("compiler/testData/diagnostics/tests/multiplatform/stdlibWithActualizationErrors.kt");
   }
 
   @Test

@@ -1,6 +1,6 @@
-KtFunctionSymbol:
+KaFunctionSymbol:
   annotationsList: []
-  callableIdIfNonLocal: /JavaClass.foo
+  callableId: /JavaClass.foo
   contextReceivers: []
   contractEffects: []
   hasStableParameterNames: false
@@ -20,9 +20,9 @@ KtFunctionSymbol:
   name: foo
   origin: JAVA
   receiverParameter: null
-  returnType: KtUsualClassType:
+  returnType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: []
+    typeArguments: []
     type: kotlin/Unit
   symbolKind: CLASS_MEMBER
   typeParameters: []

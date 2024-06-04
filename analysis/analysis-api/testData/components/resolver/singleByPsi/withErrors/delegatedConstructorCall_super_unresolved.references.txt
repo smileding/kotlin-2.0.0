@@ -1,0 +1,2 @@
+KtConstructorDelegationReference:
+  (in Base) constructor(p1: kotlin.Int)

@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  bb: kotlin.Int

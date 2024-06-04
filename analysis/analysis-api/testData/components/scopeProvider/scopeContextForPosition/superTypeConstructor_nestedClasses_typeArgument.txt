@@ -10,9 +10,9 @@ scopes:
   PackageMemberScope, index = 1
     packages: 0
     classifiers: 3
-      KtNamedClassOrObjectSymbol:
+      KaNamedClassOrObjectSymbol:
         annotationsList: []
-        classIdIfNonLocal: test/BaseInterface
+        classId: test/BaseInterface
         classKind: INTERFACE
         companionObject: null
         contextReceivers: []
@@ -27,17 +27,17 @@ scopes:
         name: BaseInterface
         origin: SOURCE
         superTypes: [
-          KtUsualClassType:
+          KaUsualClassType:
             annotationsList: []
-            ownTypeArguments: []
+            typeArguments: []
             type: kotlin/Any
         ]
         symbolKind: TOP_LEVEL
         typeParameters: []
         visibility: Public
-      KtNamedClassOrObjectSymbol:
+      KaNamedClassOrObjectSymbol:
         annotationsList: []
-        classIdIfNonLocal: test/Base
+        classId: test/Base
         classKind: CLASS
         companionObject: null
         contextReceivers: []
@@ -52,19 +52,19 @@ scopes:
         name: Base
         origin: SOURCE
         superTypes: [
-          KtUsualClassType:
+          KaUsualClassType:
             annotationsList: []
-            ownTypeArguments: []
+            typeArguments: []
             type: test/BaseInterface
         ]
         symbolKind: TOP_LEVEL
         typeParameters: [
-          KtTypeParameterSymbol(T)
+          KaTypeParameterSymbol(T)
         ]
         visibility: Public
-      KtNamedClassOrObjectSymbol:
+      KaNamedClassOrObjectSymbol:
         annotationsList: []
-        classIdIfNonLocal: test/Child
+        classId: test/Child
         classKind: CLASS
         companionObject: null
         contextReceivers: []
@@ -79,12 +79,12 @@ scopes:
         name: Child
         origin: SOURCE
         superTypes: [
-          KtUsualClassType:
+          KaUsualClassType:
             annotationsList: []
-            ownTypeArguments: [
-              KtUsualClassType:
+            typeArguments: [
+              KaUsualClassType:
                 annotationsList: []
-                ownTypeArguments: []
+                typeArguments: []
                 type: test/Base.NestedFromClass
             ]
             type: test/Base<test/Base.NestedFromClass>

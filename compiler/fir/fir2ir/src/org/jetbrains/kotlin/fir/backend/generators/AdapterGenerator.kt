@@ -137,9 +137,9 @@ internal class AdapterGenerator(
             )
             irAdapterFunction.body = irFactory.createBlockBody(startOffset, endOffset) {
                 if (expectedReturnType?.isUnit() == true) {
-                    statements.add(Fir2IrImplicitCastInserter.coerceToUnitIfNeeded(irCall, irBuiltIns))
+                    statements.add(Fir2IrImplicitCastInserter.coerceToUnitIfNeeded(irCall, builtins))
                 } else {
-                    statements.add(IrReturnImpl(startOffset, endOffset, irBuiltIns.nothingType, irAdapterFunction.symbol, irCall))
+                    statements.add(IrReturnImpl(startOffset, endOffset, builtins.nothingType, irAdapterFunction.symbol, irCall))
                 }
             }
 
@@ -209,7 +209,6 @@ internal class AdapterGenerator(
             isInfix = firMemberAdaptee.isInfix,
             isExternal = false,
         ).also { irAdapterFunction ->
-            symbolTable.enterScope(irAdapterFunction)
             irAdapterFunction.dispatchReceiverParameter = null
             val boundReceiver = boundDispatchReceiver ?: boundExtensionReceiver
             when {
@@ -236,8 +235,6 @@ internal class AdapterGenerator(
                     IrDeclarationOrigin.ADAPTER_PARAMETER_FOR_CALLABLE_REFERENCE
                 )
             }
-            symbolTable.leaveScope(irAdapterFunction)
-
             irAdapterFunction.parent = conversionScope.parent()!!
         }
     }
@@ -646,7 +643,6 @@ internal class AdapterGenerator(
             isInfix = false,
             isExternal = false,
         ).also { irAdapterFunction ->
-            symbolTable.enterScope(irAdapterFunction)
             irAdapterFunction.extensionReceiverParameter = createAdapterParameter(
                 irAdapterFunction,
                 Name.identifier("\$callee"),
@@ -668,10 +664,9 @@ internal class AdapterGenerator(
                 if (returnType.isUnit()) {
                     statements.add(irCall)
                 } else {
-                    statements.add(IrReturnImpl(startOffset, endOffset, irBuiltIns.nothingType, irAdapterFunction.symbol, irCall))
+                    statements.add(IrReturnImpl(startOffset, endOffset, builtins.nothingType, irAdapterFunction.symbol, irCall))
                 }
             }
-            symbolTable.leaveScope(irAdapterFunction)
             irAdapterFunction.parent = conversionScope.parent()!!
         }
     }
@@ -769,7 +764,6 @@ internal class AdapterGenerator(
             isInfix = false,
             isExternal = false,
         ).also { irAdapterFunction ->
-            symbolTable.enterScope(irAdapterFunction)
             irAdapterFunction.dispatchReceiverParameter = null
             irAdapterFunction.extensionReceiverParameter = null
             val irFunctionParameter = createAdapterParameter(
@@ -784,11 +778,11 @@ internal class AdapterGenerator(
                 startOffset, endOffset,
                 listOf(
                     IrReturnImpl(
-                        startOffset, endOffset, c.irBuiltIns.nothingType, irAdapterFunction.symbol,
+                        startOffset, endOffset, c.builtins.nothingType, irAdapterFunction.symbol,
                         IrTypeOperatorCallImpl(
                             startOffset, endOffset, irSamType, IrTypeOperator.SAM_CONVERSION, irSamType,
                             IrCallImpl(
-                                startOffset, endOffset, irFunctionType, irBuiltIns.checkNotNullSymbol,
+                                startOffset, endOffset, irFunctionType, builtins.checkNotNullSymbol,
                                 typeArgumentsCount = 1, valueArgumentsCount = 1, origin = IrStatementOrigin.EXCLEXCL
                             ).apply {
                                 putTypeArgument(0, irFunctionType)
@@ -798,7 +792,6 @@ internal class AdapterGenerator(
                     )
                 )
             )
-            symbolTable.leaveScope(irAdapterFunction)
             irAdapterFunction.parent = conversionScope.parent()!!
         }
     }

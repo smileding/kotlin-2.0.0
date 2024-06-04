@@ -269,6 +269,12 @@ public class ClassicNativeIrTextTestGenerated extends AbstractClassicNativeIrTex
     }
 
     @Test
+    @TestMetadata("sealedClassConstructorVisibility.kt")
+    public void testSealedClassConstructorVisibility() {
+      runTest("compiler/testData/ir/irText/classes/sealedClassConstructorVisibility.kt");
+    }
+
+    @Test
     @TestMetadata("sealedClasses.kt")
     public void testSealedClasses() {
       runTest("compiler/testData/ir/irText/classes/sealedClasses.kt");
@@ -2828,6 +2834,12 @@ public class ClassicNativeIrTextTestGenerated extends AbstractClassicNativeIrTex
     @TestMetadata("TypeAliasInImport.kt")
     public void testTypeAliasInImport() {
       runTest("compiler/testData/ir/irText/firProblems/TypeAliasInImport.kt");
+    }
+
+    @Test
+    @TestMetadata("typeOfNonExhaustiveWhen.kt")
+    public void testTypeOfNonExhaustiveWhen() {
+      runTest("compiler/testData/ir/irText/firProblems/typeOfNonExhaustiveWhen.kt");
     }
 
     @Test

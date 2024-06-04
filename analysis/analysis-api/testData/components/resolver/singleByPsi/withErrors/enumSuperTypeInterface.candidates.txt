@@ -1,0 +1,2 @@
+KtSuperTypeCallEntry:
+NO_CANDIDATES

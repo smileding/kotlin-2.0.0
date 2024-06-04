@@ -36,8 +36,8 @@ internal class ImplementationPrinter(
         get() = firImplementationDetailType
 
 
-    override val pureAbstractElementType: ClassRef<*>
-        get() = org.jetbrains.kotlin.fir.tree.generator.pureAbstractElementType
+    override fun getPureAbstractElementType(implementation: Implementation): ClassRef<*> =
+        pureAbstractElementType
 
     override fun makeFieldPrinter(printer: ImportCollectingPrinter): AbstractFieldPrinter<FieldWithDefault> = ImplementationFieldPrinter(printer)
 
@@ -298,6 +298,7 @@ internal class ImplementationPrinter(
                         field.implementationDefaultStrategy!!.withGetter -> {}
 
                         field.origin is FieldList && !field.isMutableOrEmptyList -> {
+                            println("if (${field.name} === $newValue) return")
                             println("${field.name}.clear()")
                             println("${field.name}.addAll($newValue)")
                         }

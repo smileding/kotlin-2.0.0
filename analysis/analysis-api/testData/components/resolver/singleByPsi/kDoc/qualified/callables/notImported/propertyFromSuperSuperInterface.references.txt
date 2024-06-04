@@ -1,0 +1,2 @@
+KDocReference:
+  (in foo.Baz) val foo: kotlin.Int

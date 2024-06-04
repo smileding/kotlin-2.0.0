@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in Child) override operator fun equals(other: kotlin.Any?): kotlin.Boolean

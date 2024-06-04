@@ -1,6 +1,6 @@
-KtNamedClassOrObjectSymbol:
+KaNamedClassOrObjectSymbol:
   annotationsList: []
-  classIdIfNonLocal: kotlin/Lazy
+  classId: kotlin/Lazy
   classKind: INTERFACE
   companionObject: null
   contextReceivers: []
@@ -15,14 +15,14 @@ KtNamedClassOrObjectSymbol:
   name: Lazy
   origin: LIBRARY
   superTypes: [
-    KtUsualClassType:
+    KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: kotlin/Any
   ]
   symbolKind: TOP_LEVEL
   typeParameters: [
-    KtTypeParameterSymbol(T)
+    KaTypeParameterSymbol(T)
   ]
   visibility: Public
   getContainingFileSymbol: null

@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in ROOT) fun foo(l1: (kotlin.Int) -> kotlin.Unit)

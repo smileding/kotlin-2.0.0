@@ -1,0 +1,2 @@
+KtEnumEntry:
+NO_CANDIDATES

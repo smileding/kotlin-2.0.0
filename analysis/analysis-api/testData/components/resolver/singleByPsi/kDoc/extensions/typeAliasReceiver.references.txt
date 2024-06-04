@@ -1,0 +1,18 @@
+<caret_1>:
+  KDocReference:
+    (in test) fun test.Foo.fooExt()
+
+<caret_2>:
+  KDocReference:
+    (in test) fun test.FooAlias /* = test.Foo */.fooAliasExt()
+
+<caret_3>:
+  KDocReference:
+    (in test) fun test.FooAlias /* = test.Foo */.fooAliasExt()
+
+<caret_4>:
+  KDocReference:
+    (in test) fun kotlin.Any.anyExt()
+
+<caret_5>:
+  KDocReference: Nothing (Unresolved reference)

@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in test.Target) fun add(t: T)

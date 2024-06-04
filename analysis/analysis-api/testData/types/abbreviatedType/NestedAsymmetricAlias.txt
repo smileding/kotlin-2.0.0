@@ -1,0 +1,590 @@
+KaUsualClassType:
+  abbreviatedType: KaUsualClassType:
+    abbreviatedType: null
+    annotationsList: []
+    classId: expansion/AsymmetricAlias2
+    nullability: NON_NULLABLE
+    qualifiers: [
+      qualifier:
+        name: AsymmetricAlias2
+        symbol: KaTypeAliasSymbol(expansion/AsymmetricAlias2)
+        typeArguments: [
+          KaUsualClassType:
+            abbreviatedType: KaUsualClassType:
+              abbreviatedType: null
+              annotationsList: []
+              classId: expansion/IntAlias
+              nullability: NON_NULLABLE
+              qualifiers: [
+                qualifier:
+                  name: IntAlias
+                  symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                  typeArguments: []
+              ]
+              symbol: KaTypeAliasSymbol(expansion/IntAlias)
+              typeArguments: []
+            annotationsList: []
+            classId: kotlin/Int
+            nullability: NON_NULLABLE
+            qualifiers: [
+              qualifier:
+                name: Int
+                symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                typeArguments: []
+            ]
+            symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+            typeArguments: []
+          KaUsualClassType:
+            abbreviatedType: KaUsualClassType:
+              abbreviatedType: null
+              annotationsList: []
+              classId: expansion/AsymmetricAlias
+              nullability: NON_NULLABLE
+              qualifiers: [
+                qualifier:
+                  name: AsymmetricAlias
+                  symbol: KaTypeAliasSymbol(expansion/AsymmetricAlias)
+                  typeArguments: [
+                    KaUsualClassType:
+                      abbreviatedType: KaUsualClassType:
+                        abbreviatedType: null
+                        annotationsList: []
+                        classId: expansion/BooleanAlias
+                        nullability: NON_NULLABLE
+                        qualifiers: [
+                          qualifier:
+                            name: BooleanAlias
+                            symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                            typeArguments: []
+                        ]
+                        symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                        typeArguments: []
+                      annotationsList: []
+                      classId: kotlin/Boolean
+                      nullability: NON_NULLABLE
+                      qualifiers: [
+                        qualifier:
+                          name: Boolean
+                          symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                          typeArguments: []
+                      ]
+                      symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                      typeArguments: []
+                    KaUsualClassType:
+                      abbreviatedType: KaUsualClassType:
+                        abbreviatedType: null
+                        annotationsList: []
+                        classId: expansion/IntAlias
+                        nullability: NON_NULLABLE
+                        qualifiers: [
+                          qualifier:
+                            name: IntAlias
+                            symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                            typeArguments: []
+                        ]
+                        symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                        typeArguments: []
+                      annotationsList: []
+                      classId: kotlin/Int
+                      nullability: NON_NULLABLE
+                      qualifiers: [
+                        qualifier:
+                          name: Int
+                          symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                          typeArguments: []
+                      ]
+                      symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                      typeArguments: []
+                  ]
+              ]
+              symbol: KaTypeAliasSymbol(expansion/AsymmetricAlias)
+              typeArguments: [
+                KaUsualClassType:
+                  abbreviatedType: KaUsualClassType:
+                    abbreviatedType: null
+                    annotationsList: []
+                    classId: expansion/BooleanAlias
+                    nullability: NON_NULLABLE
+                    qualifiers: [
+                      qualifier:
+                        name: BooleanAlias
+                        symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                        typeArguments: []
+                    ]
+                    symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                    typeArguments: []
+                  annotationsList: []
+                  classId: kotlin/Boolean
+                  nullability: NON_NULLABLE
+                  qualifiers: [
+                    qualifier:
+                      name: Boolean
+                      symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                      typeArguments: []
+                  ]
+                  symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                  typeArguments: []
+                KaUsualClassType:
+                  abbreviatedType: KaUsualClassType:
+                    abbreviatedType: null
+                    annotationsList: []
+                    classId: expansion/IntAlias
+                    nullability: NON_NULLABLE
+                    qualifiers: [
+                      qualifier:
+                        name: IntAlias
+                        symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                        typeArguments: []
+                    ]
+                    symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                    typeArguments: []
+                  annotationsList: []
+                  classId: kotlin/Int
+                  nullability: NON_NULLABLE
+                  qualifiers: [
+                    qualifier:
+                      name: Int
+                      symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                      typeArguments: []
+                  ]
+                  symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                  typeArguments: []
+              ]
+            annotationsList: []
+            classId: kotlin/String
+            nullability: NON_NULLABLE
+            qualifiers: [
+              qualifier:
+                name: String
+                symbol: KaNamedClassOrObjectSymbol(kotlin/String)
+                typeArguments: []
+            ]
+            symbol: KaNamedClassOrObjectSymbol(kotlin/String)
+            typeArguments: []
+        ]
+    ]
+    symbol: KaTypeAliasSymbol(expansion/AsymmetricAlias2)
+    typeArguments: [
+      KaUsualClassType:
+        abbreviatedType: KaUsualClassType:
+          abbreviatedType: null
+          annotationsList: []
+          classId: expansion/IntAlias
+          nullability: NON_NULLABLE
+          qualifiers: [
+            qualifier:
+              name: IntAlias
+              symbol: KaTypeAliasSymbol(expansion/IntAlias)
+              typeArguments: []
+          ]
+          symbol: KaTypeAliasSymbol(expansion/IntAlias)
+          typeArguments: []
+        annotationsList: []
+        classId: kotlin/Int
+        nullability: NON_NULLABLE
+        qualifiers: [
+          qualifier:
+            name: Int
+            symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+            typeArguments: []
+        ]
+        symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+        typeArguments: []
+      KaUsualClassType:
+        abbreviatedType: KaUsualClassType:
+          abbreviatedType: null
+          annotationsList: []
+          classId: expansion/AsymmetricAlias
+          nullability: NON_NULLABLE
+          qualifiers: [
+            qualifier:
+              name: AsymmetricAlias
+              symbol: KaTypeAliasSymbol(expansion/AsymmetricAlias)
+              typeArguments: [
+                KaUsualClassType:
+                  abbreviatedType: KaUsualClassType:
+                    abbreviatedType: null
+                    annotationsList: []
+                    classId: expansion/BooleanAlias
+                    nullability: NON_NULLABLE
+                    qualifiers: [
+                      qualifier:
+                        name: BooleanAlias
+                        symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                        typeArguments: []
+                    ]
+                    symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                    typeArguments: []
+                  annotationsList: []
+                  classId: kotlin/Boolean
+                  nullability: NON_NULLABLE
+                  qualifiers: [
+                    qualifier:
+                      name: Boolean
+                      symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                      typeArguments: []
+                  ]
+                  symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                  typeArguments: []
+                KaUsualClassType:
+                  abbreviatedType: KaUsualClassType:
+                    abbreviatedType: null
+                    annotationsList: []
+                    classId: expansion/IntAlias
+                    nullability: NON_NULLABLE
+                    qualifiers: [
+                      qualifier:
+                        name: IntAlias
+                        symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                        typeArguments: []
+                    ]
+                    symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                    typeArguments: []
+                  annotationsList: []
+                  classId: kotlin/Int
+                  nullability: NON_NULLABLE
+                  qualifiers: [
+                    qualifier:
+                      name: Int
+                      symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                      typeArguments: []
+                  ]
+                  symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                  typeArguments: []
+              ]
+          ]
+          symbol: KaTypeAliasSymbol(expansion/AsymmetricAlias)
+          typeArguments: [
+            KaUsualClassType:
+              abbreviatedType: KaUsualClassType:
+                abbreviatedType: null
+                annotationsList: []
+                classId: expansion/BooleanAlias
+                nullability: NON_NULLABLE
+                qualifiers: [
+                  qualifier:
+                    name: BooleanAlias
+                    symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                    typeArguments: []
+                ]
+                symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                typeArguments: []
+              annotationsList: []
+              classId: kotlin/Boolean
+              nullability: NON_NULLABLE
+              qualifiers: [
+                qualifier:
+                  name: Boolean
+                  symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                  typeArguments: []
+              ]
+              symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+              typeArguments: []
+            KaUsualClassType:
+              abbreviatedType: KaUsualClassType:
+                abbreviatedType: null
+                annotationsList: []
+                classId: expansion/IntAlias
+                nullability: NON_NULLABLE
+                qualifiers: [
+                  qualifier:
+                    name: IntAlias
+                    symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                    typeArguments: []
+                ]
+                symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                typeArguments: []
+              annotationsList: []
+              classId: kotlin/Int
+              nullability: NON_NULLABLE
+              qualifiers: [
+                qualifier:
+                  name: Int
+                  symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                  typeArguments: []
+              ]
+              symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+              typeArguments: []
+          ]
+        annotationsList: []
+        classId: kotlin/String
+        nullability: NON_NULLABLE
+        qualifiers: [
+          qualifier:
+            name: String
+            symbol: KaNamedClassOrObjectSymbol(kotlin/String)
+            typeArguments: []
+        ]
+        symbol: KaNamedClassOrObjectSymbol(kotlin/String)
+        typeArguments: []
+    ]
+  annotationsList: []
+  classId: kotlin/collections/List
+  nullability: NON_NULLABLE
+  qualifiers: [
+    qualifier:
+      name: List
+      symbol: KaNamedClassOrObjectSymbol(kotlin/collections/List)
+      typeArguments: [
+        KaUsualClassType:
+          abbreviatedType: KaUsualClassType:
+            abbreviatedType: null
+            annotationsList: []
+            classId: expansion/AsymmetricAlias
+            nullability: NON_NULLABLE
+            qualifiers: [
+              qualifier:
+                name: AsymmetricAlias
+                symbol: KaTypeAliasSymbol(expansion/AsymmetricAlias)
+                typeArguments: [
+                  KaUsualClassType:
+                    abbreviatedType: KaUsualClassType:
+                      abbreviatedType: null
+                      annotationsList: []
+                      classId: expansion/BooleanAlias
+                      nullability: NON_NULLABLE
+                      qualifiers: [
+                        qualifier:
+                          name: BooleanAlias
+                          symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                          typeArguments: []
+                      ]
+                      symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                      typeArguments: []
+                    annotationsList: []
+                    classId: kotlin/Boolean
+                    nullability: NON_NULLABLE
+                    qualifiers: [
+                      qualifier:
+                        name: Boolean
+                        symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                        typeArguments: []
+                    ]
+                    symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                    typeArguments: []
+                  KaUsualClassType:
+                    abbreviatedType: KaUsualClassType:
+                      abbreviatedType: null
+                      annotationsList: []
+                      classId: expansion/IntAlias
+                      nullability: NON_NULLABLE
+                      qualifiers: [
+                        qualifier:
+                          name: IntAlias
+                          symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                          typeArguments: []
+                      ]
+                      symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                      typeArguments: []
+                    annotationsList: []
+                    classId: kotlin/Int
+                    nullability: NON_NULLABLE
+                    qualifiers: [
+                      qualifier:
+                        name: Int
+                        symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                        typeArguments: []
+                    ]
+                    symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                    typeArguments: []
+                ]
+            ]
+            symbol: KaTypeAliasSymbol(expansion/AsymmetricAlias)
+            typeArguments: [
+              KaUsualClassType:
+                abbreviatedType: KaUsualClassType:
+                  abbreviatedType: null
+                  annotationsList: []
+                  classId: expansion/BooleanAlias
+                  nullability: NON_NULLABLE
+                  qualifiers: [
+                    qualifier:
+                      name: BooleanAlias
+                      symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                      typeArguments: []
+                  ]
+                  symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                  typeArguments: []
+                annotationsList: []
+                classId: kotlin/Boolean
+                nullability: NON_NULLABLE
+                qualifiers: [
+                  qualifier:
+                    name: Boolean
+                    symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                    typeArguments: []
+                ]
+                symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                typeArguments: []
+              KaUsualClassType:
+                abbreviatedType: KaUsualClassType:
+                  abbreviatedType: null
+                  annotationsList: []
+                  classId: expansion/IntAlias
+                  nullability: NON_NULLABLE
+                  qualifiers: [
+                    qualifier:
+                      name: IntAlias
+                      symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                      typeArguments: []
+                  ]
+                  symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                  typeArguments: []
+                annotationsList: []
+                classId: kotlin/Int
+                nullability: NON_NULLABLE
+                qualifiers: [
+                  qualifier:
+                    name: Int
+                    symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                    typeArguments: []
+                ]
+                symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                typeArguments: []
+            ]
+          annotationsList: []
+          classId: kotlin/String
+          nullability: NON_NULLABLE
+          qualifiers: [
+            qualifier:
+              name: String
+              symbol: KaNamedClassOrObjectSymbol(kotlin/String)
+              typeArguments: []
+          ]
+          symbol: KaNamedClassOrObjectSymbol(kotlin/String)
+          typeArguments: []
+      ]
+  ]
+  symbol: KaNamedClassOrObjectSymbol(kotlin/collections/List)
+  typeArguments: [
+    KaUsualClassType:
+      abbreviatedType: KaUsualClassType:
+        abbreviatedType: null
+        annotationsList: []
+        classId: expansion/AsymmetricAlias
+        nullability: NON_NULLABLE
+        qualifiers: [
+          qualifier:
+            name: AsymmetricAlias
+            symbol: KaTypeAliasSymbol(expansion/AsymmetricAlias)
+            typeArguments: [
+              KaUsualClassType:
+                abbreviatedType: KaUsualClassType:
+                  abbreviatedType: null
+                  annotationsList: []
+                  classId: expansion/BooleanAlias
+                  nullability: NON_NULLABLE
+                  qualifiers: [
+                    qualifier:
+                      name: BooleanAlias
+                      symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                      typeArguments: []
+                  ]
+                  symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                  typeArguments: []
+                annotationsList: []
+                classId: kotlin/Boolean
+                nullability: NON_NULLABLE
+                qualifiers: [
+                  qualifier:
+                    name: Boolean
+                    symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                    typeArguments: []
+                ]
+                symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                typeArguments: []
+              KaUsualClassType:
+                abbreviatedType: KaUsualClassType:
+                  abbreviatedType: null
+                  annotationsList: []
+                  classId: expansion/IntAlias
+                  nullability: NON_NULLABLE
+                  qualifiers: [
+                    qualifier:
+                      name: IntAlias
+                      symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                      typeArguments: []
+                  ]
+                  symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                  typeArguments: []
+                annotationsList: []
+                classId: kotlin/Int
+                nullability: NON_NULLABLE
+                qualifiers: [
+                  qualifier:
+                    name: Int
+                    symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                    typeArguments: []
+                ]
+                symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                typeArguments: []
+            ]
+        ]
+        symbol: KaTypeAliasSymbol(expansion/AsymmetricAlias)
+        typeArguments: [
+          KaUsualClassType:
+            abbreviatedType: KaUsualClassType:
+              abbreviatedType: null
+              annotationsList: []
+              classId: expansion/BooleanAlias
+              nullability: NON_NULLABLE
+              qualifiers: [
+                qualifier:
+                  name: BooleanAlias
+                  symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+                  typeArguments: []
+              ]
+              symbol: KaTypeAliasSymbol(expansion/BooleanAlias)
+              typeArguments: []
+            annotationsList: []
+            classId: kotlin/Boolean
+            nullability: NON_NULLABLE
+            qualifiers: [
+              qualifier:
+                name: Boolean
+                symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+                typeArguments: []
+            ]
+            symbol: KaNamedClassOrObjectSymbol(kotlin/Boolean)
+            typeArguments: []
+          KaUsualClassType:
+            abbreviatedType: KaUsualClassType:
+              abbreviatedType: null
+              annotationsList: []
+              classId: expansion/IntAlias
+              nullability: NON_NULLABLE
+              qualifiers: [
+                qualifier:
+                  name: IntAlias
+                  symbol: KaTypeAliasSymbol(expansion/IntAlias)
+                  typeArguments: []
+              ]
+              symbol: KaTypeAliasSymbol(expansion/IntAlias)
+              typeArguments: []
+            annotationsList: []
+            classId: kotlin/Int
+            nullability: NON_NULLABLE
+            qualifiers: [
+              qualifier:
+                name: Int
+                symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+                typeArguments: []
+            ]
+            symbol: KaNamedClassOrObjectSymbol(kotlin/Int)
+            typeArguments: []
+        ]
+      annotationsList: []
+      classId: kotlin/String
+      nullability: NON_NULLABLE
+      qualifiers: [
+        qualifier:
+          name: String
+          symbol: KaNamedClassOrObjectSymbol(kotlin/String)
+          typeArguments: []
+      ]
+      symbol: KaNamedClassOrObjectSymbol(kotlin/String)
+      typeArguments: []
+  ]
+
+Rendered type:
+expansion.AsymmetricAlias2<expansion.IntAlias, expansion.AsymmetricAlias<expansion.BooleanAlias, expansion.IntAlias>>

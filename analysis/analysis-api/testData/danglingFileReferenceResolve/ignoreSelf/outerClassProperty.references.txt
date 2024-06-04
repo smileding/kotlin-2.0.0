@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in Outer) val foo: kotlin.String [outerClassProperty.kt]

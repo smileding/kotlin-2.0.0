@@ -1,6 +1,6 @@
-KtNamedClassOrObjectSymbol:
+KaNamedClassOrObjectSymbol:
   annotationsList: []
-  classIdIfNonLocal: test/C
+  classId: test/C
   classKind: CLASS
   companionObject: null
   contextReceivers: []
@@ -15,22 +15,22 @@ KtNamedClassOrObjectSymbol:
   name: C
   origin: SOURCE
   superTypes: [
-    KtUsualClassType:
+    KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: kotlin/Any
   ]
   symbolKind: TOP_LEVEL
   typeParameters: []
   visibility: Public
-  getContainingFileSymbol: KtFileSymbol(simpleScript.kts)
+  getContainingFileSymbol: KaFileSymbol(simpleScript.kts)
   getContainingModule: KtScriptModule "Script simpleScript.kts"
   annotationApplicableTargets: null
   deprecationStatus: null
 
-KtNamedClassOrObjectSymbol:
+KaNamedClassOrObjectSymbol:
   annotationsList: []
-  classIdIfNonLocal: test/I
+  classId: test/I
   classKind: INTERFACE
   companionObject: null
   contextReceivers: []
@@ -45,22 +45,22 @@ KtNamedClassOrObjectSymbol:
   name: I
   origin: SOURCE
   superTypes: [
-    KtUsualClassType:
+    KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: kotlin/Any
   ]
   symbolKind: TOP_LEVEL
   typeParameters: []
   visibility: Public
-  getContainingFileSymbol: KtFileSymbol(simpleScript.kts)
+  getContainingFileSymbol: KaFileSymbol(simpleScript.kts)
   getContainingModule: KtScriptModule "Script simpleScript.kts"
   annotationApplicableTargets: null
   deprecationStatus: null
 
-KtNamedClassOrObjectSymbol:
+KaNamedClassOrObjectSymbol:
   annotationsList: []
-  classIdIfNonLocal: test/O
+  classId: test/O
   classKind: OBJECT
   companionObject: null
   contextReceivers: []
@@ -75,15 +75,15 @@ KtNamedClassOrObjectSymbol:
   name: O
   origin: SOURCE
   superTypes: [
-    KtUsualClassType:
+    KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: kotlin/Any
   ]
   symbolKind: TOP_LEVEL
   typeParameters: []
   visibility: Public
-  getContainingFileSymbol: KtFileSymbol(simpleScript.kts)
+  getContainingFileSymbol: KaFileSymbol(simpleScript.kts)
   getContainingModule: KtScriptModule "Script simpleScript.kts"
   annotationApplicableTargets: null
   deprecationStatus: null

@@ -1,0 +1,5 @@
+<caret_1>: KDocName:
+NO_CANDIDATES
+
+<caret_2>: KDocName:
+NO_CANDIDATES

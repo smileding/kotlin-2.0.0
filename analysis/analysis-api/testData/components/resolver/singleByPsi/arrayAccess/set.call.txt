@@ -1,0 +1,8 @@
+<caret>: KtContainerNode:
+null
+
+<caret_singleIfStatement>: KtContainerNode:
+null
+
+<caret_singleWhenStatement>: KtContainerNode:
+null

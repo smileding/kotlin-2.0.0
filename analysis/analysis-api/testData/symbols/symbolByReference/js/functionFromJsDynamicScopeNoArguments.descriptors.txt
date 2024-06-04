@@ -1,6 +1,6 @@
-KtFunctionSymbol:
+KaFunctionSymbol:
   annotationsList: []
-  callableIdIfNonLocal: null
+  callableId: null
   contextReceivers: []
   contractEffects: []
   hasStableParameterNames: true
@@ -20,15 +20,15 @@ KtFunctionSymbol:
   name: dynamicFunctionCall
   origin: JS_DYNAMIC
   receiverParameter: null
-  returnType: KtDynamicType:
+  returnType: KaDynamicType:
     annotationsList: []
     type: dynamic
   symbolKind: CLASS_MEMBER
   typeParameters: []
   valueParameters: [
-    KtValueParameterSymbol:
+    KaValueParameterSymbol:
       annotationsList: []
-      callableIdIfNonLocal: null
+      callableId: null
       contextReceivers: []
       generatedPrimaryConstructorProperty: null
       hasDefaultValue: false
@@ -40,7 +40,7 @@ KtFunctionSymbol:
       name: args
       origin: JS_DYNAMIC
       receiverParameter: null
-      returnType: KtDynamicType:
+      returnType: KaDynamicType:
         annotationsList: []
         type: dynamic
       symbolKind: LOCAL
@@ -51,10 +51,10 @@ KtFunctionSymbol:
       deprecationStatus: null
   ]
   visibility: Public
-  getDispatchReceiver(): KtDynamicType:
+  getDispatchReceiver(): KaDynamicType:
     annotationsList: []
     type: dynamic
-  getContainingFileSymbol: KtFileSymbol(functionFromJsDynamicScopeNoArguments.kt)
+  getContainingFileSymbol: KaFileSymbol(functionFromJsDynamicScopeNoArguments.kt)
   getContainingJvmClassName: null
   getContainingModule: KtSourceModule "Sources of main"
   deprecationStatus: null

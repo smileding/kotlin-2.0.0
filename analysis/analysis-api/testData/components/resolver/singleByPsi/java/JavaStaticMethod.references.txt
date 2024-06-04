@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in pkg.Foo) open fun bar()

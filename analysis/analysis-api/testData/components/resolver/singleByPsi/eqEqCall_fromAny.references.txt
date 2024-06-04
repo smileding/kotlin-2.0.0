@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  b1: B

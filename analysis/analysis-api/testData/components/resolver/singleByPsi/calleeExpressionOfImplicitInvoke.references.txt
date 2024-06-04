@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  f: () -> kotlin.Unit

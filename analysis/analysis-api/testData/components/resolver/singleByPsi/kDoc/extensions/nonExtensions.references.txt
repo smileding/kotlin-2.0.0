@@ -1,0 +1,11 @@
+<caret_1>:
+  KDocReference: Nothing (Unresolved reference)
+
+<caret_2>:
+  KDocReference: Nothing (Unresolved reference)
+
+<caret_3>:
+  KDocReference: Nothing (Unresolved reference)
+
+<caret_4>:
+  KDocReference: Nothing (Unresolved reference)

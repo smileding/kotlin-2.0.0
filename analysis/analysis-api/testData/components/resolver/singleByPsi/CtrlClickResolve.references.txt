@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in ctrl_click) fun IntArray(vararg content: kotlin.String): kotlin.Array<out kotlin.String>

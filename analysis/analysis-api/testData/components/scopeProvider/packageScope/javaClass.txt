@@ -1,6 +1,6 @@
-KtNamedClassOrObjectSymbol:
+KaNamedClassOrObjectSymbol:
   annotationsList: []
-  classIdIfNonLocal: test/KotlinClass
+  classId: test/KotlinClass
   classKind: CLASS
   companionObject: null
   contextReceivers: []
@@ -15,15 +15,15 @@ KtNamedClassOrObjectSymbol:
   name: KotlinClass
   origin: SOURCE
   superTypes: [
-    KtUsualClassType:
+    KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: test/JavaClass
   ]
   symbolKind: TOP_LEVEL
   typeParameters: []
   visibility: Public
-  getContainingFileSymbol: KtFileSymbol(main.kt)
+  getContainingFileSymbol: KaFileSymbol(main.kt)
   getContainingModule: KtSourceModule "Sources of main"
   annotationApplicableTargets: null
   deprecationStatus: null

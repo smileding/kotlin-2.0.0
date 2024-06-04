@@ -1,0 +1,5 @@
+KtSimpleNameReference:
+  (in <local>: test) var i: kotlin.Int
+
+KtSimpleNameReference:
+  (in <local>: test) var i: kotlin.Int

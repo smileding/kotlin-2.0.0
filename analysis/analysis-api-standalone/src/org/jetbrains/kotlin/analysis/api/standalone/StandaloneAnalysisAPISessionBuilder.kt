@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.analysis.api.standalone
 
+import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.Application
@@ -12,6 +13,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.psi.PsiFile
 import com.intellij.psi.search.GlobalSearchScope
+import org.jetbrains.kotlin.analysis.api.standalone.base.project.structure.AnalysisApiSimpleServiceRegistrar
+import org.jetbrains.kotlin.analysis.api.standalone.base.project.structure.ApplicationServiceRegistration
 import org.jetbrains.kotlin.analysis.api.standalone.base.project.structure.FirStandaloneServiceRegistrar
 import org.jetbrains.kotlin.analysis.api.standalone.base.project.structure.KtStaticProjectStructureProvider
 import org.jetbrains.kotlin.analysis.api.standalone.base.project.structure.LLFirStandaloneLibrarySymbolProviderFactory
@@ -28,6 +31,8 @@ import org.jetbrains.kotlin.analysis.project.structure.impl.getPsiFilesFromPaths
 import org.jetbrains.kotlin.analysis.project.structure.impl.getSourceFilePaths
 import org.jetbrains.kotlin.analysis.providers.*
 import org.jetbrains.kotlin.analysis.providers.impl.*
+import org.jetbrains.kotlin.analysis.providers.lifetime.KtAlwaysAccessibleLifetimeTokenProvider
+import org.jetbrains.kotlin.analysis.providers.lifetime.KtLifetimeTokenProvider
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreApplicationEnvironmentMode
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreProjectEnvironment
 import org.jetbrains.kotlin.cli.jvm.compiler.setupIdeaStandaloneExecution
@@ -60,8 +65,18 @@ public class StandaloneAnalysisAPISessionBuilder(
             classLoader = classLoader
         )
 
+    private val serviceRegistrars = listOf(FirStandaloneServiceRegistrar, StandaloneSessionServiceRegistrar)
+
     init {
-        FirStandaloneServiceRegistrar.registerApplicationServices(kotlinCoreProjectEnvironment.environment.application)
+        val application = kotlinCoreProjectEnvironment.environment.application
+        ApplicationServiceRegistration.registerWithCustomRegistration(application, serviceRegistrars) {
+            // TODO (KT-68186): Passing the class loader explicitly is a workaround for KT-68186.
+            if (this is FirStandaloneServiceRegistrar) {
+                registerApplicationServicesWithCustomClassLoader(application, classLoader)
+            } else {
+                registerApplicationServices(application, data = Unit)
+            }
+        }
     }
 
     public val application: Application = kotlinCoreProjectEnvironment.environment.application
@@ -110,9 +125,9 @@ public class StandaloneAnalysisAPISessionBuilder(
     ) {
         val project = kotlinCoreProjectEnvironment.project
         project.apply {
-            FirStandaloneServiceRegistrar.registerProjectServices(project)
-            FirStandaloneServiceRegistrar.registerProjectExtensionPoints(project)
-            FirStandaloneServiceRegistrar.registerProjectModelServices(project, kotlinCoreProjectEnvironment.parentDisposable)
+            serviceRegistrars.forEach { it.registerProjectServices(project) }
+            serviceRegistrars.forEach { it.registerProjectExtensionPoints(project) }
+            serviceRegistrars.forEach { it.registerProjectModelServices(project, kotlinCoreProjectEnvironment.parentDisposable) }
 
             registerService(KotlinModificationTrackerFactory::class.java, KotlinStaticModificationTrackerFactory::class.java)
             registerService(KotlinGlobalModificationService::class.java, KotlinStaticGlobalModificationService::class.java)
@@ -138,9 +153,6 @@ public class StandaloneAnalysisAPISessionBuilder(
                 PackagePartProviderFactory::class.java,
                 KotlinStaticPackagePartProviderFactory(packagePartProvider)
             )
-
-            registerService(LLFirLibrarySymbolProviderFactory::class.java, LLFirStandaloneLibrarySymbolProviderFactory::class.java)
-            registerService(LLFirElementByPsiElementChooser::class.java, LLStandaloneFirElementByPsiElementChooser::class.java)
         }
     }
 
@@ -177,6 +189,7 @@ public class StandaloneAnalysisAPISessionBuilder(
             projectStructureProvider.allKtModules,
             kotlinCoreProjectEnvironment,
         )
+
         val createPackagePartProvider =
             StandaloneProjectFactory.createPackagePartsProvider(
                 libraryRoots,
@@ -198,6 +211,31 @@ public class StandaloneAnalysisAPISessionBuilder(
                 check(ktModule is KtSourceModuleImpl)
                 ktModule to ktModule.sourceRoots.filterIsInstance<PsiFile>()
             }.toMap()
+        }
+    }
+}
+
+/**
+ * Registers services which are not covered by [FirStandaloneServiceRegistrar]. In general, this concerns services which need to be
+ * registered for production Standalone and Standalone test usages, but *not* for IDE mode Analysis API tests, which rely on
+ * [FirStandaloneServiceRegistrar] as a basis.
+ *
+ * When using this service registrar in tests, make sure that `AnalysisApiIdeModeTestServiceRegistrar` isn't configured at the same time.
+ */
+internal object StandaloneSessionServiceRegistrar : AnalysisApiSimpleServiceRegistrar() {
+    override fun registerApplicationServices(application: MockApplication) {
+        application.apply {
+            // TODO (KT-68386): Re-enable once KT-68386 is fixed.
+            //registerService(KotlinAnalysisPermissionOptions::class.java, KotlinStandaloneAnalysisPermissionOptions::class.java)
+        }
+    }
+
+    override fun registerProjectServices(project: MockProject) {
+        project.apply {
+            registerService(KtLifetimeTokenProvider::class.java, KtAlwaysAccessibleLifetimeTokenProvider::class.java)
+
+            registerService(LLFirLibrarySymbolProviderFactory::class.java, LLFirStandaloneLibrarySymbolProviderFactory::class.java)
+            registerService(LLFirElementByPsiElementChooser::class.java, LLStandaloneFirElementByPsiElementChooser::class.java)
         }
     }
 }

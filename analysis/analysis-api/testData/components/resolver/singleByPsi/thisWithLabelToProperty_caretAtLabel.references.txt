@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in Foo) val kotlin.String.foo: kotlin.Any

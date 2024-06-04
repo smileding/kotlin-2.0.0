@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.codegen.ClassBuilderFactories
 import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.config.languageVersionSettings
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporterFactory
@@ -105,7 +106,7 @@ class K2CompilerFacade(environment: KotlinCoreEnvironment) : KotlinCompilerFacad
             { null },
             FirExtensionRegistrar.getInstances(project),
             configuration.languageVersionSettings,
-            JvmTarget.JVM_17,
+            configuration.get(JVMConfigurationKeys.JVM_TARGET) ?: error("JVM_TARGET is not specified in compiler configuration"),
             configuration.get(CommonConfigurationKeys.LOOKUP_TRACKER),
             configuration.get(CommonConfigurationKeys.ENUM_WHEN_TRACKER),
             configuration.get(CommonConfigurationKeys.IMPORT_TRACKER),
@@ -205,7 +206,6 @@ class K2CompilerFacade(environment: KotlinCoreEnvironment) : KotlinCompilerFacad
         val fir2IrExtensions = JvmFir2IrExtensions(
             configuration,
             JvmIrDeserializerImpl(),
-            JvmIrMangler
         )
 
         val fir2IrResult = analysisResult.firResult.convertToIrAndActualizeForJvm(
@@ -247,7 +247,10 @@ class K2CompilerFacade(environment: KotlinCoreEnvironment) : KotlinCompilerFacad
             configuration.get(CLIConfigurationKeys.PHASE_CONFIG)
         )
         codegenFactory.generateModuleInFrontendIRMode(
-            generationState, irModuleFragment, components.symbolTable, components.irProviders,
+            generationState,
+            irModuleFragment,
+            frontendResult.firResult.symbolTable,
+            components.irProviders,
             frontendResult.generatorExtensions,
             FirJvmBackendExtension(
                 components,

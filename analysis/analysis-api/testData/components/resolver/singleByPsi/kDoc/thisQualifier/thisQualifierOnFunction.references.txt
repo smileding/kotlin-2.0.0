@@ -1,0 +1,2 @@
+KDocReference:
+  extension receiver with type AAA

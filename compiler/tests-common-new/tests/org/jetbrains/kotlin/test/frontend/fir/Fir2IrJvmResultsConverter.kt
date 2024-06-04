@@ -69,7 +69,7 @@ class Fir2IrJvmResultsConverter(
         val configuration = compilerConfigurationProvider.getCompilerConfiguration(module)
 
         val irMangler = JvmIrMangler
-        val fir2IrExtensions = JvmFir2IrExtensions(configuration, JvmIrDeserializerImpl(), irMangler)
+        val fir2IrExtensions = JvmFir2IrExtensions(configuration, JvmIrDeserializerImpl())
 
         // Create and initialize the module and its dependencies
         val project = compilerConfigurationProvider.getProject(module)
@@ -93,11 +93,12 @@ class Fir2IrJvmResultsConverter(
             DefaultBuiltIns.Instance,
             ::JvmIrTypeSystemContext,
             JvmIrSpecialAnnotationSymbolProvider,
+            ::initializeActualDeclarationExtractorIfStdlib,
         )
 
         val backendInput = JvmIrCodegenFactory.JvmIrBackendInput(
             fir2irResult.irModuleFragment,
-            fir2irResult.components.symbolTable,
+            fir2irResult.symbolTable,
             phaseConfig,
             fir2irResult.components.irProviders,
             fir2IrExtensions,

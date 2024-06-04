@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in F) fun peek(): F

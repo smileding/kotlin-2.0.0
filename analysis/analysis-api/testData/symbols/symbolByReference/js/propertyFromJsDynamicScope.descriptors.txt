@@ -1,7 +1,7 @@
-KtKotlinPropertySymbol:
+KaKotlinPropertySymbol:
   annotationsList: []
   backingFieldSymbol: null
-  callableIdIfNonLocal: null
+  callableId: null
   contextReceivers: []
   getter: null
   hasBackingField: true
@@ -22,17 +22,17 @@ KtKotlinPropertySymbol:
   name: dynamicPropertyAccess
   origin: JS_DYNAMIC
   receiverParameter: null
-  returnType: KtDynamicType:
+  returnType: KaDynamicType:
     annotationsList: []
     type: dynamic
   setter: null
   symbolKind: CLASS_MEMBER
   typeParameters: []
   visibility: Public
-  getDispatchReceiver(): KtDynamicType:
+  getDispatchReceiver(): KaDynamicType:
     annotationsList: []
     type: dynamic
-  getContainingFileSymbol: KtFileSymbol(propertyFromJsDynamicScope.kt)
+  getContainingFileSymbol: KaFileSymbol(propertyFromJsDynamicScope.kt)
   getContainingJvmClassName: null
   getContainingModule: KtSourceModule "Sources of main"
   deprecationStatus: null

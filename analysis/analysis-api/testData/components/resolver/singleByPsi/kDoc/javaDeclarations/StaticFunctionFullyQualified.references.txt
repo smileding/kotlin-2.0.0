@@ -1,0 +1,2 @@
+KDocReference:
+  (in dependency.JavaClass) open fun staticFun()

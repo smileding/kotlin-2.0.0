@@ -1,0 +1,4 @@
+KtSimpleNameReference:
+  obj: Foo
+
+KtInvokeFunctionReference: Nothing (Unresolved reference)

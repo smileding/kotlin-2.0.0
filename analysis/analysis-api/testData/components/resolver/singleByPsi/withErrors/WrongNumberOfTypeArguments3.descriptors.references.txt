@@ -1,0 +1,4 @@
+KtSimpleNameReference:
+  (in foo.DD) constructor()
+
+SyntheticPropertyAccessorReference: Nothing (Unresolved reference)

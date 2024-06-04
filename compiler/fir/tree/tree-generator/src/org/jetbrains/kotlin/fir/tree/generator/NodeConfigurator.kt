@@ -226,9 +226,8 @@ object NodeConfigurator : AbstractFieldConfigurator<FirTreeBuilder>(FirTreeBuild
         }
 
         literalExpression.configure {
-            val t = withArg("T")
-            +field("kind", constKindType.withArgs(t), withReplace = true)
-            +field("value", t)
+            +field("kind", constKindType, withReplace = true)
+            +field("value", anyType, nullable = true)
         }
 
         functionCall.configure {
@@ -281,6 +280,7 @@ object NodeConfigurator : AbstractFieldConfigurator<FirTreeBuilder>(FirTreeBuild
         whenBranch.configure {
             +field("condition", expression).withTransform()
             +field("result", block).withTransform()
+            +booleanField("hasGuard")
             needTransformOtherChildren()
         }
 
@@ -408,6 +408,8 @@ object NodeConfigurator : AbstractFieldConfigurator<FirTreeBuilder>(FirTreeBuild
                 "external", "const", "lateInit", "inner", "companion", "data", "suspend", "static",
                 "fromSealedClass", "fromEnumClass", "fun", "hasStableParameterNames",
             )
+            +field("defaultVisibility", visibilityType, nullable = false)
+            +field("defaultModality", modalityType, nullable = false)
         }
 
         resolvedDeclarationStatus.configure {
@@ -452,6 +454,11 @@ object NodeConfigurator : AbstractFieldConfigurator<FirTreeBuilder>(FirTreeBuild
         receiverParameter.configure {
             +typeRefField.withTransform()
             +annotations
+        }
+
+        scriptReceiverParameter.configure {
+            +typeRefField.withTransform()
+            +booleanField("isBaseClassReceiver") // means coming from ScriptCompilationConfigurationKeys.baseClass (could be deprecated soon, see KT-68540)
         }
 
         variable.configure {
@@ -514,7 +521,7 @@ object NodeConfigurator : AbstractFieldConfigurator<FirTreeBuilder>(FirTreeBuild
             +declarations.withTransform().withReplace()
             +declaredSymbol(scriptSymbolType)
             +fieldList("parameters", property).withTransform()
-            +fieldList(contextReceiver, useMutableOrEmpty = true).withTransform()
+            +fieldList("receivers", scriptReceiverParameter, useMutableOrEmpty = true).withTransform()
             +field("resultPropertyName", nameType, nullable = true)
         }
 
@@ -717,6 +724,7 @@ object NodeConfigurator : AbstractFieldConfigurator<FirTreeBuilder>(FirTreeBuild
         }
 
         stringConcatenationCall.configure {
+            +stringField("interpolationPrefix")
         }
 
         throwExpression.configure {

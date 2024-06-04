@@ -1,0 +1,11 @@
+<caret>:
+  KtArrayAccessReference:
+    (in kotlin.collections.MutableList) operator fun set(index: kotlin.Int, element: E): E
+
+<caret_singleIfStatement>:
+  KtArrayAccessReference:
+    (in kotlin.collections.MutableList) operator fun set(index: kotlin.Int, element: E): E
+
+<caret_singleWhenStatement>:
+  KtArrayAccessReference:
+    (in kotlin.collections.MutableList) operator fun set(index: kotlin.Int, element: E): E

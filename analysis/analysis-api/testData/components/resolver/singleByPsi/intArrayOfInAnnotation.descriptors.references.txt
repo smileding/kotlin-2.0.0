@@ -1,0 +1,4 @@
+KtSimpleNameReference:
+  (in kotlin) fun intArrayOf(vararg elements: kotlin.Int): kotlin.IntArray
+
+SyntheticPropertyAccessorReference: Nothing (Unresolved reference)

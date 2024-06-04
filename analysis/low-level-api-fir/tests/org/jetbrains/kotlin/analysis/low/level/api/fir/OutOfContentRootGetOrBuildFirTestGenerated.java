@@ -526,6 +526,18 @@ public class OutOfContentRootGetOrBuildFirTestGenerated extends AbstractOutOfCon
     public void testSuperType() {
       runTest("analysis/low-level-api-fir/testData/getOrBuildFir/calls/superType.kt");
     }
+
+    @Test
+    @TestMetadata("whenConditionInRange.kt")
+    public void testWhenConditionInRange() {
+      runTest("analysis/low-level-api-fir/testData/getOrBuildFir/calls/whenConditionInRange.kt");
+    }
+
+    @Test
+    @TestMetadata("whenConditionInRangeInverted.kt")
+    public void testWhenConditionInRangeInverted() {
+      runTest("analysis/low-level-api-fir/testData/getOrBuildFir/calls/whenConditionInRangeInverted.kt");
+    }
   }
 
   @Nested
@@ -1075,6 +1087,12 @@ public class OutOfContentRootGetOrBuildFirTestGenerated extends AbstractOutOfCon
     @TestMetadata("javaClassLiteral.kt")
     public void testJavaClassLiteral() {
       runTest("analysis/low-level-api-fir/testData/getOrBuildFir/invalidCode/javaClassLiteral.kt");
+    }
+
+    @Test
+    @TestMetadata("longStringTemplateEntryWithTwoExpressions.kt")
+    public void testLongStringTemplateEntryWithTwoExpressions() {
+      runTest("analysis/low-level-api-fir/testData/getOrBuildFir/invalidCode/longStringTemplateEntryWithTwoExpressions.kt");
     }
 
     @Test

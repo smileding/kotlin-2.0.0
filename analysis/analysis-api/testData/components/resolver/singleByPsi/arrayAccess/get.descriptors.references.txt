@@ -1,0 +1,2 @@
+KtArrayAccessReference:
+  (in kotlin.collections.MutableList) operator fun get(index: kotlin.Int): E

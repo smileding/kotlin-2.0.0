@@ -1,9 +1,9 @@
-KtNamedClassOrObjectSymbol:
+KaNamedClassOrObjectSymbol:
   annotationsList: [
     <Error class: unknown class>()
       psi: null
   ]
-  classIdIfNonLocal: JavaClass
+  classId: JavaClass
   classKind: CLASS
   companionObject: null
   contextReceivers: []
@@ -18,9 +18,9 @@ KtNamedClassOrObjectSymbol:
   name: JavaClass
   origin: JAVA
   superTypes: [
-    KtUsualClassType:
+    KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: kotlin/Any
   ]
   symbolKind: TOP_LEVEL

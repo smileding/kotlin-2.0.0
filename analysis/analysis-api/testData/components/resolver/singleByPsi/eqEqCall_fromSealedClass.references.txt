@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  s1: SealedClass

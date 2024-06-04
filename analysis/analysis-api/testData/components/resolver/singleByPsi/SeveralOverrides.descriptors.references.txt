@@ -1,0 +1,4 @@
+KtSimpleNameReference:
+  (in C) fun foo()
+
+SyntheticPropertyAccessorReference: Nothing (Unresolved reference)

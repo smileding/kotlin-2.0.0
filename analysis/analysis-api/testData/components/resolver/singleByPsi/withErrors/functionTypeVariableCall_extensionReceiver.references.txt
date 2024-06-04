@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in ROOT) val A.f: kotlin.String.() -> kotlin.Unit

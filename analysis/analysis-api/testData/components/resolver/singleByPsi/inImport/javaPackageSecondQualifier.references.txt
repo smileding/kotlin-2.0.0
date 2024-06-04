@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  package java.util

@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in kotlin.Enum) val name: kotlin.String

@@ -7,10 +7,7 @@ package org.jetbrains.kotlin.fir.backend.utils
 
 import com.intellij.openapi.progress.ProcessCanceledException
 import org.jetbrains.kotlin.fir.FirElement
-import org.jetbrains.kotlin.fir.backend.Fir2IrComponents
-import org.jetbrains.kotlin.fir.backend.Fir2IrConversionScope
-import org.jetbrains.kotlin.fir.backend.FirMetadataSource
-import org.jetbrains.kotlin.fir.backend.toIrType
+import org.jetbrains.kotlin.fir.backend.*
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.expressions.FirComponentCall
 import org.jetbrains.kotlin.fir.expressions.FirQualifiedAccessExpression
@@ -29,14 +26,14 @@ import org.jetbrains.kotlin.ir.expressions.IrTypeOperator
 import org.jetbrains.kotlin.ir.expressions.IrTypeOperatorCall
 import org.jetbrains.kotlin.ir.expressions.impl.IrTypeOperatorCallImpl
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
-import org.jetbrains.kotlin.ir.types.IrType
+import org.jetbrains.kotlin.ir.types.*
+import org.jetbrains.kotlin.ir.types.impl.IrSimpleTypeImpl
 import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
 import kotlin.collections.List
 import kotlin.collections.Set
 import kotlin.collections.filterIsInstance
 import kotlin.collections.getOrNull
 import kotlin.collections.mapNotNull
-import kotlin.collections.mapNotNullTo
 import kotlin.collections.mutableMapOf
 import kotlin.collections.mutableSetOf
 import kotlin.collections.set
@@ -45,7 +42,7 @@ import kotlin.collections.withIndex
 fun FirRegularClass.getIrSymbolsForSealedSubclasses(c: Fir2IrComponents): List<IrClassSymbol> {
     val symbolProvider = c.session.symbolProvider
     return getSealedClassInheritors(c.session).mapNotNull {
-        symbolProvider.getClassLikeSymbolByClassId(it)?.toSymbol(c)
+        symbolProvider.getClassLikeSymbolByClassId(it)?.toIrSymbol(c)
     }.filterIsInstance<IrClassSymbol>()
 }
 
@@ -144,3 +141,40 @@ internal inline fun <R> convertCatching(element: FirElement, conversionScope: Fi
         }
     }
 }
+
+fun IrType.getArrayElementType(builtins: Fir2IrBuiltinSymbolsContainer): IrType {
+    return when {
+        isBoxedArray -> {
+            when (val argument = (this as IrSimpleType).arguments.singleOrNull()) {
+                is IrTypeProjection ->
+                    argument.type
+                is IrStarProjection ->
+                    builtins.anyNType
+                null ->
+                    error("Unexpected array argument type: null")
+            }
+        }
+        else -> {
+            val classifier = this.classOrNull!!
+            builtins.primitiveArrayElementTypes[classifier]
+                ?: builtins.unsignedArraysElementTypes[classifier]
+                ?: error("Primitive array expected: $classifier")
+        }
+    }
+}
+
+fun IrType.toArrayOrPrimitiveArrayType(builtins: Fir2IrBuiltinSymbolsContainer): IrType {
+    return when {
+        isPrimitiveType() -> builtins.primitiveArrayForType[this]?.defaultType ?: error("$this not in primitiveArrayForType")
+        else -> builtins.arrayClass.typeWith(this)
+    }
+}
+
+val IrClassSymbol.defaultTypeWithoutArguments: IrSimpleType
+    get() = IrSimpleTypeImpl(
+        kotlinType = null,
+        classifier = this,
+        nullability = SimpleTypeNullability.DEFINITELY_NOT_NULL,
+        arguments = emptyList(),
+        annotations = emptyList()
+    )

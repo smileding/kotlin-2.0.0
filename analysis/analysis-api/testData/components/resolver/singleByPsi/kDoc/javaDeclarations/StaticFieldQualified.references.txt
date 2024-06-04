@@ -1,0 +1,2 @@
+KDocReference:
+  (in dependency.JavaClass) val staticField: kotlin.Int

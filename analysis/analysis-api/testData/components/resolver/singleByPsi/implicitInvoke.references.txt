@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in <local>: call) fun x(b: kotlin.Boolean)

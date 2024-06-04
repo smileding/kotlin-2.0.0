@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in generated) fun generatedTopLevelFunction1(): generated.GeneratedClass2 [origin = SOURCE]

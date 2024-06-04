@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in foo.bar.baz.AA.BB) companion object

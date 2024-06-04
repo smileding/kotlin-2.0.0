@@ -84,17 +84,32 @@ class Fir2IrLazyDeclarationsGenerator(private val c: Fir2IrComponents) : Fir2IrC
         )
     }
 
+    // TODO: Should be private
     fun createIrLazyField(
         fir: FirField,
         symbol: IrFieldSymbol,
         lazyParent: IrDeclarationParent,
-        declarationOrigin: IrDeclarationOrigin
-    ): IrField {
+        declarationOrigin: IrDeclarationOrigin,
+        irPropertySymbol: IrPropertySymbol?
+    ): Fir2IrLazyField {
         return fir.convertWithOffsets { startOffset, endOffset ->
             Fir2IrLazyField(
-                c, startOffset, endOffset, declarationOrigin, fir, (lazyParent as? Fir2IrLazyClass)?.fir, symbol
-            )
+                c, startOffset, endOffset, declarationOrigin, fir, (lazyParent as? Fir2IrLazyClass)?.fir, symbol, irPropertySymbol
+            ).apply {
+                parent = lazyParent
+            }
         }
+    }
+
+    fun createIrPropertyForPureField(
+        fir: FirField,
+        fieldSymbol: IrFieldSymbol,
+        irPropertySymbol: IrPropertySymbol,
+        lazyParent: IrDeclarationParent,
+        declarationOrigin: IrDeclarationOrigin
+    ): IrProperty {
+        val field = createIrLazyField(fir, fieldSymbol, lazyParent, declarationOrigin, irPropertySymbol)
+        return Fir2IrLazyPropertyForPureField(c, field, irPropertySymbol, lazyParent)
     }
 }
 

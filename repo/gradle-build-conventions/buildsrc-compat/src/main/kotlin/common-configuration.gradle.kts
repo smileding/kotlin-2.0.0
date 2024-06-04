@@ -10,27 +10,6 @@ val kotlinVersion: String by rootProject.extra
 group = "org.jetbrains.kotlin"
 version = kotlinVersion
 
-// Forcing minimal gson dependency version
-val gsonVersion = rootProject.extra["versions.gson"] as String
-dependencies {
-    constraints {
-        configurations.all {
-            if (isCanBeResolved && !isCanBeConsumed) {
-                allDependencies.configureEach {
-                    if (group == "com.google.code.gson" && name == "gson" && this@all.isCanBeDeclared) {
-                        this@constraints.add(this@all.name, "com.google.code.gson:gson") {
-                            version {
-                                require(gsonVersion)
-                            }
-                            because("Force using same gson version because of https://github.com/google/gson/pull/1991")
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 project.configureJvmDefaultToolchain()
 project.addEmbeddedConfigurations()
 project.addImplicitDependenciesConfiguration()
@@ -54,6 +33,7 @@ afterEvaluate {
         }
         val bootstrapBuildToolsApiClasspath by rootProject.buildscript.configurations
         configurations.findByName("kotlinBuildToolsApiClasspath")?.let {
+            it.dependencies.clear() // it's different from `bootstrapCompilerClasspath` as this configuration does not use "default dependencies"
             dependencies.add(it.name, files(bootstrapBuildToolsApiClasspath))
         }
 
@@ -66,6 +46,14 @@ fun Project.addImplicitDependenciesConfiguration() {
     configurations.maybeCreate("implicitDependencies").apply {
         isCanBeConsumed = false
         isCanBeResolved = false
+    }
+
+    if (kotlinBuildProperties.isInIdeaSync) {
+        afterEvaluate {
+            // IDEA manages to download dependencies from `implicitDependencies`, even if it is created with `isCanBeResolved = false`
+            // Clear `implicitDependencies` to avoid downloading unnecessary dependencies during import
+            configurations.implicitDependencies.get().dependencies.clear()
+        }
     }
 }
 
@@ -94,7 +82,9 @@ fun Project.configureJavaCompile() {
         tasks.withType<JavaCompile>().configureEach {
             options.compilerArgs.add("-Xlint:deprecation")
             options.compilerArgs.add("-Xlint:unchecked")
-            options.compilerArgs.add("-Werror")
+            if (!kotlinBuildProperties.disableWerror) {
+                options.compilerArgs.add("-Werror")
+            }
         }
     }
 }
@@ -263,9 +253,11 @@ fun Project.configureArtifacts() {
 
 fun Project.configureTests() {
     val ignoreTestFailures: Boolean by rootProject.extra
-    tasks.configureEach {
-        if (this is VerificationTask) {
-            ignoreFailures = ignoreTestFailures
+    if (!plugins.hasPlugin("compiler-tests-convention")) {
+        tasks.configureEach {
+            if (this is VerificationTask) {
+                ignoreFailures = ignoreTestFailures
+            }
         }
     }
 
@@ -277,7 +269,9 @@ fun Project.configureTests() {
     }
 
     tasks.withType<Test>().configureEach {
-        outputs.doNotCacheIf("https://youtrack.jetbrains.com/issue/KTI-112") { true }
+        if (!plugins.hasPlugin("compiler-tests-convention")) {
+            outputs.doNotCacheIf("https://youtrack.jetbrains.com/issue/KTI-112") { true }
+        }
         if (project.kotlinBuildProperties.limitTestTasksConcurrency) {
             usesService(concurrencyLimitService)
         }
@@ -306,3 +300,13 @@ fun skipJvmDefaultAllForModule(path: String): Boolean =
             //     )V from class kotlin.reflect.jvm.internal.impl.resolve.OverridingUtilTypeSystemContext
             // KT-54749
             path == ":core:descriptors"
+
+
+// Workaround for #KT-65266
+afterEvaluate {
+    val versionString = version.toString()
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        val friendPathsWithoutVersion = friendPaths.filter { !it.name.contains(versionString) }
+        friendPaths.setFrom(friendPathsWithoutVersion)
+    }
+}

@@ -1,0 +1,35 @@
+<caret_1>:
+  KDocReference:
+    package one
+
+<caret_2>:
+  KDocReference:
+    package one
+
+<caret_3>:
+  KDocReference:
+    package one.two
+
+<caret_4>:
+  KDocReference:
+    package one
+
+<caret_5>:
+  KDocReference:
+    package one.two
+
+<caret_6>:
+  KDocReference:
+    package one.two.three
+
+<caret_7>:
+  KDocReference:
+    package one
+
+<caret_8>:
+  KDocReference:
+    package one.two
+
+<caret_9>:
+  KDocReference:
+    package one.two.three

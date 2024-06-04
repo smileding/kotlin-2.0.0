@@ -1,0 +1,2 @@
+KtConstructorDelegationReference:
+  (in kotlin.Any) constructor()

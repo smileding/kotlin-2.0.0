@@ -1,6 +1,6 @@
-KtFunctionSymbol:
+KaFunctionSymbol:
   annotationsList: []
-  callableIdIfNonLocal: /f
+  callableId: /f
   contextReceivers: []
   contractEffects: []
   hasStableParameterNames: true
@@ -20,16 +20,16 @@ KtFunctionSymbol:
   name: f
   origin: SOURCE
   receiverParameter: null
-  returnType: KtUsualClassType:
+  returnType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: []
+    typeArguments: []
     type: kotlin/Unit
   symbolKind: TOP_LEVEL
   typeParameters: []
   valueParameters: [
-    KtValueParameterSymbol:
+    KaValueParameterSymbol:
       annotationsList: []
-      callableIdIfNonLocal: null
+      callableId: null
       contextReceivers: []
       generatedPrimaryConstructorProperty: null
       hasDefaultValue: false
@@ -41,30 +41,30 @@ KtFunctionSymbol:
       name: p
       origin: SOURCE
       receiverParameter: null
-      returnType: KtFunctionalType:
+      returnType: KaFunctionalType:
         annotationsList: []
-        ownTypeArguments: [
-          KtUsualClassType:
+        typeArguments: [
+          KaUsualClassType:
             annotationsList: []
-            ownTypeArguments: []
+            typeArguments: []
             type: kotlin/Int
-          KtClassErrorType:
+          KaClassErrorType:
             annotationsList: []
             type: ERROR_TYPE
-          KtTypeErrorType:
+          KaErrorType:
             annotationsList: []
             type: ERROR_TYPE
         ]
         type: kotlin/Function2<kotlin/Int, ERROR_TYPE, ERROR_TYPE>
       symbolKind: LOCAL
       typeParameters: []
-      getContainingFileSymbol: KtFileSymbol(parameterNotFunctionalType.kt)
+      getContainingFileSymbol: KaFileSymbol(parameterNotFunctionalType.kt)
       getContainingJvmClassName: ParameterNotFunctionalTypeKt
       getContainingModule: KtSourceModule "Sources of main"
       deprecationStatus: null
-    KtValueParameterSymbol:
+    KaValueParameterSymbol:
       annotationsList: []
-      callableIdIfNonLocal: null
+      callableId: null
       contextReceivers: []
       generatedPrimaryConstructorProperty: null
       hasDefaultValue: false
@@ -76,18 +76,18 @@ KtFunctionSymbol:
       name: <no name provided>
       origin: SOURCE
       receiverParameter: null
-      returnType: KtTypeErrorType:
+      returnType: KaErrorType:
         annotationsList: []
         type: ERROR_TYPE
       symbolKind: LOCAL
       typeParameters: []
-      getContainingFileSymbol: KtFileSymbol(parameterNotFunctionalType.kt)
+      getContainingFileSymbol: KaFileSymbol(parameterNotFunctionalType.kt)
       getContainingJvmClassName: ParameterNotFunctionalTypeKt
       getContainingModule: KtSourceModule "Sources of main"
       deprecationStatus: null
   ]
   visibility: Public
-  getContainingFileSymbol: KtFileSymbol(parameterNotFunctionalType.kt)
+  getContainingFileSymbol: KaFileSymbol(parameterNotFunctionalType.kt)
   getContainingJvmClassName: ParameterNotFunctionalTypeKt
   getContainingModule: KtSourceModule "Sources of main"
   deprecationStatus: null

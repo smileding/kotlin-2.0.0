@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in Foo) private fun call() [privateFunction.kt]

@@ -1,14 +1,14 @@
-KtReceiverParameterSymbol:
+KaReceiverParameterSymbol:
   annotationsList: [
     ReceiverAnnotation()
       psi: KtAnnotationEntry
   ]
   origin: SOURCE
-  owningCallableSymbol: KtKotlinPropertySymbol(/prop)
-  type: KtUsualClassType:
+  owningCallableSymbol: KaKotlinPropertySymbol(/prop)
+  type: KaUsualClassType:
     annotationsList: [
       ReceiverTypeAnnotation()
         psi: KtAnnotationEntry
     ]
-    ownTypeArguments: []
+    typeArguments: []
     type: @R|ReceiverTypeAnnotation|()  kotlin/Long

@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  Value [fake.kt]

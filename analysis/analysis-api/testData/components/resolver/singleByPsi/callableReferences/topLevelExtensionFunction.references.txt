@@ -1,0 +1,4 @@
+KtSimpleNameReference:
+  (in ROOT) interface Foo
+
+KtInvokeFunctionReference: Nothing (Unresolved reference)

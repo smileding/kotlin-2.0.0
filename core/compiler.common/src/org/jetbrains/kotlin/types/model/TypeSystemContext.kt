@@ -236,10 +236,15 @@ interface TypeSystemInferenceExtensionContext : TypeSystemContext, TypeSystemBui
 
     fun TypeVariableMarker.defaultType(): SimpleTypeMarker
 
-    fun createTypeWithAlternativeForIntersectionResult(
+    fun createTypeWithUpperBoundForIntersectionResult(
         firstCandidate: KotlinTypeMarker,
         secondCandidate: KotlinTypeMarker
     ): KotlinTypeMarker
+
+    /**
+     * Only for K2
+     */
+    fun KotlinTypeMarker.getUpperBoundForApproximationOfIntersectionType() : KotlinTypeMarker? = null
 
     fun KotlinTypeMarker.isSpecial(): Boolean
 
@@ -378,7 +383,8 @@ interface TypeSystemContext : TypeSystemOptimizationContext {
 
     fun SimpleTypeMarker.originalIfDefinitelyNotNullable(): SimpleTypeMarker = asDefinitelyNotNullType()?.original() ?: this
 
-    fun KotlinTypeMarker.makeDefinitelyNotNullOrNotNull(): KotlinTypeMarker
+    fun KotlinTypeMarker.makeDefinitelyNotNullOrNotNull(): KotlinTypeMarker = makeDefinitelyNotNullOrNotNull(preserveAttributes = false)
+    fun KotlinTypeMarker.makeDefinitelyNotNullOrNotNull(preserveAttributes: Boolean): KotlinTypeMarker
     fun SimpleTypeMarker.makeSimpleTypeDefinitelyNotNullOrNotNull(): SimpleTypeMarker
     fun SimpleTypeMarker.isMarkedNullable(): Boolean
     fun KotlinTypeMarker.isMarkedNullable(): Boolean =

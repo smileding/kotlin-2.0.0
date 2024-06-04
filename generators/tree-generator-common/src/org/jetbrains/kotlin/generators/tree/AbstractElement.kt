@@ -35,7 +35,25 @@ abstract class AbstractElement<Element, Field, Implementation>(
 
     val params = mutableListOf<TypeVariable>()
 
-    val elementParents = mutableListOf<ElementRef<Element>>()
+    private val elementParentsMutable = mutableListOf<ElementRef<Element>>()
+
+    val elementParents: List<ElementRef<Element>>
+        get() = elementParentsMutable
+
+    fun addParent(parent: ElementRef<Element>) {
+        elementParentsMutable.add(parent)
+        parent.element.subElementsMutable.add(element)
+    }
+
+    fun replaceParent(oldParent: Element, newParent: ElementRef<Element>) {
+        val parentIndex = elementParentsMutable.indexOfFirst { it.element == oldParent }
+        require(parentIndex >= 0) {
+            "$oldParent is not parent of $this"
+        }
+        elementParentsMutable[parentIndex] = newParent
+        oldParent.subElementsMutable.remove(element)
+        newParent.element.subElementsMutable.add(element)
+    }
 
     val otherParents = mutableListOf<ClassRef<*>>()
 
@@ -45,10 +63,13 @@ abstract class AbstractElement<Element, Field, Implementation>(
     val isRootElement: Boolean
         get() = elementParents.isEmpty()
 
+    private val subElementsMutable: MutableSet<Element> = mutableSetOf()
+
     /**
-     * A list of [Element]s which are direct subclasses of this element.
+     * A set of [Element]s which are direct subclasses of this element.
      */
-    lateinit var subElements: Set<Element>
+    val subElements: Set<Element>
+        get() = subElementsMutable
 
     var isSealed: Boolean = false
 
@@ -189,13 +210,9 @@ abstract class AbstractElement<Element, Field, Implementation>(
 
     var doPrint = true
 
-    @Suppress("UNCHECKED_CAST")
-    final override fun copy(nullable: Boolean) =
-        ElementRef(this as Element, args, nullable)
+    final override fun copy(nullable: Boolean) = ElementRef(element, args, nullable)
 
-    @Suppress("UNCHECKED_CAST")
-    final override fun copy(args: Map<NamedTypeParameterRef, TypeRef>) =
-        ElementRef(this as Element, args, nullable)
+    final override fun copy(args: Map<NamedTypeParameterRef, TypeRef>) = ElementRef(element, args, nullable)
 
     @Suppress("UNCHECKED_CAST")
     override fun substitute(map: TypeParameterSubstitutionMap): Element = this as Element
@@ -211,4 +228,6 @@ abstract class AbstractElement<Element, Field, Implementation>(
     operator fun Field.unaryPlus() = apply {
         fields.add(this)
     }
+
+    override fun toString(): String = buildString { renderTo(this, ImportCollecting.Empty) }
 }

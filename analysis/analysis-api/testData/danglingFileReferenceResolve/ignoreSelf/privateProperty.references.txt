@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in Foo) private val name: kotlin.String [privateProperty.kt]

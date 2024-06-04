@@ -1,0 +1,2 @@
+KtPropertyDelegationMethodsReference:
+  (in Foo) operator fun getValue(p1: kotlin.Any?, p2: kotlin.Any?): kotlin.Int

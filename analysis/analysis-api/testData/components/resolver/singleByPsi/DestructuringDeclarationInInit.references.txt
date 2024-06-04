@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in ROOT) var x: kotlin.Any

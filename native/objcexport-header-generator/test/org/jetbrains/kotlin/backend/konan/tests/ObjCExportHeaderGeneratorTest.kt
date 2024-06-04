@@ -376,6 +376,41 @@ class ObjCExportHeaderGeneratorTest(private val generator: HeaderGenerator) {
         doTest(headersTestDataDir.resolve("sourceFileWithDotInName"))
     }
 
+    @Test
+    fun `test - c properties`() {
+        doTest(headersTestDataDir.resolve("cProperties"))
+    }
+
+    @Test
+    fun `test - objCMappedPropertyExtension`() {
+        doTest(headersTestDataDir.resolve("objCMappedPropertyExtension"))
+    }
+
+    /**
+     * Translation works as expected except properties order
+     * See KT-66510
+     */
+    @Test
+    @TodoAnalysisApi
+    fun `test - objCMappedMixedTypesExtension`() {
+        doTest(headersTestDataDir.resolve("objCMappedMixedTypesExtension"))
+    }
+
+    @Test
+    fun `test - functionWithReservedMethodName`() {
+        doTest(headersTestDataDir.resolve("functionWithReservedMethodName"))
+    }
+
+    @Test
+    fun `test - functionWithReservedMethodNameAndReturnType`() {
+        doTest(headersTestDataDir.resolve("functionWithReservedMethodNameAndReturnType"))
+    }
+
+    @Test
+    fun `test - nothing`() {
+        doTest(headersTestDataDir.resolve("nothing"))
+    }
+
     private fun doTest(root: File, configuration: Configuration = Configuration()) {
         if (!root.isDirectory) fail("Expected ${root.absolutePath} to be directory")
         val generatedHeaders = generator.generateHeaders(root, configuration).toString()

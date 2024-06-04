@@ -1,0 +1,2 @@
+KDocReference:
+  (in Foo.Nested) val foo: kotlin.Int

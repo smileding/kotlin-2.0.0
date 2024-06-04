@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in ROOT) fun kotlin.String.function(a: kotlin.Int)

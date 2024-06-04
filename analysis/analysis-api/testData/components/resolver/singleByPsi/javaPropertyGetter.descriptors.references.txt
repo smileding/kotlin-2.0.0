@@ -1,0 +1,5 @@
+KtSimpleNameReference:
+  (in JavaClass) val JavaClass.foo: kotlin.Int
+
+SyntheticPropertyAccessorReference:
+  (in JavaClass) open fun getFoo(): kotlin.Int

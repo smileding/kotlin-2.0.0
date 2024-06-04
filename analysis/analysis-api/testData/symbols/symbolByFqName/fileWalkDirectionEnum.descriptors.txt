@@ -1,6 +1,6 @@
-KtFunctionSymbol:
+KaFunctionSymbol:
   annotationsList: []
-  callableIdIfNonLocal: kotlin/collections/listOf
+  callableId: kotlin/collections/listOf
   contextReceivers: []
   contractEffects: []
   hasStableParameterNames: true
@@ -20,22 +20,22 @@ KtFunctionSymbol:
   name: listOf
   origin: LIBRARY
   receiverParameter: null
-  returnType: KtUsualClassType:
+  returnType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: [
-      KtTypeParameterType:
+    typeArguments: [
+      KaTypeParameterType:
         annotationsList: []
         type: T
     ]
     type: kotlin/collections/List<T>
   symbolKind: TOP_LEVEL
   typeParameters: [
-    KtTypeParameterSymbol(T)
+    KaTypeParameterSymbol(T)
   ]
   valueParameters: [
-    KtValueParameterSymbol:
+    KaValueParameterSymbol:
       annotationsList: []
-      callableIdIfNonLocal: null
+      callableId: null
       contextReceivers: []
       generatedPrimaryConstructorProperty: null
       hasDefaultValue: false
@@ -47,7 +47,7 @@ KtFunctionSymbol:
       name: element
       origin: SOURCE
       receiverParameter: null
-      returnType: KtTypeParameterType:
+      returnType: KaTypeParameterType:
         annotationsList: []
         type: T
       symbolKind: LOCAL
@@ -63,12 +63,12 @@ KtFunctionSymbol:
   getContainingModule: KtLibraryModule "Library kotlin-stdlib"
   deprecationStatus: null
 
-KtFunctionSymbol:
+KaFunctionSymbol:
   annotationsList: [
     kotlin/internal/InlineOnly()
       psi: null
   ]
-  callableIdIfNonLocal: kotlin/collections/listOf
+  callableId: kotlin/collections/listOf
   contextReceivers: []
   contractEffects: []
   hasStableParameterNames: true
@@ -88,17 +88,17 @@ KtFunctionSymbol:
   name: listOf
   origin: LIBRARY
   receiverParameter: null
-  returnType: KtUsualClassType:
+  returnType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: [
-      KtTypeParameterType:
+    typeArguments: [
+      KaTypeParameterType:
         annotationsList: []
         type: T
     ]
     type: kotlin/collections/List<T>
   symbolKind: TOP_LEVEL
   typeParameters: [
-    KtTypeParameterSymbol(T)
+    KaTypeParameterSymbol(T)
   ]
   valueParameters: []
   visibility: Public
@@ -107,9 +107,9 @@ KtFunctionSymbol:
   getContainingModule: KtLibraryModule "Library kotlin-stdlib"
   deprecationStatus: null
 
-KtFunctionSymbol:
+KaFunctionSymbol:
   annotationsList: []
-  callableIdIfNonLocal: kotlin/collections/listOf
+  callableId: kotlin/collections/listOf
   contextReceivers: []
   contractEffects: []
   hasStableParameterNames: true
@@ -129,22 +129,22 @@ KtFunctionSymbol:
   name: listOf
   origin: LIBRARY
   receiverParameter: null
-  returnType: KtUsualClassType:
+  returnType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: [
-      KtTypeParameterType:
+    typeArguments: [
+      KaTypeParameterType:
         annotationsList: []
         type: T
     ]
     type: kotlin/collections/List<T>
   symbolKind: TOP_LEVEL
   typeParameters: [
-    KtTypeParameterSymbol(T)
+    KaTypeParameterSymbol(T)
   ]
   valueParameters: [
-    KtValueParameterSymbol:
+    KaValueParameterSymbol:
       annotationsList: []
-      callableIdIfNonLocal: null
+      callableId: null
       contextReceivers: []
       generatedPrimaryConstructorProperty: null
       hasDefaultValue: false
@@ -156,7 +156,7 @@ KtFunctionSymbol:
       name: elements
       origin: SOURCE
       receiverParameter: null
-      returnType: KtTypeParameterType:
+      returnType: KaTypeParameterType:
         annotationsList: []
         type: T
       symbolKind: LOCAL

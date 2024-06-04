@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in dependency.A) fun foo(): kotlin.String

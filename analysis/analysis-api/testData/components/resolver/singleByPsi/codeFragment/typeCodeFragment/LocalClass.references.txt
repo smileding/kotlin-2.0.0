@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in <local>: test) class Local

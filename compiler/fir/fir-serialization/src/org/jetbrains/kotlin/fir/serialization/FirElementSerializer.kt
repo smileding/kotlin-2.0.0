@@ -375,15 +375,6 @@ class FirElementSerializer private constructor(
             }
         }
 
-        for (contextReceiver in script.contextReceivers) {
-            val typeRef = contextReceiver.typeRef
-            if (useTypeTable()) {
-                builder.addContextReceiverTypeId(typeId(typeRef))
-            } else {
-                builder.addContextReceiverType(typeProto(contextReceiver.typeRef))
-            }
-        }
-
         if (versionRequirementTable == null) error("Version requirements must be serialized for scripts: ${script.render()}")
 
         builder.addAllVersionRequirement(versionRequirementTable.serializeVersionRequirements(script))
@@ -532,10 +523,9 @@ class FirElementSerializer private constructor(
             }
         }
 
-        val hasConstant = (!property.isVar
+        val hasConstant = property.isConst || (!property.isVar
                 && property.returnTypeRef.coneType.fullyExpandedType(session).canBeUsedForConstVal()
-                && property.initializer.hasConstantValue(session))
-                || property.isConst
+                && property.symbol.resolvedInitializer.hasConstantValue(session))
         val flags = Flags.getPropertyFlags(
             hasAnnotations,
             ProtoEnumFlags.visibility(normalizeVisibility(property)),

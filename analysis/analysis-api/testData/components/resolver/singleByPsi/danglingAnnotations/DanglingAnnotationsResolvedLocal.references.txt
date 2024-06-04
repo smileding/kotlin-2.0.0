@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in Ann0) constructor()

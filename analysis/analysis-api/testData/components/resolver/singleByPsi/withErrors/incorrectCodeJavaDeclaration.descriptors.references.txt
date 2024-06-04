@@ -1,0 +1,4 @@
+KtSimpleNameReference:
+  (in kotlin.collections) interface List<out E> : kotlin.collections.Collection<E>
+
+SyntheticPropertyAccessorReference: Nothing (Unresolved reference)

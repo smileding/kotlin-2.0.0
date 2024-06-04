@@ -1,0 +1,2 @@
+KDocReference:
+  (in foo.Bar) fun foo()

@@ -1,0 +1,2 @@
+KDocReference:
+  (in b) typealias BB = kotlin.Int

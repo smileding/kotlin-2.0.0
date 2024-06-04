@@ -1,0 +1,15 @@
+<caret_1>:
+  KDocReference:
+    (in test) fun test.Foo.extFun()
+
+<caret_2>:
+  KDocReference:
+    (in test) fun test.Foo.extFun()
+
+<caret_3>:
+  KDocReference:
+    (in test) fun test.Foo.extFun()
+
+<caret_4>:
+  KDocReference:
+    (in test) fun test.Foo.extFun()

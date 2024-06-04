@@ -504,7 +504,7 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
         receiver: FirExpression,
         operationToken: IElementType,
     ): FirExpression? {
-        if (receiver !is FirLiteralExpression<*>) return null
+        if (receiver !is FirLiteralExpression) return null
         if (receiver.kind != ConstantValueKind.IntegerLiteral) return null
         if (operationToken != PLUS && operationToken != MINUS) return null
 
@@ -526,7 +526,8 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
     fun Array<out T?>.toInterpolatingCall(
         base: T,
         getElementType: (T) -> IElementType = { it.elementType },
-        convertTemplateEntry: T?.(String) -> FirExpression,
+        convertTemplateEntry: T?.(String) -> Collection<FirExpression>,
+        prefix: () -> String,
     ): FirExpression {
         return buildStringConcatenationCall {
             val sb = StringBuilder()
@@ -534,18 +535,18 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
             argumentList = buildArgumentList {
                 L@ for (entry in this@toInterpolatingCall) {
                     if (entry == null) continue
-                    arguments += when (getElementType(entry)) {
-                        OPEN_QUOTE, CLOSING_QUOTE -> continue@L
+                    when (getElementType(entry)) {
+                        INTERPOLATION_PREFIX, OPEN_QUOTE, CLOSING_QUOTE -> continue@L
                         LITERAL_STRING_TEMPLATE_ENTRY -> {
                             sb.append(entry.asText)
-                            buildLiteralExpression(
+                            arguments += buildLiteralExpression(
                                 entry.toFirSourceElement(), ConstantValueKind.String, entry.asText, setType = false
                             )
                         }
                         ESCAPE_STRING_TEMPLATE_ENTRY -> {
                             sb.append(entry.unescapedValue)
                             val characterWithDiagnostic = escapedStringToCharacter(entry.asText)
-                            buildConstOrErrorExpression(
+                            arguments += buildConstOrErrorExpression(
                                 entry.toFirSourceElement(),
                                 ConstantValueKind.Char,
                                 characterWithDiagnostic.value,
@@ -557,11 +558,19 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
                         }
                         SHORT_STRING_TEMPLATE_ENTRY, LONG_STRING_TEMPLATE_ENTRY -> {
                             hasExpressions = true
-                            entry.convertTemplateEntry("Incorrect template argument")
+                            val expressions = entry.convertTemplateEntry("Incorrect template argument")
+                            if (expressions.isNotEmpty()) {
+                                arguments += expressions
+                            } else {
+                                arguments += buildErrorExpression {
+                                    source = entry.toFirSourceElement()
+                                    diagnostic = ConeSyntaxDiagnostic("Empty template entry")
+                                }
+                            }
                         }
                         else -> {
                             hasExpressions = true
-                            buildErrorExpression {
+                            arguments += buildErrorExpression {
                                 source = entry.toFirSourceElement()
                                 diagnostic = ConeSyntaxDiagnostic("Incorrect template entry: ${entry.asText}")
                             }
@@ -570,6 +579,7 @@ abstract class AbstractRawFirBuilder<T>(val baseSession: FirSession, val context
                 }
             }
             source = base?.toFirSourceElement()
+            interpolationPrefix = prefix()
             // Fast-pass if there is no errors and non-const string expressions
             if (!hasExpressions && !argumentList.arguments.any { it is FirErrorExpression })
                 return buildLiteralExpression(source, ConstantValueKind.String, sb.toString(), setType = false)

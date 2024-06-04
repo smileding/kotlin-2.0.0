@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in foo.bar.baz.Foo) object Helper

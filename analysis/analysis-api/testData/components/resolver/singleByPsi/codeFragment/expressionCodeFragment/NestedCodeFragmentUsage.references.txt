@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in <local>: <no name>) fun bar()

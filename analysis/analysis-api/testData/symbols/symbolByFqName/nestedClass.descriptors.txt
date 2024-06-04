@@ -1,6 +1,6 @@
-KtNamedClassOrObjectSymbol:
+KaNamedClassOrObjectSymbol:
   annotationsList: []
-  classIdIfNonLocal: kotlin/collections/MutableMap.MutableEntry
+  classId: kotlin/collections/MutableMap.MutableEntry
   classKind: INTERFACE
   companionObject: null
   contextReceivers: []
@@ -15,13 +15,13 @@ KtNamedClassOrObjectSymbol:
   name: MutableEntry
   origin: LIBRARY
   superTypes: [
-    KtUsualClassType:
+    KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: [
-        KtTypeParameterType:
+      typeArguments: [
+        KaTypeParameterType:
           annotationsList: []
           type: K
-        KtTypeParameterType:
+        KaTypeParameterType:
           annotationsList: []
           type: V
       ]
@@ -29,12 +29,12 @@ KtNamedClassOrObjectSymbol:
   ]
   symbolKind: CLASS_MEMBER
   typeParameters: [
-    KtTypeParameterSymbol(K)
-    KtTypeParameterSymbol(V)
+    KaTypeParameterSymbol(K)
+    KaTypeParameterSymbol(V)
   ]
   visibility: Public
   getContainingFileSymbol: null
-  getContainingModule: Could not render due to kotlin.NotImplementedError: An operation is not implemented: org.jetbrains.kotlin.analysis.api.descriptors.symbols.descriptorBased.KtFe10DescNamedClassOrObjectSymbol
+  getContainingModule: Could not render due to kotlin.NotImplementedError: An operation is not implemented: org.jetbrains.kotlin.analysis.api.descriptors.symbols.descriptorBased.KaFe10DescNamedClassOrObjectSymbol
 
   annotationApplicableTargets: null
   deprecationStatus: null

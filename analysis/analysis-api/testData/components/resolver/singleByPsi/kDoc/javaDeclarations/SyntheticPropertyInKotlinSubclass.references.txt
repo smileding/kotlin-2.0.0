@@ -1,0 +1,7 @@
+<caret_2>:
+  KDocReference:
+    (in dependency.JavaBase) open fun getProp(): kotlin.String!
+
+<caret_1>:
+  KDocReference:
+    (in dependency.JavaBase) open fun getProp(): kotlin.String!

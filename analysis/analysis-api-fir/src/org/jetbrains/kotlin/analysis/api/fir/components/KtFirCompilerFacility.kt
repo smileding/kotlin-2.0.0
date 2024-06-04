@@ -9,13 +9,13 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiErrorElement
 import org.jetbrains.kotlin.KtRealPsiSourceElement
 import org.jetbrains.kotlin.analysis.api.compile.CodeFragmentCapturedValue
-import org.jetbrains.kotlin.analysis.api.components.KtCompilationResult
-import org.jetbrains.kotlin.analysis.api.components.KtCompilerFacility
-import org.jetbrains.kotlin.analysis.api.components.KtCompilerTarget
-import org.jetbrains.kotlin.analysis.api.diagnostics.KtDiagnostic
-import org.jetbrains.kotlin.analysis.api.diagnostics.KtDiagnosticWithPsi
-import org.jetbrains.kotlin.analysis.api.fir.KtFirAnalysisSession
-import org.jetbrains.kotlin.analysis.api.impl.base.util.KtCompiledFileForOutputFile
+import org.jetbrains.kotlin.analysis.api.components.KaCompilationResult
+import org.jetbrains.kotlin.analysis.api.components.KaCompilerFacility
+import org.jetbrains.kotlin.analysis.api.components.KaCompilerTarget
+import org.jetbrains.kotlin.analysis.api.diagnostics.KaDiagnostic
+import org.jetbrains.kotlin.analysis.api.diagnostics.KaDiagnosticWithPsi
+import org.jetbrains.kotlin.analysis.api.fir.KaFirSession
+import org.jetbrains.kotlin.analysis.api.impl.base.util.KaCompiledFileForOutputFile
 import org.jetbrains.kotlin.analysis.low.level.api.fir.LLFirInternals
 import org.jetbrains.kotlin.analysis.low.level.api.fir.api.*
 import org.jetbrains.kotlin.analysis.low.level.api.fir.compile.CodeFragmentCapturedId
@@ -45,6 +45,7 @@ import org.jetbrains.kotlin.fir.backend.jvm.FirJvmBackendExtension
 import org.jetbrains.kotlin.fir.backend.jvm.FirJvmKotlinMangler
 import org.jetbrains.kotlin.fir.backend.jvm.FirJvmVisibilityConverter
 import org.jetbrains.kotlin.fir.backend.jvm.JvmFir2IrExtensions
+import org.jetbrains.kotlin.fir.backend.jvm.initializeActualDeclarationExtractorIfStdlib
 import org.jetbrains.kotlin.fir.backend.utils.CodeFragmentConversionData
 import org.jetbrains.kotlin.fir.backend.utils.InjectedValue
 import org.jetbrains.kotlin.fir.backend.utils.conversionData
@@ -77,9 +78,7 @@ import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
 import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
 import org.jetbrains.kotlin.ir.types.IrSimpleType
-import org.jetbrains.kotlin.ir.util.IdSignature
 import org.jetbrains.kotlin.ir.util.StubGeneratorExtensions
-import org.jetbrains.kotlin.ir.util.SymbolTable
 import org.jetbrains.kotlin.ir.util.classId
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
@@ -96,24 +95,24 @@ import org.jetbrains.kotlin.utils.addIfNotNull
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 import java.util.*
 
-internal class KtFirCompilerFacility(
-    override val analysisSession: KtFirAnalysisSession
-) : KtCompilerFacility(), KtFirAnalysisSessionComponent {
+internal class KaFirCompilerFacility(
+    override val analysisSession: KaFirSession
+) : KaCompilerFacility(), KaFirSessionComponent {
     override fun compile(
         file: KtFile,
         configuration: CompilerConfiguration,
-        target: KtCompilerTarget,
-        allowedErrorFilter: (KtDiagnostic) -> Boolean
-    ): KtCompilationResult {
+        target: KaCompilerTarget,
+        allowedErrorFilter: (KaDiagnostic) -> Boolean
+    ): KaCompilationResult {
         val classBuilderFactory = when (target) {
-            is KtCompilerTarget.Jvm -> target.classBuilderFactory
+            is KaCompilerTarget.Jvm -> target.classBuilderFactory
         }
 
         val syntaxErrors = SyntaxErrorReportingVisitor(analysisSession.useSiteSession) { it.asKtDiagnostic() }
             .also(file::accept).diagnostics
 
         if (syntaxErrors.isNotEmpty()) {
-            return KtCompilationResult.Failure(syntaxErrors)
+            return KaCompilationResult.Failure(syntaxErrors)
         }
 
         val mainFirFile = getFullyResolvedFirFile(file)
@@ -122,7 +121,7 @@ internal class KtFirCompilerFacility(
         val frontendErrors = computeErrors(frontendDiagnostics, allowedErrorFilter)
 
         if (frontendErrors.isNotEmpty()) {
-            return KtCompilationResult.Failure(frontendErrors)
+            return KaCompilationResult.Failure(frontendErrors)
         }
 
         val codeFragmentMappings = runIf(file is KtCodeFragment) {
@@ -154,7 +153,7 @@ internal class KtFirCompilerFacility(
 
         val irGeneratorExtensions = IrGenerationExtension.getInstances(project)
 
-        val dependencyFir2IrResults = dependencyFiles
+        dependencyFiles
             .map(::getFullyResolvedFirFile)
             .groupBy { it.llFirSession }
             .map { (dependencySession, dependencyFiles) ->
@@ -165,7 +164,7 @@ internal class KtFirCompilerFacility(
                         put(CommonConfigurationKeys.LANGUAGE_VERSION_SETTINGS, dependencySession.languageVersionSettings)
                     }
 
-                val dependencyFir2IrExtensions = JvmFir2IrExtensions(dependencyConfiguration, jvmIrDeserializer, JvmIrMangler)
+                val dependencyFir2IrExtensions = JvmFir2IrExtensions(dependencyConfiguration, jvmIrDeserializer)
                 runFir2Ir(
                     dependencySession, dependencyFiles, dependencyFir2IrExtensions,
                     diagnosticReporter, dependencyConfiguration, irGeneratorExtensions
@@ -178,10 +177,9 @@ internal class KtFirCompilerFacility(
                 put(CommonConfigurationKeys.USE_FIR, true)
             }
 
-        val jvmGeneratorExtensions = JvmFir2IrExtensions(targetConfiguration, jvmIrDeserializer, JvmIrMangler)
+        val jvmGeneratorExtensions = JvmFir2IrExtensions(targetConfiguration, jvmIrDeserializer)
         val targetFir2IrExtensions = CompilerFacilityFir2IrExtensions(
             jvmGeneratorExtensions,
-            dependencyFir2IrResults,
             codeFragmentMappings?.injectedValueProvider
         )
 
@@ -225,7 +223,7 @@ internal class KtFirCompilerFacility(
             codegenFactory.generateModuleInFrontendIRMode(
                 generationState,
                 targetFir2IrResult.irModuleFragment,
-                targetFir2IrResult.components.symbolTable,
+                targetFir2IrResult.symbolTable,
                 targetFir2IrResult.components.irProviders,
                 CompilerFacilityJvmGeneratorExtensions(jvmGeneratorExtensions),
                 FirJvmBackendExtension(targetFir2IrResult.components, null),
@@ -239,10 +237,10 @@ internal class KtFirCompilerFacility(
             val backendErrors = computeErrors(backendDiagnostics, allowedErrorFilter)
 
             if (backendErrors.isNotEmpty()) {
-                return KtCompilationResult.Failure(backendErrors)
+                return KaCompilationResult.Failure(backendErrors)
             }
 
-            val outputFiles = generationState.factory.asList().map(::KtCompiledFileForOutputFile)
+            val outputFiles = generationState.factory.asList().map(::KaCompiledFileForOutputFile)
             val capturedValues = buildList {
                 if (codeFragmentMappings != null) {
                     addAll(codeFragmentMappings.capturedValues)
@@ -254,7 +252,7 @@ internal class KtFirCompilerFacility(
                 }
             }
 
-            return KtCompilationResult.Success(outputFiles, capturedValues)
+            return KaCompilationResult.Success(outputFiles, capturedValues)
         } finally {
             generationState.destroy()
         }
@@ -288,6 +286,7 @@ internal class KtFirCompilerFacility(
             DefaultBuiltIns.Instance,
             ::JvmIrTypeSystemContext,
             JvmIrSpecialAnnotationSymbolProvider,
+            ::initializeActualDeclarationExtractorIfStdlib,
         )
     }
 
@@ -360,8 +359,8 @@ internal class KtFirCompilerFacility(
 
     private fun computeErrors(
         diagnostics: Collection<DiagnosticMarker>,
-        allowedErrorFilter: (KtDiagnostic) -> Boolean,
-    ): List<KtDiagnostic> {
+        allowedErrorFilter: (KaDiagnostic) -> Boolean,
+    ): List<KaDiagnostic> {
         return buildList {
             for (diagnostic in diagnostics) {
                 require(diagnostic is KtPsiDiagnostic)
@@ -461,21 +460,10 @@ internal class KtFirCompilerFacility(
 
     private class CompilerFacilityFir2IrExtensions(
         delegate: Fir2IrExtensions,
-        private val dependencyFir2IrResults: List<Fir2IrActualizedResult>,
         private val injectedValueProvider: InjectedSymbolProvider?
     ) : Fir2IrExtensions by delegate {
         override fun findInjectedValue(calleeReference: FirReference, conversionScope: Fir2IrConversionScope): InjectedValue? {
             return injectedValueProvider?.invoke(calleeReference, conversionScope)
-        }
-
-        override fun registerDeclarations(symbolTable: SymbolTable) {
-            val visitor = DeclarationRegistrarVisitor(symbolTable)
-
-            for (dependencyFir2IrResult in dependencyFir2IrResults) {
-                for (dependencyFile in dependencyFir2IrResult.irModuleFragment.files) {
-                    dependencyFile.acceptVoid(visitor)
-                }
-            }
         }
     }
 
@@ -647,76 +635,13 @@ private class IrDeclarationPatchingVisitor(private val mapping: Map<FirDeclarati
     }
 }
 
-private class DeclarationRegistrarVisitor(private val consumer: SymbolTable) : IrElementVisitorVoid {
-    override fun visitElement(element: IrElement) {
-        element.acceptChildrenVoid(this)
-    }
-
-    override fun visitClass(declaration: IrClass) {
-        register(declaration, consumer::declareClassIfNotExists)
-        super.visitClass(declaration)
-    }
-
-    override fun visitTypeAlias(declaration: IrTypeAlias) {
-        register(declaration, consumer::declareTypeAliasIfNotExists)
-        super.visitTypeAlias(declaration)
-    }
-
-    override fun visitScript(declaration: IrScript) {
-        register(declaration, consumer::declareScript)
-        super.visitScript(declaration)
-    }
-
-    override fun visitTypeParameter(declaration: IrTypeParameter) {
-        if (declaration.parent is IrClass) {
-            register(declaration, consumer::declareGlobalTypeParameter)
-        }
-
-        super.visitTypeParameter(declaration)
-    }
-
-    override fun visitConstructor(declaration: IrConstructor) {
-        register(declaration, consumer::declareConstructorIfNotExists)
-        super.visitConstructor(declaration)
-    }
-
-    override fun visitSimpleFunction(declaration: IrSimpleFunction) {
-        register(declaration, consumer::declareSimpleFunctionIfNotExists)
-        super.visitSimpleFunction(declaration)
-    }
-
-    override fun visitProperty(declaration: IrProperty) {
-        register(declaration, consumer::declarePropertyIfNotExists)
-        super.visitProperty(declaration)
-    }
-
-    override fun visitField(declaration: IrField) {
-        register(declaration, consumer::declareField)
-        super.visitField(declaration)
-    }
-
-    override fun visitEnumEntry(declaration: IrEnumEntry) {
-        register(declaration, consumer::declareEnumEntry)
-        super.visitEnumEntry(declaration)
-    }
-
-    private inline fun <reified S : IrSymbol, D : IrDeclaration> register(
-        declaration: D,
-        registrar: (IdSignature, () -> S, (S) -> D) -> Unit,
-    ) {
-        val symbol = declaration.symbol as S
-        val signature = symbol.signature ?: return
-        registrar(signature, { symbol }, { declaration })
-    }
-}
-
 private class SyntaxErrorReportingVisitor(
     private val useSiteSession: FirSession,
-    private val diagnosticConverter: (KtPsiDiagnostic) -> KtDiagnosticWithPsi<*>
+    private val diagnosticConverter: (KtPsiDiagnostic) -> KaDiagnosticWithPsi<*>
 ) : KtTreeVisitorVoid() {
-    private val collectedDiagnostics = mutableListOf<KtDiagnostic>()
+    private val collectedDiagnostics = mutableListOf<KaDiagnostic>()
 
-    val diagnostics: List<KtDiagnostic>
+    val diagnostics: List<KaDiagnostic>
         get() = Collections.unmodifiableList(collectedDiagnostics)
 
     override fun visitErrorElement(element: PsiErrorElement) {

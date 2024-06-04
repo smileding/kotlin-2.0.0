@@ -287,7 +287,6 @@ object BuilderConfigurator : AbstractFirBuilderConfigurator<FirTreeBuilder>(FirT
             default("inlineStatus", "InlineStatus.Unknown")
             default("status", "FirResolvedDeclarationStatusImpl.DEFAULT_STATUS_FOR_STATUSLESS_DECLARATIONS")
             default("typeRef", "FirImplicitTypeRefImplWithoutSource")
-            withCopy()
             additionalImports(resolvedDeclarationStatusImport, firImplicitTypeWithoutSourceType)
         }
 
@@ -368,6 +367,16 @@ object BuilderConfigurator : AbstractFirBuilderConfigurator<FirTreeBuilder>(FirT
 
         builder(spreadArgumentExpression) {
             defaultFalse("isNamed", "isFakeSpread")
+        }
+
+        val abstractWhenBranchBuilder by builder {
+            fields from whenBranch without "hasGuard"
+        }
+        builder(whenBranch, type = "FirRegularWhenBranch") {
+            parents += abstractWhenBranchBuilder
+        }
+        builder(whenBranch, type = "FirGuardedWhenBranch") {
+            parents += abstractWhenBranchBuilder
         }
 
         val abstractResolvedQualifierBuilder by builder {

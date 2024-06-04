@@ -5,53 +5,72 @@
 
 package org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.callResolver
 
-import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
-import org.jetbrains.kotlin.analysis.api.calls.KtCallCandidateInfo
+import org.jetbrains.kotlin.analysis.api.KaSession
+import org.jetbrains.kotlin.analysis.api.calls.KaCallCandidateInfo
+import org.jetbrains.kotlin.analysis.api.calls.KaCallableMemberCall
+import org.jetbrains.kotlin.analysis.api.calls.successfulCallOrNull
+import org.jetbrains.kotlin.analysis.api.calls.symbol
+import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.assertStableSymbolResult
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.compareCalls
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.stringRepresentation
-import org.jetbrains.kotlin.analysis.test.framework.base.AbstractAnalysisApiBasedTest
-import org.jetbrains.kotlin.analysis.test.framework.project.structure.KtTestModule
-import org.jetbrains.kotlin.analysis.test.framework.services.expressionMarkerProvider
-import org.jetbrains.kotlin.analysis.test.framework.utils.executeOnPooledThreadInReadAction
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.assertions
+import org.jetbrains.kotlin.test.services.moduleStructure
 
-abstract class AbstractResolveCandidatesTest : AbstractAnalysisApiBasedTest() {
-    override fun doTestByMainFile(mainFile: KtFile, mainModule: KtTestModule, testServices: TestServices) {
-        val expression = testServices.expressionMarkerProvider.getSelectedElementOfType<KtElement>(mainFile)
+abstract class AbstractResolveCandidatesTest : AbstractResolveTest() {
+    override val resolveKind: String get() = "candidates"
 
-        val actual = executeOnPooledThreadInReadAction {
-            analyseForTest(expression) {
-                val candidates = collectCallCandidates(expression)
-                if (candidates.isEmpty()) {
-                    "NO_CANDIDATES"
-                } else {
-                    val sortedCandidates = candidates.sortedWith { candidate1, candidate2 ->
-                        compareCalls(candidate1.candidate, candidate2.candidate)
-                    }
-                    sortedCandidates.joinToString("\n\n") { stringRepresentation(it) }
-                }
+    override fun generateResolveOutput(mainElement: KtElement, testServices: TestServices): String {
+        return analyseForTest(mainElement) {
+            val candidates = collectCallCandidates(mainElement)
+            ignoreStabilityIfNeeded(testServices.moduleStructure.allDirectives) {
+                val candidatesAgain = collectCallCandidates(mainElement)
+                assertStableSymbolResult(testServices, candidates, candidatesAgain)
+            }
+
+            checkConsistencyWithResolveCall(mainElement, candidates, testServices)
+            if (candidates.isEmpty()) {
+                "NO_CANDIDATES"
+            } else {
+                candidates.joinToString("\n\n") { stringRepresentation(it) }
             }
         }
-        testServices.assertions.assertEqualsToTestDataFileSibling(actual)
     }
 
-    private fun KtAnalysisSession.collectCallCandidates(element: PsiElement): List<KtCallCandidateInfo> = when (element) {
-        is KtValueArgument -> this@collectCallCandidates.collectCallCandidates(element.getArgumentExpression()!!)
-        is KtDeclarationModifierList -> {
-            val annotationEntry = element.annotationEntries.singleOrNull()
-                ?: error("Only single annotation entry is supported for now")
-            annotationEntry.collectCallCandidates()
+    private fun KaSession.checkConsistencyWithResolveCall(
+        mainElement: KtElement,
+        candidates: List<KaCallCandidateInfo>,
+        testServices: TestServices,
+    ) {
+        val resolvedCall = mainElement.resolveCall()?.successfulCallOrNull<KaCallableMemberCall<*, *>>()
+        if (candidates.isEmpty()) {
+            testServices.assertions.assertEquals(null, resolvedCall) {
+                "Inconsistency between candidates and resolved call. " +
+                        "Resolved call is not null, but no candidates found.\n" +
+                        stringRepresentation(resolvedCall)
+            }
+        } else {
+            if (resolvedCall == null) return
+            val resolvedSymbol = stringRepresentation(resolvedCall.symbol)
+            val candidatesRepresentation = candidates.mapNotNull {
+                if (it.isInBestCandidates) {
+                    stringRepresentation((it.candidate as KaCallableMemberCall<*, *>).symbol)
+                } else {
+                    null
+                }
+            }
+
+            testServices.assertions.assertTrue(resolvedSymbol in candidatesRepresentation) {
+                "'$resolvedSymbol' is not found in:\n" + candidatesRepresentation.joinToString("\n")
+            }
         }
-        is KtFileAnnotationList -> {
-            val annotationEntry = element.annotationEntries.singleOrNull()
-                ?: error("Only single annotation entry is supported for now")
-            annotationEntry.collectCallCandidates()
-        }
-        is KtElement -> element.collectCallCandidates()
-        else -> error("Selected element type (${element::class.simpleName}) is not supported for resolveCandidates()")
     }
 
+    private fun KaSession.collectCallCandidates(element: KtElement): List<KaCallCandidateInfo> {
+        val candidates = element.collectCallCandidates()
+        return candidates.sortedWith { candidate1, candidate2 ->
+            compareCalls(candidate1.candidate, candidate2.candidate)
+        }
+    }
 }

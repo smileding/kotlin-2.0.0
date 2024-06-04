@@ -1,4 +1,4 @@
-KtTypeParameterSymbol:
+KaTypeParameterSymbol:
   annotationsList: []
   isReified: false
   name: T
@@ -6,13 +6,13 @@ KtTypeParameterSymbol:
   typeParameters: []
   upperBounds: []
   variance: INVARIANT
-  getContainingFileSymbol: KtFileSymbol(typeAlias.kt)
+  getContainingFileSymbol: KaFileSymbol(typeAlias.kt)
   getContainingModule: KtSourceModule "Sources of main"
   deprecationStatus: null
 
-KtNamedClassOrObjectSymbol:
+KaNamedClassOrObjectSymbol:
   annotationsList: []
-  classIdIfNonLocal: X
+  classId: X
   classKind: CLASS
   companionObject: null
   contextReceivers: []
@@ -27,22 +27,22 @@ KtNamedClassOrObjectSymbol:
   name: X
   origin: SOURCE
   superTypes: [
-    KtUsualClassType:
+    KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: kotlin/Any
   ]
   symbolKind: TOP_LEVEL
   typeParameters: [
-    KtTypeParameterSymbol(T)
+    KaTypeParameterSymbol(T)
   ]
   visibility: Public
-  getContainingFileSymbol: KtFileSymbol(typeAlias.kt)
+  getContainingFileSymbol: KaFileSymbol(typeAlias.kt)
   getContainingModule: KtSourceModule "Sources of main"
   annotationApplicableTargets: null
   deprecationStatus: null
 
-KtTypeParameterSymbol:
+KaTypeParameterSymbol:
   annotationsList: []
   isReified: false
   name: Z
@@ -50,17 +50,17 @@ KtTypeParameterSymbol:
   typeParameters: []
   upperBounds: []
   variance: INVARIANT
-  getContainingFileSymbol: KtFileSymbol(typeAlias.kt)
+  getContainingFileSymbol: KaFileSymbol(typeAlias.kt)
   getContainingModule: KtSourceModule "Sources of main"
   deprecationStatus: null
 
-KtTypeAliasSymbol:
+KaTypeAliasSymbol:
   annotationsList: []
-  classIdIfNonLocal: Y
-  expandedType: KtUsualClassType:
+  classId: Y
+  expandedType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: [
-      KtTypeParameterType:
+    typeArguments: [
+      KaTypeParameterType:
         annotationsList: []
         type: Z
     ]
@@ -71,9 +71,9 @@ KtTypeAliasSymbol:
   origin: SOURCE
   symbolKind: TOP_LEVEL
   typeParameters: [
-    KtTypeParameterSymbol(Z)
+    KaTypeParameterSymbol(Z)
   ]
   visibility: Private
-  getContainingFileSymbol: KtFileSymbol(typeAlias.kt)
+  getContainingFileSymbol: KaFileSymbol(typeAlias.kt)
   getContainingModule: KtSourceModule "Sources of main"
   deprecationStatus: null

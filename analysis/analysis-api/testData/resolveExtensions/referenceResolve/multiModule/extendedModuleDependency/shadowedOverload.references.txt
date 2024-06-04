@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in generated) fun kotlin.Any.generatedOverloadedExtensionFunction(): kotlin.Int [origin = SOURCE]

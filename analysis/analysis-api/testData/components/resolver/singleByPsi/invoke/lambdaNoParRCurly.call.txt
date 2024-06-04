@@ -1,0 +1,2 @@
+KtFunctionLiteral:
+null

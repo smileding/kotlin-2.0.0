@@ -1,11 +1,11 @@
-KtSyntheticJavaPropertySymbol:
+KaSyntheticJavaPropertySymbol:
   annotationsList: []
   backingFieldSymbol: null
-  callableIdIfNonLocal: /Derived.something
+  callableId: /Derived.something
   contextReceivers: []
-  getter: KtPropertyGetterSymbol:
+  getter: KaPropertyGetterSymbol:
     annotationsList: []
-    callableIdIfNonLocal: /Derived.getSomething
+    callableId: /Derived.getSomething
     contextReceivers: []
     hasBody: true
     hasStableParameterNames: true
@@ -16,17 +16,17 @@ KtSyntheticJavaPropertySymbol:
     modality: OPEN
     origin: JAVA_SYNTHETIC_PROPERTY
     receiverParameter: null
-    returnType: KtUsualClassType:
+    returnType: KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: kotlin/String
     symbolKind: ACCESSOR
     typeParameters: []
     valueParameters: []
     visibility: Public
-    getDispatchReceiver(): KtUsualClassType:
+    getDispatchReceiver(): KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: Derived
     getContainingFileSymbol: null
     getContainingJvmClassName: Derived
@@ -42,19 +42,19 @@ KtSyntheticJavaPropertySymbol:
   isOverride: true
   isStatic: false
   isVal: false
-  javaGetterSymbol: KtFunctionSymbol(/Derived.getSomething)
-  javaSetterSymbol: KtFunctionSymbol(/Derived.setSomething)
+  javaGetterSymbol: KaFunctionSymbol(/Derived.getSomething)
+  javaSetterSymbol: KaFunctionSymbol(/Derived.setSomething)
   modality: OPEN
   name: something
   origin: JAVA_SYNTHETIC_PROPERTY
   receiverParameter: null
-  returnType: KtUsualClassType:
+  returnType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: []
+    typeArguments: []
     type: kotlin/String
-  setter: KtPropertySetterSymbol:
+  setter: KaPropertySetterSymbol:
     annotationsList: []
-    callableIdIfNonLocal: /Derived.setSomething
+    callableId: /Derived.setSomething
     contextReceivers: []
     hasBody: true
     hasStableParameterNames: true
@@ -64,9 +64,9 @@ KtSyntheticJavaPropertySymbol:
     isOverride: true
     modality: OPEN
     origin: JAVA_SYNTHETIC_PROPERTY
-    parameter: KtValueParameterSymbol:
+    parameter: KaValueParameterSymbol:
       annotationsList: []
-      callableIdIfNonLocal: null
+      callableId: null
       contextReceivers: []
       generatedPrimaryConstructorProperty: null
       hasDefaultValue: false
@@ -78,27 +78,27 @@ KtSyntheticJavaPropertySymbol:
       name: s
       origin: SOURCE
       receiverParameter: null
-      returnType: KtUsualClassType:
+      returnType: KaUsualClassType:
         annotationsList: []
-        ownTypeArguments: []
+        typeArguments: []
         type: kotlin/String
       symbolKind: LOCAL
       typeParameters: []
-      getContainingFileSymbol: KtFileSymbol(Derived.kt)
+      getContainingFileSymbol: KaFileSymbol(Derived.kt)
       getContainingJvmClassName: Derived
       getContainingModule: KtSourceModule "Sources of main"
       deprecationStatus: null
     receiverParameter: null
-    returnType: KtUsualClassType:
+    returnType: KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: kotlin/Unit
     symbolKind: ACCESSOR
     typeParameters: []
     valueParameters: [
-      KtValueParameterSymbol:
+      KaValueParameterSymbol:
         annotationsList: []
-        callableIdIfNonLocal: null
+        callableId: null
         contextReceivers: []
         generatedPrimaryConstructorProperty: null
         hasDefaultValue: false
@@ -110,21 +110,21 @@ KtSyntheticJavaPropertySymbol:
         name: s
         origin: SOURCE
         receiverParameter: null
-        returnType: KtUsualClassType:
+        returnType: KaUsualClassType:
           annotationsList: []
-          ownTypeArguments: []
+          typeArguments: []
           type: kotlin/String
         symbolKind: LOCAL
         typeParameters: []
-        getContainingFileSymbol: KtFileSymbol(Derived.kt)
+        getContainingFileSymbol: KaFileSymbol(Derived.kt)
         getContainingJvmClassName: Derived
         getContainingModule: KtSourceModule "Sources of main"
         deprecationStatus: null
     ]
     visibility: Public
-    getDispatchReceiver(): KtUsualClassType:
+    getDispatchReceiver(): KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: Derived
     getContainingFileSymbol: null
     getContainingJvmClassName: Derived
@@ -133,9 +133,9 @@ KtSyntheticJavaPropertySymbol:
   symbolKind: CLASS_MEMBER
   typeParameters: []
   visibility: Public
-  getDispatchReceiver(): KtUsualClassType:
+  getDispatchReceiver(): KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: []
+    typeArguments: []
     type: Derived
   getContainingFileSymbol: null
   getContainingJvmClassName: Derived

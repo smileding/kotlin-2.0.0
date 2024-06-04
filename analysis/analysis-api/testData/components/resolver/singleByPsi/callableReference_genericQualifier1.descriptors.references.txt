@@ -1,0 +1,4 @@
+KtSimpleNameReference:
+  (in test) class Test<T>
+
+SyntheticPropertyAccessorReference: Nothing (Unresolved reference)

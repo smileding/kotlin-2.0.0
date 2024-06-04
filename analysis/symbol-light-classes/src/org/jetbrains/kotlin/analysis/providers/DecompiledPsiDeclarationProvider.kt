@@ -9,27 +9,27 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.search.GlobalSearchScope
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
+import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.*
 import org.jetbrains.kotlin.analysis.providers.PsiDeclarationAndKtSymbolEqualityChecker.representsTheSameDeclaration
 
 object DecompiledPsiDeclarationProvider {
-    fun KtAnalysisSession.findPsi(ktSymbol: KtSymbol, project: Project): PsiElement? {
+    fun KaSession.findPsi(ktSymbol: KaSymbol, project: Project): PsiElement? {
         return when (ktSymbol) {
-            is KtConstructorSymbol -> providePsiForConstructor(ktSymbol, project)
-            is KtFunctionLikeSymbol -> providePsiForFunction(ktSymbol, project)
-            is KtEnumEntrySymbol -> providePsiForEnumEntry(ktSymbol, project)
-            is KtVariableLikeSymbol -> providePsiForProperty(ktSymbol, project)
-            is KtClassLikeSymbol -> providePsiForClass(ktSymbol, project)
+            is KaConstructorSymbol -> providePsiForConstructor(ktSymbol, project)
+            is KaFunctionLikeSymbol -> providePsiForFunction(ktSymbol, project)
+            is KaEnumEntrySymbol -> providePsiForEnumEntry(ktSymbol, project)
+            is KaVariableLikeSymbol -> providePsiForProperty(ktSymbol, project)
+            is KaClassLikeSymbol -> providePsiForClass(ktSymbol, project)
             else -> null
         }
     }
 
-    private fun KtAnalysisSession.providePsiForConstructor(
-        constructorSymbol: KtConstructorSymbol,
+    private fun KaSession.providePsiForConstructor(
+        constructorSymbol: KaConstructorSymbol,
         project: Project
     ): PsiElement? {
-        val classId = constructorSymbol.containingClassIdIfNonLocal ?: return null
+        val classId = constructorSymbol.containingClassId ?: return null
         val psiClass = project.createPsiDeclarationProvider(constructorSymbol.scope(project))
             ?.getClassesByClassId(classId)
             ?.firstOrNull() ?: return null
@@ -38,11 +38,11 @@ object DecompiledPsiDeclarationProvider {
         }
     }
 
-    private fun KtAnalysisSession.providePsiForFunction(
-        functionLikeSymbol: KtFunctionLikeSymbol,
+    private fun KaSession.providePsiForFunction(
+        functionLikeSymbol: KaFunctionLikeSymbol,
         project: Project
     ): PsiElement? {
-        return functionLikeSymbol.callableIdIfNonLocal?.let {
+        return functionLikeSymbol.callableId?.let {
             val candidates = project.createPsiDeclarationProvider(functionLikeSymbol.scope(project))
                 ?.getFunctions(it)
             if (candidates?.size == 1)
@@ -55,10 +55,10 @@ object DecompiledPsiDeclarationProvider {
     }
 
     private fun providePsiForProperty(
-        variableLikeSymbol: KtVariableLikeSymbol,
+        variableLikeSymbol: KaVariableLikeSymbol,
         project: Project
     ): PsiElement? {
-        return variableLikeSymbol.callableIdIfNonLocal?.let {
+        return variableLikeSymbol.callableId?.let {
             val candidates = project.createPsiDeclarationProvider(variableLikeSymbol.scope(project))
                 ?.getProperties(it)
             if (candidates?.size == 1)
@@ -72,10 +72,10 @@ object DecompiledPsiDeclarationProvider {
     }
 
     private fun providePsiForClass(
-        classLikeSymbol: KtClassLikeSymbol,
+        classLikeSymbol: KaClassLikeSymbol,
         project: Project
     ): PsiElement? {
-        return classLikeSymbol.classIdIfNonLocal?.let {
+        return classLikeSymbol.classId?.let {
             project.createPsiDeclarationProvider(classLikeSymbol.scope(project))
                 ?.getClassesByClassId(it)
                 ?.firstOrNull()
@@ -83,10 +83,10 @@ object DecompiledPsiDeclarationProvider {
     }
 
     private fun providePsiForEnumEntry(
-        enumEntrySymbol: KtEnumEntrySymbol,
+        enumEntrySymbol: KaEnumEntrySymbol,
         project: Project
     ): PsiElement? {
-        val classId = enumEntrySymbol.containingEnumClassIdIfNonLocal ?: return null
+        val classId = enumEntrySymbol.callableId?.classId ?: return null
         val psiClass = project.createPsiDeclarationProvider(enumEntrySymbol.scope(project))
             ?.getClassesByClassId(classId)
             ?.firstOrNull() ?: return null
@@ -95,7 +95,7 @@ object DecompiledPsiDeclarationProvider {
         }
     }
 
-    private fun KtSymbol.scope(project: Project): GlobalSearchScope {
+    private fun KaSymbol.scope(project: Project): GlobalSearchScope {
         // TODO: finding containing module and use a narrower scope?
         return GlobalSearchScope.allScope(project)
     }

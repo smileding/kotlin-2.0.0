@@ -1,0 +1,2 @@
+KDocReference:
+  (in SuperClass) fun toName(): kotlin.String

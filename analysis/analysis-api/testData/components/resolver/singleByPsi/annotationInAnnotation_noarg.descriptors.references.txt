@@ -1,0 +1,6 @@
+KtSimpleNameReference:
+  (in Annotation) constructor(vararg strings: kotlin.String)
+
+SyntheticPropertyAccessorReference: Nothing (Unresolved reference)
+
+KtDefaultAnnotationArgumentReference: Nothing (Unresolved reference)

@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in ROOT) operator fun <T> T.contains(int: kotlin.Int): kotlin.Boolean

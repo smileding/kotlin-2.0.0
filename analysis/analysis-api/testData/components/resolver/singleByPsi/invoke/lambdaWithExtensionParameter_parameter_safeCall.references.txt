@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  action: test.Foo.() -> kotlin.Unit

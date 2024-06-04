@@ -301,7 +301,7 @@ interface TestCaseGroupId {
  * [TestCase]s inside of the group with similar [TestCompilerArgs] can be compiled to the single
  * executable file to reduce the time spent for compiling and speed-up overall test execution.
  */
-internal sealed interface TestCaseGroup {
+sealed interface TestCaseGroup {
     fun isEnabled(testCaseId: TestCaseId): Boolean
     fun getByName(testCaseId: TestCaseId): TestCase?
 
@@ -330,6 +330,8 @@ internal sealed interface TestCaseGroup {
                     && testCase.sharedModules == sharedModules
                     && testCase.extras<WithTestRunnerExtras>().runnerType == runnerType
         }
+
+        override fun toString() = "TestCaseGroup.Default::${testCasesById.keys.firstNotNullOfOrNull { it.testCaseGroupId }}"
     }
 
     data class MetaGroup(val testCaseGroupId: TestCaseGroupId, val testGroups: Set<TestCaseGroup>) : TestCaseGroup {

@@ -1,0 +1,2 @@
+KtArrayAccessExpression:
+NO_CANDIDATES

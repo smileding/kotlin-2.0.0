@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in JavaClass) constructor(s: kotlin.String)

@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  vararg a: test.A

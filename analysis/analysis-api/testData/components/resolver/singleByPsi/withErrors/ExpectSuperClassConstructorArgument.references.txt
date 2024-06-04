@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  obj: kotlin.Any

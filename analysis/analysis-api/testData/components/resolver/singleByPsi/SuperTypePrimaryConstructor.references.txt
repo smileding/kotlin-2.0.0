@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in A) constructor(i: kotlin.Int)

@@ -62,6 +62,10 @@ abstract class FirDefaultVisitorVoid : FirVisitorVoid() {
         visitAnnotationContainer(receiverParameter)
     }
 
+    override fun visitScriptReceiverParameter(scriptReceiverParameter: FirScriptReceiverParameter) {
+        visitReceiverParameter(scriptReceiverParameter)
+    }
+
     override fun visitEnumEntry(enumEntry: FirEnumEntry) {
         visitVariable(enumEntry)
     }
@@ -126,7 +130,7 @@ abstract class FirDefaultVisitorVoid : FirVisitorVoid() {
         visitLoopJump(continueExpression)
     }
 
-    override fun <T> visitLiteralExpression(literalExpression: FirLiteralExpression<T>) {
+    override fun visitLiteralExpression(literalExpression: FirLiteralExpression) {
         visitExpression(literalExpression)
     }
 

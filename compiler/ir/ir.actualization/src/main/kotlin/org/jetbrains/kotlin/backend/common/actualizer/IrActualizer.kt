@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2023 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.incremental.components.ExpectActualTracker
 import org.jetbrains.kotlin.ir.IrDiagnosticReporter
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
-import org.jetbrains.kotlin.ir.symbols.IrClassifierSymbol
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
 import org.jetbrains.kotlin.ir.types.IrTypeSystemContext
 import org.jetbrains.kotlin.ir.types.classOrFail
@@ -33,9 +32,9 @@ class IrActualizer(
     val ktDiagnosticReporter: IrDiagnosticReporter,
     val typeSystemContext: IrTypeSystemContext,
     expectActualTracker: ExpectActualTracker?,
-    val useFirBasedFakeOverrideGenerator: Boolean,
     val mainFragment: IrModuleFragment,
-    val dependentFragments: List<IrModuleFragment>
+    val dependentFragments: List<IrModuleFragment>,
+    extraActualClassExtractor: IrExtraActualDeclarationExtractor? = null,
 ) {
     private val collector = ExpectActualCollector(
         mainFragment,
@@ -43,6 +42,7 @@ class IrActualizer(
         typeSystemContext,
         ktDiagnosticReporter,
         expectActualTracker,
+        extraActualClassExtractor,
     )
 
     private val classActualizationInfo = collector.collectClassActualizationInfo()
@@ -60,11 +60,6 @@ class IrActualizer(
                 // Let's leave to expect class as is for that case, it is probably best effort to make errors reasonable.
                 return symbol
             }
-
-            override fun getReferencedClassifier(symbol: IrClassifierSymbol): IrClassifierSymbol {
-                if (symbol !is IrClassSymbol) return symbol
-                return getReferencedClass(symbol)
-            }
         }
         dependentFragments.forEach { it.transform(ActualizerVisitor(classSymbolRemapper), null) }
     }
@@ -73,29 +68,15 @@ class IrActualizer(
         // 1. Collect expect-actual links for members of classes found on step 1.
         val expectActualMap = collector.matchAllExpectDeclarations(classActualizationInfo)
 
-        if (useFirBasedFakeOverrideGenerator) {
-            //   2. Actualize expect fake overrides in non-expect classes inside common or multi-platform module.
-            //      It's probably important to run FakeOverridesActualizer before ActualFakeOverridesAdder
-            FakeOverridesActualizer(expectActualMap, ktDiagnosticReporter).apply { dependentFragments.forEach { visitModuleFragment(it) } }
-
-            //   3. Add fake overrides to non-expect classes inside common or multi-platform module,
-            //      taken from these non-expect classes actualized super classes.
-            ActualFakeOverridesAdder(
-                expectActualMap,
-                classActualizationInfo.actualClasses,
-                typeSystemContext
-            ).apply { dependentFragments.forEach { visitModuleFragment(it) } }
-        }
-
-        //   4. Copy and actualize function parameter default values from expect functions
+        // 2. Copy and actualize function parameter default values from expect functions
         val symbolRemapper = ActualizerSymbolRemapper(expectActualMap)
         FunctionDefaultParametersActualizer(symbolRemapper, expectActualMap).actualize()
 
-        //   5. Actualize expect calls in dependent fragments using info obtained in the previous steps
+        // 3. Actualize expect calls in dependent fragments using info obtained in the previous steps
         val actualizerVisitor = ActualizerVisitor(symbolRemapper)
         dependentFragments.forEach { it.transform(actualizerVisitor, null) }
 
-        //   6. Move all declarations to mainFragment
+        // 4. Move all declarations to mainFragment
         mergeIrFragments(mainFragment, dependentFragments)
         return expectActualMap
     }
@@ -136,9 +117,11 @@ class IrActualizer(
     }
 
     private fun mergeIrFragments(mainFragment: IrModuleFragment, dependentFragments: List<IrModuleFragment>) {
-        val newFiles = dependentFragments.flatMap { it.files }
+        // Reversing `dependentFragments` results in backward top-sorted order
+        // It is crucial for aligning files order when serializing to klib
+        val newFiles = dependentFragments.reversed().flatMap { it.files }
         for (file in newFiles) file.module = mainFragment
-        mainFragment.files.addAll(0, newFiles)
+        mainFragment.files.addAll(newFiles)
     }
 }
 

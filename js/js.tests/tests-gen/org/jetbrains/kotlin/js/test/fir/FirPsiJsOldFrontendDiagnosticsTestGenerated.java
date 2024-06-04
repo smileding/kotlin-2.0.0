@@ -517,6 +517,12 @@ public class FirPsiJsOldFrontendDiagnosticsTestGenerated extends AbstractFirPsiJ
     }
 
     @Test
+    @TestMetadata("promiseUnit.kt")
+    public void testPromiseUnit() {
+      runTest("compiler/testData/diagnostics/testsWithJsStdLib/export/promiseUnit.kt");
+    }
+
+    @Test
     @TestMetadata("secondaryConstructorWithoutJsName.kt")
     public void testSecondaryConstructorWithoutJsName() {
       runTest("compiler/testData/diagnostics/testsWithJsStdLib/export/secondaryConstructorWithoutJsName.kt");
@@ -526,6 +532,12 @@ public class FirPsiJsOldFrontendDiagnosticsTestGenerated extends AbstractFirPsiJ
     @TestMetadata("secondaryConstructorWithoutJsNameInExportedFile.kt")
     public void testSecondaryConstructorWithoutJsNameInExportedFile() {
       runTest("compiler/testData/diagnostics/testsWithJsStdLib/export/secondaryConstructorWithoutJsNameInExportedFile.kt");
+    }
+
+    @Test
+    @TestMetadata("typeAliasInValueParameter.kt")
+    public void testTypeAliasInValueParameter() {
+      runTest("compiler/testData/diagnostics/testsWithJsStdLib/export/typeAliasInValueParameter.kt");
     }
 
     @Test

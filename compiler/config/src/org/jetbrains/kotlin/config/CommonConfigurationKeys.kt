@@ -16,6 +16,7 @@
 
 package org.jetbrains.kotlin.config
 
+import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.constant.EvaluatedConstTracker
 import org.jetbrains.kotlin.incremental.components.*
 import org.jetbrains.kotlin.metadata.deserialization.BinaryVersion
@@ -71,18 +72,6 @@ object CommonConfigurationKeys {
         CompilerConfigurationKey.create<Int>("When using the IR backend, run lowerings by file in N parallel threads")
 
     @JvmField
-    val KLIB_RELATIVE_PATH_BASES =
-        CompilerConfigurationKey.create<Collection<String>>("Provides a path from which relative paths in klib are being computed")
-
-    @JvmField
-    val KLIB_NORMALIZE_ABSOLUTE_PATH =
-        CompilerConfigurationKey.create<Boolean>("Normalize absolute paths in klib (replace file separator with '/')")
-
-    @JvmField
-    val PRODUCE_KLIB_SIGNATURES_CLASH_CHECKS =
-        CompilerConfigurationKey.create<Boolean>("Turn on the checks on uniqueness of signatures")
-
-    @JvmField
     val INCREMENTAL_COMPILATION =
         CompilerConfigurationKey.create<Boolean>("Enable incremental compilation")
 
@@ -98,9 +87,10 @@ object CommonConfigurationKeys {
         CompilerConfigurationKey.create<EvaluatedConstTracker>("Keeps track of all evaluated by IrInterpreter constants")
 
     @JvmField
-    val USE_FIR_BASED_FAKE_OVERRIDE_GENERATOR = CompilerConfigurationKey.create<Boolean>(
-        "Generate all fake overrides via FIR2IR instead of IR, i.e. revert to behavior before KT-61514 was resolved."
-    )
+    val MESSAGE_COLLECTOR_KEY = CompilerConfigurationKey.create<MessageCollector>("message collector")
+
+    @JvmField
+    val VERIFY_IR = CompilerConfigurationKey.create<IrVerificationMode>("IR verification mode")
 }
 
 var CompilerConfiguration.languageVersionSettings: LanguageVersionSettings
@@ -114,3 +104,7 @@ val LanguageVersionSettings.areExpectActualClassesStable: Boolean
     get() {
         return getFlag(AnalysisFlags.muteExpectActualClassesWarning) || supportsFeature(LanguageFeature.ExpectActualClasses)
     }
+
+var CompilerConfiguration.messageCollector: MessageCollector
+    get() = get(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
+    set(value) = put(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY, value)

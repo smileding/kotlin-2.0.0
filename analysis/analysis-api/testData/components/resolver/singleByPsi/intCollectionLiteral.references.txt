@@ -1,0 +1,5 @@
+KtCollectionLiteralReference:
+  (in kotlin) fun intArrayOf(vararg elements: kotlin.Int): kotlin.IntArray
+
+KtDefaultAnnotationArgumentReference:
+  arr: kotlin.IntArray

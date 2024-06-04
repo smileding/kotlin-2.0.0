@@ -1,6 +1,6 @@
-KtFunctionSymbol:
+KaFunctionSymbol:
   annotationsList: []
-  callableIdIfNonLocal: /JavaClass.bar
+  callableId: /JavaClass.bar
   contextReceivers: []
   contractEffects: []
   hasStableParameterNames: false
@@ -20,7 +20,7 @@ KtFunctionSymbol:
   name: bar
   origin: JAVA
   receiverParameter: null
-  returnType: KtFlexibleType:
+  returnType: KaFlexibleType:
     annotationsList: []
     type: kotlin/String!
   symbolKind: CLASS_MEMBER
@@ -32,9 +32,9 @@ KtFunctionSymbol:
   getContainingModule: KtSourceModule "Sources of main"
   deprecationStatus: null
 
-KtFunctionSymbol:
+KaFunctionSymbol:
   annotationsList: []
-  callableIdIfNonLocal: /JavaClass.hello
+  callableId: /JavaClass.hello
   contextReceivers: []
   contractEffects: []
   hasStableParameterNames: false
@@ -54,26 +54,26 @@ KtFunctionSymbol:
   name: hello
   origin: JAVA
   receiverParameter: null
-  returnType: KtUsualClassType:
+  returnType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: []
+    typeArguments: []
     type: kotlin/Unit
   symbolKind: CLASS_MEMBER
   typeParameters: []
   valueParameters: []
   visibility: Public
-  getDispatchReceiver(): KtUsualClassType:
+  getDispatchReceiver(): KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: []
+    typeArguments: []
     type: JavaClass
   getContainingFileSymbol: null
   getContainingJvmClassName: JavaClass
   getContainingModule: KtSourceModule "Sources of main"
   deprecationStatus: null
 
-KtJavaFieldSymbol:
+KaJavaFieldSymbol:
   annotationsList: []
-  callableIdIfNonLocal: /JavaClass.foo
+  callableId: /JavaClass.foo
   contextReceivers: []
   isExtension: false
   isStatic: true
@@ -82,9 +82,9 @@ KtJavaFieldSymbol:
   name: foo
   origin: JAVA
   receiverParameter: null
-  returnType: KtUsualClassType:
+  returnType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: []
+    typeArguments: []
     type: kotlin/Int
   symbolKind: CLASS_MEMBER
   typeParameters: []
@@ -94,9 +94,9 @@ KtJavaFieldSymbol:
   getContainingModule: KtSourceModule "Sources of main"
   deprecationStatus: null
 
-KtNamedClassOrObjectSymbol:
+KaNamedClassOrObjectSymbol:
   annotationsList: []
-  classIdIfNonLocal: JavaClass.InnerClass
+  classId: JavaClass.InnerClass
   classKind: CLASS
   companionObject: null
   contextReceivers: []
@@ -111,9 +111,9 @@ KtNamedClassOrObjectSymbol:
   name: InnerClass
   origin: JAVA
   superTypes: [
-    KtUsualClassType:
+    KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: kotlin/Any
   ]
   symbolKind: CLASS_MEMBER
@@ -124,9 +124,9 @@ KtNamedClassOrObjectSymbol:
   annotationApplicableTargets: null
   deprecationStatus: null
 
-KtNamedClassOrObjectSymbol:
+KaNamedClassOrObjectSymbol:
   annotationsList: []
-  classIdIfNonLocal: JavaClass.NestedClass
+  classId: JavaClass.NestedClass
   classKind: CLASS
   companionObject: null
   contextReceivers: []
@@ -141,9 +141,9 @@ KtNamedClassOrObjectSymbol:
   name: NestedClass
   origin: JAVA
   superTypes: [
-    KtUsualClassType:
+    KaUsualClassType:
       annotationsList: []
-      ownTypeArguments: []
+      typeArguments: []
       type: kotlin/Any
   ]
   symbolKind: CLASS_MEMBER
@@ -154,10 +154,10 @@ KtNamedClassOrObjectSymbol:
   annotationApplicableTargets: null
   deprecationStatus: null
 
-KtConstructorSymbol:
+KaConstructorSymbol:
   annotationsList: []
-  callableIdIfNonLocal: null
-  containingClassIdIfNonLocal: JavaClass
+  callableId: null
+  containingClassId: JavaClass
   contextReceivers: []
   hasStableParameterNames: false
   isActual: false
@@ -166,9 +166,9 @@ KtConstructorSymbol:
   isPrimary: true
   origin: JAVA
   receiverParameter: null
-  returnType: KtUsualClassType:
+  returnType: KaUsualClassType:
     annotationsList: []
-    ownTypeArguments: []
+    typeArguments: []
     type: JavaClass
   symbolKind: CLASS_MEMBER
   typeParameters: []

@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in ROOT) fun <A, B, C> generic()

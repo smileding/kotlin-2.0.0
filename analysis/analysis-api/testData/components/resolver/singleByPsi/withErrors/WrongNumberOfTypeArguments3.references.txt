@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in foo) class DD<T, T2>

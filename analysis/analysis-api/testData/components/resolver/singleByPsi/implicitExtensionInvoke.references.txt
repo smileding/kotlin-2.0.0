@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  a: kotlin.Int

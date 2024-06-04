@@ -1,0 +1,2 @@
+KDocReference:
+  (in ClassWithCompanion.Companion) fun foo()

@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in t.A) companion object B

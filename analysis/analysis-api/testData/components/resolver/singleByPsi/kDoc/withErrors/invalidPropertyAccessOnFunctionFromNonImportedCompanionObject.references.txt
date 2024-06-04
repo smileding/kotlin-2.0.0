@@ -1,0 +1,2 @@
+KDocReference:
+  (in bar.A.Companion) fun toName(): kotlin.String

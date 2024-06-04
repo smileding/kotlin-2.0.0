@@ -35,7 +35,9 @@ import org.jetbrains.kotlin.utils.addToStdlib.shouldNotBeCalled
 
 class Fir2IrPluginContext(
     private val c: Fir2IrComponents,
-    @property:ObsoleteDescriptorBasedAPI override val moduleDescriptor: ModuleDescriptor
+    override val irBuiltIns: IrBuiltIns,
+    @property:ObsoleteDescriptorBasedAPI override val moduleDescriptor: ModuleDescriptor,
+    @property:ObsoleteDescriptorBasedAPI override val symbolTable: ReferenceSymbolTable,
 ) : IrPluginContext {
     companion object {
         private const val ERROR_MESSAGE = "This API is not supported for K2"
@@ -59,13 +61,7 @@ class Fir2IrPluginContext(
     override val platform: TargetPlatform
         get() = c.session.moduleData.platform
 
-    override val symbolTable: ReferenceSymbolTable
-        get() = c.symbolTable
-
     override val symbols: BuiltinSymbolsBase = BuiltinSymbolsBase(irBuiltIns, symbolTable)
-
-    override val irBuiltIns: IrBuiltIns
-        get() = c.irBuiltIns
 
     private val symbolProvider: FirSymbolProvider
         get() = c.session.symbolProvider

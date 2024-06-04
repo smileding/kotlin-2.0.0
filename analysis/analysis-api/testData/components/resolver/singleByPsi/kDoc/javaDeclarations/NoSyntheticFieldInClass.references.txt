@@ -1,0 +1,10 @@
+<caret_1>:
+  KDocReference: Nothing (Unresolved reference)
+
+<caret_2>:
+  KDocReference:
+    (in Storage) open fun setValue(value: kotlin.String!)
+
+<caret_3>:
+  KDocReference:
+    (in Storage) open fun prop()

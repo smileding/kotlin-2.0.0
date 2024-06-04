@@ -1,0 +1,2 @@
+KtSimpleNameReference:
+  (in testing) fun makeFoo(): testing.Foo

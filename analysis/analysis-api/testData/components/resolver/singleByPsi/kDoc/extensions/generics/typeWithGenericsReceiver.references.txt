@@ -1,0 +1,7 @@
+<caret_1>:
+  KDocReference:
+    (in test) fun test.WithGenerics<kotlin.Int>.intExt()
+
+<caret_2>:
+  KDocReference:
+    (in test) fun test.WithGenerics<kotlin.String>.stringExt()

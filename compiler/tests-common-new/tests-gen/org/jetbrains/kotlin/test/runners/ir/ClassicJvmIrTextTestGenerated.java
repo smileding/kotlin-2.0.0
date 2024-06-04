@@ -317,6 +317,12 @@ public class ClassicJvmIrTextTestGenerated extends AbstractClassicJvmIrTextTest 
     }
 
     @Test
+    @TestMetadata("sealedClassConstructorVisibility.kt")
+    public void testSealedClassConstructorVisibility() {
+      runTest("compiler/testData/ir/irText/classes/sealedClassConstructorVisibility.kt");
+    }
+
+    @Test
     @TestMetadata("sealedClasses.kt")
     public void testSealedClasses() {
       runTest("compiler/testData/ir/irText/classes/sealedClasses.kt");
@@ -1584,6 +1590,24 @@ public class ClassicJvmIrTextTestGenerated extends AbstractClassicJvmIrTextTest 
     @TestMetadata("field.kt")
     public void testField() {
       runTest("compiler/testData/ir/irText/expressions/field.kt");
+    }
+
+    @Test
+    @TestMetadata("fieldAccess_generic.kt")
+    public void testFieldAccess_generic() {
+      runTest("compiler/testData/ir/irText/expressions/fieldAccess_generic.kt");
+    }
+
+    @Test
+    @TestMetadata("fieldAccess_invisible.kt")
+    public void testFieldAccess_invisible() {
+      runTest("compiler/testData/ir/irText/expressions/fieldAccess_invisible.kt");
+    }
+
+    @Test
+    @TestMetadata("fieldAccess_regular.kt")
+    public void testFieldAccess_regular() {
+      runTest("compiler/testData/ir/irText/expressions/fieldAccess_regular.kt");
     }
 
     @Test
@@ -4244,6 +4268,12 @@ public class ClassicJvmIrTextTestGenerated extends AbstractClassicJvmIrTextTest 
     @TestMetadata("TypeAliasInImport.kt")
     public void testTypeAliasInImport() {
       runTest("compiler/testData/ir/irText/firProblems/TypeAliasInImport.kt");
+    }
+
+    @Test
+    @TestMetadata("typeOfNonExhaustiveWhen.kt")
+    public void testTypeOfNonExhaustiveWhen() {
+      runTest("compiler/testData/ir/irText/firProblems/typeOfNonExhaustiveWhen.kt");
     }
 
     @Test

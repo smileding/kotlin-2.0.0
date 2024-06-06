@@ -1,14 +1,14 @@
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 
-ENV TZ=Europe/Moscow
+ENV TZ=Europe/Amsterdam
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y build-essential git gcc pkg-config glib-2.0 libglib2.0-dev libsdl1.2-dev libaio-dev libcap-dev libattr1-dev libpixman-1-dev
 
-RUN git clone --branch v5.1.0 --depth 1 git://git.qemu.org/qemu.git && \
+RUN git clone --branch master --depth 1 git://git.qemu.org/qemu.git && \
     cd qemu && \
-    git checkout d0ed6a69d399ae193959225cdeaa9382746c91cc && \
+    git checkout c25df57ae8f9fe1c72eee2dab37d76d904ac382e && \
     git submodule update --init --recursive
 
 WORKDIR /qemu

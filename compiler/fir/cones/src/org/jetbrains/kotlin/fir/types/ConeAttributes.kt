@@ -158,6 +158,15 @@ class ConeAttributes private constructor(attributes: List<ConeAttribute<*>>) : A
         return create(attributes)
     }
 
+    fun replace(newAttribute: ConeAttribute<*>): ConeAttributes {
+        return create(buildList {
+            arrayMap.mapNotNullTo(this) { attr ->
+                attr.takeUnless { it.key == newAttribute.key }
+            }
+            add(newAttribute)
+        })
+    }
+
     fun filterNecessaryToKeep(): ConeAttributes {
         return if (all { it.keepInInferredDeclarationType }) this
         else create(filter { it.keepInInferredDeclarationType })

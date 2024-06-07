@@ -6,6 +6,8 @@
 package org.jetbrains.kotlin.fir.types
 
 import org.jetbrains.kotlin.types.AbstractTypeChecker
+import org.jetbrains.kotlin.utils.addToStdlib.applyIf
+import kotlin.reflect.KClass
 
 object ConeTypeIntersector {
     fun intersectTypes(
@@ -38,12 +40,18 @@ object ConeTypeIntersector {
             return if (lowerBound.isNothing) upperBound else coneFlexibleOrSimpleType(context, lowerBound, upperBound)
         }
 
-        val isResultNotNullable = with(context) {
-            inputTypes.any { !it.isNullableType() }
-        }
-        val inputTypesMadeNotNullIfNeeded = inputTypes.mapTo(LinkedHashSet()) {
-            if (isResultNotNullable) it.makeConeTypeDefinitelyNotNullOrNotNull(context) else it
-        }
+        // In this step, we check if any of the types is not null and if yes, make all types not null.
+        // This operation can affect attributes with types (like enhanced type for warning) incorrectly in a situation like
+        // EFW(String?) String & EFW(Any?) Any
+        // `String` and `Any` are not null, so we call `makeConeTypeDefinitelyNotNullOrNotNull` on them,
+        // which incorrectly makes their EFW types not null.
+        // To fix this, we apply the operation to attributes with types separately, then merge the attribute types with the outer types.
+        // See compiler/testData/diagnostics/foreignAnnotationsTests/java8Tests/jspecify/warnMode/NullUnmarkedTypeVariableInNullableContext.kt
+        val inputTypesMadeNotNullIfNeeded = context
+            .makeNotNullIfAnyNotNull(inputTypes)
+            .makeAttributesWithTypeNotNullIfAnyNotNull(inputTypes, context)
+            .distinct()
+
         if (inputTypesMadeNotNullIfNeeded.size == 1) return inputTypesMadeNotNullIfNeeded.single()
 
         /*
@@ -66,6 +74,49 @@ object ConeTypeIntersector {
         resultList.removeIfNonSingleErrorOrInRelation { candidate, other -> AbstractTypeChecker.equalTypes(context, candidate, other) }
         assert(resultList.isNotEmpty()) { "no types left after removing equal types: ${inputTypes.joinToString()}" }
         return resultList.singleOrNull() ?: ConeIntersectionType(resultList)
+    }
+
+    private fun List<ConeKotlinType>.makeAttributesWithTypeNotNullIfAnyNotNull(
+        inputTypes: MutableList<ConeKotlinType>,
+        context: ConeInferenceContext,
+    ): List<ConeKotlinType> {
+        val mappedAttributeTypesByKey = context.attributeTypesMadeNotNullIfNeeded(inputTypes)
+
+        return applyIf(mappedAttributeTypesByKey.isNotEmpty()) {
+            mapIndexed { index, type ->
+                var attributes = type.attributes
+
+                for ((key, mappedAttributeTypes) in mappedAttributeTypesByKey) {
+                    val attribute = attributes[key]
+                    if (attribute != null) {
+                        attributes = attributes.replace(attribute.copyWith(mappedAttributeTypes[index]))
+                    }
+                }
+
+                type.withAttributes(attributes)
+            }
+        }
+    }
+
+    /**
+     * For each kind [ConeAttributeWithConeType], map [inputTypes] to this attribute type (or fallback to the outer type),
+     * then call [makeNotNullIfAnyNotNull] on each resulting list.
+     */
+    private fun ConeInferenceContext.attributeTypesMadeNotNullIfNeeded(inputTypes: List<ConeKotlinType>): Map<KClass<ConeAttributeWithConeType<*>>, List<ConeKotlinType>> {
+        val keysOfAttributesWithTypes = inputTypes.flatMapTo(mutableSetOf()) {
+            @Suppress("UNCHECKED_CAST")
+            it.attributes.mapNotNull { attribute -> if (attribute is ConeAttributeWithConeType) attribute.key as KClass<ConeAttributeWithConeType<*>> else null }
+        }
+
+        return keysOfAttributesWithTypes.associateWith { key ->
+            makeNotNullIfAnyNotNull(inputTypes.map { it.attributes[key]?.coneType ?: it })
+        }
+    }
+
+    private fun ConeInferenceContext.makeNotNullIfAnyNotNull(inputTypes: List<ConeKotlinType>): List<ConeKotlinType> {
+        val isResultNotNullable = inputTypes.any { !it.isNullableType() }
+        if (!isResultNotNullable) return inputTypes
+        return inputTypes.map { it.makeConeTypeDefinitelyNotNullOrNotNull(this) }
     }
 
     private fun MutableCollection<ConeKotlinType>.removeIfNonSingleErrorOrInRelation(

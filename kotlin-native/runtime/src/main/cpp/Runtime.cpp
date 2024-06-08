@@ -15,6 +15,7 @@
 #include "Runtime.h"
 #include "RuntimePrivate.hpp"
 #include "Worker.h"
+#include "KString.h"
 #include <atomic>
 #include <cstdlib>
 #include <thread>

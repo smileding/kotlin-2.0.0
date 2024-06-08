@@ -8,7 +8,6 @@
 
 #include "Porting.h"
 #include "Memory.h"
-#include "KString.h"
 
 #ifdef __cplusplus
 extern "C" {

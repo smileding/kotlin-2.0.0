@@ -107,7 +107,7 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
             parameter<String>("diagnosticName")
         }
         val MISSING_CONSTRUCTOR_KEYWORD by error<PsiElement>()
-        val SINGLE_DOLLAR_INTERPOLATION_PREFIX by warning<PsiElement>()
+        val REDUNDANT_INTERPOLATION_PREFIX by warning<PsiElement>()
     }
 
     val UNRESOLVED by object : DiagnosticGroup("Unresolved") {
@@ -894,6 +894,11 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
             parameter<FirExpression>("subject")
             parameter<String>("description")
             parameter<Boolean>("isCastToNotNull")
+        }
+
+        val DEPRECATED_SMARTCAST_ON_DELEGATED_PROPERTY by warning<KtExpression> {
+            parameter<ConeKotlinType>("desiredType")
+            parameter<FirCallableSymbol<*>>("property")
         }
 
         val REDUNDANT_NULLABLE by warning<KtTypeReference>(PositioningStrategy.REDUNDANT_NULLABLE)
@@ -1731,6 +1736,11 @@ object DIAGNOSTICS_LIST : DiagnosticList("FirErrors") {
             parameter<Symbol>("inlineDeclaration")
             parameter<Symbol>("referencedDeclaration")
         }
+
+        val NON_PUBLIC_DATA_COPY_CALL_FROM_PUBLIC_INLINE by deprecationError<KtElement>(
+            LanguageFeature.ErrorAboutDataClassCopyVisibilityChange,
+            PositioningStrategy.REFERENCE_BY_QUALIFIED
+        )
 
         val PROTECTED_CONSTRUCTOR_CALL_FROM_PUBLIC_INLINE by error<KtElement>(PositioningStrategy.REFERENCE_BY_QUALIFIED) {
             parameter<Symbol>("inlineDeclaration")

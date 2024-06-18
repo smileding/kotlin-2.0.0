@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.sir.providers.SirSession
 import org.jetbrains.kotlin.sir.providers.source.KotlinSource
 import org.jetbrains.kotlin.sir.providers.utils.KotlinRuntimeModule
 import org.jetbrains.kotlin.sir.providers.utils.computeIsOverrideForDesignatedInit
+import org.jetbrains.kotlin.sir.providers.utils.updateImport
 import org.jetbrains.kotlin.sir.providers.utils.updateImports
 import org.jetbrains.kotlin.sir.util.SirSwiftModule
 import org.jetbrains.sir.lightclasses.SirFromKtSymbol
@@ -44,7 +45,7 @@ internal class SirClassFromKtSymbol(
 
     override var parent: SirDeclarationParent
         get() = withSessions {
-            ktSymbol.getSirParent(analysisSession)
+            ktSymbol.getSirParent(useSiteSession)
         }
         set(_) = Unit
 
@@ -55,13 +56,13 @@ internal class SirClassFromKtSymbol(
     override val superClass: SirType? by lazyWithSessions {
         // For now, we support only `class C : Kotlin.Any()` class declarations, and
         // translate Kotlin.Any to KotlinRuntime.KotlinBase.
-        ktSymbol.getContainingModule().sirModule().updateImports(listOf(SirImport(KotlinRuntimeModule.name)))
+        ktSymbol.containingModule.sirModule().updateImport(SirImport(KotlinRuntimeModule.name))
         SirNominalType(KotlinRuntimeModule.kotlinBase)
     }
 
     private fun childDeclarations(): List<SirDeclaration> = withSessions {
-        ktSymbol.getCombinedDeclaredMemberScope()
-            .extractDeclarations(analysisSession)
+        ktSymbol.combinedDeclaredMemberScope
+            .extractDeclarations(useSiteSession)
             .toList()
     }
 

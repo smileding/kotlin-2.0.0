@@ -1,13 +1,13 @@
 element: e
 implicit receivers:
   type: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: <anonymous>
   owner symbol: KaFirEnumEntryInitializerSymbol
 
   type: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Enum.Companion
   owner symbol: KaFirNamedClassOrObjectSymbol
@@ -29,7 +29,7 @@ scopes:
     packages: 0
     classifiers: 1
       KaNamedClassOrObjectSymbol:
-        annotationsList: []
+        annotations: []
         classId: kotlin/Enum.Companion
         classKind: COMPANION_OBJECT
         companionObject: null
@@ -41,40 +41,40 @@ scopes:
         isFun: false
         isInline: false
         isInner: false
+        location: CLASS
         modality: FINAL
         name: Companion
         origin: LIBRARY
         superTypes: [
           KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: []
             type: kotlin/Any
         ]
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         visibility: Public
     callables: 11
       KaKotlinPropertySymbol:
-        annotationsList: []
+        annotations: []
         backingFieldSymbol: KaBackingFieldSymbol:
-          annotationsList: []
+          annotations: []
           callableId: null
           contextReceivers: []
           isExtension: false
+          location: PROPERTY
           name: field
           origin: PROPERTY_BACKING_FIELD
           owningProperty: KaKotlinPropertySymbol(<local>/x)
           receiverParameter: null
           returnType: KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: []
             type: kotlin/String
-          symbolKind: LOCAL
           typeParameters: []
         callableId: null
         contextReceivers: []
         getter: KaPropertyGetterSymbol:
-          annotationsList: []
+          annotations: []
           callableId: null
           contextReceivers: []
           hasBody: false
@@ -83,14 +83,14 @@ scopes:
           isExtension: false
           isInline: false
           isOverride: false
+          location: PROPERTY
           modality: FINAL
           origin: SOURCE
           receiverParameter: null
           returnType: KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: []
             type: kotlin/String
-          symbolKind: ACCESSOR
           typeParameters: []
           valueParameters: []
           visibility: Public
@@ -108,20 +108,20 @@ scopes:
         isOverride: false
         isStatic: false
         isVal: true
+        location: CLASS
         modality: FINAL
         name: x
         origin: SOURCE
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/String
         setter: null
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         visibility: Public
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: null
         contextReceivers: []
         contractEffects: []
@@ -138,20 +138,20 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: FINAL
         name: foo
         origin: SOURCE
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Unit
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: []
         visibility: Public
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: kotlin/Enum.clone
         contextReceivers: []
         contractEffects: []
@@ -168,20 +168,20 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: FINAL
         name: clone
         origin: LIBRARY
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Any
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: []
         visibility: Protected
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: /E.compareTo
         contextReceivers: []
         contractEffects: []
@@ -198,19 +198,19 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: FINAL
         name: compareTo
         origin: SUBSTITUTION_OVERRIDE
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Int
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: [
           KaValueParameterSymbol:
-            annotationsList: []
+            annotations: []
             callableId: null
             contextReceivers: []
             generatedPrimaryConstructorProperty: null
@@ -220,19 +220,19 @@ scopes:
             isImplicitLambdaParameter: false
             isNoinline: false
             isVararg: false
+            location: LOCAL
             name: other
             origin: SUBSTITUTION_OVERRIDE
             receiverParameter: null
             returnType: KaUsualClassType:
-              annotationsList: []
+              annotations: []
               typeArguments: []
               type: E
-            symbolKind: LOCAL
             typeParameters: []
         ]
         visibility: Public
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: kotlin/Enum.equals
         contextReceivers: []
         contractEffects: []
@@ -249,19 +249,19 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: FINAL
         name: equals
         origin: LIBRARY
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Boolean
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: [
           KaValueParameterSymbol:
-            annotationsList: []
+            annotations: []
             callableId: null
             contextReceivers: []
             generatedPrimaryConstructorProperty: null
@@ -271,19 +271,19 @@ scopes:
             isImplicitLambdaParameter: false
             isNoinline: false
             isVararg: false
+            location: LOCAL
             name: other
             origin: LIBRARY
             receiverParameter: null
             returnType: KaUsualClassType:
-              annotationsList: []
+              annotations: []
               typeArguments: []
               type: kotlin/Any?
-            symbolKind: LOCAL
             typeParameters: []
         ]
         visibility: Public
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: kotlin/Enum.hashCode
         contextReceivers: []
         contractEffects: []
@@ -300,20 +300,20 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: FINAL
         name: hashCode
         origin: LIBRARY
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Int
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: []
         visibility: Public
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: kotlin/Enum.toString
         contextReceivers: []
         contractEffects: []
@@ -330,42 +330,42 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: OPEN
         name: toString
         origin: LIBRARY
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/String
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: []
         visibility: Public
       KaKotlinPropertySymbol:
-        annotationsList: [
+        annotations: [
           kotlin/internal/IntrinsicConstEvaluation()
             psi: null
         ]
         backingFieldSymbol: KaBackingFieldSymbol:
-          annotationsList: []
+          annotations: []
           callableId: null
           contextReceivers: []
           isExtension: false
+          location: PROPERTY
           name: field
           origin: PROPERTY_BACKING_FIELD
           owningProperty: KaKotlinPropertySymbol(kotlin/Enum.name)
           receiverParameter: null
           returnType: KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: []
             type: kotlin/String
-          symbolKind: LOCAL
           typeParameters: []
         callableId: kotlin/Enum.name
         contextReceivers: []
         getter: KaPropertyGetterSymbol:
-          annotationsList: []
+          annotations: []
           callableId: null
           contextReceivers: []
           hasBody: false
@@ -374,14 +374,14 @@ scopes:
           isExtension: false
           isInline: false
           isOverride: false
+          location: PROPERTY
           modality: FINAL
           origin: LIBRARY
           receiverParameter: null
           returnType: KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: []
             type: kotlin/String
-          symbolKind: ACCESSOR
           typeParameters: []
           valueParameters: []
           visibility: Public
@@ -399,39 +399,39 @@ scopes:
         isOverride: false
         isStatic: false
         isVal: true
+        location: CLASS
         modality: FINAL
         name: name
         origin: LIBRARY
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/String
         setter: null
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         visibility: Public
       KaKotlinPropertySymbol:
-        annotationsList: []
+        annotations: []
         backingFieldSymbol: KaBackingFieldSymbol:
-          annotationsList: []
+          annotations: []
           callableId: null
           contextReceivers: []
           isExtension: false
+          location: PROPERTY
           name: field
           origin: PROPERTY_BACKING_FIELD
           owningProperty: KaKotlinPropertySymbol(kotlin/Enum.ordinal)
           receiverParameter: null
           returnType: KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: []
             type: kotlin/Int
-          symbolKind: LOCAL
           typeParameters: []
         callableId: kotlin/Enum.ordinal
         contextReceivers: []
         getter: KaPropertyGetterSymbol:
-          annotationsList: []
+          annotations: []
           callableId: null
           contextReceivers: []
           hasBody: false
@@ -440,14 +440,14 @@ scopes:
           isExtension: false
           isInline: false
           isOverride: false
+          location: PROPERTY
           modality: FINAL
           origin: LIBRARY
           receiverParameter: null
           returnType: KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: []
             type: kotlin/Int
-          symbolKind: ACCESSOR
           typeParameters: []
           valueParameters: []
           visibility: Public
@@ -465,20 +465,20 @@ scopes:
         isOverride: false
         isStatic: false
         isVal: true
+        location: CLASS
         modality: FINAL
         name: ordinal
         origin: LIBRARY
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Int
         setter: null
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         visibility: Public
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: /E.getDeclaringClass
         contextReceivers: []
         contractEffects: []
@@ -495,19 +495,19 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: FINAL
         name: getDeclaringClass
         origin: SUBSTITUTION_OVERRIDE
         receiverParameter: null
         returnType: KaFlexibleType:
-          annotationsList: []
+          annotations: []
           type: ft<java/lang/Class<E!>, java/lang/Class<E!>?>
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: []
         visibility: Public
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: kotlin/Enum.finalize
         contextReceivers: []
         contractEffects: []
@@ -524,21 +524,21 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: FINAL
         name: finalize
-        origin: JAVA
+        origin: JAVA_SOURCE
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Unit
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: []
         visibility: ProtectedAndPackage
     constructors: 1
       KaConstructorSymbol:
-        annotationsList: []
+        annotations: []
         callableId: null
         containingClassId: null
         contextReceivers: []
@@ -547,13 +547,13 @@ scopes:
         isExpect: false
         isExtension: false
         isPrimary: true
+        location: CLASS
         origin: SOURCE_MEMBER_GENERATED
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: <anonymous>
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: []
         visibility: Private
@@ -563,22 +563,22 @@ scopes:
     classifiers: 0
     callables: 4
       KaEnumEntrySymbol:
-        annotationsList: []
+        annotations: []
         callableId: /E.A
         contextReceivers: []
         enumEntryInitializer: KaAnonymousObjectSymbol(<local>/<no name provided>)
         isExtension: false
+        location: CLASS
         name: A
         origin: SOURCE
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: E
-        symbolKind: CLASS_MEMBER
         typeParameters: []
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: /E.values
         contextReceivers: []
         contractEffects: []
@@ -595,25 +595,25 @@ scopes:
         isStatic: true
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: FINAL
         name: values
         origin: SOURCE_MEMBER_GENERATED
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: [
             KaUsualClassType:
-              annotationsList: []
+              annotations: []
               typeArguments: []
               type: E
           ]
           type: kotlin/Array<E>
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: []
         visibility: Public
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: /E.valueOf
         contextReceivers: []
         contractEffects: []
@@ -630,19 +630,19 @@ scopes:
         isStatic: true
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: FINAL
         name: valueOf
         origin: SOURCE_MEMBER_GENERATED
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: E
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: [
           KaValueParameterSymbol:
-            annotationsList: []
+            annotations: []
             callableId: null
             contextReceivers: []
             generatedPrimaryConstructorProperty: null
@@ -652,24 +652,24 @@ scopes:
             isImplicitLambdaParameter: false
             isNoinline: false
             isVararg: false
+            location: LOCAL
             name: value
             origin: SOURCE_MEMBER_GENERATED
             receiverParameter: null
             returnType: KaUsualClassType:
-              annotationsList: []
+              annotations: []
               typeArguments: []
               type: kotlin/String
-            symbolKind: LOCAL
             typeParameters: []
         ]
         visibility: Public
       KaKotlinPropertySymbol:
-        annotationsList: []
+        annotations: []
         backingFieldSymbol: null
         callableId: /E.entries
         contextReceivers: []
         getter: KaPropertyGetterSymbol:
-          annotationsList: []
+          annotations: []
           callableId: null
           contextReceivers: []
           hasBody: false
@@ -678,19 +678,19 @@ scopes:
           isExtension: false
           isInline: false
           isOverride: false
+          location: PROPERTY
           modality: FINAL
           origin: SOURCE_MEMBER_GENERATED
           receiverParameter: null
           returnType: KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: [
               KaUsualClassType:
-                annotationsList: []
+                annotations: []
                 typeArguments: []
                 type: E
             ]
             type: kotlin/enums/EnumEntries<E>
-          symbolKind: ACCESSOR
           typeParameters: []
           valueParameters: []
           visibility: Public
@@ -708,21 +708,21 @@ scopes:
         isOverride: false
         isStatic: true
         isVal: true
+        location: CLASS
         modality: FINAL
         name: entries
         origin: SOURCE_MEMBER_GENERATED
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: [
             KaUsualClassType:
-              annotationsList: []
+              annotations: []
               typeArguments: []
               type: E
           ]
           type: kotlin/enums/EnumEntries<E>
         setter: null
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         visibility: Public
     constructors: 0
@@ -731,7 +731,7 @@ scopes:
     packages: 0
     classifiers: 1
       KaNamedClassOrObjectSymbol:
-        annotationsList: []
+        annotations: []
         classId: kotlin/Enum.Companion
         classKind: COMPANION_OBJECT
         companionObject: null
@@ -743,16 +743,16 @@ scopes:
         isFun: false
         isInline: false
         isInner: false
+        location: CLASS
         modality: FINAL
         name: Companion
         origin: LIBRARY
         superTypes: [
           KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: []
             type: kotlin/Any
         ]
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         visibility: Public
     callables: 0
@@ -763,7 +763,7 @@ scopes:
     classifiers: 0
     callables: 3
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: kotlin/Any.equals
         contextReceivers: []
         contractEffects: []
@@ -780,19 +780,19 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: OPEN
         name: equals
         origin: LIBRARY
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Boolean
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: [
           KaValueParameterSymbol:
-            annotationsList: []
+            annotations: []
             callableId: null
             contextReceivers: []
             generatedPrimaryConstructorProperty: null
@@ -802,19 +802,19 @@ scopes:
             isImplicitLambdaParameter: false
             isNoinline: false
             isVararg: false
+            location: LOCAL
             name: other
             origin: LIBRARY
             receiverParameter: null
             returnType: KaUsualClassType:
-              annotationsList: []
+              annotations: []
               typeArguments: []
               type: kotlin/Any?
-            symbolKind: LOCAL
             typeParameters: []
         ]
         visibility: Public
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: kotlin/Any.hashCode
         contextReceivers: []
         contractEffects: []
@@ -831,20 +831,20 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: OPEN
         name: hashCode
         origin: LIBRARY
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Int
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: []
         visibility: Public
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: kotlin/Any.toString
         contextReceivers: []
         contractEffects: []
@@ -861,21 +861,21 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: CLASS
         modality: OPEN
         name: toString
         origin: LIBRARY
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/String
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: []
         visibility: Public
     constructors: 1
       KaConstructorSymbol:
-        annotationsList: []
+        annotations: []
         callableId: null
         containingClassId: kotlin/Enum.Companion
         contextReceivers: []
@@ -884,13 +884,13 @@ scopes:
         isExpect: false
         isExtension: false
         isPrimary: true
+        location: CLASS
         origin: LIBRARY
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Enum.Companion
-        symbolKind: CLASS_MEMBER
         typeParameters: []
         valueParameters: []
         visibility: Private
@@ -905,25 +905,31 @@ scopes:
     packages: 6
       KaPackageSymbol:
         fqName: META-INF
+        location: TOP_LEVEL
         origin: SOURCE
       KaPackageSymbol:
         fqName: java
+        location: TOP_LEVEL
         origin: SOURCE
       KaPackageSymbol:
         fqName: javax
+        location: TOP_LEVEL
         origin: SOURCE
       KaPackageSymbol:
         fqName: kotlin
+        location: TOP_LEVEL
         origin: SOURCE
       KaPackageSymbol:
         fqName: org
+        location: TOP_LEVEL
         origin: SOURCE
       KaPackageSymbol:
         fqName: sun
+        location: TOP_LEVEL
         origin: SOURCE
     classifiers: 1
       KaNamedClassOrObjectSymbol:
-        annotationsList: []
+        annotations: []
         classId: E
         classKind: ENUM_CLASS
         companionObject: null
@@ -935,21 +941,21 @@ scopes:
         isFun: false
         isInline: false
         isInner: false
+        location: TOP_LEVEL
         modality: FINAL
         name: E
         origin: SOURCE
         superTypes: [
           KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: [
               KaUsualClassType:
-                annotationsList: []
+                annotations: []
                 typeArguments: []
                 type: E
             ]
             type: kotlin/Enum<E>
         ]
-        symbolKind: TOP_LEVEL
         typeParameters: []
         visibility: Public
     callables: 0

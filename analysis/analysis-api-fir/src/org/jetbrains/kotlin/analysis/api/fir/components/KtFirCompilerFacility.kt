@@ -9,13 +9,18 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.psi.PsiErrorElement
 import org.jetbrains.kotlin.KtRealPsiSourceElement
 import org.jetbrains.kotlin.analysis.api.compile.CodeFragmentCapturedValue
+import org.jetbrains.kotlin.analysis.api.components.KaCodeCompilationException
 import org.jetbrains.kotlin.analysis.api.components.KaCompilationResult
 import org.jetbrains.kotlin.analysis.api.components.KaCompilerFacility
+import org.jetbrains.kotlin.analysis.api.components.KaCompilerFacility.Companion.CODE_FRAGMENT_CLASS_NAME
+import org.jetbrains.kotlin.analysis.api.components.KaCompilerFacility.Companion.CODE_FRAGMENT_METHOD_NAME
 import org.jetbrains.kotlin.analysis.api.components.KaCompilerTarget
 import org.jetbrains.kotlin.analysis.api.diagnostics.KaDiagnostic
 import org.jetbrains.kotlin.analysis.api.diagnostics.KaDiagnosticWithPsi
 import org.jetbrains.kotlin.analysis.api.fir.KaFirSession
+import org.jetbrains.kotlin.analysis.api.impl.base.components.KaSessionComponent
 import org.jetbrains.kotlin.analysis.api.impl.base.util.KaCompiledFileForOutputFile
+import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
 import org.jetbrains.kotlin.analysis.low.level.api.fir.LLFirInternals
 import org.jetbrains.kotlin.analysis.low.level.api.fir.api.*
 import org.jetbrains.kotlin.analysis.low.level.api.fir.compile.CodeFragmentCapturedId
@@ -41,11 +46,7 @@ import org.jetbrains.kotlin.diagnostics.*
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.diagnostics.toFirDiagnostics
 import org.jetbrains.kotlin.fir.backend.*
-import org.jetbrains.kotlin.fir.backend.jvm.FirJvmBackendExtension
-import org.jetbrains.kotlin.fir.backend.jvm.FirJvmKotlinMangler
-import org.jetbrains.kotlin.fir.backend.jvm.FirJvmVisibilityConverter
-import org.jetbrains.kotlin.fir.backend.jvm.JvmFir2IrExtensions
-import org.jetbrains.kotlin.fir.backend.jvm.initializeActualDeclarationExtractorIfStdlib
+import org.jetbrains.kotlin.fir.backend.jvm.*
 import org.jetbrains.kotlin.fir.backend.utils.CodeFragmentConversionData
 import org.jetbrains.kotlin.fir.backend.utils.InjectedValue
 import org.jetbrains.kotlin.fir.backend.utils.conversionData
@@ -93,12 +94,28 @@ import org.jetbrains.kotlin.resolve.source.PsiSourceFile
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 import org.jetbrains.kotlin.utils.addIfNotNull
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
+import org.jetbrains.kotlin.utils.exceptions.rethrowIntellijPlatformExceptionIfNeeded
 import java.util.*
 
 internal class KaFirCompilerFacility(
-    override val analysisSession: KaFirSession
-) : KaCompilerFacility(), KaFirSessionComponent {
+    override val analysisSessionProvider: () -> KaFirSession
+) : KaSessionComponent<KaFirSession>(), KaCompilerFacility, KaFirSessionComponent {
+
     override fun compile(
+        file: KtFile,
+        configuration: CompilerConfiguration,
+        target: KaCompilerTarget,
+        allowedErrorFilter: (KaDiagnostic) -> Boolean
+    ): KaCompilationResult = withValidityAssertion {
+        try {
+            compileUnsafe(file, configuration, target, allowedErrorFilter)
+        } catch (e: Throwable) {
+            rethrowIntellijPlatformExceptionIfNeeded(e)
+            throw KaCodeCompilationException(e)
+        }
+    }
+
+    private fun compileUnsafe(
         file: KtFile,
         configuration: CompilerConfiguration,
         target: KaCompilerTarget,
@@ -108,7 +125,7 @@ internal class KaFirCompilerFacility(
             is KaCompilerTarget.Jvm -> target.classBuilderFactory
         }
 
-        val syntaxErrors = SyntaxErrorReportingVisitor(analysisSession.useSiteSession) { it.asKtDiagnostic() }
+        val syntaxErrors = SyntaxErrorReportingVisitor(analysisSession.firSession) { it.asKtDiagnostic() }
             .also(file::accept).diagnostics
 
         if (syntaxErrors.isNotEmpty()) {
@@ -286,7 +303,7 @@ internal class KaFirCompilerFacility(
             DefaultBuiltIns.Instance,
             ::JvmIrTypeSystemContext,
             JvmIrSpecialAnnotationSymbolProvider,
-            ::initializeActualDeclarationExtractorIfStdlib,
+            FirJvmBuiltinProviderActualDeclarationExtractor.Companion::initializeIfNeeded,
         )
     }
 

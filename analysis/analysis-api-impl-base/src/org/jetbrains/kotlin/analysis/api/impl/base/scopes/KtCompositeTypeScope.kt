@@ -3,12 +3,14 @@
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
+@file:OptIn(KaExperimentalApi::class)
+
 package org.jetbrains.kotlin.analysis.api.impl.base.scopes
 
 import org.jetbrains.kotlin.analysis.api.KaAnalysisApiInternals
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.lifetime.KaLifetimeToken
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
-import org.jetbrains.kotlin.analysis.api.scopes.KaScopeNameFilter
 import org.jetbrains.kotlin.analysis.api.scopes.KaTypeScope
 import org.jetbrains.kotlin.analysis.api.signatures.KaCallableSignature
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassifierSymbol
@@ -20,26 +22,28 @@ class KaCompositeTypeScope(
     val subScopes: List<KaTypeScope>,
     override val token: KaLifetimeToken
 ) : KaTypeScope {
+    @KaExperimentalApi
     override fun getAllPossibleNames(): Set<Name> = withValidityAssertion {
         buildSet {
             subScopes.flatMapTo(this) { it.getAllPossibleNames() }
         }
     }
 
+    @KaExperimentalApi
     override fun getPossibleCallableNames(): Set<Name> = withValidityAssertion {
         buildSet {
             subScopes.flatMapTo(this) { it.getPossibleCallableNames() }
         }
     }
 
+    @KaExperimentalApi
     override fun getPossibleClassifierNames(): Set<Name> = withValidityAssertion {
         buildSet {
             subScopes.flatMapTo(this) { it.getPossibleClassifierNames() }
         }
     }
 
-
-    override fun getCallableSignatures(nameFilter: KaScopeNameFilter): Sequence<KaCallableSignature<*>> = withValidityAssertion {
+    override fun getCallableSignatures(nameFilter: (Name) -> Boolean): Sequence<KaCallableSignature<*>> = withValidityAssertion {
         sequence {
             subScopes.forEach { yieldAll(it.getCallableSignatures(nameFilter)) }
         }
@@ -51,7 +55,7 @@ class KaCompositeTypeScope(
         }
     }
 
-    override fun getClassifierSymbols(nameFilter: KaScopeNameFilter): Sequence<KaClassifierSymbol> = withValidityAssertion {
+    override fun getClassifierSymbols(nameFilter: (Name) -> Boolean): Sequence<KaClassifierSymbol> = withValidityAssertion {
         sequence {
             subScopes.forEach { yieldAll(it.getClassifierSymbols(nameFilter)) }
         }
@@ -69,6 +73,7 @@ class KaCompositeTypeScope(
         }
     }
 
+    @KaExperimentalApi
     override fun mayContainName(name: Name): Boolean = withValidityAssertion {
         subScopes.any { it.mayContainName(name) }
     }

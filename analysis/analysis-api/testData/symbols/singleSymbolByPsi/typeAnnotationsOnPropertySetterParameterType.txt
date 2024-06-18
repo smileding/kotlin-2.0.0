@@ -1,5 +1,5 @@
 KaPropertySetterSymbol:
-  annotationsList: []
+  annotations: []
   callableId: null
   contextReceivers: []
   hasBody: true
@@ -8,10 +8,11 @@ KaPropertySetterSymbol:
   isExtension: false
   isInline: false
   isOverride: false
+  location: PROPERTY
   modality: FINAL
   origin: SOURCE
   parameter: KaValueParameterSymbol:
-    annotationsList: []
+    annotations: []
     callableId: null
     contextReceivers: []
     generatedPrimaryConstructorProperty: null
@@ -21,11 +22,12 @@ KaPropertySetterSymbol:
     isImplicitLambdaParameter: false
     isNoinline: false
     isVararg: false
+    location: LOCAL
     name: value
     origin: SOURCE
     receiverParameter: null
     returnType: KaUsualClassType:
-      annotationsList: [
+      annotations: [
         Anno1()
           psi: KtAnnotationEntry
         Anno2()
@@ -34,8 +36,7 @@ KaPropertySetterSymbol:
           psi: KtAnnotationEntry
       ]
       typeArguments: []
-      type: @R|Anno1|()  @R|Anno2|()  @R|Anno3|()  BaseInterface
-    symbolKind: LOCAL
+      type: @R|Anno1|()  @R|Anno2|()  @R|Anno3|()  {@R|Anno3|()  SecondTypeAlias=} BaseInterface
     typeParameters: []
     getContainingFileSymbol: KaFileSymbol(typeAnnotationsOnPropertySetterParameterType.kt)
     getContainingJvmClassName: null
@@ -43,14 +44,13 @@ KaPropertySetterSymbol:
     deprecationStatus: null
   receiverParameter: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Unit
-  symbolKind: ACCESSOR
   typeParameters: []
   valueParameters: [
     KaValueParameterSymbol:
-      annotationsList: []
+      annotations: []
       callableId: null
       contextReceivers: []
       generatedPrimaryConstructorProperty: null
@@ -60,11 +60,12 @@ KaPropertySetterSymbol:
       isImplicitLambdaParameter: false
       isNoinline: false
       isVararg: false
+      location: LOCAL
       name: value
       origin: SOURCE
       receiverParameter: null
       returnType: KaUsualClassType:
-        annotationsList: [
+        annotations: [
           Anno1()
             psi: KtAnnotationEntry
           Anno2()
@@ -73,8 +74,7 @@ KaPropertySetterSymbol:
             psi: KtAnnotationEntry
         ]
         typeArguments: []
-        type: @R|Anno1|()  @R|Anno2|()  @R|Anno3|()  BaseInterface
-      symbolKind: LOCAL
+        type: @R|Anno1|()  @R|Anno2|()  @R|Anno3|()  {@R|Anno3|()  SecondTypeAlias=} BaseInterface
       typeParameters: []
       getContainingFileSymbol: KaFileSymbol(typeAnnotationsOnPropertySetterParameterType.kt)
       getContainingJvmClassName: null

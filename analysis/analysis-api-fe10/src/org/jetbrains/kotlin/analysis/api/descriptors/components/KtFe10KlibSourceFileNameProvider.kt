@@ -5,16 +5,17 @@
 
 package org.jetbrains.kotlin.analysis.api.descriptors.components
 
-import org.jetbrains.kotlin.analysis.api.KaAnalysisNonPublicApi
 import org.jetbrains.kotlin.analysis.api.KaSession
-import org.jetbrains.kotlin.analysis.api.components.KaKlibSourceFileNameProvider
+import org.jetbrains.kotlin.analysis.api.components.KaSourceProvider
+import org.jetbrains.kotlin.analysis.api.impl.base.components.KaSessionComponent
+import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
 import org.jetbrains.kotlin.analysis.api.symbols.KaDeclarationSymbol
 
-@OptIn(KaAnalysisNonPublicApi::class)
-internal class KaFe10KlibSourceFileNameProvider(
-    override val analysisSession: KaSession,
-) : KaKlibSourceFileNameProvider() {
-    override fun getKlibSourceFileName(declaration: KaDeclarationSymbol): String? {
-        throw NotImplementedError("Method is not implemented for FE 1.0")
-    }
+internal class KaFe10SourceProvider(
+    override val analysisSessionProvider: () -> KaSession
+) : KaSessionComponent<KaSession>(), KaSourceProvider {
+    override val KaDeclarationSymbol.klibSourceFileName: String?
+        get() = withValidityAssertion {
+            throw NotImplementedError("Method is not implemented for FE 1.0")
+        }
 }

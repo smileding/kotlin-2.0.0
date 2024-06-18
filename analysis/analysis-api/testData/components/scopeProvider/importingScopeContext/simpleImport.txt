@@ -18,7 +18,7 @@ scopes:
     packages: 0
     classifiers: 1
       KaNamedClassOrObjectSymbol:
-        annotationsList: []
+        annotations: []
         classId: other/A
         classKind: CLASS
         companionObject: null
@@ -30,16 +30,16 @@ scopes:
         isFun: false
         isInline: false
         isInner: false
+        location: TOP_LEVEL
         modality: FINAL
         name: A
         origin: SOURCE
         superTypes: [
           KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: []
             type: kotlin/Any
         ]
-        symbolKind: TOP_LEVEL
         typeParameters: []
         visibility: Public
     callables: 0

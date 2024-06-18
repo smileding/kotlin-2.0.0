@@ -5,8 +5,8 @@
 
 package org.jetbrains.kotlin.objcexport
 
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
-import org.jetbrains.kotlin.analysis.api.symbols.KtPropertySymbol
+import org.jetbrains.kotlin.analysis.api.KaSession
+import org.jetbrains.kotlin.analysis.api.symbols.KaPropertySymbol
 import org.jetbrains.kotlin.backend.konan.objcexport.ObjCIdType
 import org.jetbrains.kotlin.backend.konan.objcexport.ObjCProperty
 import org.jetbrains.kotlin.backend.konan.objcexport.isInstance
@@ -14,9 +14,10 @@ import org.jetbrains.kotlin.backend.konan.objcexport.swiftNameAttribute
 import org.jetbrains.kotlin.objcexport.analysisApiUtils.bridgeReceiverType
 import org.jetbrains.kotlin.objcexport.analysisApiUtils.getFunctionMethodBridge
 import org.jetbrains.kotlin.objcexport.analysisApiUtils.isVisibleInObjC
+import org.jetbrains.kotlin.utils.addIfNotNull
 
-context(KtAnalysisSession, KtObjCExportSession)
-fun KtPropertySymbol.translateToObjCProperty(): ObjCProperty? {
+context(KaSession, KtObjCExportSession)
+fun KaPropertySymbol.translateToObjCProperty(): ObjCProperty? {
     if (!isVisibleInObjC()) return null
     return buildProperty()
 }
@@ -24,8 +25,8 @@ fun KtPropertySymbol.translateToObjCProperty(): ObjCProperty? {
 /**
  * [org.jetbrains.kotlin.backend.konan.objcexport.ObjCExportTranslatorImpl.buildProperty]
  */
-context(KtAnalysisSession, KtObjCExportSession)
-fun KtPropertySymbol.buildProperty(): ObjCProperty {
+context(KaSession, KtObjCExportSession)
+fun KaPropertySymbol.buildProperty(): ObjCProperty {
     val propertyName = getObjCPropertyName()
     val name = propertyName.objCName
     val getterBridge = getter?.getFunctionMethodBridge() ?: error("KtPropertySymbol.getter is undefined")
@@ -51,12 +52,11 @@ fun KtPropertySymbol.buildProperty(): ObjCProperty {
     val getterName: String? = if (getterSelector != name && getterSelector?.isNotBlank() == true) getterSelector else null
     val declarationAttributes = mutableListOf(getSwiftPrivateAttribute() ?: swiftNameAttribute(propertyName.swiftName))
 
-    //TODO: implement and use [org.jetbrains.kotlin.resolve.deprecation.DeprecationResolver]
-    //declarationAttributes.addIfNotNull(mapper.getDeprecation(property)?.toDeprecationAttribute())
+    declarationAttributes.addIfNotNull(getObjCDeprecationStatus())
 
     return ObjCProperty(
         name = name,
-        comment = annotationsList.translateToObjCComment(),
+        comment = annotations.translateToObjCComment(),
         origin = getObjCExportStubOrigin(),
         type = type ?: ObjCIdType, //[ObjCIdType] temp fix, should be translated properly, see KT-65709
         propertyAttributes = attributes,

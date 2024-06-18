@@ -1,5 +1,5 @@
 KaPropertyGetterSymbol:
-  annotationsList: [
+  annotations: [
     GetAnnotation()
       psi: KtAnnotationEntry
     ExplicitGetAnnotation()
@@ -13,17 +13,19 @@ KaPropertyGetterSymbol:
   isExtension: false
   isInline: false
   isOverride: false
+  location: PROPERTY
   modality: FINAL
   origin: SOURCE
   receiverParameter: KaReceiverParameterSymbol:
-    annotationsList: [
+    annotations: [
       ReceiverAnnotation()
         psi: KtAnnotationEntry
     ]
+    location: LOCAL
     origin: SOURCE
     owningCallableSymbol: KaKotlinPropertySymbol(/x)
     type: KaUsualClassType:
-      annotationsList: [
+      annotations: [
         ReceiverTypeAnnotation()
           psi: KtAnnotationEntry
       ]
@@ -33,10 +35,9 @@ KaPropertyGetterSymbol:
     getContainingModule: KtSourceModule "Sources of main"
     deprecationStatus: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Int
-  symbolKind: ACCESSOR
   typeParameters: []
   valueParameters: []
   visibility: Public

@@ -68,10 +68,10 @@ internal class SymbolLightClassForAnonymousObject : SymbolLightClassForClassLike
     override fun getOwnMethods(): List<PsiMethod> = cachedValue {
         withClassOrObjectSymbol {
             val result = mutableListOf<KtLightMethod>()
-            val declaredMemberScope = it.getDeclaredMemberScope()
+            val declaredMemberScope = it.declaredMemberScope
 
-            createMethods(declaredMemberScope.getCallableSymbols(), result)
-            createConstructors(declaredMemberScope.getConstructors(), result)
+            createMethods(declaredMemberScope.callables, result)
+            createConstructors(declaredMemberScope.constructors, result)
             result
         }
     }
@@ -81,7 +81,7 @@ internal class SymbolLightClassForAnonymousObject : SymbolLightClassForClassLike
         val nameGenerator = SymbolLightField.FieldNameGenerator()
 
         withClassOrObjectSymbol {
-            it.getDeclaredMemberScope().getCallableSymbols()
+            it.declaredMemberScope.callables
                 .filterIsInstance<KaPropertySymbol>()
                 .forEach { propertySymbol ->
                     createField(

@@ -5,11 +5,13 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.renderers.callables
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.KaDeclarationRenderer
 import org.jetbrains.kotlin.analysis.api.symbols.KaSamConstructorSymbol
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 
+@KaExperimentalApi
 public interface KaSamConstructorSymbolRenderer {
     public fun renderSymbol(
         analysisSession: KaSession,
@@ -44,4 +46,6 @@ public interface KaSamConstructorSymbolRenderer {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaSamConstructorSymbolRenderer' instead", ReplaceWith("KaSamConstructorSymbolRenderer"))
 public typealias KtSamConstructorSymbolRenderer = KaSamConstructorSymbolRenderer

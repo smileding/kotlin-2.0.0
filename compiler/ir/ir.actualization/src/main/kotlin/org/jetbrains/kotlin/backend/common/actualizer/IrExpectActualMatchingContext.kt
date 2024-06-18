@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.calls.mpp.ExpectActualCollectionArgumentsCompatibilityCheckStrategy
 import org.jetbrains.kotlin.resolve.calls.mpp.ExpectActualMatchingContext
 import org.jetbrains.kotlin.resolve.calls.mpp.ExpectActualMatchingContext.AnnotationCallInfo
+import org.jetbrains.kotlin.resolve.calls.mpp.ExpectActualMatchingContext.Companion.abstractMutableListModCountCallableId
 import org.jetbrains.kotlin.resolve.checkers.OptInNames
 import org.jetbrains.kotlin.resolve.multiplatform.ExpectActualMatchingCompatibility
 import org.jetbrains.kotlin.types.AbstractTypeChecker
@@ -495,7 +496,10 @@ internal abstract class IrExpectActualMatchingContext(
         }
 
     override val CallableSymbolMarker.isJavaField: Boolean
-        get() = this is IrPropertySymbol && owner.let { it.getter == null && it.setter == null }
+        get() = this is IrPropertySymbol && owner.isPropertyForJavaField()
+
+    override val CallableSymbolMarker.canBeActualizedByJavaField: Boolean
+        get() = this is IrPropertySymbol && callableId == abstractMutableListModCountCallableId
 
     override fun onMatchedMembers(
         expectSymbol: DeclarationSymbolMarker,
@@ -512,14 +516,13 @@ internal abstract class IrExpectActualMatchingContext(
                     is IrTypeAliasSymbol -> actualSymbol.owner.expandedType.getClass()!!.symbol
                     else -> actualSymbol.unexpectedSymbolKind<IrClassifierSymbol>()
                 }
-                onMatchedClasses(expectSymbol, actualClassSymbol)
+                onMatchedDeclarations(expectSymbol, actualClassSymbol)
             }
-            else -> onMatchedCallables(expectSymbol, actualSymbol)
+            else -> onMatchedDeclarations(expectSymbol, actualSymbol)
         }
     }
 
-    abstract fun onMatchedClasses(expectClassSymbol: IrClassSymbol, actualClassSymbol: IrClassSymbol)
-    abstract fun onMatchedCallables(expectSymbol: IrSymbol, actualSymbol: IrSymbol)
+    abstract fun onMatchedDeclarations(expectSymbol: IrSymbol, actualSymbol: IrSymbol)
 
     override val DeclarationSymbolMarker.annotations: List<AnnotationCallInfo>
         get() = asIr().annotations.map(::AnnotationCallInfoImpl)

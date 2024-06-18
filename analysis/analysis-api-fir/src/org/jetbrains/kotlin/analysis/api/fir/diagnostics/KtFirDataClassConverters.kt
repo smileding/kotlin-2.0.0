@@ -288,8 +288,8 @@ internal val KT_DIAGNOSTIC_CONVERTER = KaDiagnosticConverterBuilder.buildConvert
             token,
         )
     }
-    add(FirErrors.SINGLE_DOLLAR_INTERPOLATION_PREFIX) { firDiagnostic ->
-        SingleDollarInterpolationPrefixImpl(
+    add(FirErrors.REDUNDANT_INTERPOLATION_PREFIX) { firDiagnostic ->
+        RedundantInterpolationPrefixImpl(
             firDiagnostic as KtPsiDiagnostic,
             token,
         )
@@ -2653,6 +2653,14 @@ internal val KT_DIAGNOSTIC_CONVERTER = KaDiagnosticConverterBuilder.buildConvert
             token,
         )
     }
+    add(FirErrors.DEPRECATED_SMARTCAST_ON_DELEGATED_PROPERTY) { firDiagnostic ->
+        DeprecatedSmartcastOnDelegatedPropertyImpl(
+            firSymbolBuilder.typeBuilder.buildKtType(firDiagnostic.a),
+            firSymbolBuilder.callableBuilder.buildCallableSymbol(firDiagnostic.b),
+            firDiagnostic as KtPsiDiagnostic,
+            token,
+        )
+    }
     add(FirErrors.REDUNDANT_NULLABLE) { firDiagnostic ->
         RedundantNullableImpl(
             firDiagnostic as KtPsiDiagnostic,
@@ -4904,6 +4912,18 @@ internal val KT_DIAGNOSTIC_CONVERTER = KaDiagnosticConverterBuilder.buildConvert
         NonPublicCallFromPublicInlineDeprecationImpl(
             firSymbolBuilder.buildSymbol(firDiagnostic.a),
             firSymbolBuilder.buildSymbol(firDiagnostic.b),
+            firDiagnostic as KtPsiDiagnostic,
+            token,
+        )
+    }
+    add(FirErrors.NON_PUBLIC_DATA_COPY_CALL_FROM_PUBLIC_INLINE.errorFactory) { firDiagnostic ->
+        NonPublicDataCopyCallFromPublicInlineErrorImpl(
+            firDiagnostic as KtPsiDiagnostic,
+            token,
+        )
+    }
+    add(FirErrors.NON_PUBLIC_DATA_COPY_CALL_FROM_PUBLIC_INLINE.warningFactory) { firDiagnostic ->
+        NonPublicDataCopyCallFromPublicInlineWarningImpl(
             firDiagnostic as KtPsiDiagnostic,
             token,
         )

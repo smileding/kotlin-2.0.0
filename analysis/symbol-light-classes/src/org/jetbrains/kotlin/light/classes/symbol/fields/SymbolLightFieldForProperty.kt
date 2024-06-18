@@ -9,6 +9,7 @@ import com.intellij.psi.*
 import kotlinx.collections.immutable.persistentHashMapOf
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.KaConstantInitializerValue
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.annotations.*
 import org.jetbrains.kotlin.analysis.api.base.KaConstantValue
 import org.jetbrains.kotlin.analysis.api.symbols.KaBackingFieldSymbol
@@ -69,7 +70,7 @@ internal class SymbolLightFieldForProperty private constructor(
         withPropertySymbol { propertySymbol ->
             val isDelegated = (propertySymbol as? KaKotlinPropertySymbol)?.isDelegatedProperty == true
             val ktType = if (isDelegated)
-                (kotlinOrigin as? KtProperty)?.delegateExpression?.getKaType()
+                (kotlinOrigin as? KtProperty)?.delegateExpression?.expressionType
             else
                 propertySymbol.returnType
             // See [KotlinTypeMapper#writeFieldSignature]
@@ -180,6 +181,7 @@ internal class SymbolLightFieldForProperty private constructor(
 
     override fun getModifierList(): PsiModifierList = _modifierList
 
+    @OptIn(KaExperimentalApi::class)
     private val _initializerValue: KaConstantValue? by lazyPub {
         withPropertySymbol { propertySymbol ->
             if (propertySymbol !is KaKotlinPropertySymbol) return@withPropertySymbol null
@@ -202,11 +204,11 @@ internal class SymbolLightFieldForProperty private constructor(
     private fun toPsiExpression(value: KaAnnotationValue): PsiExpression? =
         project.withElementFactorySafe {
             when (value) {
-                is KaConstantAnnotationValue ->
-                    value.constantValue.createPsiExpression(this@SymbolLightFieldForProperty)
-                is KaEnumEntryAnnotationValue ->
+                is KaAnnotationValue.ConstantValue ->
+                    value.value.createPsiExpression(this@SymbolLightFieldForProperty)
+                is KaAnnotationValue.EnumEntryValue ->
                     value.callableId?.let { createExpressionFromText(it.asSingleFqName().asString(), this@SymbolLightFieldForProperty) }
-                is KaArrayAnnotationValue ->
+                is KaAnnotationValue.ArrayValue ->
                     createExpressionFromText(
                         value.values
                             .map { toPsiExpression(it)?.text ?: return@withElementFactorySafe null }
@@ -227,7 +229,7 @@ internal class SymbolLightFieldForProperty private constructor(
                         // NB: not as?, since _initializerValue already checks that
                         (propertySymbol as KaKotlinPropertySymbol).isConst &&
                         // javac rejects all non-primitive and non String constants
-                        (propertySymbol.returnType.isPrimitiveBacked || propertySymbol.returnType.isString)
+                        (propertySymbol.returnType.isPrimitiveBacked || propertySymbol.returnType.isStringType)
             }
         }
     }

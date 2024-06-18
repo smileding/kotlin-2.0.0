@@ -27,12 +27,12 @@ abstract class AbstractCreateInheritanceTypeSubstitutorTest : AbstractAnalysisAp
             .single().first
 
         val substitutorRendered = analyseForTest(baseClass) {
-            val superClassSymbol = superClass.getClassOrObjectSymbol()!!
-            val substitutor = createInheritanceTypeSubstitutor(baseClass.getClassOrObjectSymbol()!!, superClassSymbol)
+            val superClassSymbol = superClass.classSymbol!!
+            val substitutor = createInheritanceTypeSubstitutor(baseClass.classSymbol!!, superClassSymbol)
             prettyPrint {
                 appendLine("Substitutor: ${stringRepresentation(substitutor)}")
                 if (substitutor != null) {
-                    val functions = superClassSymbol.getDeclaredMemberScope().getAllSymbols()
+                    val functions = superClassSymbol.declaredMemberScope.declarations
                         .filterIsInstance<KaFunctionSymbol>()
                         .toList()
                     if (functions.isNotEmpty()) {

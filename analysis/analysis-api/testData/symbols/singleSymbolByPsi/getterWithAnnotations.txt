@@ -1,5 +1,5 @@
 KaPropertyGetterSymbol:
-  annotationsList: [
+  annotations: [
     GetAnnotation()
       psi: KtAnnotationEntry
     ExplicitGetAnnotation()
@@ -13,14 +13,14 @@ KaPropertyGetterSymbol:
   isExtension: false
   isInline: false
   isOverride: false
+  location: PROPERTY
   modality: FINAL
   origin: SOURCE
   receiverParameter: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Int
-  symbolKind: ACCESSOR
   typeParameters: []
   valueParameters: []
   visibility: Public

@@ -20,7 +20,7 @@ import org.jetbrains.kotlin.analysis.api.symbols.markers.KaSymbolWithVisibility
 import org.jetbrains.kotlin.analysis.api.symbols.pointers.KaSymbolPointer
 import org.jetbrains.kotlin.analysis.api.types.*
 import org.jetbrains.kotlin.analysis.project.structure.KtModule
-import org.jetbrains.kotlin.analysis.providers.createProjectWideOutOfBlockModificationTracker
+import org.jetbrains.kotlin.analysis.api.platform.modification.createProjectWideOutOfBlockModificationTracker
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.asJava.elements.KtLightMember
 import org.jetbrains.kotlin.asJava.elements.psiType
@@ -44,7 +44,7 @@ internal fun <L : Any> L.invalidAccess(): Nothing =
 
 context(KaSession)
 internal fun KaDeclarationSymbol.getContainingSymbolsWithSelf(): Sequence<KaDeclarationSymbol> =
-    generateSequence(this) { it.getContainingSymbol() }
+    generateSequence(this) { it.containingSymbol }
 
 internal fun KaSession.mapType(
     type: KaType,
@@ -69,11 +69,11 @@ internal fun KaSymbolWithModality.computeSimpleModality(): String? = when (modal
 
 context(KaSession)
 internal fun KaClassOrObjectSymbol.enumClassModality(): String? {
-    if (getMemberScope().getCallableSymbols().any { (it as? KaSymbolWithModality)?.modality == Modality.ABSTRACT }) {
+    if (memberScope.callables.any { (it as? KaSymbolWithModality)?.modality == Modality.ABSTRACT }) {
         return PsiModifier.ABSTRACT
     }
 
-    if (getStaticDeclaredMemberScope().getCallableSymbols().none { it is KaEnumEntrySymbol && it.requiresSubClass() }) {
+    if (staticDeclaredMemberScope.callables.none { it is KaEnumEntrySymbol && it.requiresSubClass() }) {
         return PsiModifier.FINAL
     }
 
@@ -83,7 +83,7 @@ internal fun KaClassOrObjectSymbol.enumClassModality(): String? {
 context(KaSession)
 private fun KaEnumEntrySymbol.requiresSubClass(): Boolean {
     val initializer = enumEntryInitializer ?: return false
-    return initializer.getCombinedDeclaredMemberScope().getAllSymbols().any { it !is KaConstructorSymbol }
+    return initializer.combinedDeclaredMemberScope.declarations.any { it !is KaConstructorSymbol }
 }
 
 internal fun KaSymbolWithVisibility.toPsiVisibilityForMember(): String = visibility.toPsiVisibilityForMember()
@@ -139,7 +139,7 @@ internal fun KaSession.getTypeNullability(type: KaType): KaTypeNullability {
     val ktType = type.fullyExpandedType
     if (ktType.nullability != KaTypeNullability.NON_NULLABLE) return ktType.nullability
 
-    if (ktType.isUnit) return KaTypeNullability.NON_NULLABLE
+    if (ktType.isUnitType) return KaTypeNullability.NON_NULLABLE
 
     if (ktType.isPrimitiveBacked) return KaTypeNullability.UNKNOWN
 
@@ -149,7 +149,7 @@ internal fun KaSession.getTypeNullability(type: KaType): KaTypeNullability {
         return if (!subtypeOfNullableSuperType) KaTypeNullability.NON_NULLABLE else KaTypeNullability.UNKNOWN
     }
 
-    if (ktType !is KaNonErrorClassType) return KaTypeNullability.NON_NULLABLE
+    if (ktType !is KaClassType) return KaTypeNullability.NON_NULLABLE
     if (ktType.typeArguments.any { it.type is KaClassErrorType }) return KaTypeNullability.NON_NULLABLE
     if (ktType.classId.shortClassName.asString() == SpecialNames.ANONYMOUS_STRING) return KaTypeNullability.NON_NULLABLE
 

@@ -28,8 +28,8 @@ abstract class AbstractOverriddenDeclarationProviderTest : AbstractAnalysisApiBa
         val actual = executeOnPooledThreadInReadAction {
             analyseForTest(mainFile) {
                 val symbol = getCallableSymbol(mainFile, testServices)
-                val allOverriddenSymbols = symbol.getAllOverriddenSymbols().map { renderSignature(it) }
-                val directlyOverriddenSymbols = symbol.getDirectlyOverriddenSymbols().map { renderSignature(it) }
+                val allOverriddenSymbols = symbol.allOverriddenSymbols.map { renderSignature(it) }
+                val directlyOverriddenSymbols = symbol.directlyOverriddenSymbols.map { renderSignature(it) }
                 buildString {
                     appendLine("ALL:")
                     allOverriddenSymbols.forEach { appendLine("  $it") }
@@ -44,7 +44,7 @@ abstract class AbstractOverriddenDeclarationProviderTest : AbstractAnalysisApiBa
     private fun KaSession.getCallableSymbol(mainFile: KtFile, testServices: TestServices): KaCallableSymbol {
         val declaration = testServices.expressionMarkerProvider.getElementOfTypeAtCaretOrNull<KtDeclaration>(mainFile)
         if (declaration != null) {
-            return declaration.getSymbol() as KaCallableSymbol
+            return declaration.symbol as KaCallableSymbol
         }
         return getSingleTestTargetSymbolOfType<KaCallableSymbol>(mainFile, testDataPath)
     }
@@ -68,7 +68,7 @@ abstract class AbstractOverriddenDeclarationProviderTest : AbstractAnalysisApiBa
     }
 
     private fun KaSession.renderDeclarationQualifiedName(symbol: KaCallableSymbol): String {
-        val parentsWithSelf = generateSequence<KaSymbol>(symbol) { it.getContainingSymbol() }
+        val parentsWithSelf = generateSequence<KaSymbol>(symbol) { it.containingSymbol }
             .toList()
             .asReversed()
 

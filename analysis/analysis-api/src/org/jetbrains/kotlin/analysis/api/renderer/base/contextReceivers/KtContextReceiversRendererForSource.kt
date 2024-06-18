@@ -5,9 +5,11 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.base.contextReceivers
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.renderer.base.contextReceivers.renderers.KaContextReceiverLabelRenderer
 import org.jetbrains.kotlin.analysis.api.renderer.base.contextReceivers.renderers.KaContextReceiverListRenderer
 
+@KaExperimentalApi
 public object KaContextReceiversRendererForSource {
     public val WITH_LABELS: KaContextReceiversRenderer = KaContextReceiversRenderer {
         contextReceiverListRenderer = KaContextReceiverListRenderer.AS_SOURCE
@@ -15,4 +17,6 @@ public object KaContextReceiversRendererForSource {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaContextReceiversRendererForSource' instead", ReplaceWith("KaContextReceiversRendererForSource"))
 public typealias KtContextReceiversRendererForSource = KaContextReceiversRendererForSource

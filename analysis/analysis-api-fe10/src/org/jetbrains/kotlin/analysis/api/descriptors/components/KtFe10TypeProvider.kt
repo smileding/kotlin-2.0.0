@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.analysis.api.descriptors.symbols.descriptorBased.bas
 import org.jetbrains.kotlin.analysis.api.descriptors.symbols.psiBased.base.getResolutionScope
 import org.jetbrains.kotlin.analysis.api.descriptors.types.base.KaFe10Type
 import org.jetbrains.kotlin.analysis.api.descriptors.utils.PublicApproximatorConfiguration
+import org.jetbrains.kotlin.analysis.api.impl.base.components.KaSessionComponent
 import org.jetbrains.kotlin.analysis.api.lifetime.KaLifetimeToken
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
 import org.jetbrains.kotlin.analysis.api.symbols.KaCallableSymbol
@@ -53,8 +54,8 @@ import org.jetbrains.kotlin.types.typeUtil.isNothing
 import org.jetbrains.kotlin.util.containingNonLocalDeclaration
 
 internal class KaFe10TypeProvider(
-    override val analysisSession: KaFe10Session
-) : KaTypeProvider(), KaFe10SessionComponent {
+    override val analysisSessionProvider: () -> KaFe10Session
+) : KaSessionComponent<KaFe10Session>(), KaTypeProvider, KaFe10SessionComponent {
     @Suppress("SpellCheckingInspection")
     private val typeApproximator by lazy {
         TypeApproximator(
@@ -63,47 +64,51 @@ internal class KaFe10TypeProvider(
         )
     }
 
-    override val token: KaLifetimeToken
-        get() = analysisSession.token
-
     override val builtinTypes: KaBuiltinTypes by lazy(LazyThreadSafetyMode.PUBLICATION) { KaFe10BuiltinTypes(analysisContext) }
 
-    override fun approximateToSuperPublicDenotableType(type: KaType, approximateLocalTypes: Boolean): KaType? {
-        require(type is KaFe10Type)
-        return typeApproximator.approximateToSuperType(type.fe10Type, PublicApproximatorConfiguration(approximateLocalTypes))
+    override fun KaType.approximateToSuperPublicDenotable(approximateLocalTypes: Boolean): KaType? = withValidityAssertion {
+        require(this is KaFe10Type)
+        return typeApproximator.approximateToSuperType(fe10Type, PublicApproximatorConfiguration(approximateLocalTypes))
             ?.toKtType(analysisContext)
     }
 
-    override fun approximateToSubPublicDenotableType(type: KaType, approximateLocalTypes: Boolean): KaType? {
-        require(type is KaFe10Type)
-        return typeApproximator.approximateToSubType(type.fe10Type, PublicApproximatorConfiguration(approximateLocalTypes))
+    override fun KaType.approximateToSubPublicDenotable(approximateLocalTypes: Boolean): KaType? = withValidityAssertion {
+        require(this is KaFe10Type)
+        return typeApproximator.approximateToSubType(fe10Type, PublicApproximatorConfiguration(approximateLocalTypes))
             ?.toKtType(analysisContext)
     }
 
-    override fun getEnhancedType(type: KaType): KaType? {
-        require(type is KaFe10Type)
-        val enhancement = (type.fe10Type as? TypeWithEnhancement)?.enhancement
-        return enhancement?.toKtType(analysisContext)
-    }
+    override val KaType.enhancedType: KaType?
+        get() = withValidityAssertion {
+            require(this is KaFe10Type)
+            val enhancement = (fe10Type as? TypeWithEnhancement)?.enhancement
+            return enhancement?.toKtType(analysisContext)
+        }
 
-    override fun buildSelfClassType(symbol: KaNamedClassOrObjectSymbol): KaType {
-        val kotlinType = (getSymbolDescriptor(symbol) as? ClassDescriptor)?.defaultType
-            ?: ErrorUtils.createErrorType(ErrorTypeKind.UNRESOLVED_CLASS_TYPE, symbol.nameOrAnonymous.toString())
-        return kotlinType.toKtType(analysisContext)
-    }
+    override val KaNamedClassOrObjectSymbol.defaultType: KaType
+        get() = withValidityAssertion {
+            val kotlinType = (getSymbolDescriptor(this) as? ClassDescriptor)?.defaultType
+                ?: ErrorUtils.createErrorType(ErrorTypeKind.UNRESOLVED_CLASS_TYPE, nameOrAnonymous.toString())
+            return kotlinType.toKtType(analysisContext)
+        }
 
-    override fun commonSuperType(types: Collection<KaType>): KaType {
-        val kotlinTypes = types.map { (it as KaFe10Type).fe10Type }
-        return CommonSupertypes.commonSupertype(kotlinTypes).toKtType(analysisContext)
-    }
+    override val Iterable<KaType>.commonSupertype: KaType
+        get() = withValidityAssertion {
+            val kotlinTypes = map { (it as KaFe10Type).fe10Type }
+            if (kotlinTypes.isEmpty()) {
+                throw IllegalArgumentException("Got no types")
+            }
+            return CommonSupertypes.commonSupertype(kotlinTypes).toKtType(analysisContext)
+        }
 
-    override fun getKtType(ktTypeReference: KtTypeReference): KaType {
-        val bindingContext = analysisContext.analyze(ktTypeReference, AnalysisMode.PARTIAL)
-        val kotlinType = bindingContext[BindingContext.TYPE, ktTypeReference]
-            ?: getKtTypeAsTypeArgument(ktTypeReference)
-            ?: ErrorUtils.createErrorType(ErrorTypeKind.UNRESOLVED_TYPE, ktTypeReference.text)
-        return kotlinType.toKtType(analysisContext)
-    }
+    override val KtTypeReference.type: KaType
+        get() = withValidityAssertion {
+            val bindingContext = analysisContext.analyze(this, AnalysisMode.PARTIAL)
+            val kotlinType = bindingContext[BindingContext.TYPE, this]
+                ?: getKtTypeAsTypeArgument(this)
+                ?: ErrorUtils.createErrorType(ErrorTypeKind.UNRESOLVED_TYPE, text)
+            return kotlinType.toKtType(analysisContext)
+        }
 
     private fun getKtTypeAsTypeArgument(ktTypeReference: KtTypeReference): KotlinType? {
         val call = ktTypeReference.getParentOfType<KtCallElement>(strict = true) ?: return null
@@ -115,22 +120,23 @@ internal class KaFe10TypeProvider(
         return resolvedCall.typeArguments[paramDescriptor]
     }
 
-    override fun getReceiverTypeForDoubleColonExpression(expression: KtDoubleColonExpression): KaType? {
-        val bindingContext = analysisContext.analyze(expression, AnalysisMode.PARTIAL)
-        val lhs = bindingContext[BindingContext.DOUBLE_COLON_LHS, expression.receiverExpression] ?: return null
-        return lhs.type.toKtType(analysisContext)
+    override val KtDoubleColonExpression.receiverType: KaType?
+        get() = withValidityAssertion {
+            val bindingContext = analysisContext.analyze(this, AnalysisMode.PARTIAL)
+            val lhs = bindingContext[BindingContext.DOUBLE_COLON_LHS, receiverExpression] ?: return null
+            return lhs.type.toKtType(analysisContext)
+        }
+
+    override fun KaType.withNullability(newNullability: KaTypeNullability): KaType = withValidityAssertion {
+        require(this is KaFe10Type)
+        return fe10Type.makeNullableAsSpecified(newNullability == KaTypeNullability.NULLABLE).toKtType(analysisContext)
     }
 
-    override fun withNullability(type: KaType, newNullability: KaTypeNullability): KaType {
-        require(type is KaFe10Type)
-        return type.fe10Type.makeNullableAsSpecified(newNullability == KaTypeNullability.NULLABLE).toKtType(analysisContext)
+    override fun KaType.hasCommonSubtypeWith(that: KaType): Boolean = withValidityAssertion {
+        return areTypesCompatible((this as KaFe10Type).fe10Type, (that as KaFe10Type).fe10Type)
     }
 
-    override fun haveCommonSubtype(a: KaType, b: KaType): Boolean {
-        return areTypesCompatible((a as KaFe10Type).fe10Type, (b as KaFe10Type).fe10Type)
-    }
-
-    override fun getImplicitReceiverTypesAtPosition(position: KtElement): List<KaType> {
+    override fun collectImplicitReceiverTypes(position: KtElement): List<KaType> = withValidityAssertion {
         val elementToAnalyze = position.containingNonLocalDeclaration() ?: position
         val bindingContext = analysisContext.analyze(elementToAnalyze)
 
@@ -138,31 +144,34 @@ internal class KaFe10TypeProvider(
         return lexicalScope.getImplicitReceiversHierarchy().map { it.type.toKtType(analysisContext) }
     }
 
-    override fun getDirectSuperTypes(type: KaType, shouldApproximate: Boolean): List<KaType> {
-        require(type is KaFe10Type)
-        return TypeUtils.getImmediateSupertypes(type.fe10Type).map { it.toKtType(analysisContext) }
+    override fun KaType.directSupertypes(shouldApproximate: Boolean): Sequence<KaType> = withValidityAssertion {
+        require(this is KaFe10Type)
+        return TypeUtils.getImmediateSupertypes(fe10Type).asSequence().map { it.toKtType(analysisContext) }
     }
 
-    override fun getAllSuperTypes(type: KaType, shouldApproximate: Boolean): List<KaType> {
-        require(type is KaFe10Type)
-        return TypeUtils.getAllSupertypes(type.fe10Type).map { it.toKtType(analysisContext) }
+    override fun KaType.allSupertypes(shouldApproximate: Boolean): Sequence<KaType> {
+        require(this is KaFe10Type)
+        return TypeUtils.getAllSupertypes(fe10Type).asSequence().map { it.toKtType(analysisContext) }
     }
 
-    override fun getDispatchReceiverType(symbol: KaCallableSymbol): KaType? {
-        require(symbol is KaFe10Symbol)
-        val descriptor = symbol.getDescriptor() as? CallableDescriptor ?: return null
-        return descriptor.dispatchReceiverParameter?.type?.toKtType(analysisContext)
-    }
+    @Suppress("OVERRIDE_DEPRECATION")
+    override val KaCallableSymbol.dispatchReceiverType: KaType?
+        get() = withValidityAssertion {
+            require(this is KaFe10Symbol)
+            val descriptor = getDescriptor() as? CallableDescriptor ?: return null
+            return descriptor.dispatchReceiverParameter?.type?.toKtType(analysisContext)
+        }
 
-    override fun getArrayElementType(type: KaType): KaType? {
-        require(type is KaFe10Type)
-        val fe10Type = type.fe10Type
+    override val KaType.arrayElementType: KaType?
+        get() = withValidityAssertion {
+            require(this is KaFe10Type)
+            val fe10Type = fe10Type
 
-        if (!KotlinBuiltIns.isArrayOrPrimitiveArray(fe10Type)) return null
+            if (!KotlinBuiltIns.isArrayOrPrimitiveArray(fe10Type)) return null
 
-        val arrayElementType = fe10Type.builtIns.getArrayElementType(fe10Type)
-        return arrayElementType.toKtType(analysisContext)
-    }
+            val arrayElementType = fe10Type.builtIns.getArrayElementType(fe10Type)
+            return arrayElementType.toKtType(analysisContext)
+        }
 
     private fun areTypesCompatible(a: KotlinType, b: KotlinType): Boolean {
         if (a.isNothing() || b.isNothing() || TypeUtils.equalTypes(a, b) || (a.isNullable() && b.isNullable())) {
@@ -454,49 +463,49 @@ private class KaFe10BuiltinTypes(private val analysisContext: Fe10AnalysisContex
     override val token: KaLifetimeToken
         get() = analysisContext.token
 
-    override val INT: KaType
+    override val int: KaType
         get() = withValidityAssertion { analysisContext.builtIns.intType.toKtType(analysisContext) }
 
-    override val LONG: KaType
+    override val long: KaType
         get() = withValidityAssertion { analysisContext.builtIns.longType.toKtType(analysisContext) }
 
-    override val SHORT: KaType
+    override val short: KaType
         get() = withValidityAssertion { analysisContext.builtIns.shortType.toKtType(analysisContext) }
 
-    override val BYTE: KaType
+    override val byte: KaType
         get() = withValidityAssertion { analysisContext.builtIns.byteType.toKtType(analysisContext) }
 
-    override val FLOAT: KaType
+    override val float: KaType
         get() = withValidityAssertion { analysisContext.builtIns.floatType.toKtType(analysisContext) }
 
-    override val DOUBLE: KaType
+    override val double: KaType
         get() = withValidityAssertion { analysisContext.builtIns.doubleType.toKtType(analysisContext) }
 
-    override val BOOLEAN: KaType
+    override val boolean: KaType
         get() = withValidityAssertion { analysisContext.builtIns.booleanType.toKtType(analysisContext) }
 
-    override val CHAR: KaType
+    override val char: KaType
         get() = withValidityAssertion { analysisContext.builtIns.charType.toKtType(analysisContext) }
 
-    override val STRING: KaType
+    override val string: KaType
         get() = withValidityAssertion { analysisContext.builtIns.stringType.toKtType(analysisContext) }
 
-    override val UNIT: KaType
+    override val unit: KaType
         get() = withValidityAssertion { analysisContext.builtIns.unitType.toKtType(analysisContext) }
 
-    override val NOTHING: KaType
+    override val nothing: KaType
         get() = withValidityAssertion { analysisContext.builtIns.nothingType.toKtType(analysisContext) }
 
-    override val ANY: KaType
+    override val any: KaType
         get() = withValidityAssertion { analysisContext.builtIns.anyType.toKtType(analysisContext) }
 
-    override val THROWABLE: KaType
+    override val throwable: KaType
         get() = withValidityAssertion { analysisContext.builtIns.throwable.defaultType.toKtType(analysisContext) }
 
-    override val NULLABLE_ANY: KaType
+    override val nullableAny: KaType
         get() = withValidityAssertion { analysisContext.builtIns.nullableAnyType.toKtType(analysisContext) }
 
-    override val NULLABLE_NOTHING: KaType
+    override val nullableNothing: KaType
         get() = withValidityAssertion { analysisContext.builtIns.nullableNothingType.toKtType(analysisContext) }
 
 }

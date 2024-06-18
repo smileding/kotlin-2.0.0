@@ -5,11 +5,13 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.superTypes
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.KaDeclarationRenderer
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassOrObjectSymbol
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 
+@KaExperimentalApi
 public interface KaSuperTypeListRenderer {
     public fun renderSuperTypes(
         analysisSession: KaSession,
@@ -39,4 +41,6 @@ public interface KaSuperTypeListRenderer {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaSuperTypeListRenderer' instead", ReplaceWith("KaSuperTypeListRenderer"))
 public typealias KtSuperTypeListRenderer = KaSuperTypeListRenderer

@@ -14,14 +14,14 @@ import org.jetbrains.kotlin.test.services.TestServices
 import org.jetbrains.kotlin.test.services.assertions
 
 abstract class AbstractFileScopeTest : AbstractScopeTestBase() {
-    override fun KaSession.getScope(mainFile: KtFile, testServices: TestServices): KaScope = mainFile.getFileSymbol().getFileScope()
+    override fun KaSession.getScope(mainFile: KtFile, testServices: TestServices): KaScope = mainFile.symbol.fileScope
 
     override fun doTestByMainFile(mainFile: KtFile, mainModule: KtTestModule, testServices: TestServices) {
         super.doTestByMainFile(mainFile, mainModule, testServices)
 
         analyseForTest(mainFile) {
-            val fileSymbol = mainFile.getFileSymbol()
-            val renderedFileSymbol = DebugSymbolRenderer(renderExtra = true).render(analysisSession, fileSymbol)
+            val fileSymbol = mainFile.symbol
+            val renderedFileSymbol = DebugSymbolRenderer(renderExtra = true).render(useSiteSession, fileSymbol)
             testServices.assertions.assertEqualsToTestDataFileSibling(renderedFileSymbol, extension = ".file_symbol.txt")
         }
     }

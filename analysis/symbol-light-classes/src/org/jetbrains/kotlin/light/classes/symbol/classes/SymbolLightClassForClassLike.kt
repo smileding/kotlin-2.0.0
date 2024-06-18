@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2023 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassKind
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassOrObjectSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaNamedClassOrObjectSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.markers.KaSymbolKind
+import org.jetbrains.kotlin.analysis.api.symbols.isTopLevel
 import org.jetbrains.kotlin.analysis.api.symbols.pointers.KaSymbolPointer
 import org.jetbrains.kotlin.analysis.api.symbols.sourcePsiSafe
 import org.jetbrains.kotlin.analysis.project.structure.KtModule
@@ -68,7 +68,7 @@ abstract class SymbolLightClassForClassLike<SType : KaClassOrObjectSymbol> prote
         classOrObjectSymbolPointer.withSymbol(ktModule, action)
 
     override val isTopLevel: Boolean by lazyPub {
-        classOrObjectDeclaration?.isTopLevel() ?: withClassOrObjectSymbol { it.symbolKind == KaSymbolKind.TOP_LEVEL }
+        classOrObjectDeclaration?.isTopLevel() ?: withClassOrObjectSymbol { it.isTopLevel }
     }
 
     private val _isDeprecated: Boolean by lazyPub {
@@ -176,7 +176,7 @@ abstract class SymbolLightClassForClassLike<SType : KaClassOrObjectSymbol> prote
             is KtClassOrObject -> parent.toLightClass()
             is KtScript -> parent.toLightClass()
             null -> withClassOrObjectSymbol { s ->
-                (s.getContainingSymbol() as? KaNamedClassOrObjectSymbol)?.let { createLightClassNoCache(it, ktModule, manager) }
+                (s.containingSymbol as? KaNamedClassOrObjectSymbol)?.let { createLightClassNoCache(it, ktModule, manager) }
             }
             else -> null
         }

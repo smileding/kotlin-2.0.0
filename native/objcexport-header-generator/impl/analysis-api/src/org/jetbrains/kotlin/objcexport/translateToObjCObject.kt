@@ -1,27 +1,26 @@
 package org.jetbrains.kotlin.objcexport
 
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
-import org.jetbrains.kotlin.analysis.api.symbols.KtClassKind
-import org.jetbrains.kotlin.analysis.api.symbols.KtClassOrObjectSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.markers.KtSymbolWithModality
+import org.jetbrains.kotlin.analysis.api.KaSession
+import org.jetbrains.kotlin.analysis.api.symbols.KaClassKind
+import org.jetbrains.kotlin.analysis.api.symbols.KaClassOrObjectSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.markers.KaSymbolWithModality
 import org.jetbrains.kotlin.backend.konan.objcexport.*
 import org.jetbrains.kotlin.descriptors.Modality
-import org.jetbrains.kotlin.objcexport.analysisApiUtils.isCompanion
 import org.jetbrains.kotlin.objcexport.analysisApiUtils.isVisibleInObjC
 import org.jetbrains.kotlin.objcexport.extras.objCTypeExtras
 import org.jetbrains.kotlin.objcexport.extras.originClassId
 import org.jetbrains.kotlin.objcexport.extras.requiresForwardDeclaration
 
-context(KtAnalysisSession, KtObjCExportSession)
-fun KtClassOrObjectSymbol.translateToObjCObject(): ObjCClass? {
-    require(classKind == KtClassKind.OBJECT || classKind == KtClassKind.COMPANION_OBJECT)
+context(KaSession, KtObjCExportSession)
+fun KaClassOrObjectSymbol.translateToObjCObject(): ObjCClass? {
+    require(classKind == KaClassKind.OBJECT || classKind == KaClassKind.COMPANION_OBJECT)
     if (!isVisibleInObjC()) return null
 
-    val enumKind = this.classKind == KtClassKind.ENUM_CLASS
-    val final = if (this is KtSymbolWithModality) this.modality == Modality.FINAL else false
+    val enumKind = this.classKind == KaClassKind.ENUM_CLASS
+    val final = if (this is KaSymbolWithModality) this.modality == Modality.FINAL else false
     val name = getObjCClassOrProtocolName()
     val attributes = (if (enumKind || final) listOf(OBJC_SUBCLASSING_RESTRICTED) else emptyList()) + name.toNameAttributes()
-    val comment: ObjCComment? = annotationsList.translateToObjCComment()
+    val comment: ObjCComment? = annotations.translateToObjCComment()
     val origin = getObjCExportStubOrigin()
     val superProtocols: List<String> = superProtocols()
     val categoryName: String? = null
@@ -31,7 +30,7 @@ fun KtClassOrObjectSymbol.translateToObjCObject(): ObjCClass? {
     val objectMembers = mutableListOf<ObjCExportStub>()
     objectMembers += translateToObjCConstructors()
     objectMembers += getDefaultMembers()
-    objectMembers += getDeclaredMemberScope().getCallableSymbols()
+    objectMembers += declaredMemberScope.callables
         .sortedWith(StableCallableOrder)
         .flatMap { it.translateToObjCExportStub() }
 
@@ -49,8 +48,8 @@ fun KtClassOrObjectSymbol.translateToObjCObject(): ObjCClass? {
     )
 }
 
-context(KtAnalysisSession, KtObjCExportSession)
-private fun KtClassOrObjectSymbol.getDefaultMembers(): List<ObjCExportStub> {
+context(KaSession, KtObjCExportSession)
+private fun KaClassOrObjectSymbol.getDefaultMembers(): List<ObjCExportStub> {
 
     val result = mutableListOf<ObjCExportStub>()
 
@@ -85,8 +84,8 @@ private fun KtClassOrObjectSymbol.getDefaultMembers(): List<ObjCExportStub> {
  * Use translateToObjCReferenceType() to make type
  * See also: [org.jetbrains.kotlin.backend.konan.objcexport.ObjCExportTranslatorImpl.mapReferenceType]
  */
-context(KtAnalysisSession, KtObjCExportSession)
-private fun KtClassOrObjectSymbol.toPropertyType() = ObjCClassType(
+context(KaSession, KtObjCExportSession)
+private fun KaClassOrObjectSymbol.toPropertyType() = ObjCClassType(
     className = getObjCClassOrProtocolName().objCName,
     typeArguments = emptyList(),
     extras = objCTypeExtras {
@@ -98,16 +97,19 @@ private fun KtClassOrObjectSymbol.toPropertyType() = ObjCClassType(
 /**
  * [org.jetbrains.kotlin.backend.konan.objcexport.ObjCExportNamerImpl.getObjectInstanceSelector]
  */
-context(KtAnalysisSession, KtObjCExportSession)
-private fun getObjectInstanceSelector(objectSymbol: KtClassOrObjectSymbol): String {
-    return objectSymbol.getObjCClassOrProtocolName(bareName = true).objCName.replaceFirstChar(Char::lowercaseChar)
+context(KaSession, KtObjCExportSession)
+private fun getObjectInstanceSelector(objectSymbol: KaClassOrObjectSymbol): String {
+    return objectSymbol.getObjCClassOrProtocolName(bareName = true)
+        .objCName
+        .replaceFirstChar(Char::lowercaseChar)
+        .mangleIfReservedObjCName()
 }
 
 /**
  * [org.jetbrains.kotlin.backend.konan.objcexport.ObjCExportNamerImpl.getObjectPropertySelector]
  */
-context(KtAnalysisSession, KtObjCExportSession)
-private fun getObjectPropertySelector(descriptor: KtClassOrObjectSymbol): String {
+context(KaSession, KtObjCExportSession)
+private fun getObjectPropertySelector(descriptor: KaClassOrObjectSymbol): String {
     val collides = ObjCPropertyNames.objectPropertyName == getObjectInstanceSelector(descriptor)
     return ObjCPropertyNames.objectPropertyName + (if (collides) "_" else "")
 }

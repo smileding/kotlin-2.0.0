@@ -12,24 +12,24 @@ scopes:
     classifiers: 0
     callables: 1
       KaLocalVariableSymbol:
-        annotationsList: []
+        annotations: []
         callableId: null
         contextReceivers: []
         isExtension: false
         isVal: true
+        location: LOCAL
         name: <iterator>
         origin: SOURCE
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: [
             KaUsualClassType:
-              annotationsList: []
+              annotations: []
               typeArguments: []
               type: kotlin/Int
           ]
           type: kotlin/collections/Iterator<kotlin/Int>
-        symbolKind: LOCAL
         typeParameters: []
     constructors: 0
 
@@ -44,7 +44,7 @@ scopes:
     classifiers: 0
     callables: 1
       KaValueParameterSymbol:
-        annotationsList: []
+        annotations: []
         callableId: null
         contextReceivers: []
         generatedPrimaryConstructorProperty: null
@@ -54,19 +54,19 @@ scopes:
         isImplicitLambdaParameter: false
         isNoinline: false
         isVararg: false
+        location: LOCAL
         name: list
         origin: SOURCE
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: [
             KaUsualClassType:
-              annotationsList: []
+              annotations: []
               typeArguments: []
               type: kotlin/Int
           ]
           type: kotlin/collections/List<kotlin/Int>
-        symbolKind: LOCAL
         typeParameters: []
     constructors: 0
 
@@ -81,7 +81,7 @@ scopes:
     classifiers: 0
     callables: 1
       KaFunctionSymbol:
-        annotationsList: []
+        annotations: []
         callableId: test/usage
         contextReceivers: []
         contractEffects: []
@@ -98,19 +98,19 @@ scopes:
         isStatic: false
         isSuspend: false
         isTailRec: false
+        location: TOP_LEVEL
         modality: FINAL
         name: usage
         origin: SOURCE
         receiverParameter: null
         returnType: KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Unit
-        symbolKind: TOP_LEVEL
         typeParameters: []
         valueParameters: [
           KaValueParameterSymbol:
-            annotationsList: []
+            annotations: []
             callableId: null
             contextReceivers: []
             generatedPrimaryConstructorProperty: null
@@ -120,19 +120,19 @@ scopes:
             isImplicitLambdaParameter: false
             isNoinline: false
             isVararg: false
+            location: LOCAL
             name: list
             origin: SOURCE
             receiverParameter: null
             returnType: KaUsualClassType:
-              annotationsList: []
+              annotations: []
               typeArguments: [
                 KaUsualClassType:
-                  annotationsList: []
+                  annotations: []
                   typeArguments: []
                   type: kotlin/Int
               ]
               type: kotlin/collections/List<kotlin/Int>
-            symbolKind: LOCAL
             typeParameters: []
         ]
         visibility: Public

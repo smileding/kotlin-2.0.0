@@ -5,18 +5,19 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.types.renderers
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.renderer.types.KaTypeRenderer
-import org.jetbrains.kotlin.analysis.api.types.KaFunctionalType
+import org.jetbrains.kotlin.analysis.api.types.KaFunctionType
 import org.jetbrains.kotlin.analysis.api.types.KaTypeNullability
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 import org.jetbrains.kotlin.lexer.KtTokens
 
-
+@KaExperimentalApi
 public interface KaFunctionalTypeRenderer {
     public fun renderType(
         analysisSession: KaSession,
-        type: KaFunctionalType,
+        type: KaFunctionType,
         typeRenderer: KaTypeRenderer,
         printer: PrettyPrinter,
     )
@@ -24,7 +25,7 @@ public interface KaFunctionalTypeRenderer {
     public object AS_FUNCTIONAL_TYPE : KaFunctionalTypeRenderer {
         override fun renderType(
             analysisSession: KaSession,
-            type: KaFunctionalType,
+            type: KaFunctionType,
             typeRenderer: KaTypeRenderer,
             printer: PrettyPrinter,
         ) {
@@ -48,9 +49,9 @@ public interface KaFunctionalTypeRenderer {
                     },
                     {
                         type.receiverType?.let {
-                            if (it is KaFunctionalType) printer.append("(")
+                            if (it is KaFunctionType) printer.append("(")
                             typeRenderer.renderType(analysisSession, it, printer)
-                            if (it is KaFunctionalType) printer.append(")")
+                            if (it is KaFunctionType) printer.append(")")
                             printer.append('.')
                         }
                         printCollection(type.parameterTypes, prefix = "(", postfix = ")") {
@@ -69,7 +70,7 @@ public interface KaFunctionalTypeRenderer {
     public object AS_CLASS_TYPE : KaFunctionalTypeRenderer {
         override fun renderType(
             analysisSession: KaSession,
-            type: KaFunctionalType,
+            type: KaFunctionType,
             typeRenderer: KaTypeRenderer,
             printer: PrettyPrinter,
         ): Unit = printer {
@@ -88,7 +89,7 @@ public interface KaFunctionalTypeRenderer {
     public object AS_CLASS_TYPE_FOR_REFLECTION_TYPES : KaFunctionalTypeRenderer {
         override fun renderType(
             analysisSession: KaSession,
-            type: KaFunctionalType,
+            type: KaFunctionType,
             typeRenderer: KaTypeRenderer,
             printer: PrettyPrinter,
         ) {
@@ -98,4 +99,6 @@ public interface KaFunctionalTypeRenderer {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaFunctionalTypeRenderer' instead", ReplaceWith("KaFunctionalTypeRenderer"))
 public typealias KtFunctionalTypeRenderer = KaFunctionalTypeRenderer

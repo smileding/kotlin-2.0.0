@@ -23,9 +23,9 @@ abstract class AbstractAnalysisApiSymbolSubstitutionTest : AbstractAnalysisApiBa
     override fun doTestByMainFile(mainFile: KtFile, mainModule: KtTestModule, testServices: TestServices) {
         val declaration = testServices.expressionMarkerProvider.getElementOfTypeAtCaret<KtCallableDeclaration>(mainFile)
         val actual = analyseForTest(declaration) {
-            val symbol = declaration.getSymbol() as KaCallableSymbol
+            val symbol = declaration.symbol as KaCallableSymbol
 
-            val substitutor = SubstitutionParser.parseSubstitutor(analysisSession, mainFile, declaration)
+            val substitutor = SubstitutionParser.parseSubstitutor(useSiteSession, mainFile, declaration)
 
             val signature = symbol.substitute(substitutor)
             prettyPrint {

@@ -21,15 +21,20 @@ import org.jetbrains.kotlin.fir.references.FirNamedReference
 import org.jetbrains.kotlin.fir.references.FirSuperReference
 import org.jetbrains.kotlin.fir.references.FirThisReference
 import org.jetbrains.kotlin.fir.renderer.*
+import org.jetbrains.kotlin.fir.symbols.ConeTypeParameterLookupTag
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.*
+import org.jetbrains.kotlin.fir.types.ConeIntersectionType
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
-import org.jetbrains.kotlin.fir.types.ConeTypeParameterType
+import org.jetbrains.kotlin.fir.types.forEachType
+import org.jetbrains.kotlin.fir.types.getConstructor
+import org.jetbrains.kotlin.fir.types.lowerBoundIfFlexible
 import org.jetbrains.kotlin.fir.types.renderReadableWithFqNames
 import org.jetbrains.kotlin.metadata.deserialization.VersionRequirement
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.types.model.TypeConstructorMarker
 
 @Suppress("NO_EXPLICIT_RETURN_TYPE_IN_API_MODE_WARNING")
 object FirDiagnosticRenderers {
@@ -161,14 +166,27 @@ object FirDiagnosticRenderers {
                 val coneTypes = objectsToRender.filterIsInstance<ConeKotlinType>() +
                         objectsToRender.filterIsInstance<Iterable<*>>().flatMap { it.filterIsInstance<ConeKotlinType>() }
 
-                val simpleRepresentationsByType: Map<ConeKotlinType, String> = coneTypes.associateWith { it.renderReadableWithFqNames() }
-                val typesByRepresentation: Map<String, List<ConeKotlinType>> =
-                    simpleRepresentationsByType.entries.groupBy({ it.value }, { it.key })
+                val constructors = buildSet {
+                    coneTypes.forEach {
+                        it.forEachType {
+                            if (it !is ConeIntersectionType) {
+                                add(it.lowerBoundIfFlexible().getConstructor())
+                            }
+                        }
+                    }
+                }
 
-                return coneTypes.associateWith {
-                    val representation = simpleRepresentationsByType.getValue(it)
+                val simpleRepresentationsByConstructor: Map<TypeConstructorMarker, String> = constructors.associateWith {
+                    buildString { ConeTypeRendererForReadability(this) { ConeIdRendererForDiagnostics() }.renderConstructor(it) }
+                }
 
-                    val typesWithSameRepresentation = typesByRepresentation.getValue(representation)
+                val constructorsByRepresentation: Map<String, List<TypeConstructorMarker>> =
+                    simpleRepresentationsByConstructor.entries.groupBy({ it.value }, { it.key })
+
+                val finalRepresentationsByConstructor: Map<TypeConstructorMarker, String> = constructors.associateWith {
+                    val representation = simpleRepresentationsByConstructor.getValue(it)
+
+                    val typesWithSameRepresentation = constructorsByRepresentation.getValue(representation)
                     if (typesWithSameRepresentation.size == 1) return@associateWith representation
 
                     val index = typesWithSameRepresentation.indexOf(it) + 1
@@ -178,29 +196,22 @@ object FirDiagnosticRenderers {
                         append('#')
                         append(index)
 
-                        if (it is ConeTypeParameterType) {
+                        if (it is ConeTypeParameterLookupTag) {
                             append(" (type parameter of ")
-                            append(SYMBOL.render(it.lookupTag.typeParameterSymbol.containingDeclarationSymbol))
+                            append(SYMBOL.render(it.typeParameterSymbol.containingDeclarationSymbol))
                             append(')')
                         }
                     }
+                }
+
+                return coneTypes.associateWith {
+                    it.renderReadableWithFqNames(finalRepresentationsByConstructor)
                 }
             }
         }
 
     // TODO: properly implement
     val RENDER_TYPE_WITH_ANNOTATIONS = RENDER_TYPE
-
-    val FQ_NAMES_IN_TYPES = Renderer { symbol: FirBasedSymbol<*> ->
-        val idRendererCreator = { ConeIdFullRenderer() }
-        @OptIn(SymbolInternals::class)
-        FirRenderer(
-            annotationRenderer = null,
-            bodyRenderer = null,
-            idRenderer = idRendererCreator(),
-            typeRenderer = ConeTypeRendererForReadability(idRendererCreator)
-        ).renderElementAsString(symbol.fir, trim = true)
-    }
 
     val AMBIGUOUS_CALLS = Renderer { candidates: Collection<FirBasedSymbol<*>> ->
         candidates.joinToString(separator = "\n", prefix = "\n") { symbol ->

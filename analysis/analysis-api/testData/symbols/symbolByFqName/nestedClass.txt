@@ -1,5 +1,5 @@
 KaNamedClassOrObjectSymbol:
-  annotationsList: []
+  annotations: []
   classId: kotlin/collections/MutableMap.MutableEntry
   classKind: INTERFACE
   companionObject: null
@@ -11,23 +11,23 @@ KaNamedClassOrObjectSymbol:
   isFun: false
   isInline: false
   isInner: false
+  location: CLASS
   modality: ABSTRACT
   name: MutableEntry
   origin: LIBRARY
   superTypes: [
     KaUsualClassType:
-      annotationsList: []
+      annotations: []
       typeArguments: [
         KaTypeParameterType:
-          annotationsList: []
+          annotations: []
           type: K
         KaTypeParameterType:
-          annotationsList: []
+          annotations: []
           type: V
       ]
       type: kotlin/collections/Map.Entry<K, V>
   ]
-  symbolKind: CLASS_MEMBER
   typeParameters: [
     KaTypeParameterSymbol(K)
     KaTypeParameterSymbol(V)

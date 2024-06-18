@@ -1,8 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     kotlin("jvm")
-    id("jps-compatible")
 }
 
 val composeVersion = "1.7.0-alpha07"
@@ -40,12 +37,15 @@ dependencies {
     testImplementation(projectTests(":analysis:analysis-test-framework"))
     testImplementation(projectTests(":analysis:low-level-api-fir"))
     testImplementation(projectTests(":compiler:test-infrastructure"))
+    testImplementation(projectTests(":generators:analysis-api-generator"))
     testApi(project(":compiler:plugin-api"))
     testImplementation(projectTests(":compiler:tests-common-new"))
 
     testImplementation("androidx.compose.runtime:runtime:$composeVersion")
 
-    testImplementation(toolsJar())
+    testCompileOnly(toolsJarApi())
+    testRuntimeOnly(toolsJar())
+
     testApi(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
@@ -60,12 +60,7 @@ kotlin {
 
 val generationRoot = projectDir.resolve("tests-gen")
 sourceSets {
-    "main" {
-        this.java.srcDirs("src/main/java")
-        this.resources.srcDir("src/main/resources")
-    }
     "test" {
-        this.java.srcDirs("src/test/kotlin")
         this.java.srcDir(generationRoot.name)
     }
 }
@@ -87,6 +82,8 @@ projectTest(parallel = true, jUnitMode = JUnitMode.JUnit5) {
     workingDir = rootDir
     useJUnitPlatform()
 }
+
+val generateTests by generator("androidx.compose.compiler.plugins.kotlin.TestGeneratorKt")
 
 standardPublicJars()
 testsJar()

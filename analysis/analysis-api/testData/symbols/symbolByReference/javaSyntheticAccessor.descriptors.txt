@@ -1,10 +1,10 @@
 KaSyntheticJavaPropertySymbol:
-  annotationsList: []
+  annotations: []
   backingFieldSymbol: null
   callableId: /JavaClass.foo
   contextReceivers: []
   getter: KaPropertyGetterSymbol:
-    annotationsList: []
+    annotations: []
     callableId: /JavaClass.getFoo
     contextReceivers: []
     hasBody: false
@@ -13,14 +13,16 @@ KaSyntheticJavaPropertySymbol:
     isExtension: false
     isInline: false
     isOverride: false
+    location: PROPERTY
     modality: FINAL
     origin: SOURCE_MEMBER_GENERATED
     receiverParameter: KaReceiverParameterSymbol:
-      annotationsList: []
+      annotations: []
+      location: LOCAL
       origin: SOURCE
       owningCallableSymbol: KaSyntheticJavaPropertySymbol(/JavaClass.foo)
       type: KaUsualClassType:
-        annotationsList: []
+        annotations: []
         typeArguments: []
         type: JavaClass
       getContainingFileSymbol: null
@@ -28,10 +30,9 @@ KaSyntheticJavaPropertySymbol:
 
       deprecationStatus: null
     returnType: KaUsualClassType:
-      annotationsList: []
+      annotations: []
       typeArguments: []
       type: kotlin/Int
-    symbolKind: ACCESSOR
     typeParameters: []
     valueParameters: []
     visibility: Public
@@ -53,15 +54,17 @@ KaSyntheticJavaPropertySymbol:
   isVal: true
   javaGetterSymbol: KaFunctionSymbol(/JavaClass.getFoo)
   javaSetterSymbol: null
+  location: CLASS
   modality: FINAL
   name: foo
   origin: JAVA_SYNTHETIC_PROPERTY
   receiverParameter: KaReceiverParameterSymbol:
-    annotationsList: []
+    annotations: []
+    location: LOCAL
     origin: SOURCE
     owningCallableSymbol: KaSyntheticJavaPropertySymbol(/JavaClass.foo)
     type: KaUsualClassType:
-      annotationsList: []
+      annotations: []
       typeArguments: []
       type: JavaClass
     getContainingFileSymbol: null
@@ -69,11 +72,10 @@ KaSyntheticJavaPropertySymbol:
 
     deprecationStatus: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Int
   setter: null
-  symbolKind: CLASS_MEMBER
   typeParameters: []
   visibility: Public
   getContainingFileSymbol: null

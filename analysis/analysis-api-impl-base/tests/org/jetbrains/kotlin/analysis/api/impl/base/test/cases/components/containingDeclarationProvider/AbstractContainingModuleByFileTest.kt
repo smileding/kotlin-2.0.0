@@ -15,8 +15,8 @@ import org.jetbrains.kotlin.test.services.assertions
 abstract class AbstractContainingModuleByFileTest : AbstractAnalysisApiBasedTest() {
     override fun doTestByMainFile(mainFile: KtFile, mainModule: KtTestModule, testServices: TestServices) {
         analyseForTest(mainFile) {
-            val fileSymbol = mainFile.getFileSymbol()
-            val module = fileSymbol.getContainingModule()
+            val fileSymbol = mainFile.symbol
+            val module = fileSymbol.containingModule
 
             val providerModule = ProjectStructureProvider.getModule(mainFile.project, mainFile, contextualModule = null)
             assert(module == providerModule)

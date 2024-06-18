@@ -1,25 +1,26 @@
-KtNameReferenceExpression:
-KaApplicableCallCandidateInfo:
-  candidate = KaSimpleVariableAccessCall:
-    partiallyAppliedSymbol = KaPartiallyAppliedSymbol:
-      dispatchReceiver = KaImplicitReceiverValue:
-        symbol = KaReceiverParameterSymbol:
-          annotationsList: []
-          origin: SOURCE
-          owningCallableSymbol: KaFunctionSymbol(/call)
-          type: KaUsualClassType:
-            annotationsList: []
-            typeArguments: []
-            type: JavaClass
-        type = JavaClass
-      extensionReceiver = null
-      signature = KaVariableLikeSignature:
-        name = foo
-        receiverType = null
-        returnType = kotlin.Int
-        symbol = var foo: kotlin.Int
-        callableId = /JavaClass.foo
-    simpleAccess = Write:
-      value = 42
-    typeArgumentsMapping = {}
-  isInBestCandidates = true
+KtNameReferenceExpression(44,47): 'foo'
+  KaApplicableCallCandidateInfo:
+    candidate = KaSimpleVariableAccessCall:
+      partiallyAppliedSymbol = KaPartiallyAppliedSymbol:
+        dispatchReceiver = KaImplicitReceiverValue:
+          symbol = KaReceiverParameterSymbol:
+            annotations: []
+            location: LOCAL
+            origin: SOURCE
+            owningCallableSymbol: KaFunctionSymbol(/call)
+            type: KaUsualClassType:
+              annotations: []
+              typeArguments: []
+              type: JavaClass
+          type = JavaClass
+        extensionReceiver = null
+        signature = KaVariableLikeSignature:
+          name = foo
+          receiverType = null
+          returnType = kotlin.Int
+          symbol = var foo: kotlin.Int
+          callableId = /JavaClass.foo
+      simpleAccess = Write:
+        value = 42
+      typeArgumentsMapping = {}
+    isInBestCandidates = true

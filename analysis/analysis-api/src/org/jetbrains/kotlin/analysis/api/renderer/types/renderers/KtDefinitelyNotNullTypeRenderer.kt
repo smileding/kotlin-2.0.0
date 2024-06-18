@@ -5,12 +5,13 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.types.renderers
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.renderer.types.KaTypeRenderer
 import org.jetbrains.kotlin.analysis.api.types.KaDefinitelyNotNullType
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 
-
+@KaExperimentalApi
 public interface KaDefinitelyNotNullTypeRenderer {
     public fun renderType(
         analysisSession: KaSession,
@@ -30,11 +31,13 @@ public interface KaDefinitelyNotNullTypeRenderer {
                 printer {
                     typeRenderer.renderType(analysisSession, type.original, printer)
                     printer.append(" & ")
-                    typeRenderer.renderType(analysisSession, builtinTypes.ANY, printer)
+                    typeRenderer.renderType(analysisSession, builtinTypes.any, printer)
                 }
             }
         }
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaDefinitelyNotNullTypeRenderer' instead", ReplaceWith("KaDefinitelyNotNullTypeRenderer"))
 public typealias KtDefinitelyNotNullTypeRenderer = KaDefinitelyNotNullTypeRenderer

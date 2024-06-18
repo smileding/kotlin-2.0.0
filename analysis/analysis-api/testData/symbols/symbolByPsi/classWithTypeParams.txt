@@ -1,9 +1,10 @@
 KaTypeParameterSymbol:
-  annotationsList: [
+  annotations: [
     org/jetbrains/annotations/NotNull()
       psi: KtAnnotationEntry
   ]
   isReified: false
+  location: CLASS
   name: T
   origin: SOURCE
   typeParameters: []
@@ -14,8 +15,9 @@ KaTypeParameterSymbol:
   deprecationStatus: null
 
 KaTypeParameterSymbol:
-  annotationsList: []
+  annotations: []
   isReified: false
+  location: CLASS
   name: R
   origin: SOURCE
   typeParameters: []
@@ -26,7 +28,7 @@ KaTypeParameterSymbol:
   deprecationStatus: null
 
 KaNamedClassOrObjectSymbol:
-  annotationsList: []
+  annotations: []
   classId: A
   classKind: CLASS
   companionObject: null
@@ -38,16 +40,16 @@ KaNamedClassOrObjectSymbol:
   isFun: false
   isInline: false
   isInner: false
+  location: TOP_LEVEL
   modality: FINAL
   name: A
   origin: SOURCE
   superTypes: [
     KaUsualClassType:
-      annotationsList: []
+      annotations: []
       typeArguments: []
       type: kotlin/Any
   ]
-  symbolKind: TOP_LEVEL
   typeParameters: [
     KaTypeParameterSymbol(T)
     KaTypeParameterSymbol(R)

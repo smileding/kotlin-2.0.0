@@ -1,13 +1,15 @@
 packages: 2
   KaPackageSymbol:
     fqName: rex1
+    location: TOP_LEVEL
     origin: SOURCE
   KaPackageSymbol:
     fqName: rex2
+    location: TOP_LEVEL
     origin: SOURCE
 classifiers: 2
   KaNamedClassOrObjectSymbol:
-    annotationsList: []
+    annotations: []
     classId: rex1/RexClass1
     classKind: INTERFACE
     companionObject: null
@@ -19,16 +21,16 @@ classifiers: 2
     isFun: false
     isInline: false
     isInner: false
+    location: TOP_LEVEL
     modality: ABSTRACT
     name: RexClass1
     origin: SOURCE
     superTypes: [
       KaUsualClassType:
-        annotationsList: []
+        annotations: []
         typeArguments: []
         type: kotlin/Any
     ]
-    symbolKind: TOP_LEVEL
     typeParameters: []
     visibility: Public
     PSI: KtClass RexClass1 [from rex1.kt]
@@ -36,7 +38,7 @@ classifiers: 2
       Resolve extension navigation targets: 1
         [Resolve extension navigation target for test for KtClass RexClass1]
   KaNamedClassOrObjectSymbol:
-    annotationsList: []
+    annotations: []
     classId: rex2/RexClass2
     classKind: INTERFACE
     companionObject: null
@@ -48,16 +50,16 @@ classifiers: 2
     isFun: false
     isInline: false
     isInner: false
+    location: TOP_LEVEL
     modality: ABSTRACT
     name: RexClass2
     origin: SOURCE
     superTypes: [
       KaUsualClassType:
-        annotationsList: []
+        annotations: []
         typeArguments: []
         type: kotlin/Any
     ]
-    symbolKind: TOP_LEVEL
     typeParameters: []
     visibility: Public
     PSI: KtClass RexClass2 [from rex2.kt]
@@ -66,7 +68,7 @@ classifiers: 2
         [Resolve extension navigation target for test for KtClass RexClass2]
 callables: 2
   KaFunctionSymbol:
-    annotationsList: []
+    annotations: []
     callableId: rex1/rexCallable1
     contextReceivers: []
     contractEffects: []
@@ -83,15 +85,15 @@ callables: 2
     isStatic: false
     isSuspend: false
     isTailRec: false
+    location: TOP_LEVEL
     modality: FINAL
     name: rexCallable1
     origin: SOURCE
     receiverParameter: null
     returnType: KaUsualClassType:
-      annotationsList: []
+      annotations: []
       typeArguments: []
       type: kotlin/Any
-    symbolKind: TOP_LEVEL
     typeParameters: []
     valueParameters: []
     visibility: Public
@@ -100,7 +102,7 @@ callables: 2
       Resolve extension navigation targets: 1
         [Resolve extension navigation target for test for KtNamedFunction rexCallable1]
   KaFunctionSymbol:
-    annotationsList: []
+    annotations: []
     callableId: rex2/rexCallable2
     contextReceivers: []
     contractEffects: []
@@ -117,15 +119,15 @@ callables: 2
     isStatic: false
     isSuspend: false
     isTailRec: false
+    location: TOP_LEVEL
     modality: FINAL
     name: rexCallable2
     origin: SOURCE
     receiverParameter: null
     returnType: KaUsualClassType:
-      annotationsList: []
+      annotations: []
       typeArguments: []
       type: kotlin/Any
-    symbolKind: TOP_LEVEL
     typeParameters: []
     valueParameters: []
     visibility: Public

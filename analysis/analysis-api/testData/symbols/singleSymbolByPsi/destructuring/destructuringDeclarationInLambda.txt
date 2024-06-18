@@ -1,11 +1,11 @@
 KaDestructuringDeclarationSymbol:
-  annotationsList: []
+  annotations: []
   entries: [
     KaLocalVariableSymbol(<local>/a)
     KaLocalVariableSymbol(<local>/b)
   ]
+  location: LOCAL
   origin: SOURCE
-  symbolKind: LOCAL
   typeParameters: []
   getContainingFileSymbol: KaFileSymbol(destructuringDeclarationInLambda.kt)
   getContainingModule: KtSourceModule "Sources of main"

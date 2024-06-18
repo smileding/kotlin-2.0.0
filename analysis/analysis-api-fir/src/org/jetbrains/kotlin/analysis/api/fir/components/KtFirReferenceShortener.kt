@@ -16,7 +16,8 @@ import org.jetbrains.kotlin.analysis.api.fir.isImplicitDispatchReceiver
 import org.jetbrains.kotlin.analysis.api.fir.references.KDocReferenceResolver
 import org.jetbrains.kotlin.analysis.api.fir.utils.computeImportableName
 import org.jetbrains.kotlin.analysis.api.fir.utils.firSymbol
-import org.jetbrains.kotlin.analysis.api.lifetime.KaLifetimeToken
+import org.jetbrains.kotlin.analysis.api.impl.base.components.KaSessionComponent
+import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
 import org.jetbrains.kotlin.analysis.api.symbols.KaCallableSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassLikeSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaSymbol
@@ -66,19 +67,32 @@ import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
 
 internal class KaFirReferenceShortener(
-    override val analysisSession: KaFirSession,
-    override val token: KaLifetimeToken,
-    override val firResolveSession: LLFirResolveSession,
-) : KaReferenceShortener(), KaFirSessionComponent {
-    private val context = FirShorteningContext(analysisSession)
+    override val analysisSessionProvider: () -> KaFirSession
+) : KaSessionComponent<KaFirSession>(), KaReferenceShortener, KaFirSessionComponent {
+    private val context by lazy { FirShorteningContext(analysisSession) }
 
-    override fun collectShortenings(
+    override fun collectPossibleReferenceShorteningsInElement(
+        element: KtElement,
+        shortenOptions: ShortenOptions,
+        classShortenStrategy: (KaClassLikeSymbol) -> ShortenStrategy,
+        callableShortenStrategy: (KaCallableSymbol) -> ShortenStrategy
+    ): ShortenCommand = withValidityAssertion {
+        collectPossibleReferenceShortenings(
+            element.containingKtFile,
+            element.textRange,
+            shortenOptions,
+            classShortenStrategy,
+            callableShortenStrategy
+        )
+    }
+
+    override fun collectPossibleReferenceShortenings(
         file: KtFile,
         selection: TextRange,
         shortenOptions: ShortenOptions,
         classShortenStrategy: (KaClassLikeSymbol) -> ShortenStrategy,
         callableShortenStrategy: (KaCallableSymbol) -> ShortenStrategy
-    ): ShortenCommand {
+    ): ShortenCommand = withValidityAssertion {
         require(!file.isCompiled) { "No sense to collect references for shortening in compiled file $file" }
 
         val declarationToVisit = file.findSmallestElementOfTypeContainingSelection<KtDeclaration>(selection)
@@ -523,7 +537,7 @@ private class ElementsToShortenCollector(
         val typeElement = resolvedTypeRef.correspondingTypePsi ?: return
         if (typeElement.qualifier == null) return
 
-        val classifierId = resolvedTypeRef.type.lowerBoundIfFlexible().candidateClassId ?: return
+        val classifierId = resolvedTypeRef.type.abbreviatedTypeOrSelf.lowerBoundIfFlexible().candidateClassId ?: return
 
         findClassifierQualifierToShorten(classifierId, typeElement)?.let(::addElementToShorten)
     }
@@ -1035,7 +1049,7 @@ private class ElementsToShortenCollector(
                 calleeReference = fakeCalleeReference
             }
         }
-        val candidates = AllCandidatesResolver(shorteningContext.analysisSession.useSiteSession).getAllCandidates(
+        val candidates = AllCandidatesResolver(shorteningContext.analysisSession.firSession).getAllCandidates(
             firResolveSession, fakeFirQualifiedAccess, name, expressionInScope, ResolutionMode.ContextIndependent,
         )
         return candidates.filter { overloadCandidate ->
@@ -1059,7 +1073,7 @@ private class ElementsToShortenCollector(
             this.typeArguments.addAll(typeArguments)
             calleeReference = fakeCalleeReference
         }
-        val candidates = AllCandidatesResolver(shorteningContext.analysisSession.useSiteSession).getAllCandidates(
+        val candidates = AllCandidatesResolver(shorteningContext.analysisSession.firSession).getAllCandidates(
             firResolveSession, fakeFirQualifiedAccess, name, elementInScope, ResolutionMode.ContextIndependent,
         )
         return candidates.filter { overloadCandidate ->
@@ -1529,7 +1543,7 @@ private class KDocQualifiersToShortenCollector(
             val owner = kDocName.getContainingDoc().owner
 
             val contextElement = owner ?: kDocName.containingKtFile
-            KDocReferenceResolver.resolveKdocFqName(analysisSession, shortFqName, shortFqName, contextElement)
+            KDocReferenceResolver.resolveKdocFqName(useSiteSession, shortFqName, shortFqName, contextElement)
         }
 
         resolvedSymbols.firstIsInstanceOrNull<KaCallableSymbol>()?.firSymbol?.let { availableCallable ->

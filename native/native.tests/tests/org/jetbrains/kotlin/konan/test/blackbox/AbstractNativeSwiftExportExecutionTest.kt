@@ -29,11 +29,11 @@ abstract class AbstractNativeSwiftExportExecutionTest : AbstractNativeSwiftExpor
         testPathFull: File,
         testCase: TestCase,
         swiftExportOutput: SwiftExportModule,
-        swiftModule: TestCompilationArtifact.Swift.Module,
+        swiftModules: Set<TestCompilationArtifact.Swift.Module>,
     ) {
         val swiftTestFiles = testPathFull.walk().filter { it.extension == "swift" }.map { testPathFull.resolve(it) }.toList()
         val testExecutable =
-            compileTestExecutable(testPathFull.name, swiftTestFiles, swiftModule.rootDir, swiftModule.moduleName, swiftModule.modulemap)
+            compileTestExecutable(testPathFull.name, swiftTestFiles, swiftModules = swiftModules)
         runExecutableAndVerify(testCase, testExecutable)
     }
 
@@ -43,10 +43,8 @@ abstract class AbstractNativeSwiftExportExecutionTest : AbstractNativeSwiftExpor
         testRunner.run()
     }
 
-    override fun constructSwiftExportConfig(
-        testPathFull: File,
-    ): SwiftExportConfig {
-        val exportResultsPath = buildDir(testPathFull.name).toPath().resolve("swift_export_results")
+    override fun constructSwiftExportConfig(module: TestModule.Exclusive): SwiftExportConfig {
+        val exportResultsPath = buildDir(module.name).toPath().resolve("swift_export_results")
         return SwiftExportConfig(
             settings = mapOf(
                 SwiftExportConfig.BRIDGE_MODULE_NAME to SwiftExportConfig.DEFAULT_BRIDGE_MODULE_NAME,
@@ -60,17 +58,15 @@ abstract class AbstractNativeSwiftExportExecutionTest : AbstractNativeSwiftExpor
     private fun compileTestExecutable(
         testName: String,
         testSources: List<File>,
-        swiftModuleDir: File,
-        binaryLibraryName: String,
-        moduleMap: File,
+        swiftModules: Set<TestCompilationArtifact.Swift.Module>,
     ): TestExecutable {
-        val swiftExtraOpts = listOf(
-            "-I", swiftModuleDir.absolutePath,
-            "-L", swiftModuleDir.absolutePath,
-            "-l$binaryLibraryName",
-            "-Xcc", "-fmodule-map-file=${moduleMap.absolutePath}",
-            "-Xcc", "-fmodule-map-file=${Distribution(KotlinNativePaths.homePath.absolutePath).kotlinRuntimeForSwiftModuleMap}",
-        )
+        val swiftExtraOpts = swiftModules.flatMap {
+            listOf(
+                "-I", it.rootDir.absolutePath,
+                "-L", it.rootDir.absolutePath,
+                "-l${it.moduleName}",
+            ) + (it.modulemap?.let { listOf("-Xcc", "-fmodule-map-file=${it.absolutePath}") } ?: emptyList())
+        } + listOf("-Xcc", "-fmodule-map-file=${Distribution(KotlinNativePaths.homePath.absolutePath).kotlinRuntimeForSwiftModuleMap}")
         val provider = createTestProvider(buildDir(testName), testSources)
         val success = SwiftCompilation(
             testRunSettings,

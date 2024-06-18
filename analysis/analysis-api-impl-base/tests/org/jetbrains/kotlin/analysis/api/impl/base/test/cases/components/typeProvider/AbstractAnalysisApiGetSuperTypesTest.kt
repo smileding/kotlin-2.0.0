@@ -25,11 +25,11 @@ abstract class AbstractAnalysisApiGetSuperTypesTest : AbstractAnalysisApiBasedTe
 
         val actual = executeOnPooledThreadInReadAction {
             analyze(expression) {
-                val expectedType = expression.getKtType() ?: error("expect to get type of expression '${expression.text}'")
-                val directSuperTypes = expectedType.getDirectSuperTypes()
-                val approximatedDirectSuperTypes = expectedType.getDirectSuperTypes(shouldApproximate = true)
-                val allSuperTypes = expectedType.getAllSuperTypes()
-                val approximatedAllSuperTypes = expectedType.getAllSuperTypes(shouldApproximate = true)
+                val expectedType = expression.expressionType ?: error("expect to get type of expression '${expression.text}'")
+                val directSuperTypes = expectedType.directSupertypes.toList()
+                val approximatedDirectSuperTypes = expectedType.directSupertypes(shouldApproximate = true).toList()
+                val allSuperTypes = expectedType.allSupertypes.toList()
+                val approximatedAllSuperTypes = expectedType.allSupertypes(shouldApproximate = true).toList()
 
                 buildString {
                     fun List<KaType>.print(name: String) {

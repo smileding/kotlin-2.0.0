@@ -20,7 +20,7 @@ class GetAllClassOrObjectSymbolsTest(
     fun `test - no classifiers in file`() {
         val file = inlineSourceCodeAnalysis.createKtFile("val foo = 42")
         analyze(file) {
-            assertEquals(emptyList(), file.getFileSymbol().getAllClassOrObjectSymbols())
+            assertEquals(emptyList(), file.symbol.getAllClassOrObjectSymbols())
         }
     }
 
@@ -28,7 +28,7 @@ class GetAllClassOrObjectSymbolsTest(
     fun `test - single class in file`() {
         val file = inlineSourceCodeAnalysis.createKtFile("class Foo")
         analyze(file) {
-            assertEquals(listOf(file.getClassOrFail("Foo")), file.getFileSymbol().getAllClassOrObjectSymbols())
+            assertEquals(listOf(file.getClassOrFail("Foo")), file.symbol.getAllClassOrObjectSymbols())
         }
     }
 
@@ -52,13 +52,13 @@ class GetAllClassOrObjectSymbolsTest(
             assertEquals(
                 listOf(
                     file.getClassOrFail("A"),
-                    file.getClassOrFail("A").getMemberScope().getClassOrFail("B"),
-                    file.getClassOrFail("A").getMemberScope().getClassOrFail("B").getMemberScope().getClassOrFail("C"),
+                    file.getClassOrFail("A").memberScope.getClassOrFail("B"),
+                    file.getClassOrFail("A").memberScope.getClassOrFail("B").memberScope.getClassOrFail("C"),
 
                     file.getClassOrFail("D"),
-                    file.getClassOrFail("D").getMemberScope().getClassOrFail("E")
+                    file.getClassOrFail("D").memberScope.getClassOrFail("E")
                 ),
-                file.getFileSymbol().getAllClassOrObjectSymbols()
+                file.symbol.getAllClassOrObjectSymbols()
             )
         }
     }

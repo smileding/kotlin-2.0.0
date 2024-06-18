@@ -9,10 +9,9 @@ import com.intellij.psi.*
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.mutate
 import org.jetbrains.kotlin.analysis.api.KaSession
-import org.jetbrains.kotlin.analysis.api.annotations.hasAnnotation
 import org.jetbrains.kotlin.analysis.api.symbols.KaFunctionSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaNamedClassOrObjectSymbol
-import org.jetbrains.kotlin.analysis.api.types.KaNonErrorClassType
+import org.jetbrains.kotlin.analysis.api.types.KaClassType
 import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.analysis.api.types.KaTypeMappingMode
 import org.jetbrains.kotlin.analysis.api.types.KaTypeNullability
@@ -118,13 +117,13 @@ internal class SymbolLightSimpleMethod(
 
         PsiModifier.STRICTFP -> {
             ifInlineOnly { return null }
-            val hasAnnotation = withFunctionSymbol { it.hasAnnotation(STRICTFP_ANNOTATION_CLASS_ID) }
+            val hasAnnotation = withFunctionSymbol { STRICTFP_ANNOTATION_CLASS_ID in it.annotations }
             mapOf(modifier to hasAnnotation)
         }
 
         PsiModifier.SYNCHRONIZED -> {
             ifInlineOnly { return null }
-            val hasAnnotation = withFunctionSymbol { it.hasAnnotation(SYNCHRONIZED_ANNOTATION_CLASS_ID) }
+            val hasAnnotation = withFunctionSymbol { SYNCHRONIZED_ANNOTATION_CLASS_ID in it.annotations }
             mapOf(modifier to hasAnnotation)
         }
 
@@ -199,26 +198,26 @@ internal class SymbolLightSimpleMethod(
         if (functionSymbol.isBuiltinFunctionInvoke && isInlineClassType(returnType))
             return true
 
-        return returnType.isPrimitive &&
-                functionSymbol.getAllOverriddenSymbols().any { overriddenSymbol ->
-                    !overriddenSymbol.returnType.isPrimitive
+        return returnType.isPrimitiveBacked &&
+                functionSymbol.allOverriddenSymbols.any { overriddenSymbol ->
+                    !overriddenSymbol.returnType.isPrimitiveBacked
                 }
     }
 
     @Suppress("UnusedReceiverParameter")
     private fun KaSession.isInlineClassType(type: KaType): Boolean {
-        return ((type as? KaNonErrorClassType)?.symbol as? KaNamedClassOrObjectSymbol)?.isInline == true
+        return ((type as? KaClassType)?.symbol as? KaNamedClassOrObjectSymbol)?.isInline == true
     }
 
     private fun KaSession.isVoidType(type: KaType): Boolean {
         val expandedType = type.fullyExpandedType
-        return expandedType.isUnit && expandedType.nullability != KaTypeNullability.NULLABLE
+        return expandedType.isUnitType && expandedType.nullability != KaTypeNullability.NULLABLE
     }
 
     private val _returnedType: PsiType by lazyPub {
         withFunctionSymbol { functionSymbol ->
             val ktType = if (functionSymbol.isSuspend) {
-                analysisSession.builtinTypes.NULLABLE_ANY // Any?
+                useSiteSession.builtinTypes.nullableAny // Any?
             } else {
                 functionSymbol.returnType.takeUnless { isVoidType(it) } ?: return@withFunctionSymbol PsiTypes.voidType()
             }

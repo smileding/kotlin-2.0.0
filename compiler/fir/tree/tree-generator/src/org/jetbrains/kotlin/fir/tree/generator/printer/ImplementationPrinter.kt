@@ -293,7 +293,7 @@ internal class ImplementationPrinter(
             for (field in allFields.filter { it.withReplace }) {
                 val capitalizedFieldName = field.name.replaceFirstChar(Char::uppercaseChar)
                 val newValue = "new$capitalizedFieldName"
-                generateReplace(field, forceNullable = field.useNullableForReplace) {
+                generateReplace(field, forceNullable = field.receiveNullableTypeInReplace) {
                     when {
                         field.implementationDefaultStrategy!!.withGetter -> {}
 
@@ -304,7 +304,7 @@ internal class ImplementationPrinter(
                         }
 
                         else -> {
-                            if (field.useNullableForReplace) {
+                            if (field.receiveNullableTypeInReplace && !field.typeRef.nullable) {
                                 println("require($newValue != null)")
                             }
                             print("${field.name} = $newValue")
@@ -317,8 +317,10 @@ internal class ImplementationPrinter(
                     }
                 }
 
-                for (overridenType in field.overriddenTypes) {
-                    generateReplace(field, overridenType) {
+                val additionalOverriddenTypes =
+                    field.overriddenFields.map { it.typeRef.copy(nullable = false) }.toSet() - field.typeRef.copy(nullable = false)
+                for (overriddenType in additionalOverriddenTypes) {
+                    generateReplace(field, overriddenType) {
                         println("require($newValue is ${field.typeRef.render()})")
                         println("replace$capitalizedFieldName($newValue)")
                     }

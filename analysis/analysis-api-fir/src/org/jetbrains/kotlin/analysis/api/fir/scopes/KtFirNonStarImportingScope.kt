@@ -5,10 +5,10 @@
 
 package org.jetbrains.kotlin.analysis.api.fir.scopes
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.fir.KaSymbolByFirBuilder
 import org.jetbrains.kotlin.analysis.api.fir.utils.cached
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
-import org.jetbrains.kotlin.analysis.api.scopes.KaScopeNameFilter
 import org.jetbrains.kotlin.analysis.api.symbols.KaConstructorSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaPackageSymbol
 import org.jetbrains.kotlin.fir.resolve.providers.symbolProvider
@@ -20,7 +20,6 @@ internal class KaFirNonStarImportingScope(
     firScope: FirAbstractSimpleImportingScope,
     builder: KaSymbolByFirBuilder,
 ) : KaFirBasedScope<FirAbstractSimpleImportingScope>(firScope, builder) {
-
     private val imports: List<NonStarImport> by cached {
         buildList {
             firScope.simpleImports.values.forEach { imports ->
@@ -42,16 +41,20 @@ internal class KaFirNonStarImportingScope(
         }
     }
 
-    override fun getPackageSymbols(nameFilter: KaScopeNameFilter): Sequence<KaPackageSymbol> = withValidityAssertion {
+    @KaExperimentalApi
+    override fun getPackageSymbols(nameFilter: (Name) -> Boolean): Sequence<KaPackageSymbol> = withValidityAssertion {
         emptySequence()
     }
 
-    override fun getConstructors(): Sequence<KaConstructorSymbol> = withValidityAssertion { emptySequence() }
+    override val constructors: Sequence<KaConstructorSymbol>
+        get() = withValidityAssertion { emptySequence() }
 
+    @KaExperimentalApi
     override fun getPossibleCallableNames(): Set<Name> = withValidityAssertion {
         imports.flatMapTo(hashSetOf()) { listOfNotNull(it.callableName, it.aliasName) }
     }
 
+    @KaExperimentalApi
     override fun getPossibleClassifierNames(): Set<Name> = withValidityAssertion {
         imports.flatMapTo((hashSetOf())) { listOfNotNull(it.relativeClassName?.shortName(), it.aliasName) }
     }

@@ -37,22 +37,23 @@ public class SirTypeProviderImpl(
     private fun buildSirNominalType(ktType: KaType, ktAnalysisSession: KaSession): SirType {
         fun buildPrimitiveType(ktType: KaType): SirType? = with(ktAnalysisSession) {
             when {
-                ktType.isUnit -> SirSwiftModule.void
+                ktType.isUnitType -> SirSwiftModule.void
 
-                ktType.isByte -> SirSwiftModule.int8
-                ktType.isShort -> SirSwiftModule.int16
-                ktType.isInt -> SirSwiftModule.int32
-                ktType.isLong -> SirSwiftModule.int64
+                ktType.isByteType -> SirSwiftModule.int8
+                ktType.isShortType -> SirSwiftModule.int16
+                ktType.isIntType -> SirSwiftModule.int32
+                ktType.isLongType -> SirSwiftModule.int64
 
-                ktType.isUByte -> SirSwiftModule.uint8
-                ktType.isUShort -> SirSwiftModule.uint16
-                ktType.isUInt -> SirSwiftModule.uint32
-                ktType.isULong -> SirSwiftModule.uint64
+                ktType.isUByteType -> SirSwiftModule.uint8
+                ktType.isUShortType -> SirSwiftModule.uint16
+                ktType.isUIntType -> SirSwiftModule.uint32
+                ktType.isULongType -> SirSwiftModule.uint64
 
-                ktType.isBoolean -> SirSwiftModule.bool
+                ktType.isBooleanType -> SirSwiftModule.bool
 
-                ktType.isDouble -> SirSwiftModule.double
-                ktType.isFloat -> SirSwiftModule.float
+                ktType.isDoubleType -> SirSwiftModule.double
+                ktType.isFloatType -> SirSwiftModule.float
+                ktType.isNothingType -> SirSwiftModule.never
                 else -> null
             }?.let { primitiveType ->
                 SirNominalType(primitiveType)
@@ -73,7 +74,7 @@ public class SirTypeProviderImpl(
                     else -> SirUnsupportedType()
                 }
             }
-            is KaFunctionalType,
+            is KaFunctionType,
             is KaTypeParameterType,
             -> SirUnsupportedType()
             is KaErrorType -> SirErrorType(ktType.errorMessage)
@@ -106,7 +107,7 @@ public class SirTypeProviderImpl(
             when (val origin = type.origin) {
                 is KotlinSource -> {
                     val ktModule = with(ktAnalysisSession) {
-                        origin.symbol.getContainingModule()
+                        origin.symbol.containingModule
                     }
                     val sirModule = with(sirSession) {
                         ktModule.sirModule()

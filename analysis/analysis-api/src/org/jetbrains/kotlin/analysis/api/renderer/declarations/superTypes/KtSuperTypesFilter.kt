@@ -5,27 +5,29 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.superTypes
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassKind
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassOrObjectSymbol
 import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.name.StandardClassIds
 
+@KaExperimentalApi
 public fun interface KaSuperTypesFilter {
     public fun filter(analysisSession: KaSession, superType: KaType, symbol: KaClassOrObjectSymbol): Boolean
 
     public object NO_DEFAULT_TYPES : KaSuperTypesFilter {
         override fun filter(analysisSession: KaSession, superType: KaType, symbol: KaClassOrObjectSymbol): Boolean {
             with(analysisSession) {
-                if (superType.isAny) {
+                if (superType.isAnyType) {
                     return false
                 }
 
-                if (symbol.classKind == KaClassKind.ANNOTATION_CLASS && superType.isClassTypeWithClassId(StandardClassIds.Annotation)) {
+                if (symbol.classKind == KaClassKind.ANNOTATION_CLASS && superType.isClassType(StandardClassIds.Annotation)) {
                     return false
                 }
 
-                if (symbol.classKind == KaClassKind.ENUM_CLASS && superType.isClassTypeWithClassId(StandardClassIds.Enum)) {
+                if (symbol.classKind == KaClassKind.ENUM_CLASS && superType.isClassType(StandardClassIds.Enum)) {
                     return false
                 }
 
@@ -38,7 +40,7 @@ public fun interface KaSuperTypesFilter {
         override fun filter(analysisSession: KaSession, superType: KaType, symbol: KaClassOrObjectSymbol): Boolean {
             with(analysisSession) {
                 return when (symbol.classKind) {
-                    KaClassKind.INTERFACE -> !superType.isAny
+                    KaClassKind.INTERFACE -> !superType.isAnyType
                     else -> true
                 }
             }
@@ -64,4 +66,6 @@ public fun interface KaSuperTypesFilter {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaSuperTypesFilter' instead", ReplaceWith("KaSuperTypesFilter"))
 public typealias KtSuperTypesFilter = KaSuperTypesFilter

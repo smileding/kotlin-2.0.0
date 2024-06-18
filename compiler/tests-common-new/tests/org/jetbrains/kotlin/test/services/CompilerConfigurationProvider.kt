@@ -25,7 +25,9 @@ import org.jetbrains.kotlin.platform.isWasm
 import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.platform.konan.isNative
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.test.TargetBackend
 import org.jetbrains.kotlin.test.TestInfrastructureInternals
+import org.jetbrains.kotlin.test.directives.CodegenTestDirectives
 import org.jetbrains.kotlin.test.directives.JsEnvironmentConfigurationDirectives
 import org.jetbrains.kotlin.test.model.FrontendKinds
 import org.jetbrains.kotlin.test.model.TestModule
@@ -139,6 +141,13 @@ fun createCompilerConfiguration(module: TestModule, configurators: List<Abstract
     if (module.frontendKind == FrontendKinds.FIR) {
         configuration[CommonConfigurationKeys.USE_FIR] = true
     }
+
+    configuration.put(CommonConfigurationKeys.VERIFY_IR, IrVerificationMode.ERROR)
+    configuration.put(
+        CommonConfigurationKeys.ENABLE_IR_VISIBILITY_CHECKS,
+        module.targetBackend !in module.directives[CodegenTestDirectives.DISABLE_IR_VISIBILITY_CHECKS] &&
+                TargetBackend.ANY !in module.directives[CodegenTestDirectives.DISABLE_IR_VISIBILITY_CHECKS],
+    )
 
     val messageCollector = PrintingMessageCollector(System.err, CompilerTestMessageRenderer(module), /*verbose=*/false)
     configuration.messageCollector = messageCollector

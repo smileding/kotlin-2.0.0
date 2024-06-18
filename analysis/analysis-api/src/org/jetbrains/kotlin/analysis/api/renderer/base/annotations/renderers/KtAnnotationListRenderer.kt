@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.base.annotations.renderers
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.annotations.KaAnnotated
 import org.jetbrains.kotlin.analysis.api.annotations.annotations
@@ -13,6 +14,7 @@ import org.jetbrains.kotlin.analysis.api.symbols.KaDeclarationSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaValueParameterSymbol
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 
+@KaExperimentalApi
 public interface KaAnnotationListRenderer {
     public fun renderAnnotations(
         analysisSession: KaSession,
@@ -55,4 +57,6 @@ public interface KaAnnotationListRenderer {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaAnnotationListRenderer' instead", ReplaceWith("KaAnnotationListRenderer"))
 public typealias KtAnnotationListRenderer = KaAnnotationListRenderer

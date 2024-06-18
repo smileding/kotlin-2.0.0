@@ -5,17 +5,19 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.bodies
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.*
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KaSymbolWithMembers
 
+@KaExperimentalApi
 public interface KaRendererBodyMemberScopeProvider {
     public fun getMemberScope(analysisSession: KaSession, symbol: KaSymbolWithMembers): List<KaDeclarationSymbol>
 
     public object ALL : KaRendererBodyMemberScopeProvider {
         override fun getMemberScope(analysisSession: KaSession, symbol: KaSymbolWithMembers): List<KaDeclarationSymbol> {
             with(analysisSession) {
-                return symbol.getCombinedDeclaredMemberScope().getAllSymbols().toList()
+                return symbol.combinedDeclaredMemberScope.declarations.toList()
             }
         }
     }
@@ -23,7 +25,7 @@ public interface KaRendererBodyMemberScopeProvider {
     public object ALL_DECLARED : KaRendererBodyMemberScopeProvider {
         override fun getMemberScope(analysisSession: KaSession, symbol: KaSymbolWithMembers): List<KaDeclarationSymbol> {
             with(analysisSession) {
-                return symbol.getCombinedDeclaredMemberScope().getAllSymbols()
+                return symbol.combinedDeclaredMemberScope.declarations
                     .filter { member ->
                         val origin = member.origin
                         origin != KaSymbolOrigin.DELEGATED &&
@@ -47,4 +49,6 @@ public interface KaRendererBodyMemberScopeProvider {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaRendererBodyMemberScopeProvider'", ReplaceWith("KaRendererBodyMemberScopeProvider"))
 public typealias KtRendererBodyMemberScopeProvider = KaRendererBodyMemberScopeProvider

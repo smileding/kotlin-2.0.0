@@ -5,11 +5,13 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.bodies
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.KaDeclarationSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaEnumEntrySymbol
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KaSymbolWithMembers
 
+@KaExperimentalApi
 public interface KaRendererBodyMemberScopeSorter {
     public fun sortMembers(
         analysisSession: KaSession,
@@ -28,4 +30,6 @@ public interface KaRendererBodyMemberScopeSorter {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaRendererBodyMemberScopeSorter' instead", ReplaceWith("KaRendererBodyMemberScopeSorter"))
 public typealias KtRendererBodyMemberScopeSorter = KaRendererBodyMemberScopeSorter

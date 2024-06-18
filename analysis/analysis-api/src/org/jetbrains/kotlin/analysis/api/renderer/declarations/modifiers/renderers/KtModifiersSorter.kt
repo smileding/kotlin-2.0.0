@@ -5,11 +5,13 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.renderers
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.KaDeclarationSymbol
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.psi.addRemoveModifier.sortModifiers
 
+@KaExperimentalApi
 public interface KaModifiersSorter {
     public fun sort(
         analysisSession: KaSession,
@@ -28,4 +30,6 @@ public interface KaModifiersSorter {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaModifiersSorter' instead", ReplaceWith("KaModifiersSorter"))
 public typealias KtModifiersSorter = KaModifiersSorter

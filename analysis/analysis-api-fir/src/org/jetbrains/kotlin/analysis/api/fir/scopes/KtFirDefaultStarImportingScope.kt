@@ -5,9 +5,9 @@
 
 package org.jetbrains.kotlin.analysis.api.fir.scopes
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.fir.KaFirSession
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
-import org.jetbrains.kotlin.analysis.api.scopes.KaScopeNameFilter
 import org.jetbrains.kotlin.analysis.api.symbols.KaConstructorSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaPackageSymbol
 import org.jetbrains.kotlin.fir.scopes.impl.FirDefaultStarImportingScope
@@ -21,17 +21,21 @@ internal class KaFirDefaultStarImportingScope(
     private val firstWrappedScope = KaFirStarImportingScope(firScope.first, analysisSession)
     private val secondWrappedScope = KaFirStarImportingScope(firScope.second, analysisSession)
 
-    override fun getPackageSymbols(nameFilter: KaScopeNameFilter): Sequence<KaPackageSymbol> = withValidityAssertion {
+    @KaExperimentalApi
+    override fun getPackageSymbols(nameFilter: (Name) -> Boolean): Sequence<KaPackageSymbol> = withValidityAssertion {
         emptySequence()
     }
 
-    override fun getConstructors(): Sequence<KaConstructorSymbol> = withValidityAssertion { emptySequence() }
+    override val constructors: Sequence<KaConstructorSymbol>
+        get() = withValidityAssertion { emptySequence() }
 
+    @KaExperimentalApi
     override fun getPossibleCallableNames(): Set<Name> = buildSet {
         addAll(firstWrappedScope.getPossibleCallableNames())
         addAll(secondWrappedScope.getPossibleCallableNames())
     }
 
+    @KaExperimentalApi
     override fun getPossibleClassifierNames(): Set<Name> = buildSet {
         addAll(firstWrappedScope.getPossibleClassifierNames())
         addAll(secondWrappedScope.getPossibleClassifierNames())

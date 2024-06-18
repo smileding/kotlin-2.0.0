@@ -1,14 +1,15 @@
 KaBackingFieldSymbol:
-  annotationsList: []
+  annotations: []
   callableId: null
   contextReceivers: []
   isExtension: false
+  location: PROPERTY
   name: field
   origin: PROPERTY_BACKING_FIELD
   owningProperty: KaKotlinPropertySymbol(/foo)
   receiverParameter: null
   returnType: KaUsualClassType:
-    annotationsList: [
+    annotations: [
       Anno3()
         psi: KtAnnotationEntry
       Anno2()
@@ -18,7 +19,6 @@ KaBackingFieldSymbol:
     ]
     typeArguments: []
     type: @R|Anno3|() @R|Anno2|() @R|Anno1|()  @R|Anno3|()  SecondTypeAlias
-  symbolKind: LOCAL
   typeParameters: []
   getContainingFileSymbol: KaFileSymbol(typeAnnotationOnBackingField.kt)
   getContainingJvmClassName: TypeAnnotationOnBackingFieldKt

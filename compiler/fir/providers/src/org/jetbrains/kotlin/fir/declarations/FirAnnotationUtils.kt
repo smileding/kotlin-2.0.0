@@ -5,7 +5,6 @@
 
 package org.jetbrains.kotlin.fir.declarations
 
-import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.fir.FirAnnotationContainer
 import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.FirEvaluatorResult
@@ -103,14 +102,8 @@ fun FirAnnotationContainer.getAnnotationByClassId(classId: ClassId, session: Fir
     return annotations.getAnnotationByClassId(classId, session)
 }
 
-/**
- * Returns the first annotation with the matching [classId], but if there are
- * multiple matching annotations, some of which are Java annotations mapped to
- * Kotlin counterparts and some are already Kotlin ones, then the function
- * returns the first Kotlin matching annotation.
- */
 fun List<FirAnnotation>.getAnnotationByClassId(classId: ClassId, session: FirSession): FirAnnotation? {
-    return getAnnotationsByClassId(classId, session).firstOrNullButPrioritizeKotlin()
+    return getAnnotationsByClassId(classId, session).firstOrNull()
 }
 
 fun FirAnnotationContainer.getAnnotationsByClassId(classId: ClassId, session: FirSession): List<FirAnnotation> =
@@ -118,40 +111,26 @@ fun FirAnnotationContainer.getAnnotationsByClassId(classId: ClassId, session: Fi
 
 fun List<FirAnnotation>.getAnnotationsByClassId(classId: ClassId, session: FirSession): List<FirAnnotation> {
     return filter {
-        it.annotationTypeRef.coneTypeSafe<ConeClassLikeType>()?.fullyExpandedType(session)?.lookupTag?.classId == classId
+        it.doesMatchesClassId(classId, session)
     }
 }
 
-/**
- * Returns the first annotation that matches the [classIds], but if there are
- * multiple matching annotations, some of which are Java annotations mapped to
- * Kotlin counterparts and some are already Kotlin ones, then the function
- * returns the first Kotlin matching annotation.
- */
+private fun FirAnnotation.doesMatchesClassId(
+    classId: ClassId,
+    session: FirSession,
+): Boolean = annotationTypeRef.coneTypeSafe<ConeClassLikeType>()?.fullyExpandedType(session)?.lookupTag?.classId == classId
+
+fun List<FirAnnotation>.filterOutAnnotationsByClassId(classId: ClassId, session: FirSession): List<FirAnnotation> {
+    return filterNot {
+        it.doesMatchesClassId(classId, session)
+    }
+}
+
 fun List<FirAnnotation>.getAnnotationByClassIds(classIds: Collection<ClassId>, session: FirSession): FirAnnotation? {
-    return firstOrNullButPrioritizeKotlin {
+    return firstOrNull {
         it.annotationTypeRef.coneTypeSafe<ConeClassLikeType>()?.fullyExpandedType(session)?.lookupTag?.classId in classIds
     }
 }
-
-private inline fun List<FirAnnotation>.firstOrNullButPrioritizeKotlin(
-    predicate: (FirAnnotation) -> Boolean = { true },
-): FirAnnotation? {
-    var firstNonKotlin: FirAnnotation? = null
-
-    for (element in this) {
-        when {
-            !predicate(element) -> continue
-            element.isKotlinAnnotation -> return element
-            firstNonKotlin == null -> firstNonKotlin = element
-        }
-    }
-
-    return firstNonKotlin
-}
-
-private val FirAnnotation.isKotlinAnnotation: Boolean
-    get() = annotationTypeRef.source?.kind !is KtFakeSourceElementKind.JavaAnnotationMappedToKotlin
 
 // --------------------------- evaluated arguments ---------------------------
 

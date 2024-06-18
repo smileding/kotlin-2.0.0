@@ -3,8 +3,11 @@
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
+@file:OptIn(KaExperimentalApi::class)
+
 package org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.scopeProvider
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.prettyPrintSignature
 import org.jetbrains.kotlin.analysis.api.impl.base.test.cases.components.stringRepresentation
@@ -30,10 +33,10 @@ abstract class AbstractTypeScopeTest : AbstractAnalysisApiBasedTest() {
     override fun doTestByMainFile(mainFile: KtFile, mainModule: KtTestModule, testServices: TestServices) {
         val expression = testServices.expressionMarkerProvider.getSelectedElementOfType<KtExpression>(mainFile)
         analyseForTest(expression) {
-            val type = expression.getKaType()
+            val type = expression.expressionType
                 ?: error("expression $expression is not typable")
-            val typeScope = type.getTypeScope()
-            val declaredScopeByTypeScope = typeScope?.getDeclarationScope()
+            val typeScope = type.scope
+            val declaredScopeByTypeScope = typeScope?.declarationScope
 
             val scopeStringRepresentation = prettyPrint {
                 appendLine("Expression: ${expression.text}")
@@ -93,16 +96,16 @@ abstract class AbstractTypeScopeTest : AbstractAnalysisApiBasedTest() {
 
     @Suppress("unused")
     private fun KaSession.renderForTests(scope: KaScope): String {
-        val callables = scope.getCallableSymbols().toList()
+        val callables = scope.callables.toList()
         return prettyPrint {
             callables.forEach {
-                appendLine(DebugSymbolRenderer().render(analysisSession, it))
+                appendLine(DebugSymbolRenderer().render(useSiteSession, it))
             }
         }
     }
 
     private fun KaSession.prettyPrintForTests(scope: KaScope): String {
-        val callables = scope.getCallableSymbols().toList()
+        val callables = scope.callables.toList()
         return prettyPrint {
             callables.forEach {
                 appendLine(it.render(renderer))

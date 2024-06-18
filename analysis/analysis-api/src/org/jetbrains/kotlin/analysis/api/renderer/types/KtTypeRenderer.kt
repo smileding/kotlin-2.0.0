@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.types
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.renderer.base.contextReceivers.KaContextReceiversRenderer
 import org.jetbrains.kotlin.analysis.api.renderer.base.KaKeywordsRenderer
@@ -15,6 +16,7 @@ import org.jetbrains.kotlin.analysis.api.symbols.KaTypeAliasSymbol
 import org.jetbrains.kotlin.analysis.api.types.*
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 
+@KaExperimentalApi
 public class KaTypeRenderer private constructor(
     public val expandedTypeRenderingMode: KaExpandedTypeRenderingMode,
 
@@ -97,7 +99,7 @@ public class KaTypeRenderer private constructor(
     private fun KaSession.renderTypeAsIs(type: KaType, printer: PrettyPrinter) {
         when (type) {
             is KaCapturedType -> capturedTypeRenderer.renderType(this, type, this@KaTypeRenderer, printer)
-            is KaFunctionalType -> functionalTypeRenderer.renderType(this, type, this@KaTypeRenderer, printer)
+            is KaFunctionType -> functionalTypeRenderer.renderType(this, type, this@KaTypeRenderer, printer)
             is KaUsualClassType -> usualClassTypeRenderer.renderType(this, type, this@KaTypeRenderer, printer)
             is KaDefinitelyNotNullType -> definitelyNotNullTypeRenderer.renderType(this, type, this@KaTypeRenderer, printer)
             is KaDynamicType -> dynamicTypeRenderer.renderType(this, type, this@KaTypeRenderer, printer)
@@ -182,4 +184,6 @@ public class KaTypeRenderer private constructor(
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaTypeRenderer' instead", ReplaceWith("KaTypeRenderer"))
 public typealias KtTypeRenderer = KaTypeRenderer

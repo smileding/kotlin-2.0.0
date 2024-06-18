@@ -13502,6 +13502,12 @@ public class JvmAbiConsistencyTestRestGenerated extends AbstractJvmAbiConsistenc
       }
 
       @Test
+      @TestMetadata("annotationMixedTargeting.kt")
+      public void testAnnotationMixedTargeting() {
+        runTest("compiler/testData/codegen/bytecodeListing/annotations/annotationMixedTargeting.kt");
+      }
+
+      @Test
       @TestMetadata("annotationsOnDelegatedMembers.kt")
       public void testAnnotationsOnDelegatedMembers() {
         runTest("compiler/testData/codegen/bytecodeListing/annotations/annotationsOnDelegatedMembers.kt");
@@ -15994,6 +16000,12 @@ public class JvmAbiConsistencyTestRestGenerated extends AbstractJvmAbiConsistenc
     @TestMetadata("localFunction.kts")
     public void testLocalFunction() {
       runTest("compiler/testData/codegen/script/localFunction.kts");
+    }
+
+    @Test
+    @TestMetadata("MultiDollarInterpolation.kts")
+    public void testMultiDollarInterpolation() {
+      runTest("compiler/testData/codegen/script/MultiDollarInterpolation.kts");
     }
 
     @Test

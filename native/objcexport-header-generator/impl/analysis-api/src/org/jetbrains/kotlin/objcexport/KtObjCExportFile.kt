@@ -6,9 +6,9 @@
 package org.jetbrains.kotlin.objcexport
 
 import com.intellij.openapi.util.io.FileUtil
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
-import org.jetbrains.kotlin.analysis.api.symbols.KtCallableSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtClassOrObjectSymbol
+import org.jetbrains.kotlin.analysis.api.KaSession
+import org.jetbrains.kotlin.analysis.api.symbols.KaCallableSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaClassOrObjectSymbol
 import org.jetbrains.kotlin.analysis.project.structure.KtLibraryModule
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.native.analysis.api.*
@@ -20,7 +20,7 @@ interface KtObjCExportFile {
     val fileName: String
     val packageFqName: FqName
 
-    context(KtAnalysisSession)
+    context(KaSession)
     fun resolve(): KtResolvedObjCExportFile
 }
 
@@ -32,8 +32,8 @@ interface KtObjCExportFile {
 data class KtResolvedObjCExportFile(
     val fileName: String,
     val packageFqName: FqName,
-    val classifierSymbols: List<KtClassOrObjectSymbol>,
-    val callableSymbols: List<KtCallableSymbol>,
+    val classifierSymbols: List<KaClassOrObjectSymbol>,
+    val callableSymbols: List<KaCallableSymbol>,
 )
 
 /* Factory functions */
@@ -87,14 +87,14 @@ private class KtPsiObjCExportFile(
     /**
      * See [KtResolvedObjCExportFile]
      */
-    context(KtAnalysisSession)
+    context(KaSession)
     override fun resolve(): KtResolvedObjCExportFile {
-        val symbol = file.getFileSymbol()
+        val symbol = file.symbol
         return KtResolvedObjCExportFile(
             fileName = fileName,
             packageFqName = packageFqName,
             classifierSymbols = symbol.getAllClassOrObjectSymbols(),
-            callableSymbols = symbol.getFileScope().getCallableSymbols().toList()
+            callableSymbols = symbol.fileScope.callables.toList()
         )
     }
 }
@@ -121,7 +121,7 @@ private class KtKlibObjCExportFile(
         return result
     }
 
-    context(KtAnalysisSession)
+    context(KaSession)
     override fun resolve(): KtResolvedObjCExportFile {
         val classifierAddresses = addresses.filterIsInstance<KlibClassAddress>()
         val callableAddresses = addresses.filterIsInstance<KlibCallableAddress>()
@@ -131,8 +131,8 @@ private class KtKlibObjCExportFile(
             packageFqName = packageFqName,
             classifierSymbols = classifierAddresses
                 .mapNotNull { classAddress -> classAddress.getClassOrObjectSymbol() }
-                .withClosure<KtClassOrObjectSymbol> { symbol ->
-                    symbol.getMemberScope().getClassifierSymbols().filterIsInstance<KtClassOrObjectSymbol>().asIterable()
+                .withClosure<KaClassOrObjectSymbol> { symbol ->
+                    symbol.memberScope.classifiers.filterIsInstance<KaClassOrObjectSymbol>().asIterable()
                 }.toList(),
             callableSymbols = callableAddresses.flatMap { address ->
                 address.getCallableSymbols()

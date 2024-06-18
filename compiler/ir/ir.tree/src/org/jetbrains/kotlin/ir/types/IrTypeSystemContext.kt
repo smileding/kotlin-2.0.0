@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.ir.types
 
 import org.jetbrains.kotlin.builtins.PrimitiveType
 import org.jetbrains.kotlin.builtins.StandardNames
+import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
@@ -413,15 +414,6 @@ interface IrTypeSystemContext : TypeSystemContext, TypeSystemCommonSuperTypesCon
         return this.annotations
     }
 
-    override fun KotlinTypeMarker.hasCustomAttributes(): Boolean {
-        return false
-    }
-
-    override fun KotlinTypeMarker.getCustomAttributes(): List<AnnotationMarker> {
-        require(this is IrType)
-        return emptyList()
-    }
-
     override fun createErrorType(debugName: String, delegatedType: SimpleTypeMarker?): SimpleTypeMarker {
         TODO("IrTypeSystemContext doesn't support constraint system resolution")
     }
@@ -599,6 +591,10 @@ interface IrTypeSystemContext : TypeSystemContext, TypeSystemCommonSuperTypesCon
         require(this is AbstractIrTypeSubstitutor)
         require(type is IrType)
         return substitute(type)
+    }
+
+    override fun supportsImprovedVarianceInCst(): Boolean {
+        return irBuiltIns.languageVersionSettings.supportsFeature(LanguageFeature.ImprovedVarianceInCst)
     }
 }
 

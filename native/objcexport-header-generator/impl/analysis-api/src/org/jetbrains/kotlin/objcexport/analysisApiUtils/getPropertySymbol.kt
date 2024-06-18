@@ -5,14 +5,16 @@
 
 package org.jetbrains.kotlin.objcexport.analysisApiUtils
 
-import org.jetbrains.kotlin.analysis.api.KtAnalysisSession
-import org.jetbrains.kotlin.analysis.api.symbols.KtPropertyAccessorSymbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtPropertySymbol
-import org.jetbrains.kotlin.analysis.api.symbols.KtSymbol
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
+import org.jetbrains.kotlin.analysis.api.KaSession
+import org.jetbrains.kotlin.analysis.api.symbols.KaPropertyAccessorSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaPropertySymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaSymbol
 import org.jetbrains.kotlin.tooling.core.linearClosure
 
-context(KtAnalysisSession)
-internal fun KtPropertyAccessorSymbol.getPropertySymbol(): KtPropertySymbol {
-    return this.linearClosure<KtSymbol> { it.getContainingSymbol() }.filterIsInstance<KtPropertySymbol>().firstOrNull()
-        ?: error("Missing '${KtPropertySymbol::class} on ${this.render()}")
+context(KaSession)
+@OptIn(KaExperimentalApi::class)
+internal fun KaPropertyAccessorSymbol.getPropertySymbol(): KaPropertySymbol {
+    return this.linearClosure<KaSymbol> { it.containingSymbol }.filterIsInstance<KaPropertySymbol>().firstOrNull()
+        ?: error("Missing '${KaPropertySymbol::class} on ${this.render()}")
 }

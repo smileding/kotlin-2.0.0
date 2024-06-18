@@ -29,7 +29,6 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirDiagnosticRenderers.CALL
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirDiagnosticRenderers.CALLEE_NAME
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirDiagnosticRenderers.DECLARATION_NAME
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirDiagnosticRenderers.FOR_OPTIONAL_OPERATOR
-import org.jetbrains.kotlin.fir.analysis.diagnostics.FirDiagnosticRenderers.FQ_NAMES_IN_TYPES
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirDiagnosticRenderers.FUNCTIONAL_TYPE_KINDS
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirDiagnosticRenderers.MODULE_DATA
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirDiagnosticRenderers.NAME_OF_CONTAINING_DECLARATION_OR_FILE
@@ -216,6 +215,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.DEPRECATED_SINCE_
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.DEPRECATED_SINCE_KOTLIN_WITHOUT_DEPRECATED
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.DEPRECATED_SINCE_KOTLIN_WITH_DEPRECATED_LEVEL
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.DEPRECATED_SINCE_KOTLIN_WITH_UNORDERED_VERSIONS
+import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.DEPRECATED_SMARTCAST_ON_DELEGATED_PROPERTY
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.DEPRECATED_TYPE_PARAMETER_SYNTAX
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.DEPRECATION
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.DEPRECATION_ERROR
@@ -452,6 +452,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.NON_PRIVATE_CONST
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.NON_PRIVATE_OR_PROTECTED_CONSTRUCTOR_IN_SEALED
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.NON_PUBLIC_CALL_FROM_PUBLIC_INLINE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.NON_PUBLIC_CALL_FROM_PUBLIC_INLINE_DEPRECATION
+import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.NON_PUBLIC_DATA_COPY_CALL_FROM_PUBLIC_INLINE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.NON_PUBLIC_INLINE_CALL_FROM_PUBLIC_INLINE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.NON_SOURCE_ANNOTATION_ON_INLINED_LAMBDA_EXPRESSION
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.NON_TAIL_RECURSIVE_CALL
@@ -559,6 +560,7 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.REDUNDANT_ANNOTAT
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.REDUNDANT_CALL_OF_CONVERSION_METHOD
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.REDUNDANT_EXPLICIT_BACKING_FIELD
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.REDUNDANT_EXPLICIT_TYPE
+import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.REDUNDANT_INTERPOLATION_PREFIX
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.REDUNDANT_LABEL_WARNING
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.REDUNDANT_MODALITY_MODIFIER
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.REDUNDANT_MODIFIER
@@ -608,7 +610,6 @@ import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.SETTER_PROJECTED_
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.SETTER_VISIBILITY_INCONSISTENT_WITH_PROPERTY_VISIBILITY
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.SINGLETON_IN_SUPERTYPE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.SINGLE_ANONYMOUS_FUNCTION_WITH_NAME
-import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.SINGLE_DOLLAR_INTERPOLATION_PREFIX
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.SMARTCAST_IMPOSSIBLE
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.SMARTCAST_IMPOSSIBLE_ON_IMPLICIT_INVOKE_RECEIVER
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors.SPREAD_OF_NULLABLE
@@ -871,7 +872,7 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
             TO_STRING
         )
         map.put(MISSING_CONSTRUCTOR_KEYWORD, "Use the 'constructor' keyword after the modifiers of the primary constructor.")
-        map.put(SINGLE_DOLLAR_INTERPOLATION_PREFIX, "Single $ has no effect as interpolation prefix.")
+        map.put(REDUNDANT_INTERPOLATION_PREFIX, "Redundant interpolation prefix.")
         map.put(UNRESOLVED_REFERENCE, "Unresolved reference ''{0}''{1}.", NULLABLE_STRING, FOR_OPTIONAL_OPERATOR)
         map.put(UNRESOLVED_IMPORT, "Unresolved reference ''{0}''.", NULLABLE_STRING) // &
         map.put(DUPLICATE_PARAMETER_NAME_IN_FUNCTION_TYPE, "Duplicate parameter name in a function type.")
@@ -1271,7 +1272,7 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
         map.put(VARARG_OUTSIDE_PARENTHESES, "Passing value as a vararg is allowed only inside a parenthesized argument list.")
         map.put(NAMED_ARGUMENTS_NOT_ALLOWED, "Named arguments are prohibited for {0}.", TO_STRING)
         map.put(NON_VARARG_SPREAD, "The spread operator (*foo) can only be applied in a vararg position.")
-        map.put(TOO_MANY_ARGUMENTS, "Too many arguments for ''{0}''.", FQ_NAMES_IN_TYPES)
+        map.put(TOO_MANY_ARGUMENTS, "Too many arguments for ''{0}''.", SYMBOL)
         map.put(ARGUMENT_PASSED_TWICE, "Argument already passed for this parameter.")
         map.put(NO_VALUE_FOR_PARAMETER, "No value passed for parameter ''{0}''.", DECLARATION_NAME)
         map.put(NAMED_PARAMETER_NOT_FOUND, "No parameter with name ''{0}'' found.", TO_STRING)
@@ -1511,6 +1512,12 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
             TO_STRING,
             NOT_RENDERED
         )
+        map.put(
+            DEPRECATED_SMARTCAST_ON_DELEGATED_PROPERTY,
+            "Smart cast to ''{0}'' is impossible, because ''{1}'' is a property inherited by class delegation. " +
+                    "This warning will become an error in future releases. See https://youtrack.jetbrains.com/issue/KT-57417.",
+            RENDER_TYPE, DECLARATION_NAME,
+        )
 
         map.put(
             TYPE_VARIANCE_CONFLICT_ERROR,
@@ -1693,9 +1700,9 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
 
         map.put(
             CANNOT_OVERRIDE_INVISIBLE_MEMBER,
-            "''{0}'' has no access to ''{1}'', so it cannot override it.",
-            FQ_NAMES_IN_TYPES,
-            FQ_NAMES_IN_TYPES
+            "{0} has no access to {1}, so it cannot override it.",
+            SYMBOL_WITH_CONTAINING_DECLARATION,
+            SYMBOL_WITH_CONTAINING_DECLARATION
         )
 
         val multipleDefaultsMessage = "More than one function overridden by ''{0}'' declares a default value for ''{1}'': {2}"
@@ -1794,9 +1801,9 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER,
-            "''{0}'' inherits invisible abstract members: ''{1}''.",
+            "''{0}'' inherits invisible abstract member {1}.",
             DECLARATION_NAME,
-            FQ_NAMES_IN_TYPES
+            SYMBOL_WITH_CONTAINING_DECLARATION
         )
         map.put(AMBIGUOUS_ANONYMOUS_TYPE_INFERRED, "Right-hand side has an anonymous type. Please specify the type explicitly.", NOT_RENDERED)
         map.put(
@@ -1814,35 +1821,35 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
 
         map.put(
             RETURN_TYPE_MISMATCH_ON_OVERRIDE,
-            "Return type of ''{0}'' is not a subtype of the return type of the overridden member ''{1}''.",
+            "Return type of ''{0}'' is not a subtype of the return type of the overridden member {1}.",
             DECLARATION_NAME,
-            SYMBOL
+            SYMBOL_WITH_CONTAINING_DECLARATION
         )
         map.put(
             PROPERTY_TYPE_MISMATCH_ON_OVERRIDE,
-            "Type of ''{0}'' is not a subtype of overridden property ''{1}''.",
+            "Type of ''{0}'' is not a subtype of overridden property {1}.",
             DECLARATION_NAME,
-            SYMBOL
+            SYMBOL_WITH_CONTAINING_DECLARATION
         )
         map.put(
             VAR_TYPE_MISMATCH_ON_OVERRIDE,
-            "Type of ''{0}'' doesn''t match the type of the overridden ''var'' property ''{1}''.",
+            "Type of ''{0}'' doesn''t match the type of the overridden ''var'' property {1}.",
             DECLARATION_NAME,
-            SYMBOL
+            SYMBOL_WITH_CONTAINING_DECLARATION
         )
 
         map.put(
             VAR_OVERRIDDEN_BY_VAL,
-            "''var'' property ''{0}'' cannot be overridden by ''val'' property ''{1}''.",
-            FQ_NAMES_IN_TYPES,
-            FQ_NAMES_IN_TYPES
+            "''var'' property {0} cannot be overridden by ''val'' property ''{1}''.",
+            SYMBOL_WITH_CONTAINING_DECLARATION,
+            SYMBOL
         )
         map.put(
             VAR_IMPLEMENTED_BY_INHERITED_VAL,
-            "{0} overrides ''var'' property ''{1}'' with inherited ''val'' property ''{2}''.",
+            "{0} overrides ''var'' property {1} with inherited ''val'' property {2}.",
             RENDER_CLASS_OR_OBJECT_QUOTED,
-            DECLARATION_NAME,
-            FQ_NAMES_IN_TYPES
+            SYMBOL_WITH_CONTAINING_DECLARATION,
+            SYMBOL_WITH_CONTAINING_DECLARATION
         )
         map.put(NON_FINAL_MEMBER_IN_FINAL_CLASS, "'open' has no effect on a final class.")
         map.put(NON_FINAL_MEMBER_IN_OBJECT, "'open' has no effect on object.")
@@ -1852,9 +1859,9 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
         )
         map.put(
             DATA_CLASS_OVERRIDE_CONFLICT,
-            "Function ''{0}'' generated for the data class conflicts with a member of supertype ''{1}''.",
-            FQ_NAMES_IN_TYPES,
-            FQ_NAMES_IN_TYPES
+            "Function ''{0}'' generated for the data class conflicts with the supertype member {1}.",
+            SYMBOL,
+            SYMBOL_WITH_CONTAINING_DECLARATION
         )
         map.put(
             DATA_CLASS_OVERRIDE_DEFAULT_VALUES,
@@ -2586,6 +2593,13 @@ object FirErrorsDefaultMessages : BaseDiagnosticRendererFactory() {
                     "This will become an error in ${LanguageFeature.ProhibitPrivateOperatorCallInInline.formatKotlinWithVersion()}.",
             SYMBOL,
             SYMBOL
+        )
+        map.put(
+            NON_PUBLIC_DATA_COPY_CALL_FROM_PUBLIC_INLINE,
+            "This 'copy' usage exposes the non-public primary constructor of a 'data class'. " +
+                    "The 'copy' will change its visibility in future versions of Kotlin. " +
+                    "Public-API inline function won't be able to access non-public-API 'copy'. " +
+                    "See https://youtrack.jetbrains.com/issue/KT-11914"
         )
         map.put(
             PROTECTED_CONSTRUCTOR_CALL_FROM_PUBLIC_INLINE,

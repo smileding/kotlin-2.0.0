@@ -5,17 +5,20 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.types.Variance
 
+@KaExperimentalApi
 public interface KaRendererTypeApproximator {
     public fun approximateType(analysisSession: KaSession, type: KaType, position: Variance): KaType
 
     public object TO_DENOTABLE : KaRendererTypeApproximator {
+        @OptIn(KaExperimentalApi::class)
         override fun approximateType(analysisSession: KaSession, type: KaType, position: Variance): KaType {
             with(analysisSession) {
-                val effectiveType = type.getEnhancedType() ?: type
+                val effectiveType = type.enhancedType ?: type
 
                 return when (position) {
                     Variance.INVARIANT -> effectiveType
@@ -33,4 +36,6 @@ public interface KaRendererTypeApproximator {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaRendererTypeApproximator' instead", ReplaceWith("KaRendererTypeApproximator"))
 public typealias KtRendererTypeApproximator = KaRendererTypeApproximator

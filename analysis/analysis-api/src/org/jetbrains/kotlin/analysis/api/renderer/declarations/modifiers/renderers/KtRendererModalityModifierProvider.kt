@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.modifiers.renderers
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.*
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KaSymbolWithModality
@@ -12,6 +13,7 @@ import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
 
+@KaExperimentalApi
 public interface KaRendererModalityModifierProvider {
     public fun getModalityModifier(analysisSession: KaSession, symbol: KaSymbolWithModality): KtModifierKeywordToken?
 
@@ -46,7 +48,7 @@ public interface KaRendererModalityModifierProvider {
                     is KaPropertySymbol -> if (symbol.isOverride && symbol.modality != Modality.FINAL) return null
                 }
                 if ((symbol as? KaClassOrObjectSymbol)?.classKind == KaClassKind.INTERFACE) return null
-                if ((symbol.getContainingSymbol() as? KaClassOrObjectSymbol)?.classKind == KaClassKind.INTERFACE) return null
+                if ((symbol.containingSymbol as? KaClassOrObjectSymbol)?.classKind == KaClassKind.INTERFACE) return null
 
                 return when (symbol.modality) {
                     Modality.FINAL -> null
@@ -57,4 +59,6 @@ public interface KaRendererModalityModifierProvider {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaRendererModalityModifierProvider' instead", ReplaceWith("KaRendererModalityModifierProvider"))
 public typealias KtRendererModalityModifierProvider = KaRendererModalityModifierProvider

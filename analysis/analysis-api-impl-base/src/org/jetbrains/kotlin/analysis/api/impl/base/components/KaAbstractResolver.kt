@@ -7,28 +7,35 @@ package org.jetbrains.kotlin.analysis.api.impl.base.components
 
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiMember
-import org.jetbrains.kotlin.analysis.api.KaAnalysisApiInternals
-import org.jetbrains.kotlin.analysis.api.calls.KaCompoundAccess
-import org.jetbrains.kotlin.analysis.api.calls.KaExplicitReceiverValue
+import org.jetbrains.kotlin.analysis.api.KaImplementationDetail
+import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.components.KaResolver
+import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
+import org.jetbrains.kotlin.analysis.api.resolution.KaCompoundAccess
+import org.jetbrains.kotlin.analysis.api.resolution.KaExplicitReceiverValue
 import org.jetbrains.kotlin.analysis.api.symbols.KaSymbol
 import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.analysis.utils.printer.parentOfType
 import org.jetbrains.kotlin.idea.references.KtDefaultAnnotationArgumentReference
+import org.jetbrains.kotlin.idea.references.KtReference
 import org.jetbrains.kotlin.lexer.KtSingleValueToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 
-@KaAnalysisApiInternals
-abstract class KaAbstractResolver : KaResolver() {
+@KaImplementationDetail
+abstract class KaAbstractResolver<T : KaSession> : KaSessionComponent<T>(), KaResolver {
+    override fun KtReference.resolveToSymbol(): KaSymbol? = withValidityAssertion {
+        return resolveToSymbols().singleOrNull()
+    }
+
     // TODO: remove this workaround after KT-68499
     protected fun resolveDefaultAnnotationArgumentReference(
         reference: KtDefaultAnnotationArgumentReference,
     ): Collection<KaSymbol> = with(analysisSession) {
         val symbol = when (val psi = reference.resolve()) {
-            is KtDeclaration -> psi.getSymbol()
-            is PsiClass -> psi.getNamedClassSymbol()
-            is PsiMember -> psi.getCallableSymbol()
+            is KtDeclaration -> psi.symbol
+            is PsiClass -> psi.namedClassSymbol
+            is PsiMember -> psi.callableSymbol
             else -> null
         }
 

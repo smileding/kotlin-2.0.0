@@ -56,8 +56,8 @@ abstract class AbstractSemanticSubtypingTest : AbstractAnalysisApiBasedTest() {
     private fun KaSession.getTypeAtCaret(caretTag: String, mainFile: KtFile, testServices: TestServices): KaType {
         val element = testServices.expressionMarkerProvider.getElementOfTypeAtCaret<KtElement>(mainFile, caretTag)
         return when (element) {
-            is KtProperty -> element.getVariableSymbol().returnType
-            is KtExpression -> element.getKaType() ?: error("Expected the selected expression to have a type.")
+            is KtProperty -> element.symbol.returnType
+            is KtExpression -> element.expressionType ?: error("Expected the selected expression to have a type.")
             else -> error("Expected a property or an expression.")
         }
     }
@@ -89,7 +89,7 @@ abstract class AbstractTypeEqualityTest : AbstractSemanticSubtypingTest() {
     override fun KaSession.checkTypes(expectedResult: Boolean, type1: KaType, type2: KaType, testServices: TestServices) {
         testServices.assertions.assertEquals(
             expectedResult,
-            type1.isEqualTo(type2),
+            type1.semanticallyEquals(type2),
         ) {
             "Expected `$type1` and `$type2` to be ${if (!expectedResult) "un" else ""}equal (`$resultDirective`)."
         }
@@ -102,7 +102,7 @@ abstract class AbstractLenientTypeEqualityTest : AbstractSemanticSubtypingTest()
     override fun KaSession.checkTypes(expectedResult: Boolean, type1: KaType, type2: KaType, testServices: TestServices) {
         testServices.assertions.assertEquals(
             expectedResult,
-            type1.isEqualTo(type2, KaSubtypingErrorTypePolicy.LENIENT),
+            type1.semanticallyEquals(type2, KaSubtypingErrorTypePolicy.LENIENT),
         ) {
             "Expected `$type1` and `$type2` to be ${if (!expectedResult) "un" else ""}equal with error type leniency (`$resultDirective`)."
         }
@@ -115,7 +115,7 @@ abstract class AbstractSubtypingTest : AbstractSemanticSubtypingTest() {
     override fun KaSession.checkTypes(expectedResult: Boolean, type1: KaType, type2: KaType, testServices: TestServices) {
         testServices.assertions.assertEquals(
             expectedResult,
-            type1.isSubTypeOf(type2),
+            type1.isSubtypeOf(type2),
         ) {
             "Expected `$type1` to ${if (!expectedResult) "not " else ""}be a subtype of `$type2` (`$resultDirective`)."
         }
@@ -128,7 +128,7 @@ abstract class AbstractLenientSubtypingTest : AbstractSemanticSubtypingTest() {
     override fun KaSession.checkTypes(expectedResult: Boolean, type1: KaType, type2: KaType, testServices: TestServices) {
         testServices.assertions.assertEquals(
             expectedResult,
-            type1.isSubTypeOf(type2, KaSubtypingErrorTypePolicy.LENIENT),
+            type1.isSubtypeOf(type2, KaSubtypingErrorTypePolicy.LENIENT),
         ) {
             "Expected `$type1` to ${if (!expectedResult) "not " else ""}be a subtype of `$type2` with error type leniency" +
                     " (`$resultDirective`)."

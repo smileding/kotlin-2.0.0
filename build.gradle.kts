@@ -270,7 +270,7 @@ val projectsUsedInIntelliJKotlinPlugin =
                 ":analysis:analysis-api-fir",
                 ":analysis:analysis-api-impl-barebone",
                 ":analysis:analysis-api-impl-base",
-                ":analysis:analysis-api-providers",
+                ":analysis:analysis-api-platform-interface",
                 ":analysis:analysis-api-standalone:analysis-api-standalone-base",
                 ":analysis:analysis-api-standalone:analysis-api-fir-standalone-base",
                 ":analysis:analysis-api-standalone",
@@ -438,7 +438,7 @@ extra["compilerArtifactsForIde"] = listOfNotNull(
     ":prepare:ide-plugin-dependencies:analysis-api-fe10-for-ide",
     ":prepare:ide-plugin-dependencies:analysis-api-fe10-tests-for-ide",
     ":prepare:ide-plugin-dependencies:kt-references-fe10-for-ide",
-    ":prepare:ide-plugin-dependencies:analysis-api-providers-for-ide",
+    ":prepare:ide-plugin-dependencies:analysis-api-platform-interface-for-ide",
     ":prepare:ide-plugin-dependencies:analysis-project-structure-for-ide",
     ":prepare:ide-plugin-dependencies:symbol-light-classes-for-ide",
     ":prepare:ide-plugin-dependencies:analysis-api-standalone-for-ide",
@@ -814,6 +814,7 @@ tasks {
         dependsOn(":kotlin-atomicfu-compiler-plugin:nativeTest")
         dependsOn(":native:analysis-api-klib-reader:check")
         dependsOn(":native:native.tests:test")
+        dependsOn(":native:native.tests:cli-tests:check")
         dependsOn(":native:native.tests:driver:check")
         dependsOn(":native:native.tests:stress:check")
         dependsOn(":native:native.tests:klib-compatibility:check")

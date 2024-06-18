@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.objcexport.tests
 
-import org.jetbrains.kotlin.analysis.api.symbols.KtNamedClassOrObjectSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaNamedClassOrObjectSymbol
 import org.jetbrains.kotlin.backend.konan.objcexport.ObjCExportClassOrProtocolName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.objcexport.getObjCClassOrProtocolName
@@ -22,9 +22,9 @@ class KtObjCExportNamerTest(
     fun `test - simple class`() {
         val foo = inlineSourceCodeAnalysis.createKtFile("class Foo")
         analyzeWithObjCExport(foo) {
-            val fooSymbol = foo.getFileSymbol().getFileScope()
-                .getClassifierSymbols(Name.identifier("Foo"))
-                .single() as KtNamedClassOrObjectSymbol
+            val fooSymbol = foo.symbol.fileScope
+                .classifiers(Name.identifier("Foo"))
+                .single() as KaNamedClassOrObjectSymbol
 
             assertEquals(
                 ObjCExportClassOrProtocolName("Foo", "Foo"),

@@ -5,18 +5,20 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.base.annotations.renderers
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.annotations.KaAnnotated
-import org.jetbrains.kotlin.analysis.api.annotations.KaAnnotationApplication
+import org.jetbrains.kotlin.analysis.api.annotations.KaAnnotation
 import org.jetbrains.kotlin.analysis.api.renderer.base.annotations.KaAnnotationRenderer
 import org.jetbrains.kotlin.analysis.api.symbols.*
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 
+@KaExperimentalApi
 public interface KaAnnotationUseSiteTargetRenderer {
     public fun renderUseSiteTarget(
         analysisSession: KaSession,
-        annotation: KaAnnotationApplication,
+        annotation: KaAnnotation,
         owner: KaAnnotated,
         annotationRenderer: KaAnnotationRenderer,
         printer: PrettyPrinter,
@@ -25,7 +27,7 @@ public interface KaAnnotationUseSiteTargetRenderer {
     public object WITHOUT_USE_SITE : KaAnnotationUseSiteTargetRenderer {
         override fun renderUseSiteTarget(
             analysisSession: KaSession,
-            annotation: KaAnnotationApplication,
+            annotation: KaAnnotation,
             owner: KaAnnotated,
             annotationRenderer: KaAnnotationRenderer,
             printer: PrettyPrinter,
@@ -35,7 +37,7 @@ public interface KaAnnotationUseSiteTargetRenderer {
     public object WITH_USES_SITE : KaAnnotationUseSiteTargetRenderer {
         override fun renderUseSiteTarget(
             analysisSession: KaSession,
-            annotation: KaAnnotationApplication,
+            annotation: KaAnnotation,
             owner: KaAnnotated,
             annotationRenderer: KaAnnotationRenderer,
             printer: PrettyPrinter,
@@ -49,7 +51,7 @@ public interface KaAnnotationUseSiteTargetRenderer {
     public object WITH_NON_DEFAULT_USE_SITE : KaAnnotationUseSiteTargetRenderer {
         override fun renderUseSiteTarget(
             analysisSession: KaSession,
-            annotation: KaAnnotationApplication,
+            annotation: KaAnnotation,
             owner: KaAnnotated,
             annotationRenderer: KaAnnotationRenderer,
             printer: PrettyPrinter,
@@ -66,7 +68,7 @@ public interface KaAnnotationUseSiteTargetRenderer {
                 is KaBackingFieldSymbol -> annotation.useSiteTarget != AnnotationUseSiteTarget.FIELD
                 is KaEnumEntrySymbol -> true
                 is KaValueParameterSymbol -> {
-                    val containingSymbol = with(analysisSession) { owner.getContainingSymbol() }
+                    val containingSymbol = with(analysisSession) { owner.containingSymbol }
                     containingSymbol !is KaPropertySetterSymbol || annotation.useSiteTarget != AnnotationUseSiteTarget.SETTER_PARAMETER
                 }
                 is KaJavaFieldSymbol -> true
@@ -82,4 +84,6 @@ public interface KaAnnotationUseSiteTargetRenderer {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaAnnotationUseSiteTargetRenderer' instead", ReplaceWith("KaAnnotationUseSiteTargetRenderer"))
 public typealias KtAnnotationUseSiteTargetRenderer = KaAnnotationUseSiteTargetRenderer

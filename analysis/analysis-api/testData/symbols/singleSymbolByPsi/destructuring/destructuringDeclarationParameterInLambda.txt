@@ -1,5 +1,5 @@
 KaValueParameterSymbol:
-  annotationsList: []
+  annotations: []
   callableId: null
   contextReceivers: []
   generatedPrimaryConstructorProperty: null
@@ -9,14 +9,14 @@ KaValueParameterSymbol:
   isImplicitLambdaParameter: false
   isNoinline: false
   isVararg: false
+  location: LOCAL
   name: <destruct>
   origin: SOURCE
   receiverParameter: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: X
-  symbolKind: LOCAL
   typeParameters: []
   getContainingFileSymbol: KaFileSymbol(destructuringDeclarationParameterInLambda.kt)
   getContainingJvmClassName: null

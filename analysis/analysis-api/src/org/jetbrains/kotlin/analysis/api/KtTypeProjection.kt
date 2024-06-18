@@ -5,32 +5,33 @@
 
 package org.jetbrains.kotlin.analysis.api
 
-import org.jetbrains.kotlin.analysis.api.lifetime.KaLifetimeOwner
-import org.jetbrains.kotlin.analysis.api.lifetime.KaLifetimeToken
-import org.jetbrains.kotlin.analysis.api.lifetime.validityAsserted
-import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
-import org.jetbrains.kotlin.analysis.api.types.KaType
-import org.jetbrains.kotlin.types.Variance
+import org.jetbrains.kotlin.analysis.api.types.KaStarTypeProjection
+import org.jetbrains.kotlin.analysis.api.types.KaTypeArgumentWithVariance
+import org.jetbrains.kotlin.analysis.api.types.KaTypeProjection
 
-public sealed class KaTypeProjection : KaLifetimeOwner {
-    public abstract val type: KaType?
-}
+@Deprecated(
+    "The API has been moved into `org.jetbrains.kotlin.analysis.api.types` package",
+    level = DeprecationLevel.HIDDEN,
+)
+public typealias KaTypeProjection = KaTypeProjection
 
+@Deprecated("Use 'KaTypeProjection' instead", ReplaceWith("KaTypeProjection"))
 public typealias KtTypeProjection = KaTypeProjection
 
-public class KaStarTypeProjection(override val token: KaLifetimeToken) : KaTypeProjection() {
-    override val type: KaType? get() = withValidityAssertion { null }
-}
+@Deprecated(
+    "The API has been moved into `org.jetbrains.kotlin.analysis.api.types` package",
+    level = DeprecationLevel.HIDDEN,
+)
+public typealias KaStarTypeProjection = KaStarTypeProjection
 
+@Deprecated("Use 'KaTypeArgumentWithVariance' instead", ReplaceWith("KaTypeArgumentWithVariance"))
 public typealias KtStarTypeProjection = KaStarTypeProjection
 
-public class KaTypeArgumentWithVariance(
-    type: KaType,
-    variance: Variance,
-    override val token: KaLifetimeToken,
-) : KaTypeProjection() {
-    override val type: KaType by validityAsserted(type)
-    public val variance: Variance by validityAsserted(variance)
-}
+@Deprecated(
+    "The API has been moved into `org.jetbrains.kotlin.analysis.api.types` package",
+    level = DeprecationLevel.HIDDEN,
+)
+public typealias KaTypeArgumentWithVariance = KaTypeArgumentWithVariance
 
+@Deprecated("Use 'KaTypeArgumentWithVariance' instead", ReplaceWith("KaTypeArgumentWithVariance"))
 public typealias KtTypeArgumentWithVariance = KaTypeArgumentWithVariance

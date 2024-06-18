@@ -413,7 +413,7 @@ object CheckDslScopeViolation : ResolutionStage() {
                 // ```
 
                 // Collect the annotation on the function type, or `@A` in the example above.
-                collectDslMarkerAnnotations(context, it.attributes.customAnnotations)
+                collectDslMarkerAnnotations(context, it.customAnnotations)
 
                 // Collect the annotation on the extension receiver, or `@B` in the example above.
                 if (CompilerConeAttributes.ExtensionFunctionType in it.attributes) {
@@ -435,21 +435,22 @@ object CheckDslScopeViolation : ResolutionStage() {
     }
 
     private fun MutableSet<ClassId>.collectDslMarkerAnnotations(context: ResolutionContext, type: ConeKotlinType) {
-        collectDslMarkerAnnotations(context, type.attributes.customAnnotations)
-        when (type) {
+        val originalType = type.abbreviatedTypeOrSelf
+        collectDslMarkerAnnotations(context, originalType.customAnnotations)
+        when (originalType) {
             is ConeFlexibleType -> {
-                collectDslMarkerAnnotations(context, type.lowerBound)
-                collectDslMarkerAnnotations(context, type.upperBound)
+                collectDslMarkerAnnotations(context, originalType.lowerBound)
+                collectDslMarkerAnnotations(context, originalType.upperBound)
             }
             is ConeCapturedType -> {
-                if (type.constructor.projection.kind == ProjectionKind.OUT) {
-                    type.constructor.supertypes?.forEach { collectDslMarkerAnnotations(context, it) }
+                if (originalType.constructor.projection.kind == ProjectionKind.OUT) {
+                    originalType.constructor.supertypes?.forEach { collectDslMarkerAnnotations(context, it) }
                 }
             }
-            is ConeDefinitelyNotNullType -> collectDslMarkerAnnotations(context, type.original)
-            is ConeIntersectionType -> type.intersectedTypes.forEach { collectDslMarkerAnnotations(context, it) }
+            is ConeDefinitelyNotNullType -> collectDslMarkerAnnotations(context, originalType.original)
+            is ConeIntersectionType -> originalType.intersectedTypes.forEach { collectDslMarkerAnnotations(context, it) }
             is ConeClassLikeType -> {
-                val classDeclaration = type.toSymbol(context.session) ?: return
+                val classDeclaration = originalType.toSymbol(context.session) ?: return
                 collectDslMarkerAnnotations(context, classDeclaration.resolvedAnnotationsWithClassIds)
                 when (classDeclaration) {
                     is FirClassSymbol -> {
@@ -458,7 +459,7 @@ object CheckDslScopeViolation : ResolutionStage() {
                         }
                     }
                     is FirTypeAliasSymbol -> {
-                        type.directExpansionType(context.session)?.let {
+                        originalType.directExpansionType(context.session)?.let {
                             collectDslMarkerAnnotations(context, it)
                         }
                     }
@@ -636,14 +637,6 @@ internal object CheckVisibility : CheckerStage() {
             if (!visibilityChecker.isVisible(declaration, candidate)) {
                 sink.yieldDiagnostic(VisibilityError)
                 return
-            }
-
-            if (symbol is FirPropertySymbol && callInfo.callSite is FirVariableAssignment) {
-                val setterFir = symbol.setterSymbol?.fir ?: symbol.originalForSubstitutionOverride?.setterSymbol?.fir
-                if (setterFir != null && !visibilityChecker.isVisible(setterFir, candidate)) {
-                    sink.yieldDiagnostic(SetterVisibilityError)
-                    return
-                }
             }
         }
 

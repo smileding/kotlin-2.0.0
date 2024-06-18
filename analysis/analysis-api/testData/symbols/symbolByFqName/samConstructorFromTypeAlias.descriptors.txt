@@ -1,21 +1,21 @@
 KaSamConstructorSymbol:
-  annotationsList: []
+  annotations: []
   callableId: one/MyInterface
   contextReceivers: []
   hasStableParameterNames: true
   isExtension: false
+  location: TOP_LEVEL
   name: MyInterface
   origin: SAM_CONSTRUCTOR
   receiverParameter: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: one/MyInterface
-  symbolKind: SAM_CONSTRUCTOR
   typeParameters: []
   valueParameters: [
     KaValueParameterSymbol:
-      annotationsList: []
+      annotations: []
       callableId: null
       contextReceivers: []
       generatedPrimaryConstructorProperty: null
@@ -25,26 +25,26 @@ KaSamConstructorSymbol:
       isImplicitLambdaParameter: false
       isNoinline: false
       isVararg: false
+      location: LOCAL
       name: function
       origin: SOURCE
       receiverParameter: null
-      returnType: KaFunctionalType:
-        annotationsList: []
+      returnType: KaFunctionType:
+        annotations: []
         typeArguments: [
           KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: []
             type: kotlin/Unit
         ]
         type: kotlin/Function0<kotlin/Unit>
-      symbolKind: LOCAL
       typeParameters: []
       getContainingFileSymbol: KaFileSymbol(samConstructorFromTypeAlias.kt)
-      getContainingJvmClassName: null
+      getContainingJvmClassName: one.SamConstructorFromTypeAliasKt
       getContainingModule: KtSourceModule "Sources of main"
       deprecationStatus: null
   ]
   getContainingFileSymbol: KaFileSymbol(samConstructorFromTypeAlias.kt)
-  getContainingJvmClassName: null
+  getContainingJvmClassName: one.SamConstructorFromTypeAliasKt
   getContainingModule: KtSourceModule "Sources of main"
   deprecationStatus: null

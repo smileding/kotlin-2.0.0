@@ -24,11 +24,11 @@ abstract class AbstractSubstitutionOverridesUnwrappingTest : AbstractSymbolTest(
 
     override fun KaSession.collectSymbols(ktFile: KtFile, testServices: TestServices): SymbolsData {
         val declarationUnderCaret = testServices.expressionMarkerProvider.getElementOfTypeAtCaret<KtClassLikeDeclaration>(ktFile)
-        val classSymbolUnderCaret = declarationUnderCaret.getSymbol() as KaClassLikeSymbol
+        val classSymbolUnderCaret = declarationUnderCaret.symbol as KaClassLikeSymbol
 
         require(classSymbolUnderCaret is KaSymbolWithMembers)
 
-        return SymbolsData(classSymbolUnderCaret.getMemberScope().getAllSymbols().toList())
+        return SymbolsData(classSymbolUnderCaret.memberScope.declarations.toList())
     }
 
     override fun KaSession.renderSymbolForComparison(symbol: KaSymbol, directives: RegisteredDirectives): String {

@@ -5,7 +5,6 @@
 
 package org.jetbrains.kotlin.analysis.api.descriptors.components
 
-import org.jetbrains.kotlin.analysis.api.calls.*
 import org.jetbrains.kotlin.analysis.api.descriptors.Fe10AnalysisFacade.AnalysisMode
 import org.jetbrains.kotlin.analysis.api.descriptors.KaFe10Session
 import org.jetbrains.kotlin.analysis.api.descriptors.components.base.KaFe10SessionComponent
@@ -20,8 +19,28 @@ import org.jetbrains.kotlin.analysis.api.descriptors.symbols.descriptorBased.bas
 import org.jetbrains.kotlin.analysis.api.descriptors.symbols.descriptorBased.base.toKtType
 import org.jetbrains.kotlin.analysis.api.descriptors.symbols.psiBased.base.KaFe10PsiSymbol
 import org.jetbrains.kotlin.analysis.api.descriptors.symbols.psiBased.base.getResolutionScope
-import org.jetbrains.kotlin.analysis.api.diagnostics.KaNonBoundToPsiErrorDiagnostic
 import org.jetbrains.kotlin.analysis.api.impl.base.components.KaAbstractResolver
+import org.jetbrains.kotlin.analysis.api.impl.base.util.KaNonBoundToPsiErrorDiagnostic
+import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
+import org.jetbrains.kotlin.analysis.api.resolution.*
+import org.jetbrains.kotlin.analysis.api.resolution.KaAnnotationCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaCallableMemberCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaCompoundArrayAccessCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaCompoundVariableAccessCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaDelegatedConstructorCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaExplicitReceiverValue
+import org.jetbrains.kotlin.analysis.api.resolution.KaFunctionCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaImplicitReceiverValue
+import org.jetbrains.kotlin.analysis.api.resolution.KaPartiallyAppliedFunctionSymbol
+import org.jetbrains.kotlin.analysis.api.resolution.KaPartiallyAppliedSymbol
+import org.jetbrains.kotlin.analysis.api.resolution.KaPartiallyAppliedVariableSymbol
+import org.jetbrains.kotlin.analysis.api.resolution.KaReceiverValue
+import org.jetbrains.kotlin.analysis.api.resolution.KaSimpleFunctionCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaSimpleVariableAccessCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaSmartCastedReceiverValue
+import org.jetbrains.kotlin.analysis.api.resolution.KaVariableAccessCall
+import org.jetbrains.kotlin.analysis.api.resolution.symbol
 import org.jetbrains.kotlin.analysis.api.signatures.KaCallableSignature
 import org.jetbrains.kotlin.analysis.api.signatures.KaFunctionLikeSignature
 import org.jetbrains.kotlin.analysis.api.signatures.KaVariableLikeSignature
@@ -33,6 +52,7 @@ import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.diagnostics.*
 import org.jetbrains.kotlin.idea.references.KtDefaultAnnotationArgumentReference
 import org.jetbrains.kotlin.idea.references.KtReference
+import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.parentsWithSelf
@@ -69,9 +89,21 @@ import org.jetbrains.kotlin.utils.addToStdlib.safeAs
 import org.jetbrains.kotlin.utils.checkWithAttachment
 
 internal class KaFe10Resolver(
-    override val analysisSession: KaFe10Session,
-) : KaAbstractResolver(), KaFe10SessionComponent {
-    override fun resolveToSymbols(reference: KtReference): Collection<KaSymbol> {
+    override val analysisSessionProvider: () -> KaFe10Session
+) : KaAbstractResolver<KaFe10Session>(), KaFe10SessionComponent {
+    override fun KtReference.isImplicitReferenceToCompanion(): Boolean = withValidityAssertion {
+        if (this !is KtSimpleNameReference) {
+            return false
+        }
+        val bindingContext = analysisContext.analyze(element, AnalysisMode.PARTIAL)
+        return bindingContext[BindingContext.SHORT_REFERENCE_TO_COMPANION_OBJECT, element] != null
+    }
+
+    override fun KtReference.resolveToSymbols(): Collection<KaSymbol> = withValidityAssertion {
+        return doResolveToSymbols(this)
+    }
+
+    private fun doResolveToSymbols(reference: KtReference): Collection<KaSymbol> {
         if (reference is KtDefaultAnnotationArgumentReference) {
             return resolveDefaultAnnotationArgumentReference(reference)
         }
@@ -89,7 +121,11 @@ internal class KaFe10Resolver(
         }
     }
 
-    override fun resolveCall(psi: KtElement): KaCallInfo? = with(analysisContext.analyze(psi, AnalysisMode.PARTIAL_WITH_DIAGNOSTICS)) {
+    override fun KtElement.resolveToCall(): KaCallInfo? = withValidityAssertion {
+        return doResolveCall(this)
+    }
+
+    private fun doResolveCall(psi: KtElement): KaCallInfo? = with(analysisContext.analyze(psi, AnalysisMode.PARTIAL_WITH_DIAGNOSTICS)) {
         if (!canBeResolvedAsCall(psi)) return null
 
         val parentBinaryExpression = psi.parentOfType<KtBinaryExpression>()
@@ -103,13 +139,13 @@ internal class KaFe10Resolver(
         ) {
             // Specially handle property assignment because FE1.0 resolves LHS of assignment to just the property, which would then be
             // treated as a property read.
-            return resolveCall(parentBinaryExpression)
+            return doResolveCall(parentBinaryExpression)
         }
 
         when (psi) {
-            is KtCallableReferenceExpression -> return resolveCall(psi.callableReference)
-            is KtWhenConditionInRange -> return psi.operationReference.let(::resolveCall)
-            is KtConstructorDelegationReferenceExpression -> return (psi.parent as? KtElement)?.let(::resolveCall)
+            is KtCallableReferenceExpression -> return doResolveCall(psi.callableReference)
+            is KtWhenConditionInRange -> return psi.operationReference.let(::doResolveCall)
+            is KtConstructorDelegationReferenceExpression -> return (psi.parent as? KtElement)?.let(::doResolveCall)
         }
 
         when (unwrappedPsi) {
@@ -126,11 +162,15 @@ internal class KaFe10Resolver(
         } ?: handleResolveErrors(this, psi)
     }
 
-    override fun collectCallCandidates(psi: KtElement): List<KaCallCandidateInfo> =
+    override fun KtElement.resolveToCallCandidates(): List<KaCallCandidateInfo> = withValidityAssertion {
+        return doCollectCallCandidates(this)
+    }
+
+    private fun doCollectCallCandidates(psi: KtElement): List<KaCallCandidateInfo> =
         with(analysisContext.analyze(psi, AnalysisMode.PARTIAL_WITH_DIAGNOSTICS)) {
             if (!canBeResolvedAsCall(psi)) return emptyList()
 
-            val resolvedKtCallInfo = resolveCall(psi)
+            val resolvedKtCallInfo = doResolveCall(psi)
             val bestCandidateDescriptors =
                 resolvedKtCallInfo?.calls?.filterIsInstance<KaCallableMemberCall<*, *>>()
                     ?.mapNotNullTo(mutableSetOf()) { it.descriptor as? CallableDescriptor }
@@ -548,7 +588,7 @@ internal class KaFe10Resolver(
 
         val diagnostic = getDiagnosticToReport(context, psi, ktCall, diagnostics)?.let { KaFe10Diagnostic(it, token) }
             ?: KaNonBoundToPsiErrorDiagnostic(
-                factoryName = null,
+                factoryName = Errors.UNRESOLVED_REFERENCE.name,
                 "${failedResolveCall.status} with ${failedResolveCall.resultingDescriptor.name}",
                 token
             )

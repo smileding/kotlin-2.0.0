@@ -1,18 +1,18 @@
 KaJavaFieldSymbol:
-  annotationsList: []
+  annotations: []
   callableId: /JavaClass.count
   contextReceivers: []
   isExtension: false
   isStatic: true
   isVal: false
+  location: CLASS
   modality: OPEN
   name: count
-  origin: JAVA
+  origin: JAVA_SOURCE
   receiverParameter: null
   returnType: KaFlexibleType:
-    annotationsList: []
+    annotations: []
     type: kotlin/Int!
-  symbolKind: CLASS_MEMBER
   typeParameters: []
   visibility: Public
   getContainingFileSymbol: null

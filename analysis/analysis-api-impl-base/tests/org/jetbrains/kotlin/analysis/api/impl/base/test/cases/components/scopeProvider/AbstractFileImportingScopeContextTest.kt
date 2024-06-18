@@ -22,7 +22,7 @@ abstract class AbstractFileImportingScopeContextTest : AbstractAnalysisApiBasedT
         val renderDefaultImportingScope = Directives.RENDER_DEFAULT_IMPORTING_SCOPE in mainModule.testModule.directives
 
         analyseForTest(mainFile) {
-            val ktScopeContext = mainFile.getImportingScopeContext()
+            val ktScopeContext = mainFile.importingScopeContext
 
             val scopeContextStringRepresentation = render(ktScopeContext, renderDefaultImportingScope)
             val scopeContextStringRepresentationPretty = render(ktScopeContext, renderDefaultImportingScope, printPretty = true)
@@ -37,7 +37,7 @@ abstract class AbstractFileImportingScopeContextTest : AbstractAnalysisApiBasedT
         renderDefaultImportingScope: Boolean,
         printPretty: Boolean = false,
     ): String = prettyPrint {
-        renderForTests(analysisSession, importingScope, this@prettyPrint, printPretty) { ktScopeKind ->
+        renderForTests(useSiteSession, importingScope, this@prettyPrint, printPretty) { ktScopeKind ->
             when (ktScopeKind) {
                 is KaScopeKind.PackageMemberScope -> false
                 is KaScopeKind.DefaultSimpleImportingScope -> renderDefaultImportingScope

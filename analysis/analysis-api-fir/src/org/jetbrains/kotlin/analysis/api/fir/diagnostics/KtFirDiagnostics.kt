@@ -245,8 +245,8 @@ sealed interface KaFirDiagnostic<PSI : PsiElement> : KaDiagnosticWithPsi<PSI> {
         override val diagnosticClass get() = MissingConstructorKeyword::class
     }
 
-    interface SingleDollarInterpolationPrefix : KaFirDiagnostic<PsiElement> {
-        override val diagnosticClass get() = SingleDollarInterpolationPrefix::class
+    interface RedundantInterpolationPrefix : KaFirDiagnostic<PsiElement> {
+        override val diagnosticClass get() = RedundantInterpolationPrefix::class
     }
 
     interface InvisibleReference : KaFirDiagnostic<PsiElement> {
@@ -1882,6 +1882,12 @@ sealed interface KaFirDiagnostic<PSI : PsiElement> : KaDiagnosticWithPsi<PSI> {
         val isCastToNotNull: Boolean
     }
 
+    interface DeprecatedSmartcastOnDelegatedProperty : KaFirDiagnostic<KtExpression> {
+        override val diagnosticClass get() = DeprecatedSmartcastOnDelegatedProperty::class
+        val desiredType: KaType
+        val property: KaCallableSymbol
+    }
+
     interface RedundantNullable : KaFirDiagnostic<KtTypeReference> {
         override val diagnosticClass get() = RedundantNullable::class
     }
@@ -3423,6 +3429,14 @@ sealed interface KaFirDiagnostic<PSI : PsiElement> : KaDiagnosticWithPsi<PSI> {
         override val diagnosticClass get() = NonPublicCallFromPublicInlineDeprecation::class
         val inlineDeclaration: KaSymbol
         val referencedDeclaration: KaSymbol
+    }
+
+    interface NonPublicDataCopyCallFromPublicInlineError : KaFirDiagnostic<KtElement> {
+        override val diagnosticClass get() = NonPublicDataCopyCallFromPublicInlineError::class
+    }
+
+    interface NonPublicDataCopyCallFromPublicInlineWarning : KaFirDiagnostic<KtElement> {
+        override val diagnosticClass get() = NonPublicDataCopyCallFromPublicInlineWarning::class
     }
 
     interface ProtectedConstructorCallFromPublicInline : KaFirDiagnostic<KtElement> {

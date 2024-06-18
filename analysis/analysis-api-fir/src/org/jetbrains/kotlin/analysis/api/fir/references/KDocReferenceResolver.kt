@@ -9,7 +9,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.components.KaScopeContext
 import org.jetbrains.kotlin.analysis.api.components.KaScopeKind
-import org.jetbrains.kotlin.analysis.api.components.buildClassType
 import org.jetbrains.kotlin.analysis.api.scopes.KaScope
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassOrObjectSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaCallableSymbol
@@ -109,7 +108,7 @@ internal object KDocReferenceResolver {
             goToNthParent(symbol, goBackSteps)?.let { return it }
         }
 
-        return getPackageSymbolIfPackageExists(selectedFqName)
+        return findPackage(selectedFqName)
     }
 
     /**
@@ -119,7 +118,7 @@ internal object KDocReferenceResolver {
         var currentSymbol = symbol
 
         repeat(steps) {
-            currentSymbol = currentSymbol.getContainingSymbol() as? KaClassOrObjectSymbol ?: return null
+            currentSymbol = currentSymbol.containingSymbol as? KaClassOrObjectSymbol ?: return null
         }
 
         return currentSymbol
@@ -135,12 +134,12 @@ internal object KDocReferenceResolver {
         buildList {
             getSymbolsFromScopes(fqName, contextElement).mapTo(this) { it.toResolveResult() }
             addAll(getTypeQualifiedExtensions(fqName, contextElement))
-            addIfNotNull(getPackageSymbolIfPackageExists(fqName)?.toResolveResult())
+            addIfNotNull(findPackage(fqName)?.toResolveResult())
         }.ifNotEmpty { return this }
 
         getNonImportedSymbolsByFullyQualifiedName(fqName).map { it.toResolveResult() }.ifNotEmpty { return this }
 
-        AdditionalKDocResolutionProvider.resolveKdocFqName(analysisSession, fqName, contextElement)
+        AdditionalKDocResolutionProvider.resolveKdocFqName(useSiteSession, fqName, contextElement)
             .map { it.toResolveResult() }
             .ifNotEmpty { return this }
 
@@ -165,7 +164,7 @@ internal object KDocReferenceResolver {
         val owner = contextElement.parentOfType<KtDeclaration>() ?: return emptyList()
         if (fqName.pathSegments().singleOrNull()?.asString() == "this") {
             if (owner is KtCallableDeclaration && owner.receiverTypeReference != null) {
-                val symbol = owner.getSymbol() as? KaCallableSymbol ?: return emptyList()
+                val symbol = owner.symbol as? KaCallableSymbol ?: return emptyList()
                 return listOfNotNull(symbol.receiverParameter?.toResolveResult())
             }
         }
@@ -174,7 +173,7 @@ internal object KDocReferenceResolver {
 
     private fun KaSession.getSymbolsFromScopes(fqName: FqName, contextElement: KtElement): Collection<KaSymbol> {
         getSymbolsFromParentMemberScopes(fqName, contextElement).ifNotEmpty { return this }
-        val importScopeContext = contextElement.containingKtFile.getImportingScopeContext()
+        val importScopeContext = contextElement.containingKtFile.importingScopeContext
         getSymbolsFromImportingScope(importScopeContext, fqName, KaScopeKind.ExplicitSimpleImportingScope::class).ifNotEmpty { return this }
         getSymbolsFromPackageScope(fqName, contextElement).ifNotEmpty { return this }
         getSymbolsFromImportingScope(importScopeContext, fqName, KaScopeKind.DefaultSimpleImportingScope::class).ifNotEmpty { return this }
@@ -186,20 +185,20 @@ internal object KDocReferenceResolver {
     private fun KaSession.getSymbolsFromDeclaration(name: Name, owner: KtDeclaration): List<KaSymbol> = buildList {
         if (owner is KtNamedDeclaration) {
             if (owner.nameAsName == name) {
-                add(owner.getSymbol())
+                add(owner.symbol)
             }
         }
         if (owner is KtTypeParameterListOwner) {
             for (typeParameter in owner.typeParameters) {
                 if (typeParameter.nameAsName == name) {
-                    add(typeParameter.getTypeParameterSymbol())
+                    add(typeParameter.symbol)
                 }
             }
         }
         if (owner is KtCallableDeclaration) {
             for (typeParameter in owner.valueParameters) {
                 if (typeParameter.nameAsName == name) {
-                    add(typeParameter.getParameterSymbol())
+                    add(typeParameter.symbol)
                 }
             }
         }
@@ -223,7 +222,7 @@ internal object KDocReferenceResolver {
                 getSymbolsFromDeclaration(fqName.shortName(), ktDeclaration).ifNotEmpty { return this }
             }
             if (ktDeclaration is KtClassOrObject) {
-                val symbol = ktDeclaration.getClassOrObjectSymbol() ?: continue
+                val symbol = ktDeclaration.classSymbol ?: continue
 
                 val scope = getCompositeCombinedMemberAndCompanionObjectScope(symbol)
 
@@ -236,14 +235,14 @@ internal object KDocReferenceResolver {
 
     private fun KaSession.getCompositeCombinedMemberAndCompanionObjectScope(symbol: KaSymbolWithMembers): KaScope =
         listOfNotNull(
-            symbol.getCombinedMemberScope(),
+            symbol.combinedMemberScope,
             getCompanionObjectMemberScope(symbol),
         ).asCompositeScope()
 
     private fun KaSession.getCompanionObjectMemberScope(symbol: KaSymbolWithMembers): KaScope? {
         val namedClassSymbol = symbol as? KaNamedClassOrObjectSymbol ?: return null
         val companionSymbol = namedClassSymbol.companionObject ?: return null
-        return companionSymbol.getMemberScope()
+        return companionSymbol.memberScope
     }
 
     private fun KaSession.getSymbolsFromPackageScope(fqName: FqName, contextElement: KtElement): Collection<KaDeclarationSymbol> {
@@ -253,8 +252,8 @@ internal object KDocReferenceResolver {
 
         val containingFile = contextDeclarationOrSelf.containingKtFile
         val packageFqName = containingFile.packageFqName
-        val packageSymbol = getPackageSymbolIfPackageExists(packageFqName) ?: return emptyList()
-        val packageScope = packageSymbol.getPackageScope()
+        val packageSymbol = findPackage(packageFqName) ?: return emptyList()
+        val packageScope = packageSymbol.packageScope
         return getSymbolsFromMemberScope(fqName, packageScope)
     }
 
@@ -263,7 +262,7 @@ internal object KDocReferenceResolver {
         fqName: FqName,
         acceptScopeKind: KClass<out KaScopeKind>,
     ): Collection<KaDeclarationSymbol> {
-        val importingScope = scopeContext.getCompositeScope { acceptScopeKind.java.isAssignableFrom(it::class.java) }
+        val importingScope = scopeContext.compositeScope { acceptScopeKind.java.isAssignableFrom(it::class.java) }
         return getSymbolsFromMemberScope(fqName, importingScope)
     }
 
@@ -272,7 +271,7 @@ internal object KDocReferenceResolver {
             .dropLast(1)
             .fold(scope) { currentScope, fqNamePart ->
                 currentScope
-                    .getClassifierSymbols(fqNamePart)
+                    .classifiers(fqNamePart)
                     .filterIsInstance<KaSymbolWithMembers>()
                     .map { getCompositeCombinedMemberAndCompanionObjectScope(it) }
                     .toList()
@@ -285,8 +284,8 @@ internal object KDocReferenceResolver {
     private fun KaScope.getAllSymbolsFromScopeByShortName(fqName: FqName): Collection<KaDeclarationSymbol> {
         val shortName = fqName.shortName()
         return buildSet {
-            addAll(getCallableSymbols(shortName))
-            addAll(getClassifierSymbols(shortName))
+            addAll(callables(shortName))
+            addAll(classifiers(shortName))
         }
     }
 
@@ -379,7 +378,7 @@ internal object KDocReferenceResolver {
             return true
         }
 
-        return actualReceiverType.isSubTypeOf(type)
+        return actualReceiverType.isSubtypeOf(type)
     }
 
     private fun KaSession.getNonImportedSymbolsByFullyQualifiedName(fqName: FqName): Collection<KaSymbol> = buildSet {
@@ -408,12 +407,12 @@ internal object KDocReferenceResolver {
     }
 
     private fun KaSession.collectSymbolsByPackage(packageFqName: FqName, consumer: MutableCollection<KaSymbol>) {
-        val symbol = getPackageSymbolIfPackageExists(packageFqName)
+        val symbol = findPackage(packageFqName)
         consumer.addIfNotNull(symbol)
     }
 
     private fun KaSession.collectSymbolsByClassId(classId: ClassId, consumer: MutableCollection<KaSymbol>) {
-        val symbol = getClassOrObjectSymbolByClassId(classId) ?: getTypeAliasByClassId(classId)
+        val symbol = findClass(classId) ?: findTypeAlias(classId)
         consumer.addIfNotNull(symbol)
     }
 
@@ -423,14 +422,14 @@ internal object KDocReferenceResolver {
     ) {
         when (val classId = callableId.classId) {
             null -> {
-                consumer.addAll(getTopLevelCallableSymbols(callableId.packageName, callableId.callableName))
+                consumer.addAll(findTopLevelCallables(callableId.packageName, callableId.callableName))
             }
 
             else -> {
-                val symbol = getClassOrObjectSymbolByClassId(classId)
+                val symbol = findClass(classId)
                 if (symbol != null) {
                     val scope = getCompositeCombinedMemberAndCompanionObjectScope(symbol)
-                    consumer.addAll(scope.getCallableSymbols(callableId.callableName))
+                    consumer.addAll(scope.callables(callableId.callableName))
                 }
             }
         }

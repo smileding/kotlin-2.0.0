@@ -21,8 +21,8 @@ abstract class AbstractExpectedExpressionTypeTest : AbstractAnalysisApiBasedTest
 
         val actualExpectedTypeText: String? = executeOnPooledThreadInReadAction {
             analyseForTest(expressionAtCaret) {
-                val expectedType = expressionAtCaret.getExpectedType() ?: return@analyseForTest null
-                DebugSymbolRenderer().renderType(analysisSession, expectedType)
+                val expectedType = expressionAtCaret.expectedType ?: return@analyseForTest null
+                DebugSymbolRenderer().renderType(useSiteSession, expectedType)
             }
         }
 

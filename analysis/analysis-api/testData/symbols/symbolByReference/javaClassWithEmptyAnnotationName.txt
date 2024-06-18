@@ -1,5 +1,5 @@
 KaNamedClassOrObjectSymbol:
-  annotationsList: [
+  annotations: [
     <error>()
       psi: null
   ]
@@ -14,16 +14,16 @@ KaNamedClassOrObjectSymbol:
   isFun: false
   isInline: false
   isInner: false
+  location: TOP_LEVEL
   modality: OPEN
   name: JavaClass
-  origin: JAVA
+  origin: JAVA_SOURCE
   superTypes: [
     KaUsualClassType:
-      annotationsList: []
+      annotations: []
       typeArguments: []
       type: kotlin/Any
   ]
-  symbolKind: TOP_LEVEL
   typeParameters: []
   visibility: Public
   getContainingFileSymbol: null

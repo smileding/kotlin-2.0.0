@@ -55,14 +55,14 @@ sealed class SymbolData {
 
     data class PackageData(val packageFqName: FqName) : SymbolData() {
         override fun KaSession.toSymbols(ktFile: KtFile): List<KaSymbol> {
-            val symbol = getPackageSymbolIfPackageExists(packageFqName) ?: error("Cannot find a symbol for the package `$packageFqName`.")
+            val symbol = findPackage(packageFqName) ?: error("Cannot find a symbol for the package `$packageFqName`.")
             return listOf(symbol)
         }
     }
 
     data class ClassData(val classId: ClassId) : SymbolData() {
         override fun KaSession.toSymbols(ktFile: KtFile): List<KaSymbol> {
-            val symbol = getClassOrObjectSymbolByClassId(classId) ?: error("Class $classId is not found")
+            val symbol = findClass(classId) ?: error("Class $classId is not found")
             return listOf(symbol)
         }
     }
@@ -70,13 +70,13 @@ sealed class SymbolData {
     object ScriptData : SymbolData() {
         override fun KaSession.toSymbols(ktFile: KtFile): List<KaSymbol> {
             val script = ktFile.script ?: error("Script is not found")
-            return listOf(script.getScriptSymbol())
+            return listOf(script.symbol)
         }
     }
 
     data class TypeAliasData(val classId: ClassId) : SymbolData() {
         override fun KaSession.toSymbols(ktFile: KtFile): List<KaSymbol> {
-            val symbol = getTypeAliasByClassId(classId) ?: error("Type alias $classId is not found")
+            val symbol = findTypeAlias(classId) ?: error("Type alias $classId is not found")
             return listOf(symbol)
         }
     }
@@ -86,9 +86,9 @@ sealed class SymbolData {
             val classId = callableId.classId
 
             val symbols = if (classId == null) {
-                getTopLevelCallableSymbols(callableId.packageName, callableId.callableName).toList()
+                findTopLevelCallables(callableId.packageName, callableId.callableName).toList()
             } else {
-                val classSymbol = getClassOrObjectSymbolByClassId(classId) ?: error("Class $classId is not found")
+                val classSymbol = findClass(classId) ?: error("Class $classId is not found")
                 findMatchingCallableSymbols(classSymbol)
             }
 
@@ -100,30 +100,31 @@ sealed class SymbolData {
         }
 
         private fun KaSession.findMatchingCallableSymbols(classSymbol: KaClassOrObjectSymbol): List<KaCallableSymbol> {
-            val declaredSymbols = classSymbol.getCombinedDeclaredMemberScope()
-                .getCallableSymbols(callableId.callableName).toList()
+            val declaredSymbols = classSymbol.combinedDeclaredMemberScope
+                .callables(callableId.callableName).toList()
 
             if (declaredSymbols.isNotEmpty()) {
                 return declaredSymbols
             }
 
             // Fake overrides are absent in the declared member scope
-            return classSymbol.getCombinedMemberScope()
-                .getCallableSymbols(callableId.callableName)
-                .filter { it.getContainingSymbol() == classSymbol }
+            return classSymbol.combinedMemberScope
+                .callables(callableId.callableName)
+                .filter { it.containingSymbol == classSymbol }
                 .toList()
         }
     }
 
     data class EnumEntryInitializerData(val enumEntryId: CallableId) : SymbolData() {
         override fun KaSession.toSymbols(ktFile: KtFile): List<KaSymbol> {
-            val classSymbol = enumEntryId.classId?.let { getClassOrObjectSymbolByClassId(it) }
+            val classSymbol = enumEntryId.classId?.let { findClass(it) }
                 ?: error("Cannot find enum class `${enumEntryId.classId}`.")
 
             require(classSymbol is KaNamedClassOrObjectSymbol) { "`${enumEntryId.classId}` must be a named class." }
             require(classSymbol.classKind == KaClassKind.ENUM_CLASS) { "`${enumEntryId.classId}` must be an enum class." }
 
-            val enumEntrySymbol = classSymbol.getEnumEntries().find { it.name == enumEntryId.callableName }
+            @Suppress("DEPRECATION")
+            val enumEntrySymbol = classSymbol.enumEntries.find { it.name == enumEntryId.callableName }
                 ?: error("Cannot find enum entry symbol `$enumEntryId`.")
 
             val initializerSymbol = enumEntrySymbol.enumEntryInitializer ?: error("`${enumEntryId.callableName}` must have an initializer.")
@@ -133,11 +134,11 @@ sealed class SymbolData {
 
     data class SamConstructorData(val classId: ClassId) : SymbolData() {
         override fun KaSession.toSymbols(ktFile: KtFile): List<KaSymbol> {
-            val symbol = getClassOrObjectSymbolByClassId(classId)
-                ?: getTypeAliasByClassId(classId)
+            val symbol = findClass(classId)
+                ?: findTypeAlias(classId)
                 ?: error("Class-like symbol is not found by '$classId'")
 
-            val samConstructor = symbol.getSamConstructor() ?: error("SAM constructor is not found for symbol '$symbol'")
+            val samConstructor = symbol.samConstructor ?: error("SAM constructor is not found for symbol '$symbol'")
             return listOf(samConstructor)
         }
     }

@@ -7,38 +7,36 @@ package org.jetbrains.kotlin.analysis.api.diagnostics
 
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.diagnostics.Severity
-import org.jetbrains.kotlin.analysis.api.lifetime.KaLifetimeToken
 import org.jetbrains.kotlin.analysis.api.lifetime.KaLifetimeOwner
-import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
 import kotlin.reflect.KClass
 
+public enum class KaSeverity {
+    ERROR,
+    WARNING,
+    INFO
+}
+
 public interface KaDiagnostic : KaLifetimeOwner {
-    public val severity: Severity
-    public val factoryName: String?
+    public val diagnosticClass: KClass<*>
+    public val factoryName: String
+    public val severity: KaSeverity
+
     public val defaultMessage: String
 }
 
+@Deprecated("Use 'KaDiagnostic' instead", ReplaceWith("KaDiagnostic"))
 public typealias KtDiagnostic = KaDiagnostic
 
 public interface KaDiagnosticWithPsi<out PSI : PsiElement> : KaDiagnostic {
+    public override val diagnosticClass: KClass<out KaDiagnosticWithPsi<PSI>>
+
     public val psi: PSI
     public val textRanges: Collection<TextRange>
-    public val diagnosticClass: KClass<out KaDiagnosticWithPsi<PSI>>
 }
 
+@Deprecated("Use 'KaDiagnosticWithPsi' instead", ReplaceWith("KaDiagnosticWithPsi<PSI>"))
 public typealias KtDiagnosticWithPsi<PSI> = KaDiagnosticWithPsi<PSI>
 
-public class KaNonBoundToPsiErrorDiagnostic(
-    override val factoryName: String?,
-    override val defaultMessage: String,
-    override val token: KaLifetimeToken,
-) : KaDiagnostic {
-    override val severity: Severity get() = withValidityAssertion { Severity.ERROR }
+public fun KaDiagnostic.getDefaultMessageWithFactoryName(): String {
+    return "[$factoryName] $defaultMessage"
 }
-
-public typealias KtNonBoundToPsiErrorDiagnostic = KaNonBoundToPsiErrorDiagnostic
-
-public fun KaDiagnostic.getDefaultMessageWithFactoryName(): String =
-    if (factoryName == null) defaultMessage
-    else "[$factoryName] $defaultMessage"

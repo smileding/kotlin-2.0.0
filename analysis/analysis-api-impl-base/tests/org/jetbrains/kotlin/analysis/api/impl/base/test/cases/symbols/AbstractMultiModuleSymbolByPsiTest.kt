@@ -31,13 +31,13 @@ abstract class AbstractMultiModuleSymbolByPsiTest : AbstractAnalysisApiBasedTest
             prettyPrinter.appendLine(fileDirective)
 
             analyseForTest(file) {
-                val fileSymbol = file.getFileSymbol()
+                val fileSymbol = file.symbol
                 file.forEachDescendantOfType<KtDeclaration>(predicate = { it.isValidForSymbolCreation }) { declaration ->
-                    val symbol = declaration.getSymbol()
+                    val symbol = declaration.symbol
 
                     checkContainingFileSymbol(fileSymbol, symbol, testServices)
 
-                    debugPrinter.appendLine(debugRenderer.render(analysisSession, symbol))
+                    debugPrinter.appendLine(debugRenderer.render(useSiteSession, symbol))
                     debugPrinter.appendLine()
 
                     prettyPrinter.withIndents(indentCount = declaration.parentsOfType<KtDeclaration>(withSelf = false).count()) {

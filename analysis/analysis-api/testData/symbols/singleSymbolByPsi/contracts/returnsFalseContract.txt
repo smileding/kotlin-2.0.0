@@ -1,5 +1,5 @@
 KaFunctionSymbol:
-  annotationsList: [
+  annotations: [
     kotlin/OptIn(markerClass = [kotlin.contracts.ExperimentalContracts::class])
       psi: KtAnnotationEntry
   ]
@@ -18,7 +18,7 @@ KaFunctionSymbol:
             KaContractParameterValue:
               parameterSymbol:
                 KaValueParameterSymbol:
-                  annotationsList: []
+                  annotations: []
                   callableId: null
                   contextReceivers: []
                   generatedPrimaryConstructorProperty: null
@@ -28,14 +28,14 @@ KaFunctionSymbol:
                   isImplicitLambdaParameter: false
                   isNoinline: false
                   isVararg: false
+                  location: LOCAL
                   name: foo
                   origin: SOURCE
                   receiverParameter: null
                   returnType: KaUsualClassType:
-                    annotationsList: []
+                    annotations: []
                     typeArguments: []
                     type: kotlin/Any?
-                  symbolKind: LOCAL
                   typeParameters: []
                   getContainingFileSymbol: KaFileSymbol(returnsFalseContract.kt)
                   getContainingJvmClassName: ReturnsFalseContractKt
@@ -56,19 +56,19 @@ KaFunctionSymbol:
   isStatic: false
   isSuspend: false
   isTailRec: false
+  location: TOP_LEVEL
   modality: FINAL
   name: returnsFalseContract
   origin: SOURCE
   receiverParameter: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Boolean
-  symbolKind: TOP_LEVEL
   typeParameters: []
   valueParameters: [
     KaValueParameterSymbol:
-      annotationsList: []
+      annotations: []
       callableId: null
       contextReceivers: []
       generatedPrimaryConstructorProperty: null
@@ -78,14 +78,14 @@ KaFunctionSymbol:
       isImplicitLambdaParameter: false
       isNoinline: false
       isVararg: false
+      location: LOCAL
       name: foo
       origin: SOURCE
       receiverParameter: null
       returnType: KaUsualClassType:
-        annotationsList: []
+        annotations: []
         typeArguments: []
         type: kotlin/Any?
-      symbolKind: LOCAL
       typeParameters: []
       getContainingFileSymbol: KaFileSymbol(returnsFalseContract.kt)
       getContainingJvmClassName: ReturnsFalseContractKt

@@ -1,5 +1,5 @@
 KaValueParameterSymbol:
-  annotationsList: []
+  annotations: []
   callableId: null
   contextReceivers: []
   generatedPrimaryConstructorProperty: null
@@ -9,14 +9,14 @@ KaValueParameterSymbol:
   isImplicitLambdaParameter: false
   isNoinline: false
   isVararg: false
+  location: LOCAL
   name: it
   origin: SOURCE
   receiverParameter: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Int
-  symbolKind: LOCAL
   typeParameters: []
   getContainingFileSymbol: KaFileSymbol(explicitLambdaParameter.kt)
   getContainingJvmClassName: null

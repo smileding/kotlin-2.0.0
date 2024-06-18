@@ -7,9 +7,18 @@ package org.jetbrains.kotlin.analysis.api.fir.components
 
 import org.jetbrains.kotlin.analysis.api.components.KaSubstitutorProvider
 import org.jetbrains.kotlin.analysis.api.fir.KaFirSession
+import org.jetbrains.kotlin.analysis.api.fir.symbols.KaFirTypeParameterSymbol
+import org.jetbrains.kotlin.analysis.api.fir.types.KaFirGenericSubstitutor
+import org.jetbrains.kotlin.analysis.api.fir.types.KaFirMapBackedSubstitutor
+import org.jetbrains.kotlin.analysis.api.fir.types.KaFirType
 import org.jetbrains.kotlin.analysis.api.fir.utils.firSymbol
+import org.jetbrains.kotlin.analysis.api.impl.base.components.KaSessionComponent
+import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassOrObjectSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaTypeParameterSymbol
 import org.jetbrains.kotlin.analysis.api.types.KaSubstitutor
+import org.jetbrains.kotlin.analysis.api.types.KaType
+import org.jetbrains.kotlin.fir.resolve.substitution.ConeSubstitutorByMap
 import org.jetbrains.kotlin.fir.resolve.substitution.chain
 import org.jetbrains.kotlin.fir.scopes.substitutorForSuperType
 import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
@@ -18,29 +27,27 @@ import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.toRegularClassSymbol
 
 internal class KaFirSubstitutorProvider(
-    override val analysisSession: KaFirSession,
-) : KaSubstitutorProvider(), KaFirSessionComponent {
-    override fun createSubstitutor(
-        subClass: KaClassOrObjectSymbol,
-        superClass: KaClassOrObjectSymbol,
-    ): KaSubstitutor? {
-        if (subClass == superClass) return KaSubstitutor.Empty(token)
+    override val analysisSessionProvider: () -> KaFirSession
+) : KaSessionComponent<KaFirSession>(), KaSubstitutorProvider, KaFirSessionComponent {
+    override fun createInheritanceTypeSubstitutor(subClass: KaClassOrObjectSymbol, superClass: KaClassOrObjectSymbol): KaSubstitutor? {
+        withValidityAssertion {
+            if (subClass == superClass) return KaSubstitutor.Empty(token)
 
-        val baseFirSymbol = subClass.firSymbol
-        val superFirSymbol = superClass.firSymbol
-        val inheritancePath = collectInheritancePath(baseFirSymbol, superFirSymbol) ?: return null
-        val substitutors = inheritancePath.map { (type, symbol) ->
-            type.substitutorForSuperType(rootModuleSession, symbol)
-        }
-        return when (substitutors.size) {
-            0 -> KaSubstitutor.Empty(token)
-            else -> {
-                val chained = substitutors.reduce { left, right -> left.chain(right) }
-                firSymbolBuilder.typeBuilder.buildSubstitutor(chained)
+            val baseFirSymbol = subClass.firSymbol
+            val superFirSymbol = superClass.firSymbol
+            val inheritancePath = collectInheritancePath(baseFirSymbol, superFirSymbol) ?: return null
+            val substitutors = inheritancePath.map { (type, symbol) ->
+                type.substitutorForSuperType(rootModuleSession, symbol)
+            }
+            return when (substitutors.size) {
+                0 -> KaSubstitutor.Empty(token)
+                else -> {
+                    val chained = substitutors.reduce { left, right -> left.chain(right) }
+                    firSymbolBuilder.typeBuilder.buildSubstitutor(chained)
+                }
             }
         }
     }
-
 
     private fun collectInheritancePath(
         baseSymbol: FirClassSymbol<*>,
@@ -71,4 +78,20 @@ internal class KaFirSubstitutorProvider(
         return result?.reversed()
     }
 
+    override fun createSubstitutor(mappings: Map<KaTypeParameterSymbol, KaType>): KaSubstitutor = withValidityAssertion {
+        if (mappings.isEmpty()) return KaSubstitutor.Empty(token)
+
+        val firSubstitution = buildMap {
+            mappings.forEach { (ktTypeParameterSymbol, ktType) ->
+                check(ktTypeParameterSymbol is KaFirTypeParameterSymbol)
+                check(ktType is KaFirType)
+                put(ktTypeParameterSymbol.firSymbol, ktType.coneType)
+            }
+        }
+
+        return when (val coneSubstitutor = ConeSubstitutorByMap.create(firSubstitution, analysisSession.firSession)) {
+            is ConeSubstitutorByMap -> KaFirMapBackedSubstitutor(coneSubstitutor, analysisSession.firSymbolBuilder)
+            else -> KaFirGenericSubstitutor(coneSubstitutor, analysisSession.firSymbolBuilder)
+        }
+    }
 }

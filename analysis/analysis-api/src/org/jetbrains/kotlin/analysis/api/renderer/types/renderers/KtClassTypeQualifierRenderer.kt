@@ -5,15 +5,17 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.types.renderers
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.renderer.types.KaTypeRenderer
+import org.jetbrains.kotlin.analysis.api.types.KaClassType
 import org.jetbrains.kotlin.analysis.api.types.KaClassTypeQualifier
-import org.jetbrains.kotlin.analysis.api.types.KaNonErrorClassType
 import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.renderer.render
 
+@KaExperimentalApi
 public interface KaClassTypeQualifierRenderer {
     public fun renderClassTypeQualifier(
         analysisSession: KaSession,
@@ -62,7 +64,7 @@ public interface KaClassTypeQualifierRenderer {
             printer {
                 ".".separated(
                     {
-                        if (type is KaNonErrorClassType && type.classId.packageFqName != CallableId.PACKAGE_FQ_NAME_FOR_LOCAL) {
+                        if (type is KaClassType && type.classId.packageFqName != CallableId.PACKAGE_FQ_NAME_FOR_LOCAL) {
                             append(type.classId.packageFqName.render())
                         }
                     },
@@ -76,8 +78,11 @@ public interface KaClassTypeQualifierRenderer {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaClassTypeQualifierRenderer' instead", ReplaceWith("KaClassTypeQualifierRenderer"))
 public typealias KtClassTypeQualifierRenderer = KaClassTypeQualifierRenderer
 
+@OptIn(KaExperimentalApi::class)
 private fun KaClassTypeQualifier.render(
     analysisSession: KaSession,
     type: KaType,

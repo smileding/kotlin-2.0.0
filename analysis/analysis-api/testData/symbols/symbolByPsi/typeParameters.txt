@@ -1,12 +1,13 @@
 KaTypeParameterSymbol:
-  annotationsList: []
+  annotations: []
   isReified: false
+  location: LOCAL
   name: T
   origin: SOURCE
   typeParameters: []
   upperBounds: [
     KaClassErrorType:
-      annotationsList: []
+      annotations: []
       type: ERROR_TYPE
   ]
   variance: INVARIANT
@@ -15,19 +16,19 @@ KaTypeParameterSymbol:
   deprecationStatus: null
 
 KaLocalVariableSymbol:
-  annotationsList: []
+  annotations: []
   callableId: null
   contextReceivers: []
   isExtension: false
   isVal: true
+  location: LOCAL
   name: x
   origin: SOURCE
   receiverParameter: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Int
-  symbolKind: LOCAL
   typeParameters: []
   getContainingFileSymbol: KaFileSymbol(typeParameters.kt)
   getContainingJvmClassName: null
@@ -35,7 +36,7 @@ KaLocalVariableSymbol:
   deprecationStatus: null
 
 KaFunctionSymbol:
-  annotationsList: []
+  annotations: []
   callableId: /f
   contextReceivers: []
   contractEffects: []
@@ -52,15 +53,15 @@ KaFunctionSymbol:
   isStatic: false
   isSuspend: false
   isTailRec: false
+  location: TOP_LEVEL
   modality: FINAL
   name: f
   origin: SOURCE
   receiverParameter: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Unit
-  symbolKind: TOP_LEVEL
   typeParameters: []
   valueParameters: []
   visibility: Public

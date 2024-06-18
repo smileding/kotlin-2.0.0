@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.annotations.KaAnnotated
 import org.jetbrains.kotlin.analysis.api.symbols.KaDeclarationSymbol
@@ -13,6 +14,7 @@ import org.jetbrains.kotlin.analysis.api.symbols.KaTypeParameterSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaValueParameterSymbol
 import org.jetbrains.kotlin.analysis.api.types.KaType
 
+@KaExperimentalApi
 public interface KaRendererCodeStyle {
     public fun getIndentSize(analysisSession: KaSession): Int
 
@@ -31,8 +33,11 @@ public interface KaRendererCodeStyle {
     ): String
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaRendererCodeStyle' instead", ReplaceWith("KaRendererCodeStyle"))
 public typealias KtRendererCodeStyle = KaRendererCodeStyle
 
+@KaExperimentalApi
 public object KaRecommendedRendererCodeStyle : KaRendererCodeStyle {
     override fun getIndentSize(analysisSession: KaSession): Int = 4
 
@@ -67,4 +72,6 @@ public object KaRecommendedRendererCodeStyle : KaRendererCodeStyle {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaRecommendedRendererCodeStyle' instead", ReplaceWith("KaRecommendedRendererCodeStyle"))
 public typealias KtRecommendedRendererCodeStyle = KaRecommendedRendererCodeStyle

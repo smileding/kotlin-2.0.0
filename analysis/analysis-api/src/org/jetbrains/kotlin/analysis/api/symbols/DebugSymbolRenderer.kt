@@ -9,17 +9,12 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.analysis.api.*
 import org.jetbrains.kotlin.analysis.api.annotations.*
 import org.jetbrains.kotlin.analysis.api.base.KaContextReceiver
-import org.jetbrains.kotlin.analysis.api.components.KaSymbolContainingDeclarationProviderMixIn
-import org.jetbrains.kotlin.analysis.api.components.KaSymbolInfoProviderMixIn
 import org.jetbrains.kotlin.analysis.api.contracts.description.Context
 import org.jetbrains.kotlin.analysis.api.contracts.description.KaContractEffectDeclaration
 import org.jetbrains.kotlin.analysis.api.contracts.description.renderKaContractEffectDeclaration
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KaNamedSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KaPossiblyNamedSymbol
-import org.jetbrains.kotlin.analysis.api.types.KaClassTypeQualifier
-import org.jetbrains.kotlin.analysis.api.types.KaErrorType
-import org.jetbrains.kotlin.analysis.api.types.KaNonErrorClassType
-import org.jetbrains.kotlin.analysis.api.types.KaType
+import org.jetbrains.kotlin.analysis.api.types.*
 import org.jetbrains.kotlin.analysis.project.structure.KtModule
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 import org.jetbrains.kotlin.analysis.utils.printer.prettyPrint
@@ -40,6 +35,8 @@ import kotlin.reflect.KVisibility
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.isAccessible
 
+@KaNonPublicApi
+@OptIn(KaExperimentalApi::class)
 public class DebugSymbolRenderer(
     public val renderExtra: Boolean = false,
     public val renderTypeByProperties: Boolean = false,
@@ -50,7 +47,7 @@ public class DebugSymbolRenderer(
         return prettyPrint { analysisSession.renderSymbol(symbol, this@prettyPrint) }
     }
 
-    public fun renderAnnotationApplication(analysisSession: KaSession, application: KaAnnotationApplication): String {
+    public fun renderAnnotationApplication(analysisSession: KaSession, application: KaAnnotation): String {
         return prettyPrint { analysisSession.renderAnnotationApplication(application, this@prettyPrint) }
     }
 
@@ -64,40 +61,31 @@ public class DebugSymbolRenderer(
         if (!renderExtra) return
         printer.withIndent {
             @Suppress("DEPRECATION")
-            (symbol as? KaCallableSymbol)?.getDispatchReceiverType()?.let { dispatchType ->
+            (symbol as? KaCallableSymbol)?.dispatchReceiverType?.let { dispatchType ->
                 appendLine().append("getDispatchReceiver()").append(": ")
                 renderType(dispatchType, printer)
             }
 
-            KaSymbolContainingDeclarationProviderMixIn::class
-                .declaredMemberExtensionFunctions
-                .filterNot {
-                    // Rendering a containing symbol is prone to stack overflow.
-                    // * function symbol will render its value parameter symbol(s)
-                    //   whose containing symbol is that function symbol.
-                    // * property symbol contains accessor symbol(s) and/or backing field symbol
-                    //   whose containing symbol is that property symbol.
-                    it.name == "getContainingSymbol"
-                }
-                .forEach {
-                    if (it.name == "getContainingJvmClassName") {
-                        if (symbol is KaCallableSymbol) {
-                            appendLine()
-                            renderFunction(it, printer, renderSymbolsFully = false, analysisSession, symbol)
-                        }
-                    } else {
-                        appendLine()
-                        renderFunction(it, printer, renderSymbolsFully = false, analysisSession, symbol)
-                    }
-                }
+            renderComputedValue("getContainingFileSymbol", printer) { symbol.containingFile }
 
-            KaSymbolInfoProviderMixIn::class.declaredMemberExtensionProperties
-                .asSequence()
-                .filter { (it.extensionReceiverParameter?.type?.classifier as? KClass<*>)?.isInstance(symbol) == true }
-                .forEach {
-                    appendLine()
-                    renderProperty(it, printer, renderSymbolsFully = false, analysisSession, symbol)
-                }
+            if (symbol is KaCallableSymbol) {
+                renderComputedValue("getContainingJvmClassName", printer) { symbol.containingJvmClassName }
+            }
+
+            renderComputedValue("getContainingModule", printer) { symbol.containingModule }
+
+            if (symbol is KaClassOrObjectSymbol) {
+                renderComputedValue("annotationApplicableTargets", printer) { symbol.annotationApplicableTargets }
+            }
+
+            renderComputedValue("deprecationStatus", printer) { symbol.deprecationStatus }
+
+            if (symbol is KaPropertySymbol) {
+                renderComputedValue("getterDeprecationStatus", printer) { symbol.getterDeprecationStatus }
+                renderComputedValue("javaGetterName", printer) { symbol.javaGetterName }
+                renderComputedValue("javaSetterName", printer) { symbol.javaSetterName }
+                renderComputedValue("setterDeprecationStatus", printer) { symbol.setterDeprecationStatus }
+            }
         }
     }
 
@@ -118,14 +106,18 @@ public class DebugSymbolRenderer(
         }
     }
 
-    private fun KaSession.renderFunction(
-        function: KFunction<*>,
-        printer: PrettyPrinter,
-        renderSymbolsFully: Boolean,
-        vararg args: Any,
-    ) {
-        printer.append(function.name).append(": ")
-        renderFunctionCall(function, printer, renderSymbolsFully, args)
+    private fun KaSession.renderComputedValue(name: String, printer: PrettyPrinter, block: () -> Any?) {
+        printer.appendLine()
+        printer.append(name).append(": ")
+
+        val value = try {
+            block()
+        } catch (e: Throwable) {
+            printer.append("Could not render due to ").appendLine(e.toString())
+            return
+        }
+
+        renderValue(value, printer, renderSymbolsFully = false)
     }
 
     private fun KaSession.renderProperty(
@@ -158,7 +150,7 @@ public class DebugSymbolRenderer(
         printer.withIndent {
             val members = apiClass.members
                 .filterIsInstance<KProperty<*>>()
-                .filter { it.name !in ignoredPropertyNames }
+                .filter { !it.hasAnnotation<Deprecated>() && it.name !in ignoredPropertyNames }
                 .sortedBy { it.name }
             appendLine()
             printCollectionIfNotEmpty(members, separator = "\n") { member ->
@@ -234,10 +226,10 @@ public class DebugSymbolRenderer(
             if (renderTypeByProperties) {
                 renderByPropertyNames(typeToRender, printer)
             } else {
-                append("annotationsList: ")
-                renderAnnotationsList(typeToRender.annotationsList, printer)
+                append("annotations: ")
+                renderAnnotationsList(typeToRender.annotations, printer)
 
-                if (typeToRender is KaNonErrorClassType) {
+                if (typeToRender is KaClassType) {
                     appendLine()
                     append("typeArguments: ")
                     renderList(typeToRender.typeArguments, printer, renderSymbolsFully = false)
@@ -266,19 +258,15 @@ public class DebugSymbolRenderer(
         }
     }
 
-    private fun KaSession.renderAnnotationApplication(call: KaAnnotationApplication, printer: PrettyPrinter) {
+    private fun KaSession.renderAnnotationApplication(call: KaAnnotation, printer: PrettyPrinter) {
         with(printer) {
             renderValue(call.classId, printer, renderSymbolsFully = false)
             append('(')
-            if (call is KaAnnotationApplicationWithArgumentsInfo) {
-                call.arguments.sortedBy { it.name }.forEachIndexed { index, value ->
-                    if (index > 0) {
-                        append(", ")
-                    }
-                    renderValue(value, printer, renderSymbolsFully = false)
+            call.arguments.sortedBy { it.name }.forEachIndexed { index, value ->
+                if (index > 0) {
+                    append(", ")
                 }
-            } else {
-                append("isCallWithArguments=${call.isCallWithArguments}")
+                renderValue(value, printer, renderSymbolsFully = false)
             }
             append(')')
 
@@ -316,8 +304,8 @@ public class DebugSymbolRenderer(
             is KaNamedAnnotationValue -> renderNamedConstantValue(value, printer)
             is KaInitializerValue -> renderKtInitializerValue(value, printer)
             is KaContextReceiver -> renderContextReceiver(value, printer)
-            is KaAnnotationApplication -> renderAnnotationApplication(value, printer)
-            is KaAnnotationsList -> renderAnnotationsList(value, printer)
+            is KaAnnotation -> renderAnnotationApplication(value, printer)
+            is KaAnnotationList -> renderAnnotationsList(value, printer)
             is KtModule -> renderKtModule(value, printer)
             // Other custom values
             is Name -> printer.append(value.asString())
@@ -396,7 +384,7 @@ public class DebugSymbolRenderer(
             when (value) {
                 is KaConstantInitializerValue -> {
                     append("KtConstantInitializerValue(")
-                    append(value.constant.renderAsKotlinConstant())
+                    append(value.constant.render())
                     append(")")
                 }
 
@@ -415,8 +403,8 @@ public class DebugSymbolRenderer(
         }
     }
 
-    private fun KaSession.renderAnnotationsList(value: KaAnnotationsList, printer: PrettyPrinter) {
-        renderList(value.annotations, printer, renderSymbolsFully = false)
+    private fun KaSession.renderAnnotationsList(value: KaAnnotationList, printer: PrettyPrinter) {
+        renderList(value, printer, renderSymbolsFully = false)
     }
 
     private fun getFrontendIndependentKClassOf(value: Any): KClass<*> {

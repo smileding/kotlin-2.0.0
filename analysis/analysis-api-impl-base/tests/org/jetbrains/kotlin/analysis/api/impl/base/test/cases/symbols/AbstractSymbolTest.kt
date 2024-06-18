@@ -117,12 +117,12 @@ abstract class AbstractSymbolTest : AbstractAnalysisApiBasedTest() {
                         when (symbol) {
                             is KaDeclarationSymbol -> symbol.render(prettyRenderer)
                             is KaFileSymbol -> prettyPrint {
-                                printCollection(symbol.getFileScope().getAllSymbols().asIterable(), separator = "\n\n") {
+                                printCollection(symbol.fileScope.declarations.asIterable(), separator = "\n\n") {
                                     append(it.render(prettyRenderer))
                                 }
                             }
 
-                            is KaReceiverParameterSymbol -> DebugSymbolRenderer().render(analysisSession, symbol)
+                            is KaReceiverParameterSymbol -> DebugSymbolRenderer().render(useSiteSession, symbol)
                             else -> error(symbol::class.toString())
                         },
                     )
@@ -167,12 +167,12 @@ abstract class AbstractSymbolTest : AbstractAnalysisApiBasedTest() {
     }
 
     private fun KaSession.checkContainingFiles(symbols: List<KaSymbol>, mainFile: KtFile, testServices: TestServices) {
-        val allowedContainingFileSymbols = getAllowedContainingFiles(mainFile, testServices).mapToSetOrEmpty { it.getFileSymbol() }
+        val allowedContainingFileSymbols = getAllowedContainingFiles(mainFile, testServices).mapToSetOrEmpty { it.symbol }
 
         for (symbol in symbols) {
             if (symbol.origin != KaSymbolOrigin.SOURCE) continue
 
-            val containingFileSymbol = symbol.getContainingFileSymbol()
+            val containingFileSymbol = symbol.containingFile
             if (containingFileSymbol !in allowedContainingFileSymbols) {
                 testServices.assertions.fail {
                     "Invalid file for `$symbol`: Found `$containingFileSymbol`, which is not an allowed file symbol."
@@ -310,7 +310,7 @@ abstract class AbstractSymbolTest : AbstractAnalysisApiBasedTest() {
 
     protected open fun KaSession.renderSymbolForComparison(symbol: KaSymbol, directives: RegisteredDirectives): String {
         val renderExpandedTypes = directives[PRETTY_RENDERER_OPTION].any { it == PrettyRendererOption.FULLY_EXPANDED_TYPES }
-        return with(DebugSymbolRenderer(renderExtra = true, renderExpandedTypes = renderExpandedTypes)) { render(analysisSession, symbol) }
+        return with(DebugSymbolRenderer(renderExtra = true, renderExpandedTypes = renderExpandedTypes)) { render(useSiteSession, symbol) }
     }
 }
 

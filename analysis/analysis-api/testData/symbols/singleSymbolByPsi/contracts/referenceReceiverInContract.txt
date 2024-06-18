@@ -1,5 +1,5 @@
 KaFunctionSymbol:
-  annotationsList: [
+  annotations: [
     kotlin/OptIn(markerClass = [kotlin.contracts.ExperimentalContracts::class])
       psi: KtAnnotationEntry
   ]
@@ -11,14 +11,15 @@ KaFunctionSymbol:
         KaContractParameterValue:
           parameterSymbol:
             KaReceiverParameterSymbol:
-              annotationsList: []
+              annotations: []
+              location: LOCAL
               origin: SOURCE
               owningCallableSymbol: KaFunctionSymbol(/referenceReceiverInContract)
-              type: KaFunctionalType:
-                annotationsList: []
+              type: KaFunctionType:
+                annotations: []
                 typeArguments: [
                   KaUsualClassType:
-                    annotationsList: []
+                    annotations: []
                     typeArguments: []
                     type: kotlin/Unit
                 ]
@@ -41,18 +42,20 @@ KaFunctionSymbol:
   isStatic: false
   isSuspend: false
   isTailRec: false
+  location: TOP_LEVEL
   modality: FINAL
   name: referenceReceiverInContract
   origin: SOURCE
   receiverParameter: KaReceiverParameterSymbol:
-    annotationsList: []
+    annotations: []
+    location: LOCAL
     origin: SOURCE
     owningCallableSymbol: KaFunctionSymbol(/referenceReceiverInContract)
-    type: KaFunctionalType:
-      annotationsList: []
+    type: KaFunctionType:
+      annotations: []
       typeArguments: [
         KaUsualClassType:
-          annotationsList: []
+          annotations: []
           typeArguments: []
           type: kotlin/Unit
       ]
@@ -61,10 +64,9 @@ KaFunctionSymbol:
     getContainingModule: KtSourceModule "Sources of main"
     deprecationStatus: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Unit
-  symbolKind: TOP_LEVEL
   typeParameters: []
   valueParameters: []
   visibility: Public

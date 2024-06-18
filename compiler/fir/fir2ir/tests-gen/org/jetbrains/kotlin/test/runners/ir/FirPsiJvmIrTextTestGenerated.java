@@ -640,6 +640,12 @@ public class FirPsiJvmIrTextTestGenerated extends AbstractFirPsiJvmIrTextTest {
       }
 
       @Test
+      @TestMetadata("annotationMixedTargeting.kt")
+      public void testAnnotationMixedTargeting() {
+        runTest("compiler/testData/ir/irText/declarations/annotations/annotationMixedTargeting.kt");
+      }
+
+      @Test
       @TestMetadata("annotationOnClassWithInitializer.kt")
       public void testAnnotationOnClassWithInitializer() {
         runTest("compiler/testData/ir/irText/declarations/annotations/annotationOnClassWithInitializer.kt");
@@ -1956,6 +1962,12 @@ public class FirPsiJvmIrTextTestGenerated extends AbstractFirPsiJvmIrTextTest {
     @TestMetadata("lambdaInCAO.kt")
     public void testLambdaInCAO() {
       runTest("compiler/testData/ir/irText/expressions/lambdaInCAO.kt");
+    }
+
+    @Test
+    @TestMetadata("lambdaWithParameterName.kt")
+    public void testLambdaWithParameterName() {
+      runTest("compiler/testData/ir/irText/expressions/lambdaWithParameterName.kt");
     }
 
     @Test

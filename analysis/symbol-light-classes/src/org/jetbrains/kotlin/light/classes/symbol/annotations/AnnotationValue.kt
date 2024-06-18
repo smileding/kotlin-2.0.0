@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.analysis.api.annotations.*
 import org.jetbrains.kotlin.analysis.api.base.KaConstantValue
 import org.jetbrains.kotlin.analysis.api.symbols.KaConstructorSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.pointers.KaSymbolPointer
-import org.jetbrains.kotlin.analysis.api.types.KaNonErrorClassType
+import org.jetbrains.kotlin.analysis.api.types.KaClassType
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
@@ -44,24 +44,19 @@ internal data class AnnotationApplication(
     val index: Int?,
 )
 
-internal fun KaAnnotationApplication.toLightClassAnnotationApplication(): AnnotationApplication {
-    val value = when (this) {
-        is KaAnnotationApplicationWithArgumentsInfo -> {
-            toLightClassAnnotationValue()
-        }
+internal fun KaAnnotation.toDumbLightClassAnnotationApplication(): AnnotationApplication {
+    val value = AnnotationValue.Annotation(
+        classId,
+        constructorSymbolPointer = constructorSymbol?.createPointer(),
+        arguments = emptyList(),
+        sourcePsi = null
+    )
 
-        else -> {
-            AnnotationValue.Annotation(
-                classId,
-                constructorSymbolPointer = null,
-                arguments = emptyList(),
-                sourcePsi = null
-            )
-        }
-    }
+    return AnnotationApplication(value, true, useSiteTarget, hasArguments, index)
+}
 
-    val isDumb = this is KaAnnotationApplicationInfo
-    return AnnotationApplication(value, isDumb, useSiteTarget, isCallWithArguments, index)
+internal fun KaAnnotation.toLightClassAnnotationApplication(): AnnotationApplication {
+    return AnnotationApplication(toLightClassAnnotationValue(), false, useSiteTarget, hasArguments, index)
 }
 
 internal sealed class AnnotationValue {
@@ -132,24 +127,24 @@ internal sealed class AnnotationValue {
     class Constant(val constant: KaConstantValue, override val sourcePsi: KtElement?) : AnnotationValue() {
         override fun equals(other: Any?) = this === other || (other is Constant && constant == other.constant)
         override fun hashCode(): Int = constant.hashCode()
-        override fun toString() = "Constant(" + constant.renderAsKotlinConstant() + ")"
+        override fun toString() = "Constant(" + constant.render() + ")"
     }
 }
 
 internal fun KaAnnotationValue.toLightClassAnnotationValue(): AnnotationValue {
     return when (this) {
-        is KaUnsupportedAnnotationValue -> AnnotationValue.Unsupported(sourcePsi)
-        is KaArrayAnnotationValue -> AnnotationValue.Array(values.map { it.toLightClassAnnotationValue() }, sourcePsi)
-        is KaAnnotationApplicationValue -> annotationValue.toLightClassAnnotationValue()
-        is KaKClassAnnotationValue -> toLightClassAnnotationValue()
-        is KaEnumEntryAnnotationValue -> AnnotationValue.EnumValue(callableId, sourcePsi)
-        is KaConstantAnnotationValue -> AnnotationValue.Constant(constantValue, sourcePsi)
+        is KaAnnotationValue.UnsupportedValue -> AnnotationValue.Unsupported(sourcePsi)
+        is KaAnnotationValue.ArrayValue -> AnnotationValue.Array(values.map { it.toLightClassAnnotationValue() }, sourcePsi)
+        is KaAnnotationValue.NestedAnnotationValue -> annotation.toLightClassAnnotationValue()
+        is KaAnnotationValue.ClassLiteralValue -> toLightClassAnnotationValue()
+        is KaAnnotationValue.EnumEntryValue -> AnnotationValue.EnumValue(callableId, sourcePsi)
+        is KaAnnotationValue.ConstantValue -> AnnotationValue.Constant(value, sourcePsi)
     }
 }
 
-internal fun KaKClassAnnotationValue.toLightClassAnnotationValue(): AnnotationValue.KClass {
+internal fun KaAnnotationValue.ClassLiteralValue.toLightClassAnnotationValue(): AnnotationValue.KClass {
     when (val type = type) {
-        is KaNonErrorClassType -> {
+        is KaClassType -> {
             val classId = type.classId.takeUnless { it.isLocal }
             return AnnotationValue.KClass(classId, isError = false, sourcePsi)
         }
@@ -161,7 +156,7 @@ internal fun KaKClassAnnotationValue.toLightClassAnnotationValue(): AnnotationVa
     }
 }
 
-internal fun KaAnnotationApplicationWithArgumentsInfo.toLightClassAnnotationValue(): AnnotationValue.Annotation {
+internal fun KaAnnotation.toLightClassAnnotationValue(): AnnotationValue.Annotation {
     val arguments = arguments.map { AnnotationArgument(it.name, it.expression.toLightClassAnnotationValue()) }
-    return AnnotationValue.Annotation(classId, constructorSymbolPointer, arguments, psi)
+    return AnnotationValue.Annotation(classId, constructorSymbol?.createPointer(), arguments, psi)
 }

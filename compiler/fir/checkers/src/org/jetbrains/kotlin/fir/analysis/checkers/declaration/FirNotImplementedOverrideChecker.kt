@@ -49,9 +49,10 @@ object FirNotImplementedOverrideChecker : FirClassChecker(MppCheckerKind.Platfor
         val sourceKind = source.kind
         if (sourceKind is KtFakeSourceElementKind && sourceKind != KtFakeSourceElementKind.EnumInitializer) return
         val modality = declaration.modality()
-        val canHaveAbstractDeclarations = modality == Modality.ABSTRACT || modality == Modality.SEALED
         val classKind = declaration.classKind
         if (classKind == ClassKind.ANNOTATION_CLASS || classKind == ClassKind.ENUM_CLASS) return
+        val canHaveAbstractDeclarations = modality == Modality.ABSTRACT || modality == Modality.SEALED ||
+                classKind == ClassKind.INTERFACE && modality == Modality.OPEN
         val classSymbol = declaration.symbol
 
         val classScope = declaration.unsubstitutedScope(context)
@@ -122,11 +123,12 @@ object FirNotImplementedOverrideChecker : FirClassChecker(MppCheckerKind.Platfor
 
         varsImplementedByInheritedVal.firstOrNull()?.let { symbol ->
             val implementationVal = symbol.intersections.first { it is FirPropertySymbol && it.isVal && !it.isAbstract }
+            val abstractVar = symbol.intersections.first { it is FirPropertySymbol && it.isVar && it.isAbstract }
             reporter.reportOn(
                 source,
                 VAR_IMPLEMENTED_BY_INHERITED_VAL,
                 classSymbol,
-                symbol as FirCallableSymbol<*>,
+                abstractVar,
                 implementationVal,
                 context,
             )

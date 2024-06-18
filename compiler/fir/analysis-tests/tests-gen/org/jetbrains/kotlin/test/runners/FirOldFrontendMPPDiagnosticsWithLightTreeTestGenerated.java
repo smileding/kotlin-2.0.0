@@ -146,6 +146,12 @@ public class FirOldFrontendMPPDiagnosticsWithLightTreeTestGenerated extends Abst
   }
 
   @Test
+  @TestMetadata("delegationToExpectInterfacesWithClashingScopes.kt")
+  public void testDelegationToExpectInterfacesWithClashingScopes() {
+    runTest("compiler/testData/diagnostics/tests/multiplatform/delegationToExpectInterfacesWithClashingScopes.kt");
+  }
+
+  @Test
   @TestMetadata("expectAbstractToString.kt")
   public void testExpectAbstractToString() {
     runTest("compiler/testData/diagnostics/tests/multiplatform/expectAbstractToString.kt");
@@ -386,6 +392,12 @@ public class FirOldFrontendMPPDiagnosticsWithLightTreeTestGenerated extends Abst
   }
 
   @Test
+  @TestMetadata("overloadsWithPotentialRecursion.kt")
+  public void testOverloadsWithPotentialRecursion() {
+    runTest("compiler/testData/diagnostics/tests/multiplatform/overloadsWithPotentialRecursion.kt");
+  }
+
+  @Test
   @TestMetadata("packageConflictsWithClassifierInMultiplatform.kt")
   public void testPackageConflictsWithClassifierInMultiplatform() {
     runTest("compiler/testData/diagnostics/tests/multiplatform/packageConflictsWithClassifierInMultiplatform.kt");
@@ -443,12 +455,6 @@ public class FirOldFrontendMPPDiagnosticsWithLightTreeTestGenerated extends Abst
   @TestMetadata("smartcastOnMemberPropertyFromCommonClass.kt")
   public void testSmartcastOnMemberPropertyFromCommonClass() {
     runTest("compiler/testData/diagnostics/tests/multiplatform/smartcastOnMemberPropertyFromCommonClass.kt");
-  }
-
-  @Test
-  @TestMetadata("stdlibWithActualizationErrors.kt")
-  public void testStdlibWithActualizationErrors() {
-    runTest("compiler/testData/diagnostics/tests/multiplatform/stdlibWithActualizationErrors.kt");
   }
 
   @Test
@@ -519,6 +525,24 @@ public class FirOldFrontendMPPDiagnosticsWithLightTreeTestGenerated extends Abst
     @TestMetadata("actualInnerClassMissingMember.kt")
     public void testActualInnerClassMissingMember() {
       runTest("compiler/testData/diagnostics/tests/multiplatform/actualAnnotationsNotMatchExpect/actualInnerClassMissingMember.kt");
+    }
+
+    @Test
+    @TestMetadata("actualizeExpectProtectedToJavaProtected.kt")
+    public void testActualizeExpectProtectedToJavaProtected() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/actualAnnotationsNotMatchExpect/actualizeExpectProtectedToJavaProtected.kt");
+    }
+
+    @Test
+    @TestMetadata("actualizePropertyByJavaField_supportedCase.kt")
+    public void testActualizePropertyByJavaField_supportedCase() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/actualAnnotationsNotMatchExpect/actualizePropertyByJavaField_supportedCase.kt");
+    }
+
+    @Test
+    @TestMetadata("actualizePropertyByJavaField_unsupportedCase.kt")
+    public void testActualizePropertyByJavaField_unsupportedCase() {
+      runTest("compiler/testData/diagnostics/tests/multiplatform/actualAnnotationsNotMatchExpect/actualizePropertyByJavaField_unsupportedCase.kt");
     }
 
     @Test

@@ -73,7 +73,7 @@ class LanguageVersionSettingsBuilder {
                         which will become obsolete at some point and the test won't check things like feature
                         intersection with newer releases.
 
-                        For language feature testing, use `// !LANGUAGE: [+-]FeatureName` directive instead,
+                        For language feature testing, use `// LANGUAGE: [+-]FeatureName` directive instead,
                         where FeatureName is an entry of the enum `LanguageFeature`
 
                         If you are really sure you need to pin language versions, use the LANGUAGE_VERSION
@@ -103,7 +103,6 @@ class LanguageVersionSettingsBuilder {
             analysisFlag(AnalysisFlags.explicitApiMode, directives.singleOrZeroValue(LanguageSettingsDirectives.EXPLICIT_API_MODE)),
             analysisFlag(AnalysisFlags.explicitReturnTypes, directives.singleOrZeroValue(LanguageSettingsDirectives.EXPLICIT_RETURN_TYPES_MODE)),
             analysisFlag(AnalysisFlags.allowKotlinPackage, trueOrNull(LanguageSettingsDirectives.ALLOW_KOTLIN_PACKAGE in directives)),
-            analysisFlag(AnalysisFlags.stdlibCompilation, trueOrNull(LanguageSettingsDirectives.STDLIB_COMPILATION in directives)),
             analysisFlag(AnalysisFlags.muteExpectActualClassesWarning, trueOrNull(LanguageSettingsDirectives.ENABLE_EXPECT_ACTUAL_CLASSES_WARNING in directives) != true),
             analysisFlag(AnalysisFlags.dontWarnOnErrorSuppression, trueOrNull(LanguageSettingsDirectives.DONT_WARN_ON_ERROR_SUPPRESSION in directives)),
 
@@ -141,7 +140,7 @@ class LanguageVersionSettingsBuilder {
         val matcher = LANGUAGE_FEATURE_PATTERN.matcher(featureString)
         if (!matcher.find()) {
             error(
-                """Wrong syntax in the '// !${LanguageSettingsDirectives.LANGUAGE.name}: ...' directive:
+                """Wrong syntax in the '// ${LanguageSettingsDirectives.LANGUAGE.name}: ...' directive:
                    found: '$featureString'
                    Must be '((+|-|warn:)LanguageFeatureName)+'
                    where '+' means 'enable', '-' means 'disable', 'warn:' means 'enable with warning'

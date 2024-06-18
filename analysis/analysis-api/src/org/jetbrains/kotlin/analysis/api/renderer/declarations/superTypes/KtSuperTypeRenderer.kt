@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.superTypes
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.KaDeclarationRenderer
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassOrObjectSymbol
@@ -12,6 +13,7 @@ import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 import org.jetbrains.kotlin.types.Variance
 
+@KaExperimentalApi
 public interface KaSuperTypeRenderer {
     public fun renderSuperType(
         analysisSession: KaSession,
@@ -37,4 +39,6 @@ public interface KaSuperTypeRenderer {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaSuperTypeRenderer' instead", ReplaceWith("KaSuperTypeRenderer"))
 public typealias KtSuperTypeRenderer = KaSuperTypeRenderer

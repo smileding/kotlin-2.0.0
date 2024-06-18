@@ -1,5 +1,5 @@
 KaFunctionSymbol:
-  annotationsList: [
+  annotations: [
     kotlin/OptIn(markerClass = [kotlin.contracts.ExperimentalContracts::class])
       psi: KtAnnotationEntry
   ]
@@ -11,7 +11,7 @@ KaFunctionSymbol:
         KaContractParameterValue:
           parameterSymbol:
             KaValueParameterSymbol:
-              annotationsList: []
+              annotations: []
               callableId: null
               contextReceivers: []
               generatedPrimaryConstructorProperty: null
@@ -21,19 +21,19 @@ KaFunctionSymbol:
               isImplicitLambdaParameter: false
               isNoinline: false
               isVararg: false
+              location: LOCAL
               name: block
               origin: SOURCE
               receiverParameter: null
-              returnType: KaFunctionalType:
-                annotationsList: []
+              returnType: KaFunctionType:
+                annotations: []
                 typeArguments: [
                   KaUsualClassType:
-                    annotationsList: []
+                    annotations: []
                     typeArguments: []
                     type: kotlin/Unit
                 ]
                 type: kotlin/Function0<kotlin/Unit>
-              symbolKind: LOCAL
               typeParameters: []
               getContainingFileSymbol: KaFileSymbol(callsInPlaceAtLeastOnceContract.kt)
               getContainingJvmClassName: CallsInPlaceAtLeastOnceContractKt
@@ -54,19 +54,19 @@ KaFunctionSymbol:
   isStatic: false
   isSuspend: false
   isTailRec: false
+  location: TOP_LEVEL
   modality: FINAL
   name: atLeastOnceContract
   origin: SOURCE
   receiverParameter: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Unit
-  symbolKind: TOP_LEVEL
   typeParameters: []
   valueParameters: [
     KaValueParameterSymbol:
-      annotationsList: []
+      annotations: []
       callableId: null
       contextReceivers: []
       generatedPrimaryConstructorProperty: null
@@ -76,19 +76,19 @@ KaFunctionSymbol:
       isImplicitLambdaParameter: false
       isNoinline: false
       isVararg: false
+      location: LOCAL
       name: block
       origin: SOURCE
       receiverParameter: null
-      returnType: KaFunctionalType:
-        annotationsList: []
+      returnType: KaFunctionType:
+        annotations: []
         typeArguments: [
           KaUsualClassType:
-            annotationsList: []
+            annotations: []
             typeArguments: []
             type: kotlin/Unit
         ]
         type: kotlin/Function0<kotlin/Unit>
-      symbolKind: LOCAL
       typeParameters: []
       getContainingFileSymbol: KaFileSymbol(callsInPlaceAtLeastOnceContract.kt)
       getContainingJvmClassName: CallsInPlaceAtLeastOnceContractKt

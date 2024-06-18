@@ -1,5 +1,5 @@
 KaPropertySetterSymbol:
-  annotationsList: [
+  annotations: [
     SetAnnotation()
       psi: KtAnnotationEntry
     ExplicitSetAnnotation()
@@ -13,10 +13,11 @@ KaPropertySetterSymbol:
   isExtension: false
   isInline: false
   isOverride: false
+  location: PROPERTY
   modality: FINAL
   origin: SOURCE
   parameter: KaValueParameterSymbol:
-    annotationsList: [
+    annotations: [
       ExplicitSetparamAnnotation()
         psi: KtAnnotationEntry
       SetparamAnnotation()
@@ -31,14 +32,14 @@ KaPropertySetterSymbol:
     isImplicitLambdaParameter: false
     isNoinline: false
     isVararg: false
+    location: LOCAL
     name: value
     origin: SOURCE
     receiverParameter: null
     returnType: KaUsualClassType:
-      annotationsList: []
+      annotations: []
       typeArguments: []
       type: kotlin/Int
-    symbolKind: LOCAL
     typeParameters: []
     getContainingFileSymbol: KaFileSymbol(setterWithAnnotations.kt)
     getContainingJvmClassName: null
@@ -46,14 +47,13 @@ KaPropertySetterSymbol:
     deprecationStatus: null
   receiverParameter: null
   returnType: KaUsualClassType:
-    annotationsList: []
+    annotations: []
     typeArguments: []
     type: kotlin/Unit
-  symbolKind: ACCESSOR
   typeParameters: []
   valueParameters: [
     KaValueParameterSymbol:
-      annotationsList: [
+      annotations: [
         ExplicitSetparamAnnotation()
           psi: KtAnnotationEntry
         SetparamAnnotation()
@@ -68,14 +68,14 @@ KaPropertySetterSymbol:
       isImplicitLambdaParameter: false
       isNoinline: false
       isVararg: false
+      location: LOCAL
       name: value
       origin: SOURCE
       receiverParameter: null
       returnType: KaUsualClassType:
-        annotationsList: []
+        annotations: []
         typeArguments: []
         type: kotlin/Int
-      symbolKind: LOCAL
       typeParameters: []
       getContainingFileSymbol: KaFileSymbol(setterWithAnnotations.kt)
       getContainingJvmClassName: null

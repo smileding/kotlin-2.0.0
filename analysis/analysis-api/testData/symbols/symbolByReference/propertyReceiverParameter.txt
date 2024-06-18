@@ -1,12 +1,13 @@
 KaReceiverParameterSymbol:
-  annotationsList: [
+  annotations: [
     ReceiverAnnotation()
       psi: KtAnnotationEntry
   ]
+  location: LOCAL
   origin: SOURCE
   owningCallableSymbol: KaKotlinPropertySymbol(/prop)
   type: KaUsualClassType:
-    annotationsList: [
+    annotations: [
       ReceiverTypeAnnotation()
         psi: KtAnnotationEntry
     ]

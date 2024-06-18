@@ -1,9 +1,10 @@
 KaTypeParameterSymbol:
-  annotationsList: [
+  annotations: [
     A()
       psi: KtAnnotationEntry
   ]
   isReified: false
+  location: LOCAL
   name: T
   origin: SOURCE
   typeParameters: []

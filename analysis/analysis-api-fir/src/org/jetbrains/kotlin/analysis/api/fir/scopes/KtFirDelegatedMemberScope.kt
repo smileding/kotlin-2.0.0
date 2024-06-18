@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.analysis.api.fir.scopes
 
 import org.jetbrains.kotlin.analysis.api.fir.KaSymbolByFirBuilder
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
-import org.jetbrains.kotlin.analysis.api.scopes.KaScopeNameFilter
 import org.jetbrains.kotlin.analysis.api.symbols.KaCallableSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaSymbolOrigin
 import org.jetbrains.kotlin.fir.scopes.FirContainingNamesAwareScope
@@ -17,12 +16,11 @@ internal class KaFirDelegatedMemberScope(
     firScope: FirContainingNamesAwareScope,
     builder: KaSymbolByFirBuilder
 ) : KaFirDelegatingNamesAwareScope(firScope, builder) {
-
-    override fun getCallableSymbols(nameFilter: KaScopeNameFilter): Sequence<KaCallableSymbol> = withValidityAssertion {
-        return super.getCallableSymbols(nameFilter).filter { it.origin == KaSymbolOrigin.DELEGATED }
+    override fun callables(nameFilter: (Name) -> Boolean): Sequence<KaCallableSymbol> = withValidityAssertion {
+        return super.callables(nameFilter).filter { it.origin == KaSymbolOrigin.DELEGATED }
     }
 
-    override fun getCallableSymbols(names: Collection<Name>): Sequence<KaCallableSymbol> = withValidityAssertion {
-        return super.getCallableSymbols(names).filter { it.origin == KaSymbolOrigin.DELEGATED }
+    override fun callables(names: Collection<Name>): Sequence<KaCallableSymbol> = withValidityAssertion {
+        return super.callables(names).filter { it.origin == KaSymbolOrigin.DELEGATED }
     }
 }

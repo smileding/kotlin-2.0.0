@@ -5,12 +5,14 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.declarations.superTypes
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.renderer.declarations.KaDeclarationRenderer
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassOrObjectSymbol
 import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.analysis.utils.printer.PrettyPrinter
 
+@KaExperimentalApi
 public interface KaSuperTypesCallArgumentsRenderer {
     public fun renderSuperTypeArguments(
         analysisSession: KaSession,
@@ -49,4 +51,6 @@ public interface KaSuperTypesCallArgumentsRenderer {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaSuperTypesCallArgumentsRenderer' instead", ReplaceWith("KaSuperTypesCallArgumentsRenderer"))
 public typealias KtSuperTypesCallArgumentsRenderer =KaSuperTypesCallArgumentsRenderer

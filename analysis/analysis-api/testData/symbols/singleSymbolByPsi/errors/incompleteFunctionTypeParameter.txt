@@ -1,6 +1,7 @@
 KaTypeParameterSymbol:
-  annotationsList: []
+  annotations: []
   isReified: false
+  location: LOCAL
   name: TYPE
   origin: SOURCE
   typeParameters: []

@@ -9,14 +9,14 @@ package org.jetbrains.kotlin.analysis.api.standalone.fir.test.cases.session.buil
 import org.jetbrains.kotlin.analysis.api.KaAnalysisApiInternals
 import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.analysis.api.annotations.annotations
-import org.jetbrains.kotlin.analysis.api.calls.KaSuccessCallInfo
-import org.jetbrains.kotlin.analysis.api.calls.successfulFunctionCallOrNull
-import org.jetbrains.kotlin.analysis.api.calls.symbol
+import org.jetbrains.kotlin.analysis.api.resolution.KaSuccessCallInfo
+import org.jetbrains.kotlin.analysis.api.resolution.successfulFunctionCallOrNull
+import org.jetbrains.kotlin.analysis.api.resolution.symbol
 import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISession
 import org.jetbrains.kotlin.analysis.api.symbols.KaConstructorSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaFunctionSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaLocalVariableSymbol
-import org.jetbrains.kotlin.analysis.api.types.KaNonErrorClassType
+import org.jetbrains.kotlin.analysis.api.types.KaClassType
 import org.jetbrains.kotlin.analysis.project.structure.KtDanglingFileModule
 import org.jetbrains.kotlin.analysis.project.structure.KtSourceModule
 import org.jetbrains.kotlin.analysis.project.structure.ProjectStructureProvider
@@ -68,7 +68,7 @@ class StandaloneSessionBuilderTest : TestWithDisposable() {
         val ktFile = session.modulesWithFiles.getValue(sourceModule).single() as KtFile
         analyze(ktFile) {
             val ktCallExpression = ktFile.findDescendantOfType<KtCallExpression>()!!
-            val ktCallInfo = ktCallExpression.resolveCallOld()
+            val ktCallInfo = ktCallExpression.resolveToCall()
             Assertions.assertInstanceOf(KaSuccessCallInfo::class.java, ktCallInfo); ktCallInfo as KaSuccessCallInfo
             val symbol = ktCallInfo.successfulFunctionCallOrNull()?.symbol
             Assertions.assertInstanceOf(KaConstructorSymbol::class.java, symbol); symbol as KaConstructorSymbol
@@ -115,23 +115,23 @@ class StandaloneSessionBuilderTest : TestWithDisposable() {
         val testFunction = ktFile.findDescendantOfType<KtFunction>()!!
         val localVariable = testFunction.findDescendantOfType<KtProperty>()!!
         analyze(localVariable) {
-            val localVariableSymbol = localVariable.getVariableSymbol()
-            val type = localVariableSymbol.returnType as KaNonErrorClassType
+            val localVariableSymbol = localVariable.symbol
+            val type = localVariableSymbol.returnType as KaClassType
             Assertions.assertEquals(
                 ClassId(FqName("test.pkg"), FqName("NativePointerKeyboardModifiers"), isLocal = false),
                 type.classId
             )
             // expanded to `actual` `typealias`
             val expandedType = type.fullyExpandedType
-            Assertions.assertTrue(expandedType.isInt)
+            Assertions.assertTrue(expandedType.isIntType)
         }
 
         // Test stdlib-common: @JvmInline in the common module
         val actualClass = ktFile.findDescendantOfType<KtClassOrObject>()!!
         val actualProperty = actualClass.findDescendantOfType<KtProperty>()!!
         analyze(actualProperty) {
-            val symbol = actualProperty.getVariableSymbol()
-            val type = symbol.returnType as KaNonErrorClassType
+            val symbol = actualProperty.symbol
+            val type = symbol.returnType as KaClassType
             Assertions.assertEquals(
                 ClassId.fromString("kotlin/jvm/JvmInline"),
                 type.symbol.annotations.single().classId
@@ -316,8 +316,8 @@ class StandaloneSessionBuilderTest : TestWithDisposable() {
         assertEquals(codeFragmentModule.contextModule, contextModule)
 
         analyze(codeFragment) {
-            val fileSymbol = codeFragment.getFileSymbol()
-            assertEquals(fileSymbol.getContainingModule(), codeFragmentModule)
+            val fileSymbol = codeFragment.symbol
+            assertEquals(fileSymbol.containingModule, codeFragmentModule)
 
             val referenceExpression = codeFragment.findDescendantOfType<KtSimpleNameExpression> { it.text == "x" }!!
             val variableSymbol = referenceExpression.mainReference.resolveToSymbol()
@@ -358,11 +358,11 @@ class StandaloneSessionBuilderTest : TestWithDisposable() {
         assertEquals(dummyModule.contextModule, contextModule)
 
         analyze(dummyFile) {
-            val fileSymbol = dummyFile.getFileSymbol()
-            assertEquals(fileSymbol.getContainingModule(), dummyModule)
+            val fileSymbol = dummyFile.symbol
+            assertEquals(fileSymbol.containingModule, dummyModule)
 
             val callExpression = dummyFile.findDescendantOfType<KtCallExpression>()!!
-            val call = callExpression.resolveCallOld()?.successfulFunctionCallOrNull() ?: error("Call inside a dummy file is unresolved")
+            val call = callExpression.resolveToCall()?.successfulFunctionCallOrNull() ?: error("Call inside a dummy file is unresolved")
             assert(call.symbol is KaFunctionSymbol)
         }
     }

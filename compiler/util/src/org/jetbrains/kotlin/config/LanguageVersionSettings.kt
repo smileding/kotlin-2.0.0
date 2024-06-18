@@ -313,7 +313,6 @@ enum class LanguageFeature(
 
     // 2.1
 
-    ReferencesToSyntheticJavaProperties(KOTLIN_2_1), // KT-8575
     ProhibitImplementingVarByInheritedVal(KOTLIN_2_1, kind = BUG_FIX), // KT-56779
     PrioritizedEnumEntries(KOTLIN_2_1, kind = UNSTABLE_FEATURE), // KT-58920
     ProhibitInlineModifierOnPrimaryConstructorParameters(KOTLIN_2_1, kind = BUG_FIX), // KT-59664
@@ -331,6 +330,13 @@ enum class LanguageFeature(
     CheckLambdaAgainstTypeVariableContradictionInResolution(KOTLIN_2_1, kind = OTHER), // KT-58310
     ProperUninitializedEnumEntryAccessAnalysis(KOTLIN_2_1, kind = BUG_FIX), // KT-68451
     ImprovedCapturedTypeApproximationInInference(KOTLIN_2_1, kind = OTHER), // KT-64515
+    ImprovedVarianceInCst(KOTLIN_2_1, kind = OTHER), // KT-68970
+    InferMoreImplicationsFromBooleanExpressions(KOTLIN_2_1, kind = OTHER), // KT-64193
+
+    // 2.2
+
+    UnstableSmartcastOnDelegatedProperties(KOTLIN_2_2, kind = BUG_FIX), // KT-57417
+    ReferencesToSyntheticJavaProperties(KOTLIN_2_2), // KT-8575
 
     // End of 2.* language features --------------------------------------------------
 

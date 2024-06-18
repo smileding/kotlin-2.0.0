@@ -5,72 +5,50 @@
 
 package org.jetbrains.kotlin.analysis.api.descriptors
 
-import com.intellij.psi.search.GlobalSearchScope
-import org.jetbrains.kotlin.analysis.api.KaAnalysisApiInternals
-import org.jetbrains.kotlin.analysis.api.KaAnalysisNonPublicApi
-import org.jetbrains.kotlin.analysis.api.KaSession
-import org.jetbrains.kotlin.analysis.api.NotSupportedForK1Exception
-import org.jetbrains.kotlin.analysis.api.components.*
+import org.jetbrains.kotlin.analysis.api.*
 import org.jetbrains.kotlin.analysis.api.descriptors.components.*
+import org.jetbrains.kotlin.analysis.api.impl.base.KaBaseSession
 import org.jetbrains.kotlin.analysis.api.impl.base.components.KaAnalysisScopeProviderImpl
-import org.jetbrains.kotlin.analysis.api.impl.base.components.KaRendererProviderImpl
+import org.jetbrains.kotlin.analysis.api.impl.base.components.KaRendererImpl
+import org.jetbrains.kotlin.analysis.api.impl.base.sessions.KaGlobalSearchScope
 import org.jetbrains.kotlin.analysis.api.lifetime.KaLifetimeToken
-import org.jetbrains.kotlin.analysis.api.symbols.KaSymbolProvider
-import org.jetbrains.kotlin.analysis.api.symbols.KaSymbolProviderByJavaPsi
 import org.jetbrains.kotlin.analysis.project.structure.KtModule
 
-@OptIn(KaAnalysisApiInternals::class, KaAnalysisNonPublicApi::class)
-@Suppress("LeakingThis")
+@OptIn(KaIdeApi::class, KaExperimentalApi::class, KaNonPublicApi::class)
 class KaFe10Session(
     val analysisContext: Fe10AnalysisContext,
     override val useSiteModule: KtModule,
     token: KaLifetimeToken,
-) : KaSession(token) {
-
-    override val smartCastProviderImpl: KaSmartCastProvider = KaFe10SmartCastProvider(this)
-    override val diagnosticProviderImpl: KaDiagnosticProvider = KaFe10DiagnosticProvider(this)
-    override val scopeProviderImpl: KaScopeProvider = KaFe10ScopeProvider(this)
-    override val containingDeclarationProviderImpl: KaSymbolContainingDeclarationProvider = KaFe10SymbolContainingDeclarationProvider(this)
-    override val symbolProviderImpl: KaSymbolProvider = KaFe10SymbolProvider(this)
-    override val resolverImpl: KaResolver = KaFe10Resolver(this)
-    override val completionCandidateCheckerImpl: KaCompletionCandidateChecker = KaFe10CompletionCandidateChecker(this)
-    override val symbolDeclarationOverridesProviderImpl: KaSymbolDeclarationOverridesProvider =
-        KaFe10SymbolDeclarationOverridesProvider(this)
-    override val referenceShortenerImpl: KaReferenceShortener = KaFe10ReferenceShortener(this)
-    override val symbolDeclarationRendererProviderImpl: KaSymbolDeclarationRendererProvider = KaRendererProviderImpl(this, token)
-    override val expressionTypeProviderImpl: KaExpressionTypeProvider = KaFe10ExpressionTypeProvider(this)
-    override val psiTypeProviderImpl: KaPsiTypeProvider = KaFe10PsiTypeProvider(this)
-    override val typeProviderImpl: KaTypeProvider = KaFe10TypeProvider(this)
-    override val typeInfoProviderImpl: KaTypeInfoProvider = KaFe10TypeInfoProvider(this)
-    override val subtypingComponentImpl: KaSubtypingComponent = KaFe10SubtypingComponent(this)
-    override val expressionInfoProviderImpl: KaExpressionInfoProvider = KaFe10ExpressionInfoProvider(this)
-    override val compileTimeConstantProviderImpl: KaCompileTimeConstantProvider = KaFe10CompileTimeConstantProvider(this)
-    override val visibilityCheckerImpl: KaVisibilityChecker = KaFe10VisibilityChecker(this)
-    override val overrideInfoProviderImpl: KaOverrideInfoProvider = KaFe10OverrideInfoProvider(this)
-    override val multiplatformInfoProviderImpl: KaMultiplatformInfoProvider = KaFe10MultiplatformInfoProvider(this)
-    override val originalPsiProviderImpl: KaOriginalPsiProvider = KaFe10OriginalPsiProvider(this)
-    override val inheritorsProviderImpl: KaInheritorsProvider = KaFe10InheritorsProvider(this)
-    override val typesCreatorImpl: KaTypeCreator = KaFe10TypeCreator(this)
-    override val samResolverImpl: KaSamResolver = KaFe10SamResolver(this)
-    override val importOptimizerImpl: KaImportOptimizer = KaFe10ImportOptimizer(this)
-    override val jvmTypeMapperImpl: KaJvmTypeMapper = KaFe10JvmTypeMapper(this)
-    override val symbolInfoProviderImpl: KaSymbolInfoProvider = KaFe10SymbolInfoProvider(this)
-    override val analysisScopeProviderImpl: KaAnalysisScopeProvider =
-        KaAnalysisScopeProviderImpl(this, token, shadowedScope = GlobalSearchScope.EMPTY_SCOPE)
-    override val referenceResolveProviderImpl: KaReferenceResolveProvider = KaFe10ReferenceResolveProvider(this)
-    override val signatureSubstitutorImpl: KaSignatureSubstitutor = KaFe10SignatureSubstitutor(this)
-    override val scopeSubstitutionImpl: KaScopeSubstitution = KaFe10ScopeSubstitution(this)
-    override val substitutorFactoryImpl: KaSubstitutorFactory = KaFe10SubstitutorFactory(this)
-    override val symbolProviderByJavaPsiImpl: KaSymbolProviderByJavaPsi = KaFe10SymbolProviderByJavaPsi(this)
-    override val resolveExtensionInfoProviderImpl: KaResolveExtensionInfoProvider = KaFe10ResolveExtensionInfoProvider(this)
-    override val compilerFacilityImpl: KaCompilerFacility = KaFe10CompilerFacility(this)
-    override val dataFlowInfoProviderImpl: KaDataFlowInfoProvider = KaFe10DataFlowInfoProvider(this)
-    override val klibSourceFileProviderImpl: KaKlibSourceFileNameProvider = KaFe10KlibSourceFileNameProvider(this)
-
-    override val metadataCalculatorImpl: KaMetadataCalculator
-        get() = throw NotSupportedForK1Exception()
-
-    @Suppress("AnalysisApiMissingLifetimeCheck")
-    override val substitutorProviderImpl: KaSubstitutorProvider
-        get() = throw NotSupportedForK1Exception()
-}
+    analysisSessionProvider: () -> KaFe10Session,
+    resolutionScope: KaGlobalSearchScope
+) : KaBaseSession(
+    token,
+    resolver = KaFe10Resolver(analysisSessionProvider),
+    symbolRelationProvider = KaFe10SymbolRelationProvider(analysisSessionProvider),
+    diagnosticProvider = KaFe10DiagnosticProvider(analysisSessionProvider),
+    scopeProvider = KaFe10ScopeProvider(analysisSessionProvider),
+    completionCandidateChecker = KaFe10CompletionCandidateChecker(analysisSessionProvider),
+    expressionTypeProvider = KaFe10ExpressionTypeProvider(analysisSessionProvider),
+    typeProvider = KaFe10TypeProvider(analysisSessionProvider),
+    typeInformationProvider = KaFe10TypeInformationProvider(analysisSessionProvider),
+    symbolProvider = KaFe10SymbolProvider(analysisSessionProvider),
+    javaInteroperabilityComponent = KaFe10JavaInteroperabilityComponent(analysisSessionProvider),
+    symbolInformationProvider = KaFe10SymbolInformationProvider(analysisSessionProvider),
+    typeRelationChecker = KaFe10TypeRelationChecker(analysisSessionProvider),
+    expressionInformationProvider = KaFe10ExpressionInformationProvider(analysisSessionProvider),
+    evaluator = KaFe10Evaluator(analysisSessionProvider),
+    referenceShortener = KaFe10ReferenceShortener(analysisSessionProvider),
+    importOptimizer = KaFe10ImportOptimizer(analysisSessionProvider),
+    renderer = KaRendererImpl(analysisSessionProvider),
+    visibilityChecker = KaFe10VisibilityChecker(analysisSessionProvider),
+    originalPsiProvider = KaFe10OriginalPsiProvider(analysisSessionProvider),
+    typeCreator = KaFe10TypeCreator(analysisSessionProvider),
+    analysisScopeProvider = KaAnalysisScopeProviderImpl(analysisSessionProvider, resolutionScope),
+    signatureSubstitutor = KaFe10SignatureSubstitutor(analysisSessionProvider),
+    resolveExtensionInfoProvider = KaFe10ResolveExtensionInfoProvider(analysisSessionProvider),
+    compilerFacility = KaFe10CompilerFacility(analysisSessionProvider),
+    metadataCalculator = KaFe10MetadataCalculator(analysisSessionProvider),
+    substitutorProvider = KaFe10SubstitutorProvider(analysisSessionProvider),
+    dataFlowProvider = KaFe10DataFlowProvider(analysisSessionProvider),
+    sourceProvider = KaFe10SourceProvider(analysisSessionProvider)
+)

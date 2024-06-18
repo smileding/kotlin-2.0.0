@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.analysis.api.renderer.types.renderers
 
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.renderer.types.KaTypeRenderer
 import org.jetbrains.kotlin.analysis.api.types.*
@@ -13,7 +14,7 @@ import org.jetbrains.kotlin.name.StandardClassIds
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-
+@KaExperimentalApi
 public interface KaFlexibleTypeRenderer {
     public fun renderType(
         analysisSession: KaSession,
@@ -77,16 +78,16 @@ public interface KaFlexibleTypeRenderer {
         }
 
         private fun isNullabilityFlexibleType(lower: KaType, upper: KaType): Boolean {
-            val isTheSameType = lower is KaNonErrorClassType && upper is KaNonErrorClassType && lower.classId == upper.classId ||
+            val isTheSameType = lower is KaClassType && upper is KaClassType && lower.classId == upper.classId ||
                     lower is KaTypeParameterType && upper is KaTypeParameterType && lower.symbol == upper.symbol
             if (isTheSameType &&
                 lower.nullability == KaTypeNullability.NON_NULLABLE
                 && upper.nullability == KaTypeNullability.NULLABLE
             ) {
-                if (lower !is KaNonErrorClassType && upper !is KaNonErrorClassType) {
+                if (lower !is KaClassType && upper !is KaClassType) {
                     return true
                 }
-                if (lower is KaNonErrorClassType && upper is KaNonErrorClassType) {
+                if (lower is KaClassType && upper is KaClassType) {
                     val lowerOwnTypeArguments = lower.typeArguments
                     val upperOwnTypeArguments = upper.typeArguments
                     if (lowerOwnTypeArguments.size == upperOwnTypeArguments.size) {
@@ -105,10 +106,10 @@ public interface KaFlexibleTypeRenderer {
         @OptIn(ExperimentalContracts::class)
         private fun isMutabilityFlexibleType(lower: KaType, upper: KaType): Boolean {
             contract {
-                returns(true) implies (lower is KaNonErrorClassType)
-                returns(true) implies (upper is KaNonErrorClassType)
+                returns(true) implies (lower is KaClassType)
+                returns(true) implies (upper is KaClassType)
             }
-            if (lower !is KaNonErrorClassType || upper !is KaNonErrorClassType) return false
+            if (lower !is KaClassType || upper !is KaClassType) return false
 
             if (StandardClassIds.Collections.mutableCollectionToBaseCollection[lower.classId] != upper.classId) return false
             return true
@@ -117,4 +118,6 @@ public interface KaFlexibleTypeRenderer {
     }
 }
 
+@KaExperimentalApi
+@Deprecated("Use 'KaFlexibleTypeRenderer' instead", ReplaceWith("KaFlexibleTypeRenderer"))
 public typealias KtFlexibleTypeRenderer = KaFlexibleTypeRenderer

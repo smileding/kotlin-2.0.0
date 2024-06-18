@@ -279,10 +279,10 @@ internal class MissingConstructorKeywordImpl(
     token: KaLifetimeToken,
 ) : KaAbstractFirDiagnostic<PsiElement>(firDiagnostic, token), KaFirDiagnostic.MissingConstructorKeyword
 
-internal class SingleDollarInterpolationPrefixImpl(
+internal class RedundantInterpolationPrefixImpl(
     firDiagnostic: KtPsiDiagnostic,
     token: KaLifetimeToken,
-) : KaAbstractFirDiagnostic<PsiElement>(firDiagnostic, token), KaFirDiagnostic.SingleDollarInterpolationPrefix
+) : KaAbstractFirDiagnostic<PsiElement>(firDiagnostic, token), KaFirDiagnostic.RedundantInterpolationPrefix
 
 internal class InvisibleReferenceImpl(
     override val reference: KaSymbol,
@@ -2262,6 +2262,13 @@ internal class SmartcastImpossibleOnImplicitInvokeReceiverImpl(
     token: KaLifetimeToken,
 ) : KaAbstractFirDiagnostic<KtExpression>(firDiagnostic, token), KaFirDiagnostic.SmartcastImpossibleOnImplicitInvokeReceiver
 
+internal class DeprecatedSmartcastOnDelegatedPropertyImpl(
+    override val desiredType: KaType,
+    override val property: KaCallableSymbol,
+    firDiagnostic: KtPsiDiagnostic,
+    token: KaLifetimeToken,
+) : KaAbstractFirDiagnostic<KtExpression>(firDiagnostic, token), KaFirDiagnostic.DeprecatedSmartcastOnDelegatedProperty
+
 internal class RedundantNullableImpl(
     firDiagnostic: KtPsiDiagnostic,
     token: KaLifetimeToken,
@@ -4126,6 +4133,16 @@ internal class NonPublicCallFromPublicInlineDeprecationImpl(
     firDiagnostic: KtPsiDiagnostic,
     token: KaLifetimeToken,
 ) : KaAbstractFirDiagnostic<KtElement>(firDiagnostic, token), KaFirDiagnostic.NonPublicCallFromPublicInlineDeprecation
+
+internal class NonPublicDataCopyCallFromPublicInlineErrorImpl(
+    firDiagnostic: KtPsiDiagnostic,
+    token: KaLifetimeToken,
+) : KaAbstractFirDiagnostic<KtElement>(firDiagnostic, token), KaFirDiagnostic.NonPublicDataCopyCallFromPublicInlineError
+
+internal class NonPublicDataCopyCallFromPublicInlineWarningImpl(
+    firDiagnostic: KtPsiDiagnostic,
+    token: KaLifetimeToken,
+) : KaAbstractFirDiagnostic<KtElement>(firDiagnostic, token), KaFirDiagnostic.NonPublicDataCopyCallFromPublicInlineWarning
 
 internal class ProtectedConstructorCallFromPublicInlineImpl(
     override val inlineDeclaration: KaSymbol,

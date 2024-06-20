@@ -139,16 +139,7 @@ internal fun performSpilledVariableFieldTypesAnalysis(
 
 private fun coerceInt(to: Type, v: InstructionAdapter) {
     if (to == Type.BOOLEAN_TYPE) {
-        with(v) {
-            val zeroLabel = Label()
-            val resLabel = Label()
-            ifeq(zeroLabel)
-            iconst(1)
-            goTo(resLabel)
-            mark(zeroLabel)
-            iconst(0)
-            mark(resLabel)
-        }
+        v.visitInsn(Opcodes.I2B)
     } else {
         StackValue.coerce(Type.INT_TYPE, to, v)
     }

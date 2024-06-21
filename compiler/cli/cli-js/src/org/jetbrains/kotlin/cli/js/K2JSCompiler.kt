@@ -16,6 +16,10 @@ import org.jetbrains.kotlin.backend.wasm.compileToLoweredIr
 import org.jetbrains.kotlin.backend.wasm.compileWasm
 import org.jetbrains.kotlin.backend.wasm.dce.eliminateDeadDeclarations
 import org.jetbrains.kotlin.backend.wasm.ic.IrFactoryImplForWasmIC
+import org.jetbrains.kotlin.backend.wasm.ic.WasmICContext
+import org.jetbrains.kotlin.backend.wasm.ic.WasmModuleArtifact
+import org.jetbrains.kotlin.backend.wasm.ir2wasm.WasmModuleFragmentGenerator
+import org.jetbrains.kotlin.backend.wasm.ir2wasm.WasmModuleMetadataCache
 import org.jetbrains.kotlin.backend.wasm.wasmPhases
 import org.jetbrains.kotlin.backend.wasm.writeCompilationResult
 import org.jetbrains.kotlin.cli.common.*
@@ -90,7 +94,7 @@ private val K2JSCompilerArguments.dtsStrategy: TsCompilationStrategy
     }
 
 private class DisposableZipFileSystemAccessor private constructor(
-    private val zipAccessor: ZipFileSystemCacheableAccessor
+    private val zipAccessor: ZipFileSystemCacheableAccessor,
 ) : Disposable, ZipFileSystemAccessor by zipAccessor {
     constructor(cacheLimit: Int) : this(ZipFileSystemCacheableAccessor(cacheLimit))
 
@@ -113,7 +117,7 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
         val module: ModulesStructure,
         val phaseConfig: PhaseConfig,
         val messageCollector: MessageCollector,
-        val mainCallArguments: List<String>?
+        val mainCallArguments: List<String>?,
     ) {
         private val performanceManager = module.compilerConfiguration[CLIConfigurationKeys.PERF_MANAGER]
 
@@ -174,7 +178,7 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
         arguments: K2JSCompilerArguments,
         configuration: CompilerConfiguration,
         rootDisposable: Disposable,
-        paths: KotlinPaths?
+        paths: KotlinPaths?,
     ): ExitCode {
         val messageCollector = configuration.getNotNull(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY)
         val performanceManager = configuration[CLIConfigurationKeys.PERF_MANAGER]
@@ -356,26 +360,54 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
             //      think about using different directories for JS AST and JS code.
             icCaches.cacheGuard.tryAcquire()
 
-            val jsExecutableProducer = JsExecutableProducer(
-                mainModuleName = moduleName,
-                moduleKind = moduleKind,
-                sourceMapsInfo = SourceMapsInfo.from(configurationJs),
-                caches = icCaches.artifacts,
-                relativeRequirePath = true
-            )
+            if (arguments.wasm) {
+                val wasmArtifacts = icCaches.artifacts
+                    .filterIsInstance<WasmModuleArtifact>()
+                    .flatMap { it.fileArtifacts }
+                    .mapNotNull { it.loadIrFragments()?.mainFragment }
 
-            val (outputs, rebuiltModules) = jsExecutableProducer.buildExecutable(arguments.granularity, outJsProgram = false)
-            outputs.writeAll(outputDir, outputName, arguments.dtsStrategy, moduleName, moduleKind)
+                performanceManager?.notifyGenerationFinished()
 
-            icCaches.cacheGuard.release()
+                val res = compileWasm(
+                    wasmCompiledFileFragments = wasmArtifacts,
+                    moduleName = moduleName,
+                    configuration = configuration,
+                    typeScriptFragment = null,
+                    baseFileName = outputName,
+                    emitNameSection = arguments.wasmDebug,
+                    generateWat = arguments.wasmGenerateWat,
+                    generateSourceMaps = configuration.getBoolean(JSConfigurationKeys.SOURCE_MAP),
+                )
 
-            messageCollector.report(INFO, "Executable production duration (IC): ${System.currentTimeMillis() - beforeIc2Js}ms")
-            for ((event, duration) in jsExecutableProducer.getStopwatchLaps()) {
-                messageCollector.report(INFO, "  $event: ${(duration / 1e6).toInt()}ms")
-            }
+                writeCompilationResult(
+                    result = res,
+                    dir = outputDir,
+                    fileNameBase = outputName,
+                    useDebuggerCustomFormatters = configuration.getBoolean(JSConfigurationKeys.USE_DEBUGGER_CUSTOM_FORMATTERS)
+                )
+                icCaches.cacheGuard.release()
+            } else {
+                val jsArtifacts = icCaches.artifacts.filterIsInstance<JsModuleArtifact>()
+                val jsExecutableProducer = JsExecutableProducer(
+                    mainModuleName = moduleName,
+                    moduleKind = moduleKind,
+                    sourceMapsInfo = SourceMapsInfo.from(configurationJs),
+                    caches = jsArtifacts,
+                    relativeRequirePath = true
+                )
+                val (outputs, rebuiltModules) = jsExecutableProducer.buildExecutable(arguments.granularity, outJsProgram = false)
+                outputs.writeAll(outputDir, outputName, arguments.dtsStrategy, moduleName, moduleKind)
 
-            for (module in rebuiltModules) {
-                messageCollector.report(INFO, "IC module builder rebuilt JS for module [${File(module).name}]")
+                icCaches.cacheGuard.release()
+
+                messageCollector.report(INFO, "Executable production duration (IC): ${System.currentTimeMillis() - beforeIc2Js}ms")
+                for ((event, duration) in jsExecutableProducer.getStopwatchLaps()) {
+                    messageCollector.report(INFO, "  $event: ${(duration / 1e6).toInt()}ms")
+                }
+
+                for (module in rebuiltModules) {
+                    messageCollector.report(INFO, "IC module builder rebuilt JS for module [${File(module).name}]")
+                }
             }
 
             performanceManager?.notifyIRTranslationFinished()
@@ -438,18 +470,27 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
 
             dumpDeclarationIrSizesIfNeed(arguments.irDceDumpDeclarationIrSizesToFile, allModules, dceDumpNameCache)
 
+            val wasmModuleMetadataCache = WasmModuleMetadataCache(backendContext)
+            val codeGenerator = WasmModuleFragmentGenerator(
+                backendContext,
+                wasmModuleMetadataCache,
+                irFactory,
+                allowIncompleteImplementations = arguments.irDce,
+            )
+            val wasmCompiledFileFragments = allModules.flatMap { codeGenerator.generateModule(it) }
+
             val res = compileWasm(
-                allModules = allModules,
-                backendContext = backendContext,
+                wasmCompiledFileFragments = wasmCompiledFileFragments,
+                moduleName = allModules.last().descriptor.name.asString(),
+                configuration = configuration,
                 typeScriptFragment = typeScriptFragment,
                 baseFileName = outputName,
-                idSignatureRetriever = irFactory,
                 emitNameSection = arguments.wasmDebug,
-                allowIncompleteImplementations = arguments.irDce,
                 generateWat = configuration.get(WasmConfigurationKeys.WASM_GENERATE_WAT, false),
                 generateSourceMaps = generateSourceMaps,
                 useDebuggerCustomFormatters = useDebuggerCustomFormatters
             )
+
             performanceManager?.notifyIRGenerationFinished()
             performanceManager?.notifyGenerationFinished()
 
@@ -521,7 +562,7 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
         libraries: List<String>,
         friendLibraries: List<String>,
         arguments: K2JSCompilerArguments,
-        outputKlibPath: String
+        outputKlibPath: String,
     ): ModulesStructure {
         val performanceManager = environmentForJS.configuration.get(CLIConfigurationKeys.PERF_MANAGER)
         lateinit var sourceModule: ModulesStructure
@@ -590,7 +631,7 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
         libraries: List<String>,
         friendLibraries: List<String>,
         arguments: K2JSCompilerArguments,
-        outputKlibPath: String
+        outputKlibPath: String,
     ): ModulesStructure {
         val configuration = environmentForJS.configuration
         val performanceManager = configuration.get(CLIConfigurationKeys.PERF_MANAGER)
@@ -703,12 +744,11 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
         libraries: List<String>,
         friendLibraries: List<String>,
         configurationJs: CompilerConfiguration,
-        mainCallArguments: List<String>?
+        mainCallArguments: List<String>?,
     ): IcCachesArtifacts? {
         val cacheDirectory = arguments.cacheDirectory
 
-        // TODO: Use JS IR IC infrastructure for WASM?
-        if (!arguments.wasm && cacheDirectory != null) {
+        if (cacheDirectory != null) {
             val cacheGuard = IncrementalCacheGuard(cacheDirectory).also {
                 if (it.acquire() == IncrementalCacheGuard.AcquireStatus.CACHE_CLEARED) {
                     messageCollector.report(INFO, "Cache guard file detected, cache directory '$cacheDirectory' cleared")
@@ -723,22 +763,25 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
 
             val start = System.currentTimeMillis()
 
+            val icContext = if (arguments.wasm) {
+                WasmICContext(
+                    allowIncompleteImplementations = false
+                )
+            } else {
+                JsICContext(
+                    mainCallArguments,
+                    arguments.granularity,
+                    PhaseConfig(getJsPhases(configurationJs)),
+                )
+            }
+
             val cacheUpdater = CacheUpdater(
                 mainModule = arguments.includes!!,
                 allModules = libraries,
                 mainModuleFriends = friendLibraries,
                 cacheDir = cacheDirectory,
                 compilerConfiguration = configurationJs,
-                irFactory = { IrFactoryImplForJsIC(WholeWorldStageController()) },
-                compilerInterfaceFactory = { mainModule, cfg ->
-                    JsIrCompilerWithIC(
-                        mainModule,
-                        mainCallArguments,
-                        cfg,
-                        arguments.granularity,
-                        PhaseConfig(getJsPhases(configurationJs)),
-                    )
-                }
+                icContext = icContext,
             )
 
             val artifacts = cacheUpdater.actualizeCaches()
@@ -789,7 +832,7 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
     override fun setupPlatformSpecificArgumentsAndServices(
         configuration: CompilerConfiguration,
         arguments: K2JSCompilerArguments,
-        services: Services
+        services: Services,
     ) {
         val messageCollector = configuration.getNotNull(CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY)
 
@@ -1004,7 +1047,7 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
 
 fun RuntimeDiagnostic.Companion.resolve(
     value: String?,
-    messageCollector: MessageCollector
+    messageCollector: MessageCollector,
 ): RuntimeDiagnostic? = when (value?.lowercase()) {
     RUNTIME_DIAGNOSTIC_LOG -> RuntimeDiagnostic.LOG
     RUNTIME_DIAGNOSTIC_EXCEPTION -> RuntimeDiagnostic.EXCEPTION

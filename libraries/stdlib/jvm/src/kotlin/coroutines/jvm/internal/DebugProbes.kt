@@ -81,3 +81,12 @@ internal fun probeCoroutineSuspended(frame: Continuation<*>) {
     /** implementation of this function is replaced by debugger */
 }
 
+/**
+ * This function is called by generated code when visible dead variable is spilled.
+ *
+ * By default, it returns `null`, but the debugger is expected to replace it with implementation, which returns the argument.
+ *
+ * This way, we avoid memory leaks, and do not hinder debuggability.
+ */
+@Suppress("UNUSED_PARAMETER", "unused")
+internal fun nullOutSpilledVariable(value: Any?): Any? = null

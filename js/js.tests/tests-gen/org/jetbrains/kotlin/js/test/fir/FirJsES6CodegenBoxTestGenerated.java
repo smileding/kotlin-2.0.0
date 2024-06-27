@@ -15961,6 +15961,22 @@ public class FirJsES6CodegenBoxTestGenerated extends AbstractFirJsES6CodegenBoxT
   }
 
   @Nested
+  @TestMetadata("compiler/testData/codegen/box/explicitBackingFields")
+  @TestDataPath("$PROJECT_ROOT")
+  public class ExplicitBackingFields {
+    @Test
+    public void testAllFilesPresentInExplicitBackingFields() {
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/explicitBackingFields"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JS_IR_ES6, true);
+    }
+
+    @Test
+    @TestMetadata("basic.kt")
+    public void testBasic() {
+      runTest("compiler/testData/codegen/box/explicitBackingFields/basic.kt");
+    }
+  }
+
+  @Nested
   @TestMetadata("compiler/testData/codegen/box/extensionClasses")
   @TestDataPath("$PROJECT_ROOT")
   public class ExtensionClasses {

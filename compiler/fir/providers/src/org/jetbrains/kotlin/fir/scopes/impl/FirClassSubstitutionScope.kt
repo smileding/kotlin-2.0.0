@@ -243,6 +243,8 @@ class FirClassSubstitutionScope(
             it.typeRef.coneType.substitute(substitutor)
         }
 
+        val substitutedBackingField = original.backingFieldSymbol?.let { createSubstitutionOverrideBackingField(it) }
+
         if (newReceiverType == null &&
             newReturnType == null &&
             newTypeParameters === member.typeParameters &&
@@ -258,6 +260,7 @@ class FirClassSubstitutionScope(
                     newDispatchReceiverType ?: dispatchReceiverTypeForSubstitutedMembers,
                     origin,
                     isExpect = makeExpect,
+                    newBackingField = substitutedBackingField?.fir,
                 )
             }
             return original
@@ -276,7 +279,8 @@ class FirClassSubstitutionScope(
             newReturnType,
             newTypeParameters as List<FirTypeParameter>,
             makeExpect,
-            callableCopySubstitutionForTypeUpdater
+            callableCopySubstitutionForTypeUpdater,
+            newBackingField = substitutedBackingField?.fir,
         )
     }
 
@@ -337,6 +341,26 @@ class FirClassSubstitutionScope(
             newReturnType,
             newDispatchReceiverType = dispatchReceiverTypeForSubstitutedMembers,
             origin
+        )
+    }
+
+    private fun createSubstitutionOverrideBackingField(original: FirBackingFieldSymbol): FirBackingFieldSymbol {
+        if (substitutor == ConeSubstitutor.Empty) return original
+        original.lazyResolveToPhase(FirResolvePhase.TYPES)
+        val member = original.fir
+        if (skipPrivateMembers && member.visibility == Visibilities.Private) return original
+
+        val returnType = member.returnTypeRef.coneTypeSafe<ConeKotlinType>()
+        // TODO: do we have fields with implicit type?
+        val newReturnType = returnType?.substitute() ?: return original
+
+        return FirFakeOverrideGenerator.createSubstitutionOverrideBackingField(
+            session,
+            member,
+            derivedClassLookupTag,
+            newReturnType,
+            newDispatchReceiverType = dispatchReceiverTypeForSubstitutedMembers,
+            origin,
         )
     }
 

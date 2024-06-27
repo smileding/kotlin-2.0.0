@@ -366,11 +366,13 @@ object FirFakeOverrideGenerator {
         newTypeParameters: List<FirTypeParameter>? = null,
         isExpect: Boolean = baseProperty.isExpect,
         callableCopySubstitutionForTypeUpdater: DeferredCallableCopyReturnType? = null,
+        newBackingField: FirBackingField? = baseProperty.backingField,
     ): FirPropertySymbol {
         createCopyForFirProperty(
             symbolForSubstitutionOverride, baseProperty, derivedClassLookupTag, session, origin,
             isExpect, newDispatchReceiverType, newTypeParameters, newReceiverType, newContextReceiverTypes, newReturnType,
-            deferredReturnTypeCalculation = callableCopySubstitutionForTypeUpdater
+            deferredReturnTypeCalculation = callableCopySubstitutionForTypeUpdater,
+            newBackingField = newBackingField,
         ).apply {
             originalForSubstitutionOverrideAttr = baseProperty
         }
@@ -402,6 +404,7 @@ object FirFakeOverrideGenerator {
         newSetterVisibility: Visibility? = null,
         deferredReturnTypeCalculation: DeferredCallableCopyReturnType? = null,
         newSource: KtSourceElement? = derivedClassLookupTag?.toSymbol(session)?.source,
+        newBackingField: FirBackingField? = baseProperty.backingField,
     ): FirProperty = buildProperty {
         source = newSource ?: baseProperty.source
         moduleData = session.nullableModuleData ?: baseProperty.moduleData
@@ -411,6 +414,7 @@ object FirFakeOverrideGenerator {
         this.symbol = newSymbol
         isLocal = false
         status = baseProperty.status.copy(newVisibility, newModality, isExpect = isExpect, isOverride = true)
+        backingField = newBackingField
 
         resolvePhase = origin.resolvePhaseForCopy
         dispatchReceiverType = newDispatchReceiverType
@@ -720,6 +724,36 @@ object FirFakeOverrideGenerator {
         annotations += baseField.annotations
         attributes = baseField.attributes.copy()
         dispatchReceiverType = newDispatchReceiverType
+    }.apply {
+        originalForSubstitutionOverrideAttr = baseField
+        containingClassForStaticMemberAttr = derivedClassLookupTag.takeIf { shouldOverrideSetContainingClass(baseField) }
+    }.symbol
+
+    internal fun createSubstitutionOverrideBackingField(
+        session: FirSession,
+        baseField: FirBackingField,
+        derivedClassLookupTag: ConeClassLikeLookupTag,
+        newReturnType: ConeKotlinType? = null,
+        newDispatchReceiverType: ConeSimpleKotlinType?,
+        origin: FirDeclarationOrigin.SubstitutionOverride,
+    ): FirBackingFieldSymbol = buildBackingField {
+        val symbol = FirBackingFieldSymbol(CallableId(derivedClassLookupTag.classId, baseField.name))
+        moduleData = session.nullableModuleData ?: baseField.moduleData
+        this.symbol = symbol
+        propertySymbol = baseField.propertySymbol
+        this.origin = origin
+        returnTypeRef = baseField.returnTypeRef.withReplacedConeType(newReturnType)
+
+        source = baseField.source
+        name = baseField.name
+        isVar = baseField.isVar
+        isVal = baseField.isVal
+        status = baseField.status
+        resolvePhase = origin.resolvePhaseForCopy
+        annotations += baseField.annotations
+        attributes = baseField.attributes.copy()
+        dispatchReceiverType = newDispatchReceiverType
+        initializer = baseField.initializer
     }.apply {
         originalForSubstitutionOverrideAttr = baseField
         containingClassForStaticMemberAttr = derivedClassLookupTag.takeIf { shouldOverrideSetContainingClass(baseField) }

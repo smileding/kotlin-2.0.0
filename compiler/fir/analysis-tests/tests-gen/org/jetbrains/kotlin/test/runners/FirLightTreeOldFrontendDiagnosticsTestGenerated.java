@@ -31619,6 +31619,88 @@ public class FirLightTreeOldFrontendDiagnosticsTestGenerated extends AbstractFir
       }
 
       @Nested
+      @TestMetadata("compiler/testData/diagnostics/tests/resolve/explicitBackingFields")
+      @TestDataPath("$PROJECT_ROOT")
+      public class ExplicitBackingFields {
+        @Test
+        @TestMetadata("againstExtensionFunction.kt")
+        public void testAgainstExtensionFunction() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/againstExtensionFunction.kt");
+        }
+
+        @Test
+        public void testAllFilesPresentInExplicitBackingFields() {
+          KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/diagnostics/tests/resolve/explicitBackingFields"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.(reversed|fir|ll)\\.kts?$"), true, "multiplatform");
+        }
+
+        @Test
+        @TestMetadata("basic.kt")
+        public void testBasic() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/basic.kt");
+        }
+
+        @Test
+        @TestMetadata("basicWithCustomGetter.kt")
+        public void testBasicWithCustomGetter() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/basicWithCustomGetter.kt");
+        }
+
+        @Test
+        @TestMetadata("callGetterByCastToSupertype.kt")
+        public void testCallGetterByCastToSupertype() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/callGetterByCastToSupertype.kt");
+        }
+
+        @Test
+        @TestMetadata("callPropertyInsideItself.kt")
+        public void testCallPropertyInsideItself() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/callPropertyInsideItself.kt");
+        }
+
+        @Test
+        @TestMetadata("callableReferenceBasic.kt")
+        public void testCallableReferenceBasic() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/callableReferenceBasic.kt");
+        }
+
+        @Test
+        @TestMetadata("fieldInJavaParentAndInvokeOperator.kt")
+        public void testFieldInJavaParentAndInvokeOperator() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/fieldInJavaParentAndInvokeOperator.kt");
+        }
+
+        @Test
+        @TestMetadata("privateToThis.kt")
+        public void testPrivateToThis() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/privateToThis.kt");
+        }
+
+        @Test
+        @TestMetadata("propertyGetterIsHiddenEvenIfMoreSuitable.kt")
+        public void testPropertyGetterIsHiddenEvenIfMoreSuitable() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/propertyGetterIsHiddenEvenIfMoreSuitable.kt");
+        }
+
+        @Test
+        @TestMetadata("propertyWithEbfIsLambda.kt")
+        public void testPropertyWithEbfIsLambda() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/propertyWithEbfIsLambda.kt");
+        }
+
+        @Test
+        @TestMetadata("smartCast.kt")
+        public void testSmartCast() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/smartCast.kt");
+        }
+
+        @Test
+        @TestMetadata("substituteBackingFieldReturnType.kt")
+        public void testSubstituteBackingFieldReturnType() {
+          runTest("compiler/testData/diagnostics/tests/resolve/explicitBackingFields/substituteBackingFieldReturnType.kt");
+        }
+      }
+
+      @Nested
       @TestMetadata("compiler/testData/diagnostics/tests/resolve/invoke")
       @TestDataPath("$PROJECT_ROOT")
       public class Invoke {

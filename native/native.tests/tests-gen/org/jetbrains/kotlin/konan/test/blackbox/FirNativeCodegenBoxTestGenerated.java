@@ -17067,6 +17067,25 @@ public class FirNativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTe
     }
 
     @Nested
+    @TestMetadata("compiler/testData/codegen/box/explicitBackingFields")
+    @TestDataPath("$PROJECT_ROOT")
+    @Tag("frontend-fir")
+    @FirPipeline()
+    @UseExtTestCaseGroupProvider()
+    public class ExplicitBackingFields {
+      @Test
+      public void testAllFilesPresentInExplicitBackingFields() {
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/explicitBackingFields"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.NATIVE, true);
+      }
+
+      @Test
+      @TestMetadata("basic.kt")
+      public void testBasic() {
+        runTest("compiler/testData/codegen/box/explicitBackingFields/basic.kt");
+      }
+    }
+
+    @Nested
     @TestMetadata("compiler/testData/codegen/box/extensionClasses")
     @TestDataPath("$PROJECT_ROOT")
     @Tag("frontend-fir")

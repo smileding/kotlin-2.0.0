@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.fir.declarations.builder.buildErrorFunction
 import org.jetbrains.kotlin.fir.declarations.builder.buildErrorProperty
 import org.jetbrains.kotlin.fir.declarations.builder.buildSimpleFunctionCopy
 import org.jetbrains.kotlin.fir.declarations.fullyExpandedClass
+import org.jetbrains.kotlin.fir.declarations.utils.hasExplicitBackingField
 import org.jetbrains.kotlin.fir.diagnostics.ConeDiagnostic
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.extensions.*
@@ -67,7 +68,7 @@ class CandidateFactory private constructor(
 
         @Suppress("NAME_SHADOWING")
         @OptIn(FirExtensionApiInternals::class)
-        val symbol = if (
+        var symbol = if (
             callRefinementExtensions != null &&
             callInfo.callKind == CallKind.Function &&
             symbol is FirNamedFunctionSymbol
@@ -77,6 +78,13 @@ class CandidateFactory private constructor(
             result.first
         } else {
             symbol.unwrapIntegerOperatorSymbolIfNeeded(callInfo)
+        }
+
+        if (symbol is FirPropertySymbol && symbol.hasExplicitBackingField) {
+            val fieldSymbol = symbol.backingFieldSymbol ?: error("Expected backing field to be present")
+            if (context.session.visibilityChecker.isVisible(fieldSymbol.fir, callInfo, dispatchReceiver)) {
+                symbol = fieldSymbol
+            }
         }
 
         val result = Candidate(

@@ -3746,6 +3746,13 @@ internal val KT_DIAGNOSTIC_CONVERTER = KaDiagnosticConverterBuilder.buildConvert
             token,
         )
     }
+    add(FirErrors.EXPLICIT_BACKING_FIELD_COMMON_PROHIBITION) { firDiagnostic ->
+        ExplicitBackingFieldCommonProhibitionImpl(
+            firDiagnostic.a,
+            firDiagnostic as KtPsiDiagnostic,
+            token,
+        )
+    }
     add(FirErrors.ABSTRACT_PROPERTY_IN_PRIMARY_CONSTRUCTOR_PARAMETERS) { firDiagnostic ->
         AbstractPropertyInPrimaryConstructorParametersImpl(
             firDiagnostic as KtPsiDiagnostic,

@@ -2634,6 +2634,11 @@ sealed interface KaFirDiagnostic<PSI : PsiElement> : KaDiagnosticWithPsi<PSI> {
         override val diagnosticClass get() = RedundantExplicitBackingField::class
     }
 
+    interface ExplicitBackingFieldCommonProhibition : KaFirDiagnostic<KtElement> {
+        override val diagnosticClass get() = ExplicitBackingFieldCommonProhibition::class
+        val description: String
+    }
+
     interface AbstractPropertyInPrimaryConstructorParameters : KaFirDiagnostic<KtModifierListOwner> {
         override val diagnosticClass get() = AbstractPropertyInPrimaryConstructorParameters::class
     }

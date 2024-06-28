@@ -675,6 +675,7 @@ object FirErrors {
     val EXPLICIT_BACKING_FIELD_IN_ABSTRACT_PROPERTY: KtDiagnosticFactory0 = KtDiagnosticFactory0("EXPLICIT_BACKING_FIELD_IN_ABSTRACT_PROPERTY", ERROR, SourceElementPositioningStrategies.FIELD_KEYWORD, KtBackingField::class)
     val EXPLICIT_BACKING_FIELD_IN_EXTENSION: KtDiagnosticFactory0 = KtDiagnosticFactory0("EXPLICIT_BACKING_FIELD_IN_EXTENSION", ERROR, SourceElementPositioningStrategies.FIELD_KEYWORD, KtBackingField::class)
     val REDUNDANT_EXPLICIT_BACKING_FIELD: KtDiagnosticFactory0 = KtDiagnosticFactory0("REDUNDANT_EXPLICIT_BACKING_FIELD", WARNING, SourceElementPositioningStrategies.FIELD_KEYWORD, KtBackingField::class)
+    val EXPLICIT_BACKING_FIELD_COMMON_PROHIBITION: KtDiagnosticFactory1<String> = KtDiagnosticFactory1("EXPLICIT_BACKING_FIELD_COMMON_PROHIBITION", ERROR, SourceElementPositioningStrategies.DEFAULT, KtElement::class)
     val ABSTRACT_PROPERTY_IN_PRIMARY_CONSTRUCTOR_PARAMETERS: KtDiagnosticFactory0 = KtDiagnosticFactory0("ABSTRACT_PROPERTY_IN_PRIMARY_CONSTRUCTOR_PARAMETERS", ERROR, SourceElementPositioningStrategies.ABSTRACT_MODIFIER, KtModifierListOwner::class)
     val LOCAL_VARIABLE_WITH_TYPE_PARAMETERS_WARNING: KtDiagnosticFactory0 = KtDiagnosticFactory0("LOCAL_VARIABLE_WITH_TYPE_PARAMETERS_WARNING", WARNING, SourceElementPositioningStrategies.TYPE_PARAMETERS_LIST, KtProperty::class)
     val LOCAL_VARIABLE_WITH_TYPE_PARAMETERS: KtDiagnosticFactory0 = KtDiagnosticFactory0("LOCAL_VARIABLE_WITH_TYPE_PARAMETERS", ERROR, SourceElementPositioningStrategies.TYPE_PARAMETERS_LIST, KtProperty::class)

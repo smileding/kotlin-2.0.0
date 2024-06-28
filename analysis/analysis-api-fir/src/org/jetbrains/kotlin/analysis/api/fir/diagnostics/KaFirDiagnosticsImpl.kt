@@ -3168,6 +3168,12 @@ internal class RedundantExplicitBackingFieldImpl(
     token: KaLifetimeToken,
 ) : KaAbstractFirDiagnostic<KtBackingField>(firDiagnostic, token), KaFirDiagnostic.RedundantExplicitBackingField
 
+internal class ExplicitBackingFieldCommonProhibitionImpl(
+    override val description: String,
+    firDiagnostic: KtPsiDiagnostic,
+    token: KaLifetimeToken,
+) : KaAbstractFirDiagnostic<KtElement>(firDiagnostic, token), KaFirDiagnostic.ExplicitBackingFieldCommonProhibition
+
 internal class AbstractPropertyInPrimaryConstructorParametersImpl(
     firDiagnostic: KtPsiDiagnostic,
     token: KaLifetimeToken,

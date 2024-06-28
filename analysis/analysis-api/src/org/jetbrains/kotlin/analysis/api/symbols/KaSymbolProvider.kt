@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.analysis.api.symbols
 
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
+import org.jetbrains.kotlin.analysis.utils.printer.parentOfType
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
@@ -78,6 +79,12 @@ public interface KaSymbolProvider {
     public val KtFile.symbol: KaFileSymbol
 
     public val KtScript.symbol: KaScriptSymbol
+
+    public val KtBackingField.symbol: KaBackingFieldSymbol
+        get() {
+            val property = this.parentOfType<KtProperty>() ?: error("Not found property parent")
+            return (property.symbol as KaKotlinPropertySymbol).backingFieldSymbol ?: error("Not found backing field symbol")
+        }
 
     @Deprecated("Use 'symbol' instead", replaceWith = ReplaceWith("symbol"))
     public fun KtParameter.getParameterSymbol(): KaVariableSymbol = symbol

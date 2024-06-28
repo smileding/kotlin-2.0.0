@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
 import org.jetbrains.kotlin.analysis.api.symbols.KaDeclarationSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaSymbolProvider
+import org.jetbrains.kotlin.psi.KtBackingField
 import org.jetbrains.kotlin.psi.KtClassInitializer
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtConstructor
@@ -52,6 +53,7 @@ abstract class AbstractKaSymbolProvider<T : KaSession> : KaSessionComponent<T>()
                 is KtScript -> symbol
                 is KtScriptInitializer -> containingDeclaration.symbol
                 is KtDestructuringDeclaration -> symbol
+                is KtBackingField -> symbol
                 else -> error("Cannot build symbol for ${this::class}")
             }
         }

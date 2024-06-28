@@ -11,13 +11,11 @@ import org.jetbrains.kotlin.descriptors.SourceFile
 import org.jetbrains.kotlin.fir.FirEvaluatorResult
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.impl.FirDefaultPropertyBackingField
-import org.jetbrains.kotlin.fir.declarations.impl.FirDefaultPropertyGetter
 import org.jetbrains.kotlin.fir.expressions.FirPropertyAccessExpression
 import org.jetbrains.kotlin.fir.references.impl.FirPropertyFromParameterResolvedNamedReference
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
-import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.name.Name
 
 private object IsFromVarargKey : FirDeclarationDataKey()
@@ -84,15 +82,6 @@ fun FirProperty.getExplicitBackingField(): FirBackingField? {
         null
     }
 }
-
-val FirProperty.canNarrowDownGetterType: Boolean
-    get() {
-        val backingFieldHasDifferentType = backingField != null && backingField?.returnTypeRef?.coneType != returnTypeRef.coneType
-        return backingFieldHasDifferentType && getter is FirDefaultPropertyGetter
-    }
-
-val FirPropertySymbol.canNarrowDownGetterType: Boolean
-    get() = fir.canNarrowDownGetterType
 
 // See [BindingContext.BACKING_FIELD_REQUIRED]
 val FirProperty.hasBackingField: Boolean

@@ -878,7 +878,7 @@ class FirCallResolver(
         }
         if ((coneSymbol as? FirPropertySymbol)?.hasExplicitBackingField == true) {
             return FirPropertyWithExplicitBackingFieldResolvedNamedReference(
-                source, name, candidate.symbol, candidate.hasVisibleBackingField
+                source, name, candidate.symbol
             )
         }
         /*

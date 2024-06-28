@@ -391,29 +391,6 @@ private fun FirPropertySymbol.isEffectivelyFinal(session: FirSession): Boolean {
     return containingClass.modality == Modality.FINAL && containingClass.classKind != ClassKind.ENUM_CLASS
 }
 
-private fun FirPropertyWithExplicitBackingFieldResolvedNamedReference.getNarrowedDownSymbol(session: FirSession): FirBasedSymbol<*> {
-    val propertyReceiver = resolvedSymbol as? FirPropertySymbol ?: return resolvedSymbol
-
-    // This can happen in case of 2 properties referencing
-    // each other recursively. See: Jet81.fir.kt
-    if (
-        propertyReceiver.fir.returnTypeRef is FirImplicitTypeRef ||
-        propertyReceiver.fir.backingField?.returnTypeRef is FirImplicitTypeRef
-    ) {
-        return resolvedSymbol
-    }
-
-    if (
-        propertyReceiver.isEffectivelyFinal(session) &&
-        hasVisibleBackingField &&
-        propertyReceiver.canNarrowDownGetterType
-    ) {
-        return propertyReceiver.fir.backingField?.symbol ?: resolvedSymbol
-    }
-
-    return resolvedSymbol
-}
-
 fun <T : FirResolvable> BodyResolveComponents.typeFromCallee(access: T): FirResolvedTypeRef {
     val calleeReference = access.calleeReference
     return typeFromCallee(access, calleeReference)
@@ -431,7 +408,7 @@ fun BodyResolveComponents.typeFromCallee(access: FirElement, calleeReference: Fi
             typeFromSymbol(calleeReference.candidateSymbol)
         }
         is FirPropertyWithExplicitBackingFieldResolvedNamedReference -> {
-            val symbol = calleeReference.getNarrowedDownSymbol(session)
+            val symbol = calleeReference.resolvedSymbol
             typeFromSymbol(symbol)
         }
         is FirResolvedNamedReference -> {

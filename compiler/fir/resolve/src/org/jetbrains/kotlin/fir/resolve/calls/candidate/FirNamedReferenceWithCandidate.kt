@@ -45,7 +45,6 @@ class FirPropertyWithExplicitBackingFieldResolvedNamedReference(
     override val source: KtSourceElement?,
     override val name: Name,
     override val resolvedSymbol: FirBasedSymbol<*>,
-    val hasVisibleBackingField: Boolean,
 ) : FirResolvedNamedReference() {
     override fun <R, D> acceptChildren(visitor: FirVisitor<R, D>, data: D) {}
 

@@ -26,6 +26,9 @@ private val underscore = kotlin.test.setAdapter(object : FrameworkAdapter {
     }
 })
 
+val emptySuite: SuiteContext.(SuiteContext.() -> Unit) -> Unit = { suite("", false, it) }
+val doNothing: SuiteContext.(SuiteContext.() -> Unit) -> Unit = { it() }
+
 interface SuiteContext {
     fun suite(name: String, ignored: Boolean = false, body: SuiteContext.() -> Unit)
 

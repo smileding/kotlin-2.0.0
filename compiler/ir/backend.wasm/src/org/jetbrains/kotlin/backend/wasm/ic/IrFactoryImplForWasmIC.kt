@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.ir.backend.js.WholeWorldStageController
 import org.jetbrains.kotlin.ir.backend.js.ic.*
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.util.IdSignature
-import org.jetbrains.kotlin.ir.util.dump
+import org.jetbrains.kotlin.ir.util.fileOrNull
 import java.io.File
 import java.util.*
 
@@ -60,9 +60,14 @@ class IrFactoryImplForWasmIC(stageController: StageController) : IrFactory(stage
         return this
     }
 
+    private fun eraseSignature(signature: IdSignature, declaration: IrDeclaration): IdSignature {
+        val file = declaration.fileOrNull ?: return signature
+        return fileSignatureErasure(signature, file.module.name.asString())
+    }
+
     override fun declarationSignature(declaration: IrDeclaration): IdSignature =
         declarationToSignature[declaration]
-            ?: declaration.symbol.signature
-            ?: declaration.symbol.privateSignature
+            ?: declaration.symbol.signature?.let { eraseSignature(it, declaration) }
+            ?: declaration.symbol.privateSignature?.let { eraseSignature(it, declaration) }
             ?: error("Can't retrieve a signature for $declaration")
 }

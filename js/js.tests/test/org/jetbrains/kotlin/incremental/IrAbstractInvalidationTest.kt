@@ -70,7 +70,7 @@ abstract class IrAbstractInvalidationTest(
     targetBackend: TargetBackend,
     granularity: JsGenerationGranularity,
     workingDirPath: String
-) : AbstractInvalidationTest(targetBackend, granularity, workingDirPath) {
+) : JsAbstractInvalidationTest(targetBackend, granularity, workingDirPath) {
     override fun buildKlib(
         configuration: CompilerConfiguration,
         moduleName: String,

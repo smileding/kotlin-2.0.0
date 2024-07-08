@@ -580,6 +580,13 @@ In combination with '-meta-info', this generates both IR and pre-IR versions of 
             field = value
         }
 
+    @Argument(value = "-Xwasm-preserve-ic-order", description = "Preserve wasm file structure between IC runs.")
+    var preserveIcOrder = false
+        set(value) {
+            checkFrozen()
+            field = value
+        }
+
     @Argument(value = "-Xwasm-debug-info", description = "Add debug info to the compiled WebAssembly module.")
     var wasmDebug = true
         set(value) {

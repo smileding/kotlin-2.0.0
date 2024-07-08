@@ -366,6 +366,7 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
                     .filterIsInstance<WasmModuleArtifact>()
                     .flatMap { it.fileArtifacts }
                     .mapNotNull { it.loadIrFragments()?.mainFragment }
+                    .let { fragments -> if (arguments.preserveIcOrder) fragments.sortedBy { it.fragmentTag } else fragments }
 
                 performanceManager?.notifyGenerationFinished()
 
@@ -769,7 +770,8 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
                 WasmICContext(
                     allowIncompleteImplementations = false,
                     skipLocalNames = !arguments.wasmDebug,
-                    skipSourceLocations = !arguments.wasmGenerateWat
+                    skipSourceLocations = !arguments.wasmGenerateWat,
+                    safeFragmentTags = arguments.preserveIcOrder
                 )
             } else {
                 JsICContext(
@@ -786,7 +788,8 @@ class K2JSCompiler : CLICompiler<K2JSCompilerArguments>() {
                 cacheDir = cacheDirectory,
                 compilerConfiguration = configurationJs,
                 icContext = icContext,
-                checkForClassStructuralChanges = checkForClassStructuralChanges
+                checkForClassStructuralChanges = arguments.wasm,
+                completeLoadForKotlinTest = arguments.wasm
             )
 
             val artifacts = cacheUpdater.actualizeCaches()

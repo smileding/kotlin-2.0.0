@@ -223,6 +223,19 @@ class SubpuginsIT : KGPBaseTest() {
     @GradleTest
     fun testBuildSrcKotlinDSL(gradleVersion: GradleVersion) {
         project("buildSrcUsingKotlinCompilationAndKotlinPlugin", gradleVersion) {
+            val languageVersionConfiguration = if (gradleVersion == GradleVersion.version(TestVersions.Gradle.G_7_6)) {
+                """
+                afterEvaluate {
+                    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+                        // aligned with embedded Kotlin compiler: https://docs.gradle.org/current/userguide/compatibility.html#kotlin
+                        compilerOptions.apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_7)
+                        compilerOptions.languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_7)
+                    }
+                }
+                """.trimIndent()
+            } else {
+                ""
+            }
             subProject("buildSrc").buildGradleKts.modify {
                 //language=kts
                 """
@@ -237,9 +250,11 @@ class SubpuginsIT : KGPBaseTest() {
                     
                     dependencies {
                         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${'$'}kotlin_version")
-                    }
+                    }    
                 }
-                
+            
+                $languageVersionConfiguration
+
                 ${it.substringAfter("}")}
                 """.trimIndent()
             }

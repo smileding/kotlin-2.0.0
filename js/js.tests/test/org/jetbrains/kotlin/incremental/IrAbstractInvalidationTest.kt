@@ -7,6 +7,9 @@ package org.jetbrains.kotlin.incremental
 
 import org.jetbrains.kotlin.cli.common.messages.AnalyzerWithCompilerReport
 import org.jetbrains.kotlin.cli.js.klib.generateIrForKlibSerialization
+import org.jetbrains.kotlin.codegen.K1_FRONTEND
+import org.jetbrains.kotlin.codegen.K2_FRONTEND
+import org.jetbrains.kotlin.codegen.ProjectInfo
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.messageCollector
@@ -73,6 +76,9 @@ abstract class IrAbstractInvalidationTest(
     granularity: JsGenerationGranularity,
     workingDirPath: String
 ) : AbstractInvalidationTest(targetBackend, granularity, workingDirPath) {
+    override fun isIgnoredTest(projectInfo: ProjectInfo) =
+        K1_FRONTEND in projectInfo.ignoreFrontends || super.isIgnoredTest(projectInfo)
+
     override fun buildKlib(
         configuration: CompilerConfiguration,
         moduleName: String,

@@ -36,6 +36,7 @@ interface JsCommonBackendContext : CommonBackendContext {
     val coroutineSymbols: JsCommonCoroutineSymbols
 
     val jsPromiseSymbol: IrClassSymbol?
+    val jsExportIgnoreSymbol: IrClassSymbol?
 
     val catchAllThrowableType: IrType
         get() = irBuiltIns.throwableType

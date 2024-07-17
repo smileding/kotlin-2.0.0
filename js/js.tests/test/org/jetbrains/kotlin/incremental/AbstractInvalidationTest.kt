@@ -379,8 +379,6 @@ abstract class AbstractInvalidationTest(
         }
 
         fun execute() {
-            if (granularity in projectInfo.ignoredGranularities) return
-
             val mainArguments = runIf(projectInfo.callMain) { emptyList<String>() }
             val dtsStrategy = when (granularity) {
                 JsGenerationGranularity.PER_FILE -> TsCompilationStrategy.EACH_FILE
@@ -505,7 +503,8 @@ abstract class AbstractInvalidationTest(
         } as KtFile
     }
 
-    protected open fun isIgnoredTest(projectInfo: ProjectInfo) = projectInfo.muted
+    protected open fun isIgnoredTest(projectInfo: ProjectInfo) =
+        projectInfo.muted || granularity in projectInfo.ignoredGranularities
 
     protected abstract fun buildKlib(
         configuration: CompilerConfiguration,

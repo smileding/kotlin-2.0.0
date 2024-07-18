@@ -48,7 +48,6 @@ internal abstract class KonanCliRunner(
 
     private val classpath: Set<File> by lazy {
         fileOperations.fileTree("$konanHome/konan/lib/").apply {
-            include("trove4j.jar")
             include("kotlin-native-compiler-embeddable.jar")
         }.files
     }

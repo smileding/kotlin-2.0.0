@@ -101,12 +101,8 @@ projectTest {
      * It's expected that test should be executed on CI, but currently this project under `kotlin.native.enabled`
      */
     dependsOn(runtimeJar)
-    val runtimeJarPathProvider = project.provider {
-        val jar = runtimeJar.get().outputs.files.asPath
-        val trove = configurations.detachedConfiguration(
-                dependencies.create(commonDependency("org.jetbrains.intellij.deps:trove4j"))
-        )
-        (trove.files + jar).joinToString(File.pathSeparatorChar.toString())
+    val runtimeJarPathProvider = runtimeJar.map {
+        it.outputs.files.asPath
     }
     doFirst {
         systemProperty("compilerClasspath", runtimeJarPathProvider.get())

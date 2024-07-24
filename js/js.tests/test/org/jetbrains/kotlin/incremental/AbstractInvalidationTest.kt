@@ -44,7 +44,6 @@ import java.util.stream.Collectors
 
 abstract class AbstractInvalidationTest(
     protected val targetBackend: TargetBackend,
-    protected val granularity: JsGenerationGranularity,
     private val workingDirPath: String,
 ) {
     protected abstract val targetName: String

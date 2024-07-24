@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings("all")
 @TestMetadata("js/js.translator/testData/incremental/invalidation")
 @TestDataPath("$PROJECT_ROOT")
-public class FirWasmInvalidationPerFileTestGenerated extends AbstractFirWasmInvalidationPerFileTest {
+public class FirWasmInvalidationTestGenerated extends AbstractFirWasmInvalidationTest {
   @Test
   @TestMetadata("addUpdateRemoveDependentFile")
   public void testAddUpdateRemoveDependentFile() {

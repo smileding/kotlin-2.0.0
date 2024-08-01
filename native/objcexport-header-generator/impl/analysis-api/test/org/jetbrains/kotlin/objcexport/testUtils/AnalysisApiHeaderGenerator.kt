@@ -30,6 +30,9 @@ class AnalysisApiHeaderGeneratorExtension : ParameterResolver {
 }
 
 object AnalysisApiHeaderGenerator : HeaderGenerator {
+    override val mode: HeaderGenerator.Mode
+        get() = HeaderGenerator.Mode.AnalysysApi
+
     override fun generateHeaders(root: File, configuration: HeaderGenerator.Configuration): ObjCHeader {
         val session = createStandaloneAnalysisApiSession(
             kotlinSourceModuleName = defaultKotlinSourceModuleName,

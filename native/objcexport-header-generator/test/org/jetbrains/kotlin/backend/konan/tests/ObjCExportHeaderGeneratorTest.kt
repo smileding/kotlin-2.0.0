@@ -488,6 +488,17 @@ class ObjCExportHeaderGeneratorTest(private val generator: HeaderGenerator) {
     private fun doTest(root: File, configuration: Configuration = Configuration()) {
         if (!root.isDirectory) fail("Expected ${root.absolutePath} to be directory")
         val generatedHeaders = generator.generateHeaders(root, configuration).toString()
-        KotlinTestUtils.assertEqualsToFile(root.resolve("!${root.nameWithoutExtension}.h"), generatedHeaders)
+
+        val specificSuffix = when (generator.mode) {
+            HeaderGenerator.Mode.K1 -> "k1"
+            HeaderGenerator.Mode.AnalysysApi -> "aa"
+        }
+
+        val specificExpectedFile = root.resolve("!${root.nameWithoutExtension}.$specificSuffix.h")
+        val regularExpectedFile = root.resolve("!${root.nameWithoutExtension}.h")
+
+        val expectedFile = specificExpectedFile.takeIf { it.exists() } ?: regularExpectedFile
+
+        KotlinTestUtils.assertEqualsToFile(expectedFile, generatedHeaders)
     }
 }

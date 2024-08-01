@@ -35,6 +35,11 @@ interface HeaderGenerator {
         val exportedDependencies: Set<Path> = emptySet(),
     )
 
+    enum class Mode {
+        K1, AnalysysApi
+    }
+
+    val mode: Mode
 
     fun generateHeaders(root: File, configuration: Configuration = Configuration()): ObjCHeader
 }

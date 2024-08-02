@@ -645,6 +645,15 @@ class FirRenderer(
             whileLoop.block.accept(this)
         }
 
+        override fun visitForLoopWrapper(forLoopWrapper: FirForLoopWrapper) {
+            printer.renderInBraces {
+                for (statement in forLoopWrapper.statements) {
+                    statement.accept(visitor)
+                    printer.println()
+                }
+            }
+        }
+
         private val loopJumpStack = Stack<FirLoopJump>()
 
         override fun visitLoopJump(loopJump: FirLoopJump) {

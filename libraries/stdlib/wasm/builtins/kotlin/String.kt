@@ -54,7 +54,7 @@ public actual class String internal @WasmPrimitiveConstructor constructor(
             copyWasmArray(currentLeftStringChars, newArray, 0, currentStartIndex, currentLeftStringLen)
             currentLeftString = currentLeftString.leftIfInSum
         }
-        check(currentStartIndex == 0)
+        internalCheck(currentStartIndex == 0)
         _chars = newArray
         leftIfInSum = null
     }

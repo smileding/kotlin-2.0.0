@@ -13,7 +13,7 @@ import kotlin.contracts.contract
 
 @PublishedApi
 @kotlin.internal.InlineOnly
-internal inline fun check(value: Boolean, lazyMessage: () -> String): Unit {
+internal inline fun internalCheck(value: Boolean, lazyMessage: () -> String): Unit {
     contract {
         returns() implies value
     }
@@ -22,6 +22,16 @@ internal inline fun check(value: Boolean, lazyMessage: () -> String): Unit {
         throw IllegalStateException(message)
     }
 }
+
+@kotlin.internal.InlineOnly
+@PublishedApi
+internal inline fun internalCheck(value: Boolean): Unit {
+    contract {
+        returns() implies value
+    }
+    internalCheck(value) { "Check failed." }
+}
+
 
 @PublishedApi
 @kotlin.internal.InlineOnly

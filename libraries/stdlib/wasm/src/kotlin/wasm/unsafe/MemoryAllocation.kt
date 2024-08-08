@@ -96,14 +96,14 @@ internal class ScopedMemoryAllocator(
     private var availableAddress = startAddress
 
     override fun allocate(size: Int): Pointer {
-        check(!destroyed) { "ScopedMemoryAllocator is destroyed when out of scope" }
-        check(!suspended) { "ScopedMemoryAllocator is suspended when nested allocators are used" }
+        internalCheck(!destroyed) { "ScopedMemoryAllocator is destroyed when out of scope" }
+        internalCheck(!suspended) { "ScopedMemoryAllocator is suspended when nested allocators are used" }
 
         // Pad available address to align it to 8
         // 8 is a max alignment number currently needed for Wasm component model canonical ABI
         val align = 8
         val result = (availableAddress + align - 1) and (align - 1).inv()
-        check(result > 0 && result % align == 0) { "result must be > 0 and 8-byte aligned" }
+        internalCheck(result > 0 && result % align == 0) { "result must be > 0 and 8-byte aligned" }
 
         if (Int.MAX_VALUE - availableAddress < size) {
             error("Out of linear memory. All available address space (2gb) is used.")
@@ -122,7 +122,7 @@ internal class ScopedMemoryAllocator(
             }
         }
 
-        check(availableAddress < wasmMemorySize() * WASM_PAGE_SIZE_IN_BYTES)
+        internalCheck(availableAddress < wasmMemorySize() * WASM_PAGE_SIZE_IN_BYTES)
 
         return Pointer(result.toUInt())
     }

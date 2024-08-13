@@ -9,8 +9,7 @@ import org.jetbrains.kotlin.wasm.ir.source.location.SourceLocation
 
 
 class WasmModule(
-    val functionTypes: List<WasmFunctionType> = emptyList(),
-    val recGroupTypes: List<WasmTypeDeclaration> = emptyList(),
+    val recGroups: List<List<WasmTypeDeclaration>> = emptyList(),
     val importsInOrder: List<WasmNamedModuleField> = emptyList(),
     val importedFunctions: List<WasmFunction.Imported> = emptyList(),
     val importedMemories: List<WasmMemory> = emptyList(),
@@ -107,11 +106,11 @@ class WasmElement(
 }
 
 class WasmTag(
-    val type: WasmFunctionType,
+    val type: WasmSymbol<WasmFunctionType>,
     val importPair: WasmImportDescriptor? = null
 ) : WasmNamedModuleField() {
     init {
-        assert(type.resultTypes.isEmpty()) { "Must have empty return as per current spec" }
+        assert(type.owner.resultTypes.isEmpty()) { "Must have empty return as per current spec" }
     }
 }
 

@@ -252,10 +252,9 @@ class DeclarationGenerator(
     private fun createVTable(metadata: ClassMetadata) {
         val klass = metadata.klass
         val symbol = klass.symbol
-        val vtableName = "${klass.fqNameWhenAvailable}.vtable"
         val vtableStruct = createVirtualTableStruct(
             metadata.virtualMethods,
-            vtableName,
+            "<vtable>",
             superType = metadata.superClass?.klass?.symbol?.let(context::referenceVTableGcType),
             isFinal = klass.modality == Modality.FINAL
         )
@@ -283,7 +282,7 @@ class DeclarationGenerator(
         }
         context.defineGlobalVTable(
             irClass = symbol,
-            wasmGlobal = WasmGlobal(vtableName, vTableRefGcType, false, initVTableGlobal)
+            wasmGlobal = WasmGlobal("${klass.fqNameWhenAvailable}.vtable", vTableRefGcType, false, initVTableGlobal)
         )
     }
 
@@ -330,7 +329,7 @@ class DeclarationGenerator(
         }
 
         val wasmClassIFaceGlobal = WasmGlobal(
-            name = "${klass.fqNameWhenAvailable.toString()}.classITable",
+            name = "<classITable>",
             type = WasmRefType(WasmHeapType.Type(classInterfaceType)),
             isMutable = false,
             init = initITableGlobal
@@ -364,7 +363,7 @@ class DeclarationGenerator(
             if (symbol in hierarchyDisjointUnions) {
                 val vtableStruct = createVirtualTableStruct(
                     methods = context.getInterfaceMetadata(symbol).methods,
-                    name = "$nameStr.itable",
+                    name = "<itable>",
                     isFinal = true,
                 )
                 context.defineVTableGcType(symbol, vtableStruct)

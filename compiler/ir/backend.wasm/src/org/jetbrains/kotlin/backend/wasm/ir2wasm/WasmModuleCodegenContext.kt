@@ -29,11 +29,11 @@ class WasmModuleCodegenContext(
         get() = wasmFragment.stringPoolSize
 
     val throwableTagIndex by lazy(LazyThreadSafetyMode.NONE) {
-        wasmFragment.tags.indexOfFirst { it.type === wasmFragment.throwableTagFuncType }
+        wasmFragment.tags.indexOfFirst { it.type.owner === wasmFragment.throwableTagFuncType }
     }
 
     val jsExceptionTagIndex by lazy(LazyThreadSafetyMode.NONE) {
-        wasmFragment.tags.indexOfFirst { it.type === wasmFragment.jsExceptionTagFuncType }
+        wasmFragment.tags.indexOfFirst { it.type.owner === wasmFragment.jsExceptionTagFuncType }
     }
 
     fun transformType(irType: IrType): WasmType {

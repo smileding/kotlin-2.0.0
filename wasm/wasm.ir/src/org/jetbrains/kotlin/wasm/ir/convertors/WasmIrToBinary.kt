@@ -78,6 +78,16 @@ class WasmIrToBinary(
         }
     }
 
+    private fun appendWasmTypeList(typeList: List<WasmTypeDeclaration>) {
+        typeList.forEach { type ->
+            when (type) {
+                is WasmStructDeclaration -> appendStructTypeDeclaration(type)
+                is WasmArrayDeclaration -> appendArrayTypeDeclaration(type)
+                is WasmFunctionType -> appendFunctionTypeDeclaration(type)
+            }
+        }
+    }
+
     fun appendWasmModule() {
         b.writeUInt32(WasmBinary.MAGIC)
         b.writeUInt32(WasmBinary.VERSION)
@@ -85,18 +95,14 @@ class WasmIrToBinary(
         with(module) {
             // type section
             appendSection(WasmBinary.Section.TYPE) {
-                val numRecGroups = if (recGroupTypes.isEmpty()) 0 else 1
-                appendVectorSize(functionTypes.size + numRecGroups)
-                functionTypes.forEach { appendFunctionTypeDeclaration(it) }
-                if (recGroupTypes.isNotEmpty()) {
-                    b.writeVarInt7(WasmBinary.REC_GROUP)
-                    appendVectorSize(recGroupTypes.size)
-                    recGroupTypes.forEach {
-                        when (it) {
-                            is WasmStructDeclaration -> appendStructTypeDeclaration(it)
-                            is WasmArrayDeclaration -> appendArrayTypeDeclaration(it)
-                            is WasmFunctionType -> appendFunctionTypeDeclaration(it)
-                        }
+                appendVectorSize(recGroups.size)
+                recGroups.forEach { recGroup ->
+                    if (recGroup.size > 1) {
+                        b.writeVarInt7(WasmBinary.REC_GROUP)
+                        appendVectorSize(recGroup.size)
+                        appendWasmTypeList(recGroup)
+                    } else {
+                        appendWasmTypeList(recGroup)
                     }
                 }
             }
@@ -219,10 +225,12 @@ class WasmIrToBinary(
             // https://github.com/WebAssembly/extended-name-section/blob/main/document/core/appendix/custom.rst
 
             appendSection(WasmBinary.Section.TABLE) {
-                appendVectorSize(module.recGroupTypes.size)
-                module.recGroupTypes.forEach {
-                    appendModuleFieldReference(it)
-                    b.writeString(it.name)
+                appendVectorSize(module.recGroups.sumOf { it.size })
+                module.recGroups.forEach { recGroup ->
+                    recGroup.forEach {
+                        appendModuleFieldReference(it)
+                        b.writeString(it.name)
+                    }
                 }
             }
 
@@ -237,7 +245,7 @@ class WasmIrToBinary(
             // Experimental fields name section
             // https://github.com/WebAssembly/gc/issues/193
             appendSection(WasmBinary.Section.CODE) {
-                val structDeclarations = module.recGroupTypes.filterIsInstance<WasmStructDeclaration>()
+                val structDeclarations = module.recGroups.filterIsInstance<WasmStructDeclaration>()
                 appendVectorSize(structDeclarations.size)
                 structDeclarations.forEach {
                     appendModuleFieldReference(it)
@@ -468,8 +476,8 @@ class WasmIrToBinary(
             b.writeByte(4)
         }
         b.writeByte(0) // attribute
-        assert(t.type.id != null) { "Unlinked tag id" }
-        b.writeVarUInt32(t.type.id!!)
+        assert(t.type.owner.id != null) { "Unlinked tag id" }
+        b.writeVarUInt32(t.type.owner.id!!)
     }
 
     private fun appendExpr(expr: Iterable<WasmInstr>) {

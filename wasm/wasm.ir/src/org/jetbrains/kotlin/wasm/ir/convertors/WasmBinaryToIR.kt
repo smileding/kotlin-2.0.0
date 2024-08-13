@@ -328,8 +328,7 @@ class WasmBinaryToIR(val b: MyByteReader) {
         }
 
         return WasmModule(
-            functionTypes = functionTypes,
-            recGroupTypes = gcTypes,
+            recGroups = listOf(functionTypes + gcTypes),
             importsInOrder = importsInOrder,
             importedFunctions = importedFunctions,
             importedMemories = importedMemories,
@@ -363,7 +362,7 @@ class WasmBinaryToIR(val b: MyByteReader) {
         val attribute = b.readByte()
         check(attribute.toInt() == 0) { "as per spec" }
         val type = functionTypes[b.readVarUInt32AsInt()]
-        return WasmTag(type, importPair)
+        return WasmTag(WasmSymbol(type), importPair)
     }
 
     private fun readExpression(): MutableList<WasmInstr> =

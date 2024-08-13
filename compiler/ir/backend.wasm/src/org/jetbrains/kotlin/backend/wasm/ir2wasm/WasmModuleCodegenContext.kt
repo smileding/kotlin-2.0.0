@@ -149,6 +149,10 @@ class WasmModuleCodegenContext(
         wasmFragment.classITableGcType.define(irClass, wasmType)
     }
 
+    fun addCastSensitiveType(irClass: IrClassSymbol) {
+        wasmFragment.castSensitiveTypes.add(irClass)
+    }
+
     fun isAlreadyDefinedClassITableGcType(irClass: IrClassSymbol): Boolean =
         wasmFragment.classITableGcType.defined.keys.contains(irClass)
 

@@ -585,10 +585,12 @@ class BodyGenerator(
 
     private fun generateRefTest(fromType: IrType, toType: IrType, location: SourceLocation) {
         if (!isDownCastAlwaysSuccessInRuntime(fromType, toType)) {
+            val symbol = toType.getRuntimeClass(irBuiltIns).symbol
             body.buildRefTestStatic(
-                toType = context.referenceGcType(toType.getRuntimeClass(irBuiltIns).symbol),
+                toType = context.referenceGcType(symbol),
                 location
             )
+            context.addCastSensitiveType(symbol)
         } else {
             body.buildDrop(location)
             body.buildConstI32(1, location)

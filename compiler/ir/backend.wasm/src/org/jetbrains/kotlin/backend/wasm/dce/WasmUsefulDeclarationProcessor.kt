@@ -109,11 +109,12 @@ internal class WasmUsefulDeclarationProcessor(
 
             val isSuperCall = expression.superQualifierSymbol != null
             if (function is IrSimpleFunction && function.isOverridable && !isSuperCall) {
-                val klass = function.parentAsClass
+                val functionToCall = getMostAbstractInterfaceMethod(context.irBuiltIns, function)
+                val klass: IrClass = functionToCall.parentAsClass
                 if (klass.isInterface) {
                     klass.enqueue(data, "receiver class")
                 }
-                function.enqueue(data, "method call")
+                functionToCall.enqueue(data, "method call")
             }
         }
     }

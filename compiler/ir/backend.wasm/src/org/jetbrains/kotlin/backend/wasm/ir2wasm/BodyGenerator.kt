@@ -675,41 +675,44 @@ class BodyGenerator(
         val isSuperCall = call is IrCall && call.superQualifierSymbol != null
         if (function is IrSimpleFunction && function.isOverridable && !isSuperCall) {
             // Generating index for indirect call
-            val klass = function.parentAsClass
+            val functionToCall = getMostAbstractInterfaceMethod(irBuiltIns, function)
+            val klass: IrClass = functionToCall.parentAsClass
+
             if (!klass.isInterface) {
                 val classMetadata = context.getClassMetadata(klass.symbol)
-                val vfSlot = classMetadata.virtualMethods.indexOfFirst { it.function == function }
+                val vfSlot = classMetadata.virtualMethods.indexOfFirst { it.function == functionToCall }
                 // Dispatch receiver should be simple and without side effects at this point
                 // TODO: Verify
                 val receiver = call.dispatchReceiver!!
                 generateExpression(receiver)
 
-                body.commentGroupStart { "virtual call: ${function.fqNameWhenAvailable}" }
+                body.commentGroupStart { "virtual call: ${functionToCall.fqNameWhenAvailable}" }
 
                 //TODO: check why it could be needed
                 generateRefCast(receiver.type, klass.defaultType, location)
 
                 body.buildStructGet(context.referenceGcType(klass.symbol), WasmSymbol(0), location)
                 body.buildStructGet(context.referenceVTableGcType(klass.symbol), WasmSymbol(vfSlot), location)
-                body.buildInstr(WasmOp.CALL_REF, location, WasmImmediate.TypeIdx(context.referenceFunctionType(function.symbol)))
+                body.buildInstr(WasmOp.CALL_REF, location, WasmImmediate.TypeIdx(context.referenceFunctionType(functionToCall.symbol)))
                 body.commentGroupEnd()
             } else {
                 val symbol = klass.symbol
                 if (symbol in hierarchyDisjointUnions) {
                     generateExpression(call.dispatchReceiver!!)
 
-                    body.commentGroupStart { "interface call: ${function.fqNameWhenAvailable}" }
+                    body.commentGroupStart { "interface call: ${functionToCall.fqNameWhenAvailable}" }
                     body.buildStructGet(context.referenceGcType(irBuiltIns.anyClass), WasmSymbol(1), location)
 
-                    val classITableReference = context.referenceClassITableGcType(symbol)
+
+                    val classITableReference = context.referenceClassITableGcType(klass.symbol)
                     body.buildRefCastStatic(classITableReference, location)
-                    body.buildStructGet(classITableReference, context.referenceClassITableInterfaceSlot(symbol), location)
+                    body.buildStructGet(classITableReference, context.referenceClassITableInterfaceSlot(klass.symbol), location)
 
-                    val vfSlot = context.getInterfaceMetadata(symbol).methods
-                        .indexOfFirst { it.function == function }
+                    val vfSlot = context.getInterfaceMetadata(klass.symbol).methods
+                        .indexOfFirst { it.function == functionToCall }
 
-                    body.buildStructGet(context.referenceVTableGcType(symbol), WasmSymbol(vfSlot), location)
-                    body.buildInstr(WasmOp.CALL_REF, location, WasmImmediate.TypeIdx(context.referenceFunctionType(function.symbol)))
+                    body.buildStructGet(context.referenceVTableGcType(klass.symbol), WasmSymbol(vfSlot), location)
+                    body.buildInstr(WasmOp.CALL_REF, location, WasmImmediate.TypeIdx(context.referenceFunctionType(functionToCall.symbol)))
                     body.commentGroupEnd()
                 } else {
                     // We came here for a call to an interface method which interface is not implemented anywhere, 

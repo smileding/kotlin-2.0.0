@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.backend.wasm.ir2wasm
 
+import org.jetbrains.kotlin.backend.wasm.utils.getMostAbstractInterfaceMethod
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.ir.IrBuiltIns
@@ -137,7 +138,12 @@ class InterfaceMetadata(val iFace: IrClass, irBuiltIns: IrBuiltIns) {
     val methods: List<VirtualMethodMetadata> = iFace.declarations
         .asSequence()
         .filterIsInstance<IrSimpleFunction>()
-        .filter { !it.isFakeOverride && it.visibility != DescriptorVisibilities.PRIVATE && it.modality != Modality.FINAL }
+        .filter {
+            !it.isFakeOverride &&
+                    it.visibility != DescriptorVisibilities.PRIVATE &&
+                    it.modality != Modality.FINAL &&
+                    getMostAbstractInterfaceMethod(irBuiltIns, it) == it
+        }
         .mapTo(mutableListOf()) { VirtualMethodMetadata(it, it.wasmSignature(irBuiltIns)) }
 }
 

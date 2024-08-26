@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.analysis.low.level.api.fir.providers
 
+import com.github.benmanes.caffeine.cache.Scheduler
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.analysis.low.level.api.fir.caches.NullableCaffeineCache
@@ -23,6 +24,7 @@ import org.jetbrains.kotlin.load.java.structure.impl.JavaClassImpl
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
+import java.time.Duration
 
 /**
  * [LLFirCombinedJavaSymbolProvider] combines multiple [JavaSymbolProvider]s with the following advantages:
@@ -44,11 +46,15 @@ internal class LLFirCombinedJavaSymbolProvider private constructor(
      * The purpose of this cache is to avoid index access for frequently accessed `ClassId`s, including failures. Because Java symbol
      * providers currently cannot benefit from a "name in package" check (see KTIJ-24642), the cache should also store negative results.
      *
-     * The cache size has been chosen with the help of local benchmarks and performance tests. A cache size of 2500 in comparison to 1000
-     * resulted in less time spent in [computeClassLikeSymbolByClassId] in local benchmarks. Cache sizes of 5000 and 10000 were tried in
-     * performance tests, but didn't affect performance. A cache size of 2500 is a good middle ground with a small memory footprint.
+     * The limited duration keeps the cache lean by evicting entries which haven't been used in a few seconds (which is a long time in the
+     * world of lazy resolution). The scheduler ensures that caches which aren't accessed anymore can also be cleaned up. This works better
+     * than a limited-size cache since the cache can shrink to a smaller number of entries based on usage.
      */
-    private val classCache: NullableCaffeineCache<ClassId, FirRegularClassSymbol> = NullableCaffeineCache { it.maximumSize(2500) }
+    private val classCache: NullableCaffeineCache<ClassId, FirRegularClassSymbol> = NullableCaffeineCache {
+        it
+            .expireAfterAccess(Duration.ofSeconds(5))
+            .scheduler(Scheduler.systemScheduler())
+    }
 
     override val symbolNamesProvider: FirSymbolNamesProvider = object : FirSymbolNamesProviderWithoutCallables() {
         override val hasSpecificClassifierPackageNamesComputation: Boolean get() = false

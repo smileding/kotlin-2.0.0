@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.analysis.low.level.api.fir.providers
 
+import com.github.benmanes.caffeine.cache.Scheduler
 import com.intellij.openapi.project.Project
 import org.jetbrains.kotlin.analysis.low.level.api.fir.caches.NullableCaffeineCache
 import org.jetbrains.kotlin.analysis.low.level.api.fir.sessions.LLFirSession
@@ -27,6 +28,7 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
+import java.time.Duration
 
 /**
  * [LLFirCombinedKotlinSymbolProvider] combines multiple [LLFirKotlinSymbolProvider]s with the following advantages:
@@ -55,7 +57,16 @@ internal class LLFirCombinedKotlinSymbolProvider private constructor(
 ) : LLFirSelectingCombinedSymbolProvider<LLFirKotlinSymbolProvider>(session, project, providers) {
     override val symbolNamesProvider: FirSymbolNamesProvider = FirCompositeCachedSymbolNamesProvider.fromSymbolProviders(session, providers)
 
-    private val classifierCache = NullableCaffeineCache<ClassId, FirClassLikeSymbol<*>> { it.maximumSize(500) }
+    /**
+     * The limited duration keeps the cache lean by evicting entries which haven't been used in a few seconds (which is a long time in the
+     * world of lazy resolution). The scheduler ensures that caches which aren't accessed anymore can also be cleaned up. This works better
+     * than a limited-size cache since the cache can shrink to a smaller number of entries based on usage.
+     */
+    private val classifierCache = NullableCaffeineCache<ClassId, FirClassLikeSymbol<*>> {
+        it
+            .expireAfterAccess(Duration.ofSeconds(5))
+            .scheduler(Scheduler.systemScheduler())
+    }
 
     override fun getClassLikeSymbolByClassId(classId: ClassId): FirClassLikeSymbol<*>? {
         if (!symbolNamesProvider.mayHaveTopLevelClassifier(classId)) return null

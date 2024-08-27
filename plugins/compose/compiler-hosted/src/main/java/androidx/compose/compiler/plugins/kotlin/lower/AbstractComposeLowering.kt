@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.ir.builders.declarations.*
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irReturn
 import org.jetbrains.kotlin.ir.declarations.*
+import org.jetbrains.kotlin.ir.declarations.impl.IrEnumEntryImpl
 import org.jetbrains.kotlin.ir.declarations.impl.IrExternalPackageFragmentImpl
 import org.jetbrains.kotlin.ir.declarations.impl.IrVariableImpl
 import org.jetbrains.kotlin.ir.expressions.*
@@ -924,6 +925,35 @@ abstract class AbstractComposeLowering(
         getTopLevelClass(hiddenFromObjCClassId)
     }
 
+    private val deprecationLevelClass = getTopLevelClass(ClassId.fromString("kotlin/DeprecationLevel"))
+    private val hiddenDeprecationLevel = deprecationLevelClass.owner.declarations.filterIsInstance<IrEnumEntry>()
+        .single { it.name.toString() == "HIDDEN" }.symbol
+
+    private val hiddenDeprecatedAnnotationSymbol = getTopLevelClass(ClassId.fromString("kotlin/Deprecated"))
+    private val hiddenDeprecatedAnnotation = IrConstructorCallImpl.fromSymbolOwner(
+        type = hiddenDeprecatedAnnotationSymbol.defaultType,
+        constructorSymbol = hiddenDeprecatedAnnotationSymbol.constructors.first { it.owner.isPrimary }
+    ).also {
+        it.putValueArgument(
+            0,
+            IrConstImpl.string(
+                SYNTHETIC_OFFSET,
+                SYNTHETIC_OFFSET,
+                context.irBuiltIns.stringType,
+                "This is a synthetic declaration that should not be called by users, so it is hidden"
+            )
+        )
+        it.putValueArgument(
+            2,
+            IrGetEnumValueImpl(
+                SYNTHETIC_OFFSET,
+                SYNTHETIC_OFFSET,
+                deprecationLevelClass.defaultType,
+                hiddenDeprecationLevel
+            )
+        )
+    }
+
     private fun IrClass.buildStabilityGetter(stabilityProp: IrProperty, parent: IrPackageFragment) {
         val getterName = uniqueStabilityGetterName()
 
@@ -953,6 +983,7 @@ abstract class AbstractComposeLowering(
         )
 
         context.metadataDeclarationRegistrar.addMetadataVisibleAnnotationsToElement(stabilityGetter, hiddenFromObjCAnnotation)
+        context.metadataDeclarationRegistrar.addMetadataVisibleAnnotationsToElement(stabilityGetter, hiddenDeprecatedAnnotation)
         context.metadataDeclarationRegistrar.registerFunctionAsMetadataVisible(stabilityGetter)
     }
 

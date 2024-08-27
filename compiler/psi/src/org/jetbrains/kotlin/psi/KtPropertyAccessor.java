@@ -19,10 +19,8 @@ package org.jetbrains.kotlin.psi;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.AstLoadingFilter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.KtNodeTypes;
 import org.jetbrains.kotlin.lexer.KtTokens;
 import org.jetbrains.kotlin.psi.stubs.KotlinPropertyAccessorStub;
 import org.jetbrains.kotlin.psi.stubs.elements.KtStubElementTypes;
@@ -173,12 +171,16 @@ public class KtPropertyAccessor extends KtDeclarationStub<KotlinPropertyAccessor
 
     @Nullable
     public PsiElement getRightParenthesis() {
-        return findChildByType(KtTokens.RPAR);
+        KtParameterList parameterList = getParameterList();
+        if (parameterList == null) return null;
+        return parameterList.getRightParenthesis();
     }
 
     @Nullable
     public PsiElement getLeftParenthesis() {
-        return findChildByType(KtTokens.LPAR);
+        KtParameterList parameterList = getParameterList();
+        if (parameterList == null) return null;
+        return parameterList.getLeftParenthesis();
     }
 
     @Nullable

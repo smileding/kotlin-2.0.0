@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.analysis.low.level.api.fir.caches
 
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
+import org.checkerframework.checker.index.qual.NonNegative
 import org.jetbrains.kotlin.analysis.low.level.api.fir.fir.caches.NullValue
 import org.jetbrains.kotlin.analysis.low.level.api.fir.fir.caches.nullValueToNull
 
@@ -21,4 +22,7 @@ internal class NullableCaffeineCache<K : Any, V : Any>(configure: (Caffeine<Any,
      * Returns the value for the given [key] if it's contained in the cache, or computes the value with [compute] and adds it to the cache.
      */
     fun get(key: K, compute: (K) -> V?): V? = cache.get(key) { compute(it) ?: NullValue }?.nullValueToNull()
+
+    val estimatedSize: @NonNegative Long
+        get() = cache.estimatedSize()
 }

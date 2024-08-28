@@ -702,9 +702,8 @@ class WasmSerializer(outputStream: OutputStream) {
     }
 
     private fun serializeAsReference(obj: Any, serializeFunc: () -> Unit) {
-        val id = referenceTable.getOrElse(obj) {
+        val id = referenceTable.getOrPut(obj) {
             DeferredSerialization(referenceTable.size, serializeFunc).also {
-                referenceTable[obj] = it
                 newReferences.add(it)
             }
         }.id

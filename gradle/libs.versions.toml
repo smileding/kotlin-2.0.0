@@ -42,6 +42,7 @@ ant = "1.10.14"
 kotlin-for-gradle-plugins-compilation = "2.0.20-RC"
 intellij-asm = "9.0"
 diff-utils = "4.12"
+opentelemetry-api = "1.41.0"
 # Wasm specific
 wasmedge = "0.14.0"
 
@@ -103,6 +104,7 @@ ant = { module = "org.apache.ant:ant", version.ref = "ant" }
 intellij-asm = { module = "org.jetbrains.intellij.deps:asm-all", version.ref = "intellij-asm" }
 diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", version.ref = "diff-utils" }
 okhttp = { module  = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api", version.ref = "opentelemetry-api" }
 
 [plugins]
 jetbrains-ideaExt = { id = "org.jetbrains.gradle.plugin.idea-ext", version.ref = "jetbrains-ideaExt" }

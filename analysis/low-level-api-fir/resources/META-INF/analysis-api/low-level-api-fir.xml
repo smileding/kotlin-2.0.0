@@ -31,6 +31,8 @@
     <projectService
         serviceImplementation="org.jetbrains.kotlin.analysis.low.level.api.fir.file.structure.LLFirDeclarationModificationService"
     />
+
+    <projectService serviceImplementation="org.jetbrains.kotlin.analysis.low.level.api.fir.statistics.LLStatisticsService"/>
   </extensions>
 
   <projectListeners>

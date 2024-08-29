@@ -1,0 +1,12 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey
+        defaultValue="false"
+        description="Enables Analysis API statistics collection. Collection does not start on its own, but it can be started and stopped
+        programmatically with 'KaStatisticsCollector'. Alternatively, specify the 'kotlin.analysisApi.statistics.autostart' key to start
+        statistics collection automatically."
+        key="kotlin.analysisApi.statistics"
+        restartRequired="true"
+    />
+  </extensions>
+</idea-plugin>

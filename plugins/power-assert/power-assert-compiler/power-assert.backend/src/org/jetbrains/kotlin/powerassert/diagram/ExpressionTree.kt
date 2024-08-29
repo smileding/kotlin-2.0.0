@@ -29,24 +29,22 @@ import org.jetbrains.kotlin.ir.util.dump
 import org.jetbrains.kotlin.ir.util.dumpKotlinLike
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 
-abstract class Node {
+sealed class Node {
     private val _children = mutableListOf<Node>()
     val children: List<Node> get() = _children
 
     fun addChild(node: Node) {
         _children.add(node)
     }
+}
 
-    fun dump(): String = buildString {
-        dump(this, 0)
-    }
+class RootNode<T>(
+    val parameter: T,
+) : Node() {
+    override fun toString() = "RootNode"
 
-    private fun dump(builder: StringBuilder, indent: Int) {
-        builder.append("  ".repeat(indent)).append(this).appendLine()
-        for (child in children) {
-            child.dump(builder, indent + 1)
-        }
-    }
+    val child: Node?
+        get() = children.singleOrNull()?.takeIf { it !is ConstantNode }
 }
 
 class ConstantNode(
@@ -78,20 +76,18 @@ class ElvisNode(
     override fun toString() = "ElvisNode(${expression.dumpKotlinLike()})"
 }
 
-fun buildTree(
+fun <T> buildTree(
     constTracker: EvaluatedConstTracker?,
     sourceFile: SourceFile,
-    expression: IrExpression,
-): Node? {
-    class RootNode : Node() {
-        override fun toString() = "RootNode"
-    }
+    parameter: T,
+    expression: IrExpression?,
+): RootNode<T> {
+    val tree = RootNode(parameter)
 
     fun IrConst.isEvaluatedConst(): Boolean =
         constTracker?.load(startOffset, endOffset, sourceFile.irFile.nameWithPackage) != null
 
-    val tree = RootNode()
-    expression.accept(
+    expression?.accept(
         object : IrElementVisitor<Unit, Node> {
             private var currentCall: IrCall? = null
 
@@ -109,7 +105,7 @@ fun buildTree(
                 // but the implicit receiver may start at the beginning of an explicit receiver,
                 // while the call starts at a later offset.
                 //
-                // The following is a generalization all of these conditions into a single check.
+                // The following is a generalization of all these conditions into a single check.
                 return startOffset == endOffset ||
                         endOffset == irCall.endOffset && (startOffset == irCall.startOffset || otherReceiver?.startOffset == startOffset)
             }
@@ -265,5 +261,5 @@ fun buildTree(
         tree,
     )
 
-    return tree.children.singleOrNull()?.takeIf { it !is ConstantNode }
+    return tree
 }

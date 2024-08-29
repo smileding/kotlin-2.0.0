@@ -1,8 +1,6 @@
 ---
 Complex.holder.wrapper.mustEqual("world".length)
 |       |      |                         |
-|       |      |                         5
-|       |      Wrapper
-|       Holder(wrapper=Wrapper)
-Complex
+Complex |      Wrapper                   5
+        Holder(wrapper=Wrapper)
 ---

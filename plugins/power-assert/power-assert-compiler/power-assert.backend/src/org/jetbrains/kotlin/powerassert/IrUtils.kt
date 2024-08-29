@@ -22,19 +22,20 @@ package org.jetbrains.kotlin.powerassert
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.ir.IrElement
-import org.jetbrains.kotlin.ir.builders.*
+import org.jetbrains.kotlin.ir.builders.IrBlockBodyBuilder
+import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.declarations.buildFun
+import org.jetbrains.kotlin.ir.builders.irBlockBody
+import org.jetbrains.kotlin.ir.builders.parent
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.expressions.IrFunctionExpression
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
 import org.jetbrains.kotlin.ir.expressions.impl.IrFunctionExpressionImpl
+import org.jetbrains.kotlin.ir.irAttribute
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.name.Name
-
-fun IrBuilderWithScope.irString(builderAction: StringBuilder.() -> Unit) =
-    irString(buildString { builderAction() })
 
 fun IrBuilderWithScope.irLambda(
     returnType: IrType,
@@ -73,4 +74,23 @@ val IrElement.earliestStartOffset: Int
             },
         )
         return offset
+    }
+
+private var IrElement.sourceRangeAttribute: ClosedRange<Int>? by irAttribute(followAttributeOwner = false)
+val IrElement.sourceRange: ClosedRange<Int>
+    get() {
+        sourceRangeAttribute?.let { return it }
+
+        var range = startOffset..endOffset
+        acceptChildrenVoid(
+            object : IrElementVisitorVoid {
+                override fun visitElement(element: IrElement) {
+                    val childRange = element.sourceRange
+                    range = minOf(range.start, childRange.start)..maxOf(range.endInclusive, childRange.endInclusive)
+                }
+            },
+        )
+
+        sourceRangeAttribute = range
+        return range
     }

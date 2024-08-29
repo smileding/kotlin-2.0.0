@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -17,29 +17,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.jetbrains.kotlin.powerassert.delegate
+package org.jetbrains.kotlin.powerassert.builder.call
 
 import org.jetbrains.kotlin.ir.builders.IrBuilderWithScope
 import org.jetbrains.kotlin.ir.builders.irCall
 import org.jetbrains.kotlin.ir.builders.parent
 import org.jetbrains.kotlin.ir.declarations.IrFunction
-import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 
-interface FunctionDelegate {
+interface CallBuilder {
     val function: IrFunction
-    val messageParameter: IrValueParameter
 
     fun buildCall(
         builder: IrBuilderWithScope,
-        original: IrCall,
         dispatchReceiver: IrExpression?,
         extensionReceiver: IrExpression?,
         valueArguments: List<IrExpression?>,
-        messageArgument: IrExpression,
+        diagram: IrExpression,
     ): IrExpression
 
     fun IrBuilderWithScope.irCallCopy(

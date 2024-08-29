@@ -68,6 +68,40 @@ public class FirLightTreeBlackBoxCodegenTestForPowerAssertGenerated extends Abst
   }
 
   @Nested
+  @TestMetadata("plugins/power-assert/power-assert-compiler/testData/codegen/annotated")
+  @TestDataPath("$PROJECT_ROOT")
+  public class Annotated {
+    @Test
+    public void testAllFilesPresentInAnnotated() {
+      KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/power-assert/power-assert-compiler/testData/codegen/annotated"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), TargetBackend.JVM_IR, true);
+    }
+
+    @Test
+    @TestMetadata("describe.kt")
+    public void testDescribe() {
+      runTest("plugins/power-assert/power-assert-compiler/testData/codegen/annotated/describe.kt");
+    }
+
+    @Test
+    @TestMetadata("IgnoreParameter.kt")
+    public void testIgnoreParameter() {
+      runTest("plugins/power-assert/power-assert-compiler/testData/codegen/annotated/IgnoreParameter.kt");
+    }
+
+    @Test
+    @TestMetadata("LocalVariables.kt")
+    public void testLocalVariables() {
+      runTest("plugins/power-assert/power-assert-compiler/testData/codegen/annotated/LocalVariables.kt");
+    }
+
+    @Test
+    @TestMetadata("modules.kt")
+    public void testModules() {
+      runTest("plugins/power-assert/power-assert-compiler/testData/codegen/annotated/modules.kt");
+    }
+  }
+
+  @Nested
   @TestMetadata("plugins/power-assert/power-assert-compiler/testData/codegen/arithmetic")
   @TestDataPath("$PROJECT_ROOT")
   public class Arithmetic {
@@ -692,6 +726,12 @@ public class FirLightTreeBlackBoxCodegenTestForPowerAssertGenerated extends Abst
     @Test
     public void testAllFilesPresentInParameters() {
       KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("plugins/power-assert/power-assert-compiler/testData/codegen/parameters"), Pattern.compile("^(.+)\\.kt$"), Pattern.compile("^(.+)\\.fir\\.kts?$"), TargetBackend.JVM_IR, true);
+    }
+
+    @Test
+    @TestMetadata("FluentBuilder.kt")
+    public void testFluentBuilder() {
+      runTest("plugins/power-assert/power-assert-compiler/testData/codegen/parameters/FluentBuilder.kt");
     }
 
     @Test

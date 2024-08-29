@@ -29,27 +29,30 @@ import org.jetbrains.kotlin.ir.expressions.IrGetValue
 import org.jetbrains.kotlin.ir.expressions.IrWhen
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
+import org.jetbrains.kotlin.powerassert.EXPLAIN_BLOCK
+import org.jetbrains.kotlin.powerassert.EXPLAIN_TEMPORARY
+import org.jetbrains.kotlin.powerassert.isExplained
 
 fun IrBuilderWithScope.buildDiagramNesting(
     sourceFile: SourceFile,
     root: Node,
     variables: PersistentList<IrTemporaryVariable> = persistentListOf(),
-    call: IrBuilderWithScope.(IrExpression, PersistentList<IrTemporaryVariable>) -> IrExpression,
+    call: IrBlockBuilder.(IrExpression, PersistentList<IrTemporaryVariable>) -> IrExpression,
 ): IrExpression {
-    return irBlock {
+    return irBlock(origin = EXPLAIN_BLOCK) {
         +buildExpression(sourceFile, root, variables) { argument, subStack ->
             call(argument, subStack)
         }
     }
 }
 
-fun IrBuilderWithScope.buildDiagramNestingNullable(
+fun IrBuilderWithScope.buildReceiverDiagram(
     sourceFile: SourceFile,
     root: Node?,
     variables: PersistentList<IrTemporaryVariable> = persistentListOf(),
-    call: IrBuilderWithScope.(IrExpression?, PersistentList<IrTemporaryVariable>) -> IrExpression,
+    call: IrBuilderWithScope.(IrExpression?, PersistentList<IrTemporaryVariable>?) -> IrExpression,
 ): IrExpression {
-    return if (root != null) buildDiagramNesting(sourceFile, root, variables, call) else call(null, variables)
+    return if (root != null) buildDiagramNesting(sourceFile, root, variables, call) else call(null, null)
 }
 
 private fun IrBlockBuilder.buildExpression(
@@ -63,7 +66,7 @@ private fun IrBlockBuilder.buildExpression(
     is ChainNode -> nest(sourceFile, node, 0, variables, call)
     is WhenNode -> nest(sourceFile, node, 0, variables, call)
     is ElvisNode -> nest(sourceFile, node, 0, variables, call)
-    else -> TODO("Unknown node type=$node")
+    is RootNode<*> -> error("internal power-assert error")
 }
 
 /**
@@ -113,7 +116,12 @@ private fun IrBlockBuilder.add(
     val transformer = IrTemporaryExtractionTransformer(this@add, variables)
     val copy = expression.deepCopyWithSymbols(scope.getLocalDeclarationParent()).transform(transformer, null)
 
-    val variable = irTemporary(copy, nameHint = "PowerAssertSynthesized")
+    val variable = if (expression is IrGetValue && expression.symbol.owner.isExplained()) {
+        // Value will have already been transformed by PowerAssert and is safe to access multiple times.
+        expression.symbol.owner as IrVariable
+    } else {
+        irTemporary(copy, nameHint = "Explain", origin = EXPLAIN_TEMPORARY)
+    }
     val newVariables = variables.add(IrTemporaryVariable(variable, expression, sourceRangeInfo, text))
     return call(irGet(variable), newVariables)
 }

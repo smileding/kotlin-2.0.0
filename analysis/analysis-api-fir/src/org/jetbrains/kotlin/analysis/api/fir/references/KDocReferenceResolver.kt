@@ -158,7 +158,7 @@ internal object KDocReferenceResolver {
         val getterNames = possibleGetMethodNames(fqName.shortNameOrSpecial())
         return getterNames.flatMap { getterName ->
             resolveKdocFqName(fqName.parent().child(getterName), contextElement, trySyntheticGetters = false)
-        }
+        }.filter { it.symbol.origin == KaSymbolOrigin.JAVA_SYNTHETIC_PROPERTY }
     }
 
     private fun KaSession.getExtensionReceiverSymbolByThisQualifier(

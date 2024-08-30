@@ -1,5 +1,6 @@
 // SKIP_TXT
 // DIAGNOSTICS: -UNUSED_PARAMETER
+// LATEST_LV_DIFFERENCE
 
 class A(
     val l: MutableList<Int>,

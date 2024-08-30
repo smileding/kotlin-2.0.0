@@ -1,5 +1,4 @@
 // WITH_STDLIB
-// IGNORE_BACKEND: JS_IR
 
 // KT-61141: `set()` throws kotlin.IllegalStateException instead of java.lang.IllegalStateException
 // IGNORE_BACKEND: NATIVE

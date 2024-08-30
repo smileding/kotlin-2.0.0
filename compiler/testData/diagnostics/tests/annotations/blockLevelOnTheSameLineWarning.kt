@@ -1,4 +1,5 @@
 // DIAGNOSTICS: -UNUSED_PARAMETER
+// LATEST_LV_DIFFERENCE
 
 @Target(AnnotationTarget.EXPRESSION)
 @Retention(AnnotationRetention.SOURCE)

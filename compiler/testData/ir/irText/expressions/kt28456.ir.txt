@@ -69,7 +69,7 @@ FILE fqName:<root> fileName:/kt28456.kt
                 GET_VAR 'val tmp_4: kotlin.Int declared in <root>.testPostfixIncrement' type=kotlin.Int origin=null
                 GET_VAR 'val tmp_5: kotlin.Int declared in <root>.testPostfixIncrement' type=kotlin.Int origin=null
           CALL 'public final fun set (i: kotlin.Int, j: kotlin.Int, v: kotlin.Int): kotlin.Unit declared in <root>' type=kotlin.Unit origin=POSTFIX_INCR
-            $receiver: GET_VAR 'val tmp_3: <root>.A declared in <root>.testPostfixIncrement' type=<root>.A origin=null
+            $receiver: GET_VAR 'val tmp_3: <root>.A declared in <root>.testPostfixIncrement' type=<root>.A origin=POSTFIX_INCR
             i: GET_VAR 'val tmp_4: kotlin.Int declared in <root>.testPostfixIncrement' type=kotlin.Int origin=null
             j: GET_VAR 'val tmp_5: kotlin.Int declared in <root>.testPostfixIncrement' type=kotlin.Int origin=null
             v: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_INCR

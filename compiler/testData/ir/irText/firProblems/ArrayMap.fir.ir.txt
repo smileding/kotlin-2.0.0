@@ -715,7 +715,7 @@ FILE fqName:<root> fileName:/ArrayMap.kt
                       if: CONST Boolean type=kotlin.Boolean value=true
                       then: BLOCK type=kotlin.Unit origin=null
                         THROW type=kotlin.Nothing
-                          CONSTRUCTOR_CALL 'public constructor <init> () declared in java.util.NoSuchElementException' type=java.util.NoSuchElementException origin=null
+                          CONSTRUCTOR_CALL 'public constructor <init> () declared in kotlin.NoSuchElementException' type=kotlin.NoSuchElementException origin=null
             CONSTRUCTOR_CALL 'public constructor <init> () declared in <root>.OneElementArrayMap.iterator.<no name provided>' type=<root>.OneElementArrayMap.iterator.<no name provided><T of <root>.OneElementArrayMap> origin=OBJECT_LITERAL
     FUN name:set visibility:public modality:OPEN <> ($this:<root>.OneElementArrayMap<T of <root>.OneElementArrayMap>, index:kotlin.Int, value:T of <root>.OneElementArrayMap) returnType:kotlin.Unit [operator]
       overridden:
@@ -725,7 +725,7 @@ FILE fqName:<root> fileName:/ArrayMap.kt
       VALUE_PARAMETER name:value index:1 type:T of <root>.OneElementArrayMap
       BLOCK_BODY
         THROW type=kotlin.Nothing
-          CONSTRUCTOR_CALL 'public constructor <init> () declared in java.lang.IllegalStateException' type=java.lang.IllegalStateException origin=null
+          CONSTRUCTOR_CALL 'public constructor <init> () declared in kotlin.IllegalStateException' type=kotlin.IllegalStateException origin=null
     PROPERTY name:size visibility:public modality:OPEN [val]
       overridden:
         public abstract size: kotlin.Int declared in <root>.ArrayMap
@@ -811,7 +811,7 @@ FILE fqName:<root> fileName:/ArrayMap.kt
                 $this: VALUE_PARAMETER name:<this> type:<root>.EmptyArrayMap.iterator.<no name provided>
                 BLOCK_BODY
                   THROW type=kotlin.Nothing
-                    CONSTRUCTOR_CALL 'public constructor <init> () declared in java.util.NoSuchElementException' type=java.util.NoSuchElementException origin=null
+                    CONSTRUCTOR_CALL 'public constructor <init> () declared in kotlin.NoSuchElementException' type=kotlin.NoSuchElementException origin=null
             CONSTRUCTOR_CALL 'public constructor <init> () declared in <root>.EmptyArrayMap.iterator.<no name provided>' type=<root>.EmptyArrayMap.iterator.<no name provided> origin=OBJECT_LITERAL
     FUN name:set visibility:public modality:OPEN <> ($this:<root>.EmptyArrayMap, index:kotlin.Int, value:kotlin.Nothing) returnType:kotlin.Unit [operator]
       overridden:
@@ -821,7 +821,7 @@ FILE fqName:<root> fileName:/ArrayMap.kt
       VALUE_PARAMETER name:value index:1 type:kotlin.Nothing
       BLOCK_BODY
         THROW type=kotlin.Nothing
-          CONSTRUCTOR_CALL 'public constructor <init> () declared in java.lang.IllegalStateException' type=java.lang.IllegalStateException origin=null
+          CONSTRUCTOR_CALL 'public constructor <init> () declared in kotlin.IllegalStateException' type=kotlin.IllegalStateException origin=null
     PROPERTY name:size visibility:public modality:OPEN [val]
       overridden:
         public abstract size: kotlin.Int declared in <root>.ArrayMap

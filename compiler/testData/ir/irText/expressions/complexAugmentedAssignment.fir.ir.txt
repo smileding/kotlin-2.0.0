@@ -205,7 +205,7 @@ FILE fqName:<root> fileName:/complexAugmentedAssignment.kt
           $this: GET_VAR 'val tmp_0: kotlin.IntArray declared in <root>.test1' type=kotlin.IntArray origin=null
           index: GET_VAR 'val tmp_1: kotlin.Int declared in <root>.test1' type=kotlin.Int origin=null
       CALL 'public final fun set (index: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in kotlin.IntArray' type=kotlin.Unit origin=POSTFIX_INCR
-        $this: GET_VAR 'val tmp_0: kotlin.IntArray declared in <root>.test1' type=kotlin.IntArray origin=null
+        $this: GET_VAR 'val tmp_0: kotlin.IntArray declared in <root>.test1' type=kotlin.IntArray origin=POSTFIX_INCR
         index: GET_VAR 'val tmp_1: kotlin.Int declared in <root>.test1' type=kotlin.Int origin=null
         value: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_INCR
           $this: GET_VAR 'val tmp_3: kotlin.Int declared in <root>.test1' type=kotlin.Int origin=null

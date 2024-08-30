@@ -1,4 +1,6 @@
 // DIAGNOSTICS: -DEBUG_INFO_SMARTCAST
+// LATEST_LV_DIFFERENCE
+
 class Foo {
     fun foo(a: Foo): Foo = a
     var f: Foo? = null
@@ -31,8 +33,8 @@ fun main() {
 
     val w: Foo? = null
     w<!UNSAFE_CALL!>.<!>f = z
-    (w<!UNSAFE_CALL!>.<!>f) = z
-    (label@ w<!UNSAFE_CALL!>.<!>f) = z
+    <!WRAPPED_LHS_IN_ASSIGNMENT_WARNING!>(w<!UNSAFE_CALL!>.<!>f) = z<!>
+    <!WRAPPED_LHS_IN_ASSIGNMENT_WARNING!>(label@ w<!UNSAFE_CALL!>.<!>f) = z<!>
     w!!.f = z
     w.f = z
     w<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>.f = z

@@ -138,7 +138,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
               $this: GET_VAR 'val tmp_0: kotlin.IntArray declared in <root>.testArrayPostfix' type=kotlin.IntArray origin=null
               index: GET_VAR 'val tmp_1: kotlin.Int declared in <root>.testArrayPostfix' type=kotlin.Int origin=null
           CALL 'public final fun set (index: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in kotlin.IntArray' type=kotlin.Unit origin=POSTFIX_INCR
-            $this: GET_VAR 'val tmp_0: kotlin.IntArray declared in <root>.testArrayPostfix' type=kotlin.IntArray origin=null
+            $this: GET_VAR 'val tmp_0: kotlin.IntArray declared in <root>.testArrayPostfix' type=kotlin.IntArray origin=POSTFIX_INCR
             index: GET_VAR 'val tmp_1: kotlin.Int declared in <root>.testArrayPostfix' type=kotlin.Int origin=null
             value: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_INCR
               $this: GET_VAR 'val tmp_2: kotlin.Int declared in <root>.testArrayPostfix' type=kotlin.Int origin=null
@@ -154,7 +154,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
               $this: GET_VAR 'val tmp_3: kotlin.IntArray declared in <root>.testArrayPostfix' type=kotlin.IntArray origin=null
               index: GET_VAR 'val tmp_4: kotlin.Int declared in <root>.testArrayPostfix' type=kotlin.Int origin=null
           CALL 'public final fun set (index: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in kotlin.IntArray' type=kotlin.Unit origin=POSTFIX_DECR
-            $this: GET_VAR 'val tmp_3: kotlin.IntArray declared in <root>.testArrayPostfix' type=kotlin.IntArray origin=null
+            $this: GET_VAR 'val tmp_3: kotlin.IntArray declared in <root>.testArrayPostfix' type=kotlin.IntArray origin=POSTFIX_DECR
             index: GET_VAR 'val tmp_4: kotlin.Int declared in <root>.testArrayPostfix' type=kotlin.Int origin=null
             value: CALL 'public final fun dec (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_DECR
               $this: GET_VAR 'val tmp_5: kotlin.Int declared in <root>.testArrayPostfix' type=kotlin.Int origin=null
@@ -168,7 +168,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
           VAR IR_TEMPORARY_VARIABLE name:tmp_7 type:kotlin.Int [val]
             CONST Int type=kotlin.Int value=0
           CALL 'public final fun set (index: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in kotlin.IntArray' type=kotlin.Unit origin=PREFIX_INCR
-            $this: GET_VAR 'val tmp_6: kotlin.IntArray declared in <root>.testArrayPrefix' type=kotlin.IntArray origin=null
+            $this: GET_VAR 'val tmp_6: kotlin.IntArray declared in <root>.testArrayPrefix' type=kotlin.IntArray origin=PREFIX_INCR
             index: GET_VAR 'val tmp_7: kotlin.Int declared in <root>.testArrayPrefix' type=kotlin.Int origin=null
             value: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_INCR
               $this: CALL 'public final fun get (index: kotlin.Int): kotlin.Int declared in kotlin.IntArray' type=kotlin.Int origin=PREFIX_INCR
@@ -184,7 +184,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
           VAR IR_TEMPORARY_VARIABLE name:tmp_9 type:kotlin.Int [val]
             CONST Int type=kotlin.Int value=0
           CALL 'public final fun set (index: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in kotlin.IntArray' type=kotlin.Unit origin=PREFIX_DECR
-            $this: GET_VAR 'val tmp_8: kotlin.IntArray declared in <root>.testArrayPrefix' type=kotlin.IntArray origin=null
+            $this: GET_VAR 'val tmp_8: kotlin.IntArray declared in <root>.testArrayPrefix' type=kotlin.IntArray origin=PREFIX_DECR
             index: GET_VAR 'val tmp_9: kotlin.Int declared in <root>.testArrayPrefix' type=kotlin.Int origin=null
             value: CALL 'public final fun dec (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_DECR
               $this: CALL 'public final fun get (index: kotlin.Int): kotlin.Int declared in kotlin.IntArray' type=kotlin.Int origin=PREFIX_DECR
@@ -206,7 +206,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
               $this: GET_VAR 'val tmp_10: <root>.C declared in <root>.testClassOperatorPostfix' type=<root>.C origin=null
               i: GET_VAR 'val tmp_11: kotlin.Int declared in <root>.testClassOperatorPostfix' type=kotlin.Int origin=null
           CALL 'public final fun set (i: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in <root>.C' type=kotlin.Unit origin=POSTFIX_INCR
-            $this: GET_VAR 'val tmp_10: <root>.C declared in <root>.testClassOperatorPostfix' type=<root>.C origin=null
+            $this: GET_VAR 'val tmp_10: <root>.C declared in <root>.testClassOperatorPostfix' type=<root>.C origin=POSTFIX_INCR
             i: GET_VAR 'val tmp_11: kotlin.Int declared in <root>.testClassOperatorPostfix' type=kotlin.Int origin=null
             value: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_INCR
               $this: GET_VAR 'val tmp_12: kotlin.Int declared in <root>.testClassOperatorPostfix' type=kotlin.Int origin=null
@@ -222,7 +222,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
               $this: GET_VAR 'val tmp_13: <root>.C declared in <root>.testClassOperatorPostfix' type=<root>.C origin=null
               i: GET_VAR 'val tmp_14: kotlin.Int declared in <root>.testClassOperatorPostfix' type=kotlin.Int origin=null
           CALL 'public final fun set (i: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in <root>.C' type=kotlin.Unit origin=POSTFIX_DECR
-            $this: GET_VAR 'val tmp_13: <root>.C declared in <root>.testClassOperatorPostfix' type=<root>.C origin=null
+            $this: GET_VAR 'val tmp_13: <root>.C declared in <root>.testClassOperatorPostfix' type=<root>.C origin=POSTFIX_DECR
             i: GET_VAR 'val tmp_14: kotlin.Int declared in <root>.testClassOperatorPostfix' type=kotlin.Int origin=null
             value: CALL 'public final fun dec (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_DECR
               $this: GET_VAR 'val tmp_15: kotlin.Int declared in <root>.testClassOperatorPostfix' type=kotlin.Int origin=null
@@ -236,7 +236,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
           VAR IR_TEMPORARY_VARIABLE name:tmp_17 type:kotlin.Int [val]
             CONST Int type=kotlin.Int value=0
           CALL 'public final fun set (i: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in <root>.C' type=kotlin.Unit origin=PREFIX_INCR
-            $this: GET_VAR 'val tmp_16: <root>.C declared in <root>.testClassOperatorPrefix' type=<root>.C origin=null
+            $this: GET_VAR 'val tmp_16: <root>.C declared in <root>.testClassOperatorPrefix' type=<root>.C origin=PREFIX_INCR
             i: GET_VAR 'val tmp_17: kotlin.Int declared in <root>.testClassOperatorPrefix' type=kotlin.Int origin=null
             value: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_INCR
               $this: CALL 'public final fun get (i: kotlin.Int): kotlin.Int declared in <root>.C' type=kotlin.Int origin=PREFIX_INCR
@@ -252,7 +252,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
           VAR IR_TEMPORARY_VARIABLE name:tmp_19 type:kotlin.Int [val]
             CONST Int type=kotlin.Int value=0
           CALL 'public final fun set (i: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in <root>.C' type=kotlin.Unit origin=PREFIX_DECR
-            $this: GET_VAR 'val tmp_18: <root>.C declared in <root>.testClassOperatorPrefix' type=<root>.C origin=null
+            $this: GET_VAR 'val tmp_18: <root>.C declared in <root>.testClassOperatorPrefix' type=<root>.C origin=PREFIX_DECR
             i: GET_VAR 'val tmp_19: kotlin.Int declared in <root>.testClassOperatorPrefix' type=kotlin.Int origin=null
             value: CALL 'public final fun dec (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_DECR
               $this: CALL 'public final fun get (i: kotlin.Int): kotlin.Int declared in <root>.C' type=kotlin.Int origin=PREFIX_DECR
@@ -324,7 +324,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
               $this: GET_VAR 'val tmp_26: <root>.O declared in <root>.testObjectOperatorPostfix' type=<root>.O origin=null
               i: GET_VAR 'val tmp_27: kotlin.Int declared in <root>.testObjectOperatorPostfix' type=kotlin.Int origin=null
           CALL 'public final fun set (i: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in <root>.O' type=kotlin.Unit origin=POSTFIX_INCR
-            $this: GET_VAR 'val tmp_26: <root>.O declared in <root>.testObjectOperatorPostfix' type=<root>.O origin=null
+            $this: GET_VAR 'val tmp_26: <root>.O declared in <root>.testObjectOperatorPostfix' type=<root>.O origin=POSTFIX_INCR
             i: GET_VAR 'val tmp_27: kotlin.Int declared in <root>.testObjectOperatorPostfix' type=kotlin.Int origin=null
             value: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_INCR
               $this: GET_VAR 'val tmp_28: kotlin.Int declared in <root>.testObjectOperatorPostfix' type=kotlin.Int origin=null
@@ -340,7 +340,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
               $this: GET_VAR 'val tmp_29: <root>.O declared in <root>.testObjectOperatorPostfix' type=<root>.O origin=null
               i: GET_VAR 'val tmp_30: kotlin.Int declared in <root>.testObjectOperatorPostfix' type=kotlin.Int origin=null
           CALL 'public final fun set (i: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in <root>.O' type=kotlin.Unit origin=POSTFIX_DECR
-            $this: GET_VAR 'val tmp_29: <root>.O declared in <root>.testObjectOperatorPostfix' type=<root>.O origin=null
+            $this: GET_VAR 'val tmp_29: <root>.O declared in <root>.testObjectOperatorPostfix' type=<root>.O origin=POSTFIX_DECR
             i: GET_VAR 'val tmp_30: kotlin.Int declared in <root>.testObjectOperatorPostfix' type=kotlin.Int origin=null
             value: CALL 'public final fun dec (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_DECR
               $this: GET_VAR 'val tmp_31: kotlin.Int declared in <root>.testObjectOperatorPostfix' type=kotlin.Int origin=null
@@ -354,7 +354,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
           VAR IR_TEMPORARY_VARIABLE name:tmp_33 type:kotlin.Int [val]
             CONST Int type=kotlin.Int value=0
           CALL 'public final fun set (i: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in <root>.O' type=kotlin.Unit origin=PREFIX_INCR
-            $this: GET_VAR 'val tmp_32: <root>.O declared in <root>.testObjectOperatorPrefix' type=<root>.O origin=null
+            $this: GET_VAR 'val tmp_32: <root>.O declared in <root>.testObjectOperatorPrefix' type=<root>.O origin=PREFIX_INCR
             i: GET_VAR 'val tmp_33: kotlin.Int declared in <root>.testObjectOperatorPrefix' type=kotlin.Int origin=null
             value: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_INCR
               $this: CALL 'public final fun get (i: kotlin.Int): kotlin.Int declared in <root>.O' type=kotlin.Int origin=PREFIX_INCR
@@ -370,7 +370,7 @@ FILE fqName:<root> fileName:/incrementDecrement.kt
           VAR IR_TEMPORARY_VARIABLE name:tmp_35 type:kotlin.Int [val]
             CONST Int type=kotlin.Int value=0
           CALL 'public final fun set (i: kotlin.Int, value: kotlin.Int): kotlin.Unit declared in <root>.O' type=kotlin.Unit origin=PREFIX_DECR
-            $this: GET_VAR 'val tmp_34: <root>.O declared in <root>.testObjectOperatorPrefix' type=<root>.O origin=null
+            $this: GET_VAR 'val tmp_34: <root>.O declared in <root>.testObjectOperatorPrefix' type=<root>.O origin=PREFIX_DECR
             i: GET_VAR 'val tmp_35: kotlin.Int declared in <root>.testObjectOperatorPrefix' type=kotlin.Int origin=null
             value: CALL 'public final fun dec (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_DECR
               $this: CALL 'public final fun get (i: kotlin.Int): kotlin.Int declared in <root>.O' type=kotlin.Int origin=PREFIX_DECR

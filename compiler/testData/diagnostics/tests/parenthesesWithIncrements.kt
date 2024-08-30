@@ -1,6 +1,6 @@
-// FIR_IDENTICAL
 // ISSUE: KT-70507
 // WITH_STDLIB
+// LATEST_LV_DIFFERENCE
 
 object O {
     operator fun inc() = this
@@ -15,3 +15,4 @@ fun main() {
 
     (O[1])++
 }
+

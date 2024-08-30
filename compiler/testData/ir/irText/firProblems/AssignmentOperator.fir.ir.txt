@@ -341,7 +341,7 @@ FILE fqName:foo fileName:/AssignmentOperator.kt
           $this: GET_VAR 'val tmp_23: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
           index: GET_VAR 'val tmp_24: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
       CALL 'public final fun set (index: kotlin.Int, value: T of kotlin.Array): kotlin.Unit declared in kotlin.Array' type=kotlin.Unit origin=POSTFIX_INCR
-        $this: GET_VAR 'val tmp_23: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
+        $this: GET_VAR 'val tmp_23: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=POSTFIX_INCR
         index: GET_VAR 'val tmp_24: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
         value: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_INCR
           $this: GET_VAR 'val tmp_25: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
@@ -358,7 +358,7 @@ FILE fqName:foo fileName:/AssignmentOperator.kt
           $this: GET_VAR 'val tmp_26: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
           index: GET_VAR 'val tmp_27: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
       CALL 'public final fun set (index: kotlin.Int, value: T of kotlin.Array): kotlin.Unit declared in kotlin.Array' type=kotlin.Unit origin=POSTFIX_DECR
-        $this: GET_VAR 'val tmp_26: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
+        $this: GET_VAR 'val tmp_26: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=POSTFIX_DECR
         index: GET_VAR 'val tmp_27: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
         value: CALL 'public final fun dec (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_DECR
           $this: GET_VAR 'val tmp_28: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
@@ -371,7 +371,7 @@ FILE fqName:foo fileName:/AssignmentOperator.kt
       VAR IR_TEMPORARY_VARIABLE name:tmp_30 type:kotlin.Int [val]
         CONST Int type=kotlin.Int value=0
       CALL 'public final fun set (index: kotlin.Int, value: T of kotlin.Array): kotlin.Unit declared in kotlin.Array' type=kotlin.Unit origin=PREFIX_INCR
-        $this: GET_VAR 'val tmp_29: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
+        $this: GET_VAR 'val tmp_29: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=PREFIX_INCR
         index: GET_VAR 'val tmp_30: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
         value: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_INCR
           $this: CALL 'public final fun get (index: kotlin.Int): T of kotlin.Array declared in kotlin.Array' type=kotlin.Int origin=PREFIX_INCR
@@ -388,7 +388,7 @@ FILE fqName:foo fileName:/AssignmentOperator.kt
       VAR IR_TEMPORARY_VARIABLE name:tmp_32 type:kotlin.Int [val]
         CONST Int type=kotlin.Int value=0
       CALL 'public final fun set (index: kotlin.Int, value: T of kotlin.Array): kotlin.Unit declared in kotlin.Array' type=kotlin.Unit origin=PREFIX_DECR
-        $this: GET_VAR 'val tmp_31: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
+        $this: GET_VAR 'val tmp_31: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=PREFIX_DECR
         index: GET_VAR 'val tmp_32: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
         value: CALL 'public final fun dec (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_DECR
           $this: CALL 'public final fun get (index: kotlin.Int): T of kotlin.Array declared in kotlin.Array' type=kotlin.Int origin=PREFIX_DECR
@@ -407,7 +407,7 @@ FILE fqName:foo fileName:/AssignmentOperator.kt
           $this: GET_VAR 'val tmp_33: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
           index: GET_VAR 'val tmp_34: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
       CALL 'public final fun set (index: kotlin.Int, value: T of kotlin.Array): kotlin.Unit declared in kotlin.Array' type=kotlin.Unit origin=POSTFIX_INCR
-        $this: GET_VAR 'val tmp_33: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
+        $this: GET_VAR 'val tmp_33: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=POSTFIX_INCR
         index: GET_VAR 'val tmp_34: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
         value: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_INCR
           $this: GET_VAR 'val tmp_35: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
@@ -422,7 +422,7 @@ FILE fqName:foo fileName:/AssignmentOperator.kt
           $this: GET_VAR 'val tmp_36: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
           index: GET_VAR 'val tmp_37: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
       CALL 'public final fun set (index: kotlin.Int, value: T of kotlin.Array): kotlin.Unit declared in kotlin.Array' type=kotlin.Unit origin=POSTFIX_DECR
-        $this: GET_VAR 'val tmp_36: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
+        $this: GET_VAR 'val tmp_36: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=POSTFIX_DECR
         index: GET_VAR 'val tmp_37: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
         value: CALL 'public final fun dec (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=POSTFIX_DECR
           $this: GET_VAR 'val tmp_38: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
@@ -433,7 +433,7 @@ FILE fqName:foo fileName:/AssignmentOperator.kt
       VAR IR_TEMPORARY_VARIABLE name:tmp_40 type:kotlin.Int [val]
         CONST Int type=kotlin.Int value=0
       CALL 'public final fun set (index: kotlin.Int, value: T of kotlin.Array): kotlin.Unit declared in kotlin.Array' type=kotlin.Unit origin=PREFIX_INCR
-        $this: GET_VAR 'val tmp_39: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
+        $this: GET_VAR 'val tmp_39: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=PREFIX_INCR
         index: GET_VAR 'val tmp_40: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
         value: CALL 'public final fun inc (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_INCR
           $this: CALL 'public final fun get (index: kotlin.Int): T of kotlin.Array declared in kotlin.Array' type=kotlin.Int origin=PREFIX_INCR
@@ -448,7 +448,7 @@ FILE fqName:foo fileName:/AssignmentOperator.kt
       VAR IR_TEMPORARY_VARIABLE name:tmp_42 type:kotlin.Int [val]
         CONST Int type=kotlin.Int value=0
       CALL 'public final fun set (index: kotlin.Int, value: T of kotlin.Array): kotlin.Unit declared in kotlin.Array' type=kotlin.Unit origin=PREFIX_DECR
-        $this: GET_VAR 'val tmp_41: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=null
+        $this: GET_VAR 'val tmp_41: kotlin.Array<kotlin.Int> declared in foo.runMe' type=kotlin.Array<kotlin.Int> origin=PREFIX_DECR
         index: GET_VAR 'val tmp_42: kotlin.Int declared in foo.runMe' type=kotlin.Int origin=null
         value: CALL 'public final fun dec (): kotlin.Int declared in kotlin.Int' type=kotlin.Int origin=PREFIX_DECR
           $this: CALL 'public final fun get (index: kotlin.Int): T of kotlin.Array declared in kotlin.Array' type=kotlin.Int origin=PREFIX_DECR

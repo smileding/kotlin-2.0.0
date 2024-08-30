@@ -23,7 +23,7 @@ FILE fqName:<root> fileName:/kt36956.kt
               $this: GET_VAR 'val tmp_0: <root>.A<kotlin.Float> declared in <root>.aInt' type=<root>.A<kotlin.Float> origin=null
               i: GET_VAR 'val tmp_1: kotlin.Int declared in <root>.aInt' type=kotlin.Int origin=null
           CALL 'public final fun set (i: kotlin.Int, v: T of <root>.A): kotlin.Unit declared in <root>.A' type=kotlin.Unit origin=POSTFIX_DECR
-            $this: GET_VAR 'val tmp_0: <root>.A<kotlin.Float> declared in <root>.aInt' type=<root>.A<kotlin.Float> origin=null
+            $this: GET_VAR 'val tmp_0: <root>.A<kotlin.Float> declared in <root>.aInt' type=<root>.A<kotlin.Float> origin=POSTFIX_DECR
             i: GET_VAR 'val tmp_1: kotlin.Int declared in <root>.aInt' type=kotlin.Int origin=null
             v: CALL 'public final fun dec (): kotlin.Float declared in kotlin.Float' type=kotlin.Float origin=POSTFIX_DECR
               $this: GET_VAR 'val tmp_2: kotlin.Float declared in <root>.aInt' type=kotlin.Float origin=null

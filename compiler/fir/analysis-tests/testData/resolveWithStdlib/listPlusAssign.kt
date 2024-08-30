@@ -1,4 +1,5 @@
 // COMPARE_WITH_LIGHT_TREE
+// LATEST_LV_DIFFERENCE
 
 fun List<String>.modify() {
     <!VARIABLE_EXPECTED!>this<!> += "Alpha"
@@ -6,7 +7,7 @@ fun List<String>.modify() {
 }
 
 fun Any.modify() {
-    (<!VARIABLE_EXPECTED!>this <!UNCHECKED_CAST!>as List<Int><!><!>) += 42
+    <!WRAPPED_LHS_IN_ASSIGNMENT_WARNING!>(<!VARIABLE_EXPECTED, WRAPPED_LHS_IN_ASSIGNMENT_WARNING{PSI}!>this <!UNCHECKED_CAST!>as List<Int><!><!>) += 42<!>
 }
 
 operator fun <T> Set<T>.plusAssign(x: T) {}

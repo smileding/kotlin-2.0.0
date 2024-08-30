@@ -73,6 +73,11 @@ internal fun removeInstructionPriorUnreachable(input: Sequence<WasmInstr>): Sequ
     return sequence {
         while (inputIterator.hasNext()) {
             val instruction = inputIterator.next()
+            if (instruction.operator.opcode == WASM_OP_PSEUDO_OPCODE) {
+                yield(instruction)
+                continue
+            }
+
             val first = firstInstruction
 
             if (first == null) {
@@ -107,6 +112,11 @@ internal fun removeInstructionPriorDrop(input: Sequence<WasmInstr>): Sequence<Wa
     return sequence {
         while (inputIterator.hasNext()) {
             val instruction = inputIterator.next()
+            if (instruction.operator.opcode == WASM_OP_PSEUDO_OPCODE) {
+                yield(instruction)
+                continue
+            }
+
             val first = firstInstruction
             val second = secondInstruction
 
@@ -149,6 +159,12 @@ internal fun mergeSetAndGetIntoTee(input: Sequence<WasmInstr>): Sequence<WasmIns
     return sequence {
         while (inputIterator.hasNext()) {
             val instruction = inputIterator.next()
+
+            if (instruction.operator.opcode == WASM_OP_PSEUDO_OPCODE) {
+                yield(instruction)
+                continue
+            }
+
             val first = firstInstruction
 
             if (first == null) {

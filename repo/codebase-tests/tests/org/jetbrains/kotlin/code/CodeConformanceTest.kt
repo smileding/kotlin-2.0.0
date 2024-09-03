@@ -14,6 +14,7 @@ import java.util.regex.Pattern
 class CodeConformanceTest : TestCase() {
     companion object {
         private val JAVA_FILE_PATTERN = Pattern.compile(".+\\.java")
+        private val KOTLIN_FILE_PATTERN = Pattern.compile(".+\\.kt")
         private val SOURCES_FILE_PATTERN = Pattern.compile(".+\\.(java|kt|js)")
 
         @Suppress("SpellCheckingInspection")
@@ -148,6 +149,20 @@ class CodeConformanceTest : TestCase() {
                 ".gradle/expanded",
             )
         )
+    }
+
+    fun testNotUsingCanonicalFileApi() {
+        val canonicalPattern = Pattern.compile("\\.canonical(Path|File)", Pattern.MULTILINE)
+
+        for (sourceFile in FileUtil.findFilesByMask(
+            KOTLIN_FILE_PATTERN,
+            File("libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle")
+        )) {
+            val matcher = canonicalPattern.matcher(sourceFile.readText())
+            if (matcher.find()) {
+                fail("canonicalPath and canonicalFile apis should not be used: ${matcher.group()}\nin file: $sourceFile")
+            }
+        }
     }
 
     fun testParserCode() {

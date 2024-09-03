@@ -26,8 +26,23 @@ import org.jetbrains.kotlin.analysis.api.platform.KaEngineService
  * Statistics collection is only implemented for the K2 backend. In the K1 backend, [getInstance] will always return `null`.
  */
 public interface KaStatisticsService : KaEngineService {
+    /**
+     * Starts statistics collection and reporting, but only if it's [enabled][areStatisticsEnabled]. If statistics collection is already in
+     * progress, this call does nothing.
+     *
+     * The function implementation is thread-safe and may be called from any thread.
+     */
     public fun start()
 
+    /**
+     * Stops ongoing statistics collection and reporting. If no statistics collection is in progress, this call does nothing.
+     *
+     * While eager reporting is stopped, asynchronous OpenTelemetry instruments are kept alive. This allows an exporter to measure an
+     * instrument after reporting is stopped, as the metric may not be requested during active reporting. In such a case, the instrument
+     * will report the *last* state of the metric when statistics collection was stopped.
+     *
+     * The function implementation is thread-safe and may be called from any thread.
+     */
     public fun stop()
 
     public companion object {

@@ -13,6 +13,10 @@ import org.jetbrains.kotlin.analysis.api.platform.KotlinOptionalPlatformComponen
 /**
  * Provides an initialized [OpenTelemetry] instance. The Analysis API uses this instance to report statistics when statistics collection
  * with [KaStatisticsService] is enabled. If the platform doesn't support OpenTelemetry, this service doesn't need to be registered.
+ *
+ * The Analysis API itself only depends on the OpenTelemetry API, which does not report any telemetry on its own. It's the responsibility of
+ * the Analysis API platform to register an OpenTelemetry SDK, which then exports the collected data. This also means that no telemetry is
+ * reported whatsoever, neither locally nor over any connection, by the Kotlin compiler and Standalone Analysis API.
  */
 public interface KotlinOpenTelemetryProvider : KotlinOptionalPlatformComponent {
     public val openTelemetry: OpenTelemetry

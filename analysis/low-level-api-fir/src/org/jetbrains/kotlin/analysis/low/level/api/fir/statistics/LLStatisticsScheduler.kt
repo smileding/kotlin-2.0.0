@@ -21,7 +21,7 @@ class LLStatisticsScheduler(private val statisticsService: LLStatisticsService) 
 
     private var collectStatisticsFuture: ScheduledFuture<*>? = null
 
-    private var reportStatisticsFuture: ScheduledFuture<*>? = null
+    private var logStatisticsFuture: ScheduledFuture<*>? = null
 
     fun start() {
         synchronized(this) {
@@ -56,7 +56,7 @@ class LLStatisticsScheduler(private val statisticsService: LLStatisticsService) 
 
         val logStatistics = Runnable { reporter.log() }
 
-        reportStatisticsFuture = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay(
+        logStatisticsFuture = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay(
             logStatistics,
             1,
             1,
@@ -71,8 +71,8 @@ class LLStatisticsScheduler(private val statisticsService: LLStatisticsService) 
             collectStatisticsFuture?.cancel(true)
             collectStatisticsFuture = null
 
-            reportStatisticsFuture?.cancel(true)
-            reportStatisticsFuture = null
+            logStatisticsFuture?.cancel(true)
+            logStatisticsFuture = null
 
             stopCollection(statisticsService.collector)
             stopReporting(statisticsService.reporter)

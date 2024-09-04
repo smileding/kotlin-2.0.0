@@ -10,6 +10,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.internal.file.FileOperations
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliCompilerRunner
@@ -20,8 +21,8 @@ import org.jetbrains.kotlin.konan.target.PlatformManager
 import org.jetbrains.kotlin.library.uniqueName
 import org.jetbrains.kotlin.*
 import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
-import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliRunnerIsolatedClassLoadersService
 import org.jetbrains.kotlin.nativeDistribution.nativeDistribution
+import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
 import org.jetbrains.kotlin.util.Logger
 import java.io.File
 import java.util.*
@@ -70,7 +71,8 @@ abstract class KonanCacheTask @Inject constructor(
     @get:Input
     var cachedLibraries: Map<File, File> = emptyMap()
 
-    private val isolatedClassLoadersService = KonanCliRunnerIsolatedClassLoadersService.attachingToTask(this)
+    @get:ServiceReference
+    protected val isolatedClassLoadersService = usesIsolatedClassLoadersService()
 
     @TaskAction
     fun compile() {
@@ -93,6 +95,6 @@ abstract class KonanCacheTask @Inject constructor(
             args += "-Xmake-per-file-cache"
         args += additionalCacheFlags
         args += cachedLibraries.map { "-Xcached-library=${it.key},${it.value}" }
-        KonanCliCompilerRunner(fileOperations, execOperations, logger, isolatedClassLoadersService, konanHome).run(args)
+        KonanCliCompilerRunner(fileOperations, execOperations, logger, isolatedClassLoadersService.get(), konanHome).run(args)
     }
 }

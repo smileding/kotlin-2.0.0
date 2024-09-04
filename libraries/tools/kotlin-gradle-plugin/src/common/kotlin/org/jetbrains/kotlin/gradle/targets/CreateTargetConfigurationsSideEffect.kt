@@ -42,22 +42,11 @@ internal val CreateTargetConfigurationsSideEffect = KotlinTargetSideEffect { tar
 
     val apiElementScope = configurations.maybeCreateDependencyScope(mainCompilation.apiConfigurationName)
 
-    val artifactId = target.internal.kotlinComponents
-        .filter { kotlinComponent -> kotlinComponent.publishableOnCurrentHost }
-        .map { kotlinComponent ->
-            kotlinComponent.defaultArtifactId
-        }.singleOrNull()
     configurations.maybeCreateConsumable(target.apiElementsConfigurationName).apply {
         description = "API elements for main."
         isVisible = false
         attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.producerApiUsage(target))
         attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, project.categoryByName(Category.LIBRARY))
-        artifactId?.let {
-            attributes.setAttribute(withArtifactIdAttribute, true)
-            attributes.setAttribute(artifactIdAttribute, artifactId)
-            attributes.setAttribute(artifactVersionAttribute, project.version.toString())
-            attributes.setAttribute(artifactGroupAttribute, project.group.toString())
-        }
         extendsFrom(apiElementScope)
         @Suppress("TYPEALIAS_EXPANSION_DEPRECATION")
         if (mainCompilation is DeprecatedKotlinCompilationToRunnableFiles) {
@@ -81,10 +70,6 @@ internal val CreateTargetConfigurationsSideEffect = KotlinTargetSideEffect { tar
             isVisible = false
             attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.producerRuntimeUsage(target))
             attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, project.categoryByName(Category.LIBRARY))
-            artifactId?.let {
-                attributes.setAttribute(withArtifactIdAttribute, true)
-                attributes.setAttribute(artifactIdAttribute, artifactId)
-            }
             val runtimeConfiguration = mainCompilation.internal.configurations.deprecatedRuntimeConfiguration
             extendsFrom(implementationConfiguration)
             extendsFrom(runtimeOnlyConfiguration)

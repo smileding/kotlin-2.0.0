@@ -21,6 +21,10 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.internal.publication.MavenPublicationInternal
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.withArtifactIdAttribute
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
@@ -95,10 +99,12 @@ private fun createTargetPublications(project: Project, publishing: PublishingExt
 }
 
 private fun InternalKotlinTarget.createMavenPublications(publications: PublicationContainer) {
+    val target = this
     kotlinComponents
         .filter { kotlinComponent -> kotlinComponent.publishableOnCurrentHost }
         .forEach { kotlinComponent ->
             val componentPublication = publications.create(kotlinComponent.name, MavenPublication::class.java).apply {
+                val publication = this
                 // do await for usages since older Gradle versions seem to check the files in the variant eagerly:
                 // We are deferring this to 'AfterFinaliseCompilations' as safety measure for now.
                 project.launchInStage(KotlinPluginLifecycle.Stage.AfterFinaliseCompilations) {
@@ -112,6 +118,7 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
                 val shouldRewritePomDependencies =
                     project.provider { PropertiesProvider(project).keepMppDependenciesIntactInPoms != true }
 
+                addGavVariantToConfigurations(target, publication)
                 rewritePom(
                     pom,
                     pomRewriter,
@@ -125,11 +132,28 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
         }
 }
 
+private fun InternalKotlinTarget.addGavVariantToConfigurations(
+    target: InternalKotlinTarget,
+    publication: MavenPublication,
+) {
+    project.configurations.maybeCreateConsumable(target.apiElementsConfigurationName).addGavSecondaryVariant(project, publication)
+    project.configurations.maybeCreateConsumable(target.runtimeElementsConfigurationName).addGavSecondaryVariant(project, publication)
+}
+
+private fun Configuration.addGavSecondaryVariant(project: Project, publication: MavenPublication) {
+    outgoing.variants.create("gavSecondaryVariant") {
+        attributes.setAttribute(withArtifactIdAttribute, true)
+        attributes.attributeProvider(artifactGroupAttribute, project.provider { publication.groupId })
+        attributes.attributeProvider(artifactIdAttribute, project.provider { publication.artifactId })
+        attributes.attributeProvider(artifactVersionAttribute, project.provider { publication.version })
+    }
+}
+
 private fun rewritePom(
     pom: MavenPom,
     pomRewriter: PomDependenciesRewriter,
     shouldRewritePomDependencies: Provider<Boolean>,
-    includeOnlySpecifiedDependencies: Provider<Set<ModuleCoordinates>>?
+    includeOnlySpecifiedDependencies: Provider<Set<ModuleCoordinates>>?,
 ) {
     pom.withXml { xml ->
         if (shouldRewritePomDependencies.get())

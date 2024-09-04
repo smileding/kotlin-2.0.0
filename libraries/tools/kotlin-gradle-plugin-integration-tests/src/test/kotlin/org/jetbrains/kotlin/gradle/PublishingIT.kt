@@ -13,6 +13,7 @@ import org.junit.jupiter.api.condition.DisabledOnOs
 import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.appendText
 import kotlin.io.path.readLines
 import kotlin.io.path.readText
@@ -111,4 +112,30 @@ class PublishingIT : KGPBaseTest() {
             }
         }
     }
+
+    @DisplayName("KT-69974: pom rewriting with substitutions and included builds")
+    @GradleTest
+    fun testPomRewriter(gradleVersion: GradleVersion) {
+        val localRepo = defaultLocalRepo(gradleVersion)
+        project("pom-rewriter", gradleVersion, localRepoDir = localRepo) {
+
+            projectPath.resolve("included").addDefaultSettingsToSettingsGradle(
+                gradleVersion,
+                DependencyManagement.DefaultDependencyManagement(),
+                localRepo,
+                buildOptions.projectIsolation
+            )
+
+            build("publishJvmPublicationToCustomRepository") {
+                val pathToActualPom = localRepo.resolve("pom-rewriter")
+                    .resolve("pom-rewriter-root-jvm")
+                    .resolve("1.0.0")
+                    .resolve("pom-rewriter-root-jvm-1.0.0.pom")
+                val pathToExpectedPom = projectPath.resolve("expected-pom.xml")
+                assertFileInProjectContains(pathToActualPom.absolutePathString(), pathToExpectedPom.readText())
+            }
+        }
+    }
+
+
 }

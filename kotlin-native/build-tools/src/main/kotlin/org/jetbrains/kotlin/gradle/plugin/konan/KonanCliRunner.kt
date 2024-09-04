@@ -5,7 +5,6 @@
 
 package org.jetbrains.kotlin.gradle.plugin.konan
 
-import org.gradle.api.internal.file.FileOperations
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logger
 import org.gradle.kotlin.dsl.provideDelegate
@@ -20,8 +19,8 @@ private const val runFromDaemonPropertyName = "kotlin.native.tool.runFromDaemon"
 
 internal abstract class KonanCliRunner(
         protected val toolName: String,
-        private val fileOperations: FileOperations,
         private val execOperations: ExecOperations,
+        private val classpath: Set<File>,
         private val logger: Logger,
         isolatedClassLoadersService: KonanCliRunnerIsolatedClassLoadersService,
         private val konanHome: String,
@@ -45,13 +44,6 @@ internal abstract class KonanCliRunner(
             "java.system.class.loader",  // Don't use custom class loaders
             "runFromDaemonPropertyName"
     )
-
-    private val classpath: Set<File> by lazy {
-        fileOperations.fileTree("$konanHome/konan/lib/").apply {
-            include("trove4j.jar")
-            include("kotlin-native-compiler-embeddable.jar")
-        }.files
-    }
 
     private data class IsolatedClassLoaderCacheKey(val classpath: Set<File>)
 

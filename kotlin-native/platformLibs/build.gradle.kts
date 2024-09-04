@@ -55,7 +55,7 @@ enabledTargets(platformManager).forEach { target ->
             group = BasePlugin.BUILD_GROUP
             description = "Build the Kotlin/Native platform library '$libName' for '$target'"
 
-            this.compilerDistributionPath.set(kotlinNativeDist.absolutePath)
+            this.compilerDistribution.set(kotlinNativeDist)
             dependsOn(":kotlin-native:${targetName}CrossDist")
             updateDefFileTasksPerFamily[target.family]?.let { dependsOn(it) }
 
@@ -89,6 +89,10 @@ enabledTargets(platformManager).forEach { target ->
         if (target.name in cacheableTargetNames) {
             val cacheTask = tasks.register("${libName}Cache", KonanCacheTask::class.java) {
                 notCompatibleWithConfigurationCache("project used in execution time")
+
+                this.compilerDistribution.set(kotlinNativeDist)
+                dependsOn(":kotlin-native:${targetName}CrossDist")
+
                 this.target = targetName
                 originalKlib.fileProvider(libTask.map { it.outputs.files.singleFile })
                 klibUniqName = artifactName

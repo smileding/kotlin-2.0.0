@@ -560,7 +560,7 @@ val stdlibBuildTask by tasks.registering(KonanCompileTask::class) {
     group = BasePlugin.BUILD_GROUP
     description = "Build the Kotlin/Native standard library '$name'"
 
-    this.compilerDistributionPath.set(kotlinNativeDist.absolutePath)
+    this.compilerDistribution.set(kotlinNativeDist)
     dependsOn(":kotlin-native:distCompiler")
 
     this.konanTarget.set(HostManager.host)
@@ -645,14 +645,16 @@ val cacheableTargetNames = platformManager.hostPlatform.cacheableTargets
 cacheableTargetNames.forEach { targetName ->
     tasks.register("${targetName}StdlibCache", KonanCacheTask::class.java) {
         notCompatibleWithConfigurationCache("project used in execution time")
+
+        this.compilerDistribution.set(kotlinNativeDist)
+        dependsOn(":kotlin-native:${targetName}CrossDistRuntime")
+        // stdlib cache additionally links in runtime modules from the K/N distribution.
+        inputs.dir("$kotlinNativeDist/konan/targets/$targetName/native")
+
         target = targetName
         originalKlib.fileProvider(stdlibTask.map { it.destinationDir })
         klibUniqName = "stdlib"
         cacheRoot = project.layout.buildDirectory.dir("cache/$targetName").get().asFile.absolutePath
-
-        dependsOn(":kotlin-native:${targetName}CrossDistRuntime")
-        // stdlib cache links in runtime modules from the K/N distribution.
-        inputs.dir("$kotlinNativeDist/konan/targets/$targetName/native")
     }
 }
 

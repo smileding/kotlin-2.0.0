@@ -7,8 +7,7 @@ package org.jetbrains.kotlin.gradle.plugin.konan.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.internal.file.FileOperations
-import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliCompilerRunner
@@ -17,8 +16,8 @@ import org.jetbrains.kotlin.konan.target.CompilerOutputKind
 import org.jetbrains.kotlin.konan.target.Distribution
 import org.jetbrains.kotlin.konan.target.PlatformManager
 import org.jetbrains.kotlin.library.uniqueName
-import org.jetbrains.kotlin.*
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliRunnerIsolatedClassLoadersService
+import org.jetbrains.kotlin.gradle.plugin.konan.konanClasspath
 import org.jetbrains.kotlin.util.Logger
 import java.io.File
 import java.util.*
@@ -30,7 +29,6 @@ enum class KonanCacheKind(val outputKind: CompilerOutputKind) {
 }
 
 abstract class KonanCacheTask @Inject constructor(
-        private val fileOperations: FileOperations,
         private val execOperations: ExecOperations,
 ) : DefaultTask() {
     @get:InputDirectory
@@ -60,9 +58,16 @@ abstract class KonanCacheTask @Inject constructor(
     @get:Input
     var makePerFileCache: Boolean = false
 
+    /**
+     * Kotlin/Native distribution to use.
+     */
+    @get:Internal // proper dependencies will be specified below
+    abstract val compilerDistribution: DirectoryProperty
+
     @get:Input
     /** Path to a compiler distribution that is used to build this cache. */
-    val compilerDistributionPath: Property<File> = project.objects.property(File::class.java).convention(project.kotlinNativeDist)
+    protected val compilerDistributionPath: Provider<File>
+        get() = compilerDistribution.asFile
 
     @get:Input
     var cachedLibraries: Map<File, File> = emptyMap()
@@ -71,6 +76,7 @@ abstract class KonanCacheTask @Inject constructor(
 
     @TaskAction
     fun compile() {
+        val dist = compilerDistribution.get()
         // This code uses bootstrap version of util-klib and fails due to the older default ABI than library being used
         // A possible solution is to read it manually from manifest file or this check should be done by the compiler itself
 //        check(klibUniqName == readKlibUniqNameFromManifest()) {
@@ -83,8 +89,7 @@ abstract class KonanCacheTask @Inject constructor(
             check(deleted) { "Cannot delete stale cache: ${cacheFile.absolutePath}" }
         }
         cacheDirectory.mkdirs()
-        val konanHome = compilerDistributionPath.get().absolutePath
-        val additionalCacheFlags = PlatformManager(konanHome).let {
+        val additionalCacheFlags = PlatformManager(dist.asFile.absolutePath).let {
             it.targetByName(target).let(it::loader).additionalCacheFlags
         }
         require(originalKlib.isPresent)
@@ -99,6 +104,6 @@ abstract class KonanCacheTask @Inject constructor(
             args += "-Xmake-per-file-cache"
         args += additionalCacheFlags
         args += cachedLibraries.map { "-Xcached-library=${it.key},${it.value}" }
-        KonanCliCompilerRunner(fileOperations, execOperations, logger, isolatedClassLoadersService, konanHome).run(args)
+        KonanCliCompilerRunner(execOperations, dist.konanClasspath.files, logger, isolatedClassLoadersService, dist.asFile.absolutePath).run(args)
     }
 }

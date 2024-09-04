@@ -22,9 +22,23 @@ import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.gradle.plugin.konan.*
+import org.jetbrains.kotlin.konan.target.AbstractToolConfig
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
+
+private val load0 = Runtime::class.java.getDeclaredMethod("load0", Class::class.java, String::class.java).also {
+    it.isAccessible = true
+}
+
+private class CliToolConfig(konanHome: String, target: String) : AbstractToolConfig(konanHome, target, emptyMap()) {
+    override fun loadLibclang() {
+        // Load libclang into the system class loader. This is needed to allow developers to make changes
+        // in the tooling infrastructure without having to stop the daemon (otherwise libclang might end up
+        // loaded in two different class loaders which is not allowed by the JVM).
+        load0.invoke(Runtime.getRuntime(), String::class.java, libclang)
+    }
+}
 
 /**
  * A task executing cinterop tool with the given args and compiling the stubs produced by this tool.
@@ -87,17 +101,23 @@ abstract class KonanInteropTask @Inject constructor(
     fun run() {
         val dist = compilerDistribution.get()
 
-        val interopRunner = KonanCliInteropRunner(
-                execOperations,
-                dist.konanClasspath.files,
-                dist.file("konan/konan.properties").asFile,
-                logger,
-                layout,
-                isolatedClassLoadersService.get(),
-                compilerDistributionPath.get(),
-                konanTarget.get(),
-                allowRunningCInteropInProcess
-        )
+        val interopRunner = if (allowRunningCInteropInProcess) {
+            CliToolConfig(compilerDistributionPath.get(), konanTarget.get().visibleName).prepare()
+            KonanInProcessCliRunner(
+                    toolName = "cinterop",
+                    classLoader = isolatedClassLoadersService.get().getIsolatedClassLoader(dist.konanClasspath.files),
+                    logger,
+                    useArgFile = false
+            )
+        } else {
+            KonanOutOfProcessCInteropRunner(
+                    execOperations,
+                    dist.konanClasspath.files,
+                    dist.file("konan/konan.properties").asFile,
+                    logger,
+                    compilerDistributionPath.get(),
+            )
+        }
 
         outputDirectory.get().asFile.prepareAsOutput()
 
@@ -121,6 +141,8 @@ abstract class KonanInteropTask @Inject constructor(
             }
 
             addAll(extraOpts.get())
+            add("-Xproject-dir")
+            add(layout.projectDirectory.asFile.absolutePath)
         }
         if (enableParallel.get()) {
             val workQueue = workerExecutor.noIsolation()
@@ -135,4 +157,4 @@ abstract class KonanInteropTask @Inject constructor(
     }
 }
 
-internal val interchangeBox = ConcurrentHashMap<String, KonanCliInteropRunner>()
+internal val interchangeBox = ConcurrentHashMap<String, KonanCliRunner>()

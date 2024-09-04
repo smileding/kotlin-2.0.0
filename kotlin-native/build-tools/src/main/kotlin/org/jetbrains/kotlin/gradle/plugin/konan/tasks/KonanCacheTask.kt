@@ -10,8 +10,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.*
-import org.gradle.process.ExecOperations
-import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliCompilerRunner
+import org.jetbrains.kotlin.gradle.plugin.konan.KonanInProcessCliRunner
 import org.jetbrains.kotlin.konan.library.defaultResolver
 import org.jetbrains.kotlin.konan.target.CompilerOutputKind
 import org.jetbrains.kotlin.konan.target.Distribution
@@ -30,9 +29,7 @@ enum class KonanCacheKind(val outputKind: CompilerOutputKind) {
     DYNAMIC(CompilerOutputKind.DYNAMIC_CACHE)
 }
 
-abstract class KonanCacheTask @Inject constructor(
-        private val execOperations: ExecOperations,
-) : DefaultTask() {
+abstract class KonanCacheTask @Inject constructor() : DefaultTask() {
     @get:InputDirectory
     abstract val originalKlib: DirectoryProperty
 
@@ -103,6 +100,11 @@ abstract class KonanCacheTask @Inject constructor(
             args += "-Xmake-per-file-cache"
         args += additionalCacheFlags
         args += cachedLibraries.map { "-Xcached-library=${it.key},${it.value}" }
-        KonanCliCompilerRunner(execOperations, dist.konanClasspath.files, logger, isolatedClassLoadersService.get(), dist.asFile.absolutePath).run(args)
+        KonanInProcessCliRunner(
+                toolName = "konanc",
+                classLoader = isolatedClassLoadersService.get().getIsolatedClassLoader(dist.konanClasspath.files),
+                logger = logger,
+                useArgFile = true
+        ).run(args)
     }
 }

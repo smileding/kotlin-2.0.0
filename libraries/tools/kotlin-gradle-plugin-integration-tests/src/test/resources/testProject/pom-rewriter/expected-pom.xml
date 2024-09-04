@@ -34,5 +34,11 @@
       <version>2.1.255-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>fake-group</groupId>
+      <artifactId>fake-id</artifactId>
+      <version>fake-version</version>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
 </project>

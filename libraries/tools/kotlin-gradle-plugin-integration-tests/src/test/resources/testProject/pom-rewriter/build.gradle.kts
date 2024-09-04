@@ -11,6 +11,7 @@ kotlin {
         api("test:included:1.0")
         api("test:substituted:1.0")
         api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+        implementation("test:custom-substituted:1.0")
     }
 }
 
@@ -28,6 +29,14 @@ configurations.all {
     resolutionStrategy {
         dependencySubstitution {
             substitute(module("test:substituted")).using(project(":local"))
+        }
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        dependencySubstitution {
+            substitute(module("test:custom-substituted")).using(project(":custom-publication"))
         }
     }
 }

@@ -18,7 +18,10 @@ import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.utils.memberDeclarationNameOrNull
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.references.resolved
+import org.jetbrains.kotlin.fir.references.symbol
+import org.jetbrains.kotlin.fir.references.toResolvedCallableSymbol
 import org.jetbrains.kotlin.fir.render
+import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.types.isNothing
 import org.jetbrains.kotlin.fir.types.isNullableNothing
 import org.jetbrains.kotlin.fir.types.isUnit
@@ -33,6 +36,7 @@ object CheckReturnValue : FirBasicExpressionChecker(MppCheckerKind.Common) {
         // 1. Check only resolved references
         val calleeReference = expression.toReference(context.session) ?: return
         val resolvedReference = calleeReference.resolved ?: return
+        if (resolvedReference.toResolvedCallableSymbol()?.isExcluded() == true) return
 
         // If not the outermost call, then it is used as an argument
         if (context.callsOrAssignments.lastOrNull { it != expression } != null) return
@@ -58,24 +62,22 @@ object CheckReturnValue : FirBasicExpressionChecker(MppCheckerKind.Common) {
 //        TODO("Not yet implemented")
     }
 
+    private fun FirCallableSymbol<*>.isExcluded(): Boolean {
+        val id = callableId
+        // TODO: write normal checker
+        val s = id.toString()
+        return s in exclusionList
+    }
+
+    private val exclusionList = listOf(
+        "kotlin/collections/MutableCollection.add",
+        "kotlin/collections/MutableList.add",
+        "kotlin/collections/MutableSet.add",
+        "kotlin/collections/MutableList.set",
+        "kotlin/collections/MutableMap.put",
+    )
+
 
     // FirSmartCastExpressionImpl????
     private val FirElement?.isTerminal: Boolean get() = this is FirReturnExpression || this is FirProperty || this is FirValueParameter || this is FirArgumentList
-
 }
-
-
-//fun stringF() = ""
-//
-//class Inits(val used: String = stringF()) {
-//    val init1 = stringF()
-//
-//    val explicit: String
-//        get() = stringF()
-//
-//    val unused: String
-//        get() {
-//            stringF()
-//            return ""
-//        }
-//}

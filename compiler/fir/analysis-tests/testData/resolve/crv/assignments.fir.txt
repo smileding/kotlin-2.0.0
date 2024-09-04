@@ -8,6 +8,28 @@ FILE: assignments.kt
     public final fun R|kotlin/Any|.consume(): R|kotlin/Unit| {
         ^consume Q|kotlin/Unit|
     }
+    public final fun lhs(map: R|kotlin/collections/MutableMap<kotlin/String, kotlin/String>|): R|kotlin/Unit| {
+        R|<local>/map|.R|kotlin/collections/set|<R|kotlin/String|, R|kotlin/String|>(String(a), R|/stringF|())
+        Unit
+        R|<local>/map|.R|kotlin/collections/set|<R|kotlin/String|, R|kotlin/String|>(R|/stringF|(), String(a))
+        Unit
+        R|<local>/map|.R|kotlin/collections/set|<R|kotlin/String|, R|kotlin/String|>(R|/stringF|(), R|/nsf|()!!)
+        Unit
+    }
+    public final fun nested(map: R|kotlin/collections/List<kotlin/collections/MutableMap<kotlin/String, kotlin/String>>|): R|kotlin/Unit| {
+        R|<local>/map|.R|SubstitutionOverride<kotlin/collections/List.get: R|kotlin/collections/MutableMap<kotlin/String, kotlin/String>|>|(Int(0)).R|kotlin/collections/set|<R|kotlin/String|, R|kotlin/String|>(String(b), R|/stringF|())
+        Unit
+        R|<local>/map|.R|SubstitutionOverride<kotlin/collections/List.get: R|kotlin/collections/MutableMap<kotlin/String, kotlin/String>|>|(Int(0)).R|kotlin/collections/set|<R|kotlin/String|, R|kotlin/String|>(R|/stringF|(), R|/stringF|())
+        Unit
+    }
+    public final fun test_1(cards: R|kotlin/collections/List<kotlin/collections/List<kotlin/collections/MutableList<kotlin/String>>>|): R|kotlin/Unit| {
+        R|<local>/cards|.R|SubstitutionOverride<kotlin/collections/List.get: R|kotlin/collections/List<kotlin/collections/MutableList<kotlin/String>>|>|(Int(0)).R|SubstitutionOverride<kotlin/collections/List.get: R|kotlin/collections/MutableList<kotlin/String>|>|(Int(0)).R|SubstitutionOverride<kotlin/collections/MutableList.set: R|kotlin/String|>|(Int(0), R|/stringF|())
+        Unit
+    }
+    public final fun test_2(cards: R|kotlin/collections/List<kotlin/collections/MutableList<kotlin/String>>|): R|kotlin/Unit| {
+        R|<local>/cards|.R|SubstitutionOverride<kotlin/collections/List.get: R|kotlin/collections/MutableList<kotlin/String>|>|(Int(0)).R|SubstitutionOverride<kotlin/collections/MutableList.set: R|kotlin/String|>|(Int(0), R|/stringF|())
+        Unit
+    }
     public final fun test_3(cards: R|kotlin/collections/MutableList<kotlin/String>|): R|kotlin/Unit| {
         R|<local>/cards|.R|SubstitutionOverride<kotlin/collections/MutableList.set: R|kotlin/String|>|(Int(0), R|/stringF|())
         Unit

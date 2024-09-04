@@ -1,0 +1,4 @@
+FILE: casts.kt
+    public final fun foo(a: R|kotlin/Any|): R|kotlin/Unit| {
+        (R|<local>/a| as R|kotlin/String|)
+    }

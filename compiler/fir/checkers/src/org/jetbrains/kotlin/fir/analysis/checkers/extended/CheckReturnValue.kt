@@ -28,21 +28,26 @@ import kotlin.math.exp
 
 object CheckReturnValue : FirBasicExpressionChecker(MppCheckerKind.Common) {
     override fun check(expression: FirStatement, context: CheckerContext, reporter: DiagnosticReporter) {
-//        if (expression is FirAnnotation) return // checked by FirDeprecatedTypeChecker
         if (expression !is FirExpression) return // TODO: are we sure that these are all cases?
         if (expression.isLhsOfAssignment(context)) return
+        if (expression is FirAnnotation) return
 
         // 1. Check only resolved references
         val calleeReference = expression.toReference(context.session) ?: return
         val resolvedReference = calleeReference.resolved ?: return
 
-        // 2. If not the outermost call, then it is used as an argument
+        // If not the outermost call, then it is used as an argument
         if (context.callsOrAssignments.lastOrNull { it != expression } != null) return
 
-        // 4. Used directly in return expression, property or parameter declaration
-        if (context.containingElements.lastOrNull { it != expression }.isTerminal) return
+        val outerExpression = context.containingElements.lastOrNull { it != expression }
 
-        // 5. Ignore Unit or Nothing?/Nothing
+        // Used directly in return expression, property or parameter declaration
+        if (outerExpression.isTerminal) return
+
+        // Safe calls for some reason are not part of context.callsOrAssignments, so have to be checked separately
+        if (outerExpression is FirSafeCallExpression && outerExpression.receiver == expression) return
+
+        // Ignore Unit or Nothing?/Nothing
         if (expression.resolvedType.run { isNothing || isNullableNothing || isUnit }) return
 
         reporter.reportOn(expression.source, FirErrors.RETURN_VALUE_NOT_USED, resolvedReference.name, context)

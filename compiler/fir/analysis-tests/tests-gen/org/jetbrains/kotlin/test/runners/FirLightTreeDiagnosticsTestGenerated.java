@@ -1516,18 +1516,6 @@ public class FirLightTreeDiagnosticsTestGenerated extends AbstractFirLightTreeDi
       }
 
       @Test
-      @TestMetadata("checkReturnValueBasic.kt")
-      public void testCheckReturnValueBasic() {
-        runTest("compiler/fir/analysis-tests/testData/resolve/checkers/checkReturnValueBasic.kt");
-      }
-
-      @Test
-      @TestMetadata("checkReturnValueLambdas.kt")
-      public void testCheckReturnValueLambdas() {
-        runTest("compiler/fir/analysis-tests/testData/resolve/checkers/checkReturnValueLambdas.kt");
-      }
-
-      @Test
       @TestMetadata("complexConflictingProjections.kt")
       public void testComplexConflictingProjections() {
         runTest("compiler/fir/analysis-tests/testData/resolve/checkers/complexConflictingProjections.kt");
@@ -1769,6 +1757,40 @@ public class FirLightTreeDiagnosticsTestGenerated extends AbstractFirLightTreeDi
       @TestMetadata("inPlaceAfterVararg.kt")
       public void testInPlaceAfterVararg() {
         runTest("compiler/fir/analysis-tests/testData/resolve/contracts/inPlaceAfterVararg.kt");
+      }
+    }
+
+    @Nested
+    @TestMetadata("compiler/fir/analysis-tests/testData/resolve/crv")
+    @TestDataPath("$PROJECT_ROOT")
+    public class Crv {
+      @Test
+      public void testAllFilesPresentInCrv() {
+        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/fir/analysis-tests/testData/resolve/crv"), Pattern.compile("^([^.]+)\\.kt$"), null, true);
+      }
+
+      @Test
+      @TestMetadata("basic.kt")
+      public void testBasic() {
+        runTest("compiler/fir/analysis-tests/testData/resolve/crv/basic.kt");
+      }
+
+      @Test
+      @TestMetadata("casts.kt")
+      public void testCasts() {
+        runTest("compiler/fir/analysis-tests/testData/resolve/crv/casts.kt");
+      }
+
+      @Test
+      @TestMetadata("lambdas.kt")
+      public void testLambdas() {
+        runTest("compiler/fir/analysis-tests/testData/resolve/crv/lambdas.kt");
+      }
+
+      @Test
+      @TestMetadata("scopes.kt")
+      public void testScopes() {
+        runTest("compiler/fir/analysis-tests/testData/resolve/crv/scopes.kt");
       }
     }
 

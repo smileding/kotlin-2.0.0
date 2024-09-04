@@ -1,6 +1,7 @@
 // WITH_STDLIB
 
 fun stringF(): String = ""
+fun nsf(): String? = "null"
 
 fun Any.consume(): Unit = Unit
 
@@ -32,10 +33,15 @@ class Inits {
 
 fun defaultValue(param: String = stringF()) {}
 
-fun main() {
-    val used = stringF() // used
-    println(stringF()) // used
+fun safeCalls() {
     stringF().consume() // used
     <!RETURN_VALUE_NOT_USED!>stringF().toString()<!> // unused
+    nsf()?.consume() // used
+    <!RETURN_VALUE_NOT_USED!>nsf()?.toString()<!> // unused
+}
+
+fun basic() {
+    val used = stringF() // used
+    println(stringF()) // used
     <!RETURN_VALUE_NOT_USED!>stringF()<!> // unused
 }

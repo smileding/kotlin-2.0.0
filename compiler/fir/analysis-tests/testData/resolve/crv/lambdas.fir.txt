@@ -1,0 +1,30 @@
+FILE: lambdas.kt
+    public final fun stringF(): R|kotlin/String| {
+        ^stringF String()
+    }
+    public final fun R|kotlin/Any|.consume(): R|kotlin/Unit| {
+        ^consume Q|kotlin/Unit|
+    }
+    public final fun stringLambda(l: R|() -> kotlin/String|): R|kotlin/Unit| {
+        R|<local>/l|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/String|>|()
+    }
+    public final fun unitLambda(l: R|() -> kotlin/Unit|): R|kotlin/Unit| {
+        R|<local>/l|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/Unit|>|()
+    }
+    public final fun stringLambdaReturns(l: R|() -> kotlin/String|): R|kotlin/String| {
+        ^stringLambdaReturns R|<local>/l|.R|SubstitutionOverride<kotlin/Function0.invoke: R|kotlin/String|>|()
+    }
+    public final fun main(): R|kotlin/Unit| {
+        R|/stringLambda|(<L> = stringLambda@fun <anonymous>(): R|kotlin/String| <inline=NoInline>  {
+            ^ R|/stringF|()
+        }
+        )
+        R|/unitLambda|(<L> = unitLambda@fun <anonymous>(): R|kotlin/Unit| <inline=NoInline>  {
+            R|/stringF|()
+        }
+        )
+        R|/stringLambdaReturns|(<L> = stringLambdaReturns@fun <anonymous>(): R|kotlin/String| <inline=NoInline>  {
+            ^ R|/stringF|()
+        }
+        )
+    }

@@ -8,10 +8,10 @@ package org.jetbrains.kotlin.gradle.plugin.konan.tasks
 import org.gradle.api.DefaultTask
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.*
@@ -20,7 +20,6 @@ import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliCompilerRunner
 import org.jetbrains.kotlin.gradle.plugin.konan.konanClasspath
 import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
-import org.jetbrains.kotlin.konan.target.KonanTarget
 import javax.inject.Inject
 
 /**
@@ -31,13 +30,6 @@ abstract class KonanCompileTask @Inject constructor(
         private val execOperations: ExecOperations,
         private val objectFactory: ObjectFactory,
 ) : DefaultTask() {
-    // Changing the compiler version must rebuild the library.
-    @get:Input
-    protected val buildNumber = project.properties["kotlinVersion"] ?: error("kotlinVersion property is not specified in the project")
-
-    @get:Input
-    abstract val konanTarget: Property<KonanTarget>
-
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
 
@@ -47,12 +39,12 @@ abstract class KonanCompileTask @Inject constructor(
     /**
      * Kotlin/Native distribution to use.
      */
-    @get:Internal // proper dependencies will be specified below
+    @get:Internal // proper dependencies will be specified below: `compilerClasspath`
     abstract val compilerDistribution: DirectoryProperty
 
-    @get:Input
-    protected val compilerDistributionPath: Provider<String>
-        get() = compilerDistribution.asFile.map { it.absolutePath }
+    @get:Classpath // Since this task only compiles into klib, it's enough to depend only on the compiler jar.
+    protected val compilerClasspath: Provider<FileCollection>
+        get() = compilerDistribution.map { it.konanClasspath }
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
@@ -67,8 +59,7 @@ abstract class KonanCompileTask @Inject constructor(
 
     @TaskAction
     fun run() {
-        val dist = compilerDistribution.get()
-        val toolRunner = KonanCliCompilerRunner(execOperations, dist.konanClasspath.files, logger, isolatedClassLoadersService.get(), dist.asFile.absolutePath)
+        val toolRunner = KonanCliCompilerRunner(execOperations, compilerClasspath.get().files, logger, isolatedClassLoadersService.get(), compilerDistribution.get().asFile.absolutePath)
 
         outputDirectory.get().asFile.prepareAsOutput()
 
@@ -79,8 +70,6 @@ abstract class KonanCompileTask @Inject constructor(
             add(outputDirectory.asFile.get().canonicalPath)
             add("-produce")
             add("library")
-            add("-target")
-            add(konanTarget.get().visibleName)
 
             addAll(extraOpts.get())
             add(sourceSets.joinToString(",", prefix = "-Xfragments=") { it.name })
@@ -92,7 +81,7 @@ abstract class KonanCompileTask @Inject constructor(
                     }
                 }
             }
-            add(fragmentSources.joinToString(",", prefix="-Xfragment-sources="))
+            add(fragmentSources.joinToString(",", prefix = "-Xfragment-sources="))
 
             sourceSets.flatMap { it.files }.mapTo(this) { it.absolutePath }
         }

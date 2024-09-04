@@ -7,16 +7,9 @@ import org.jetbrains.kotlin.bitcode.CompileToBitcodeExtension
 import org.jetbrains.kotlin.cpp.CppUsage
 import org.jetbrains.kotlin.gradle.plugin.konan.tasks.KonanCacheTask
 import org.jetbrains.kotlin.gradle.plugin.konan.tasks.KonanCompileTask
-import org.jetbrains.kotlin.konan.properties.loadProperties
-import org.jetbrains.kotlin.konan.properties.saveProperties
 import org.jetbrains.kotlin.konan.target.*
-import org.jetbrains.kotlin.library.KLIB_PROPERTY_COMPILER_VERSION
-import org.jetbrains.kotlin.library.KLIB_PROPERTY_NATIVE_TARGETS
 import org.jetbrains.kotlin.library.KOTLIN_NATIVE_STDLIB_NAME
-import org.jetbrains.kotlin.konan.file.File as KFile
 import org.jetbrains.kotlin.konan.target.Architecture as TargetArchitecture
-
-val kotlinVersion: String by rootProject.extra
 
 plugins {
     id("base")
@@ -563,7 +556,6 @@ val stdlibBuildTask by tasks.registering(KonanCompileTask::class) {
     this.compilerDistribution.set(kotlinNativeDist)
     dependsOn(":kotlin-native:distCompiler")
 
-    this.konanTarget.set(HostManager.host)
     this.outputDirectory.set(
             layout.buildDirectory.dir("stdlib/${HostManager.hostName}/stdlib")
     )
@@ -588,6 +580,7 @@ val stdlibBuildTask by tasks.registering(KonanCompileTask::class) {
             "-Xdont-warn-on-error-suppression",
             "-Xstdlib-compilation",
             "-Xfragment-refines=nativeMain:nativeWasm,nativeMain:common,nativeWasm:common",
+            "-Xmanifest-native-targets=${platformManager.targetValues.joinToString(separator = ",") { it.visibleName }}",
     )
 
     val common by sourceSets.creating {
@@ -613,31 +606,9 @@ val stdlibBuildTask by tasks.registering(KonanCompileTask::class) {
     dependsOn(":prepare:build.version:writeStdlibVersion")
 }
 
-val stdlibTask = tasks.register<Copy>("nativeStdlib") {
+val stdlibTask = tasks.register<Sync>("nativeStdlib") {
     from(stdlibBuildTask.map { it.outputs.files })
     into(project.layout.buildDirectory.dir("nativeStdlib"))
-
-    val allPossibleTargets = project.extensions.getByType<PlatformManager>().targetValues.map { it.name }
-    val kotlinVersion = kotlinVersion
-    eachFile {
-        if (name == "manifest") {
-            // Stdlib is a common library that doesn't depend on anything target-specific.
-            // The current compiler can't create a library with manifest file that lists all targets.
-            // So, add all targets to the manifest file.
-            KFile(file.absolutePath).run {
-                val props = loadProperties()
-                props[KLIB_PROPERTY_NATIVE_TARGETS] = allPossibleTargets.joinToString(separator = " ")
-
-                // Check that we didn't get other than the requested version from cache, previous build or due to some other build issue
-                val versionFromManifest = props[KLIB_PROPERTY_COMPILER_VERSION]
-                check(versionFromManifest == kotlinVersion) {
-                    "Manifest file ($this) processing: $versionFromManifest was found while $kotlinVersion was expected"
-                }
-
-                saveProperties(props)
-            }
-        }
-    }
 }
 
 val cacheableTargetNames = platformManager.hostPlatform.cacheableTargets

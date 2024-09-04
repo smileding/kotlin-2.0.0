@@ -4,7 +4,7 @@
  */
 
 import org.jetbrains.kotlin.gradle.plugin.konan.tasks.KonanCacheTask
-import org.jetbrains.kotlin.gradle.plugin.tasks.KonanInteropTask
+import org.jetbrains.kotlin.gradle.plugin.konan.tasks.KonanInteropTask
 import org.jetbrains.kotlin.PlatformInfo
 import org.jetbrains.kotlin.kotlinNativeDist
 import org.jetbrains.kotlin.konan.target.*

@@ -1770,6 +1770,12 @@ public class FirLightTreeDiagnosticsTestGenerated extends AbstractFirLightTreeDi
       }
 
       @Test
+      @TestMetadata("assignments.kt")
+      public void testAssignments() {
+        runTest("compiler/fir/analysis-tests/testData/resolve/crv/assignments.kt");
+      }
+
+      @Test
       @TestMetadata("basic.kt")
       public void testBasic() {
         runTest("compiler/fir/analysis-tests/testData/resolve/crv/basic.kt");

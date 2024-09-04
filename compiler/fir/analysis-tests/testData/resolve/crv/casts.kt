@@ -1,5 +1,19 @@
 // WITH_STDLIB
 
+fun getAny(): Any = ""
+
 fun foo(a: Any) {
-    <!RETURN_VALUE_NOT_USED!>a<!> as String
+    a as String
+}
+
+fun bar(a: Any) {
+    a is String
+}
+
+fun foo2() {
+    getAny() as String
+}
+
+fun bar2() {
+    getAny() is String
 }

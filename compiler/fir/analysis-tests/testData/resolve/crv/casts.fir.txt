@@ -1,4 +1,16 @@
 FILE: casts.kt
+    public final fun getAny(): R|kotlin/Any| {
+        ^getAny String()
+    }
     public final fun foo(a: R|kotlin/Any|): R|kotlin/Unit| {
         (R|<local>/a| as R|kotlin/String|)
+    }
+    public final fun bar(a: R|kotlin/Any|): R|kotlin/Unit| {
+        (R|<local>/a| is R|kotlin/String|)
+    }
+    public final fun foo2(): R|kotlin/Unit| {
+        (R|/getAny|() as R|kotlin/String|)
+    }
+    public final fun bar2(): R|kotlin/Unit| {
+        (R|/getAny|() is R|kotlin/String|)
     }

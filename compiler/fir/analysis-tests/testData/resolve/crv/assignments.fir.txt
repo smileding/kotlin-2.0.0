@@ -1,0 +1,14 @@
+FILE: assignments.kt
+    public final fun stringF(): R|kotlin/String| {
+        ^stringF String()
+    }
+    public final fun nsf(): R|kotlin/String?| {
+        ^nsf String(null)
+    }
+    public final fun R|kotlin/Any|.consume(): R|kotlin/Unit| {
+        ^consume Q|kotlin/Unit|
+    }
+    public final fun test_3(cards: R|kotlin/collections/MutableList<kotlin/String>|): R|kotlin/Unit| {
+        R|<local>/cards|.R|SubstitutionOverride<kotlin/collections/MutableList.set: R|kotlin/String|>|(Int(0), R|/stringF|())
+        Unit
+    }

@@ -23,8 +23,6 @@ import org.jetbrains.kotlin.fir.types.isNothing
 import org.jetbrains.kotlin.fir.types.isNullableNothing
 import org.jetbrains.kotlin.fir.types.isUnit
 import org.jetbrains.kotlin.fir.types.resolvedType
-import kotlin.math.exp
-
 
 object CheckReturnValue : FirBasicExpressionChecker(MppCheckerKind.Common) {
     override fun check(expression: FirStatement, context: CheckerContext, reporter: DiagnosticReporter) {
@@ -60,10 +58,13 @@ object CheckReturnValue : FirBasicExpressionChecker(MppCheckerKind.Common) {
 //        TODO("Not yet implemented")
     }
 
-    private val FirElement?.isTerminal: Boolean get() = this is FirReturnExpression || this is FirProperty || this is FirValueParameter
+
+    // FirSmartCastExpressionImpl????
+    private val FirElement?.isTerminal: Boolean get() = this is FirReturnExpression || this is FirProperty || this is FirValueParameter || this is FirArgumentList
 
 }
-//
+
+
 //fun stringF() = ""
 //
 //class Inits(val used: String = stringF()) {

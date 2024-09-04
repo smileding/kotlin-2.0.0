@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.konan.target.PlatformManager
 import org.jetbrains.kotlin.library.uniqueName
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliRunnerIsolatedClassLoadersService
 import org.jetbrains.kotlin.gradle.plugin.konan.konanClasspath
+import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
 import org.jetbrains.kotlin.util.Logger
 import java.io.File
 import java.util.*
@@ -84,11 +85,7 @@ abstract class KonanCacheTask @Inject constructor(
 //        }
 
         // Compiler doesn't create a cache if the cacheFile already exists. So we need to remove it manually.
-        if (cacheFile.exists()) {
-            val deleted = cacheFile.deleteRecursively()
-            check(deleted) { "Cannot delete stale cache: ${cacheFile.absolutePath}" }
-        }
-        cacheDirectory.mkdirs()
+        cacheFile.prepareAsOutput()
         val additionalCacheFlags = PlatformManager(dist.asFile.absolutePath).let {
             it.targetByName(target).let(it::loader).additionalCacheFlags
         }

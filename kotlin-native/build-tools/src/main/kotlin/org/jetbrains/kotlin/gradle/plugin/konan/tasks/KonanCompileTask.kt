@@ -19,6 +19,7 @@ import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliCompilerRunner
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliRunnerIsolatedClassLoadersService
 import org.jetbrains.kotlin.gradle.plugin.konan.konanClasspath
+import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import javax.inject.Inject
 
@@ -73,7 +74,8 @@ abstract class KonanCompileTask @Inject constructor(
         val dist = compilerDistribution.get()
         val toolRunner = KonanCliCompilerRunner(execOperations, dist.konanClasspath.files, logger, getIsolatedClassLoadersService().get(), dist.asFile.absolutePath)
 
-        outputDirectory.asFile.get().mkdirs()
+        outputDirectory.get().asFile.prepareAsOutput()
+
         val args = buildList {
             add("-nopack")
             add("-Xmulti-platform")

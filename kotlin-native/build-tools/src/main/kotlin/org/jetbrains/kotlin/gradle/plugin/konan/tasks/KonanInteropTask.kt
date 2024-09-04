@@ -103,7 +103,8 @@ abstract class KonanInteropTask @Inject constructor(
                 allowRunningCInteropInProcess
         )
 
-        outputDirectory.asFile.get().mkdirs()
+        outputDirectory.get().asFile.prepareAsOutput()
+
         val args = buildList {
             add("-nopack")
             add("-o")

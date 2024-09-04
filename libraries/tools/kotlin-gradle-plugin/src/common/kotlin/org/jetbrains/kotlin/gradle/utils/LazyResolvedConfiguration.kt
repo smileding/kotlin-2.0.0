@@ -73,10 +73,6 @@ internal class LazyResolvedConfiguration private constructor(
         return componentIds.flatMap { artifactsByComponentId[it].orEmpty() }
     }
 
-    private tailrec fun ResolvedVariantResult.lastExternalVariantOrSelf(): ResolvedVariantResult {
-        return if (externalVariant.isPresent) externalVariant.get().lastExternalVariantOrSelf() else this
-    }
-
     override fun toString(): String = "LazyResolvedConfiguration(configuration='$configurationName')"
 }
 
@@ -88,6 +84,9 @@ private fun Configuration.lazyArtifactCollection(artifactType: Provider<String>?
         }
     }.artifacts
 
+internal tailrec fun ResolvedVariantResult.lastExternalVariantOrSelf(): ResolvedVariantResult {
+    return if (externalVariant.isPresent) externalVariant.get().lastExternalVariantOrSelf() else this
+}
 
 /**
  * Same as [LazyResolvedConfiguration.getArtifacts] except it returns null for cases when dependency is resolved

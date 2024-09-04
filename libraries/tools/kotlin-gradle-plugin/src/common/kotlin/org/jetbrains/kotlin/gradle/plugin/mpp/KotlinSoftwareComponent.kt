@@ -22,6 +22,10 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.dsl.metadataTarget
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.withArtifactIdAttribute
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginLifecycle.Stage.AfterFinaliseCompilations
@@ -33,9 +37,6 @@ import org.jetbrains.kotlin.gradle.plugin.await
 import org.jetbrains.kotlin.gradle.plugin.mpp.DefaultKotlinUsageContext.PublishOnlyIf
 import org.jetbrains.kotlin.gradle.targets.metadata.*
 import org.jetbrains.kotlin.gradle.utils.*
-import org.jetbrains.kotlin.gradle.utils.Future
-import org.jetbrains.kotlin.gradle.utils.future
-import org.jetbrains.kotlin.gradle.utils.setProperty
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.toLowerCaseAsciiOnly
 
 abstract class KotlinSoftwareComponent(
@@ -254,7 +255,19 @@ class DefaultKotlinUsageContext(
                      * Another option could be to put this attribute only on the secondary variant that is non-packed.
                      * However, disambiguation rules do not work well on old Gradle versions with this.
                      */
-                    it.name != KlibPackaging.ATTRIBUTE.name
+                    it.name != KlibPackaging.ATTRIBUTE.name &&
+
+                    /**
+                     * Attributes with GAV(groupId, artifactId, version) only used for project-to-project interaction.
+                     * So there is no need to publish them.
+                     */
+                    it.name !in
+                    listOf(
+                        withArtifactIdAttribute.name,
+                        artifactIdAttribute.name,
+                        artifactVersionAttribute.name,
+                        artifactGroupAttribute.name
+                    )
         }
 
 }

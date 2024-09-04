@@ -8,6 +8,10 @@ package org.jetbrains.kotlin.gradle.targets
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtensionOrNull
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.withArtifactIdAttribute
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.configureSourcesPublicationAttributes
@@ -37,11 +41,23 @@ internal val CreateTargetConfigurationsSideEffect = KotlinTargetSideEffect { tar
     }
 
     val apiElementScope = configurations.maybeCreateDependencyScope(mainCompilation.apiConfigurationName)
+
+    val artifactId = target.internal.kotlinComponents
+        .filter { kotlinComponent -> kotlinComponent.publishableOnCurrentHost }
+        .map { kotlinComponent ->
+            kotlinComponent.defaultArtifactId
+        }.singleOrNull()
     configurations.maybeCreateConsumable(target.apiElementsConfigurationName).apply {
         description = "API elements for main."
         isVisible = false
         attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.producerApiUsage(target))
         attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, project.categoryByName(Category.LIBRARY))
+        artifactId?.let {
+            attributes.setAttribute(withArtifactIdAttribute, true)
+            attributes.setAttribute(artifactIdAttribute, artifactId)
+            attributes.setAttribute(artifactVersionAttribute, project.version.toString())
+            attributes.setAttribute(artifactGroupAttribute, project.group.toString())
+        }
         extendsFrom(apiElementScope)
         @Suppress("TYPEALIAS_EXPANSION_DEPRECATION")
         if (mainCompilation is DeprecatedKotlinCompilationToRunnableFiles) {
@@ -65,6 +81,10 @@ internal val CreateTargetConfigurationsSideEffect = KotlinTargetSideEffect { tar
             isVisible = false
             attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.producerRuntimeUsage(target))
             attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, project.categoryByName(Category.LIBRARY))
+            artifactId?.let {
+                attributes.setAttribute(withArtifactIdAttribute, true)
+                attributes.setAttribute(artifactIdAttribute, artifactId)
+            }
             val runtimeConfiguration = mainCompilation.internal.configurations.deprecatedRuntimeConfiguration
             extendsFrom(implementationConfiguration)
             extendsFrom(runtimeOnlyConfiguration)

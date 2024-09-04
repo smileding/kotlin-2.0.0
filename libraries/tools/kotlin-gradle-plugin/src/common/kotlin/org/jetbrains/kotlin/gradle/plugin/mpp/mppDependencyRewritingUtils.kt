@@ -10,15 +10,20 @@ import groovy.util.NodeList
 import org.gradle.api.Project
 import org.gradle.api.XmlProvider
 import org.gradle.api.artifacts.*
+import org.gradle.api.artifacts.component.ModuleComponentSelector
 import org.gradle.api.internal.component.SoftwareComponentInternal
 import org.gradle.api.internal.component.UsageContext
 import org.gradle.api.provider.Provider
-import org.jetbrains.kotlin.gradle.dsl.multiplatformExtensionOrNull
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.withArtifactIdAttribute
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetComponent
-import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinUsageContext.MavenScope
+import org.jetbrains.kotlin.gradle.utils.LazyResolvedConfiguration
 import org.jetbrains.kotlin.gradle.utils.getValue
+import org.jetbrains.kotlin.gradle.utils.lastExternalVariantOrSelf
 
 internal data class ModuleCoordinates(
     private val moduleGroup: String?,
@@ -120,21 +125,13 @@ private fun associateDependenciesWithActualModuleDependencies(
     val project = compilation.target.project
 
     val targetDependenciesConfiguration = project.configurations.getByName(
-        when (compilation) {
-            is KotlinJvmAndroidCompilation -> {
-                // TODO handle Android configuration names in a general way once we drop AGP < 3.0.0
-                val variantName = compilation.name
-                when (mavenScope) {
-                    MavenScope.COMPILE -> variantName + "CompileClasspath"
-                    MavenScope.RUNTIME -> variantName + "RuntimeClasspath"
-                }
-            }
-            else -> when (mavenScope) {
-                MavenScope.COMPILE -> compilation.compileDependencyConfigurationName
-                MavenScope.RUNTIME -> compilation.runtimeDependencyConfigurationName ?: return emptyMap()
-            }
+        when (mavenScope) {
+            MavenScope.COMPILE -> compilation.compileDependencyConfigurationName
+            MavenScope.RUNTIME -> compilation.runtimeDependencyConfigurationName ?: return emptyMap()
         }
     )
+
+    val resolvedProjectDependenciesCoordinates = parseCoordinatesForResolvedProjectDependencies(targetDependenciesConfiguration)
 
     val resolvedDependencies: Map<Triple<String?, String, String?>, ResolvedDependency> by lazy {
         // don't resolve if no project dependencies on MPP projects are found
@@ -146,79 +143,57 @@ private fun associateDependenciesWithActualModuleDependencies(
     return targetDependenciesConfiguration
         .allDependencies.withType(ModuleDependency::class.java)
         .associate { dependency ->
+
             val coordinates = ModuleCoordinates(dependency.group, dependency.name, dependency.version)
+
+            resolvedProjectDependenciesCoordinates.get(coordinates)?.let {
+                return@associate coordinates to it
+            }
+
             val noMapping = coordinates to coordinates
-            when (dependency) {
-                is ProjectDependency -> {
-                    val dependencyProject = dependency.dependencyProject
-                    val dependencyProjectKotlinExtension = dependencyProject.multiplatformExtensionOrNull
-                        ?: return@associate noMapping
+            val resolvedDependency = resolvedDependencies[Triple(dependency.group, dependency.name, dependency.version)]
+                ?: return@associate noMapping
 
-                    // Non-default publication layouts are not supported for pom rewriting
-                    if (!dependencyProject.kotlinPropertiesProvider.createDefaultMultiplatformPublications)
-                        return@associate noMapping
+            // This is a heuristical check for External Variants.
+            // In ResolvedDependency API these dependencies have no artifacts and single children dependency.
+            // That single dependency is an actual variant that contains artifacts and other dependencies.
+            // For example see: `org.jetbrains.kotlinx:kotlinx-coroutines-core` jvmApiElements-published
+            // It has reference to `org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm` and has no other dependencies nor artifacts.
+            // If dependency was resolved but moduleArtifacts for some reason failed to resolve: it's OK!
+            // It means there are some artifacts that can't be resolved.
+            // For example resolved project dependency to android variant from included build.
+            val moduleArtifacts = runCatching { resolvedDependency.moduleArtifacts }.getOrNull() ?: return@associate noMapping
+            if (moduleArtifacts.isEmpty() && resolvedDependency.children.size == 1) {
+                val targetModule = resolvedDependency.children.single()
+                coordinates to ModuleCoordinates(
+                    targetModule.moduleGroup,
+                    targetModule.moduleName,
+                    targetModule.moduleVersion
+                )
 
-                    val resolved = resolvedDependencies[Triple(dependency.group!!, dependency.name, dependency.version!!)]
-                        ?: return@associate noMapping
-
-                    val resolvedToConfiguration = resolved.configuration
-                    val dependencyTargetComponent: KotlinTargetComponent = run {
-                        dependencyProjectKotlinExtension.targets.forEach { target ->
-                            target.internal.kotlinComponents.forEach { component ->
-                                if (component.findUsageContext(resolvedToConfiguration) != null)
-                                    return@run component
-                            }
-                        }
-                        // Failed to find a matching component:
-                        return@associate noMapping
-                    }
-
-                    val targetModulePublication = (dependencyTargetComponent as? KotlinTargetComponentWithPublication)?.publicationDelegate
-                    val rootModulePublication = dependencyProjectKotlinExtension.rootSoftwareComponent.publicationDelegate
-
-                    // During Gradle POM generation, a project dependency is already written as the root module's coordinates. In the
-                    // dependencies mapping, map the root module to the target's module:
-
-                    val rootModule = ModuleCoordinates(
-                        rootModulePublication?.groupId ?: dependency.group,
-                        rootModulePublication?.artifactId ?: dependencyProject.name,
-                        rootModulePublication?.version ?: dependency.version
-                    )
-
-                    rootModule to ModuleCoordinates(
-                        targetModulePublication?.groupId ?: dependency.group,
-                        targetModulePublication?.artifactId ?: dependencyTargetComponent.defaultArtifactId,
-                        targetModulePublication?.version ?: dependency.version
-                    )
-                }
-                else -> {
-                    val resolvedDependency = resolvedDependencies[Triple(dependency.group, dependency.name, dependency.version)]
-                        ?: return@associate noMapping
-
-                    // This is a heuristical check for External Variants.
-                    // In ResolvedDependency API these dependencies have no artifacts and single children dependency.
-                    // That single dependency is an actual variant that contains artifacts and other dependencies.
-                    // For example see: `org.jetbrains.kotlinx:kotlinx-coroutines-core` jvmApiElements-published
-                    // It has reference to `org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm` and has no other dependencies nor artifacts.
-                    // If dependency was resolved but moduleArtifacts for some reason failed to resolve: it's OK!
-                    // It means there are some artifacts that can't be resolved.
-                    // For example resolved project dependency to android variant from included build.
-                    val moduleArtifacts = runCatching { resolvedDependency.moduleArtifacts }.getOrNull() ?: return@associate noMapping
-                    if (moduleArtifacts.isEmpty() && resolvedDependency.children.size == 1) {
-                        val targetModule = resolvedDependency.children.single()
-                        coordinates to ModuleCoordinates(
-                            targetModule.moduleGroup,
-                            targetModule.moduleName,
-                            targetModule.moduleVersion
-                        )
-
-                    } else {
-                        noMapping
-                    }
-                }
+            } else {
+                noMapping
             }
         }
 }
+
+private fun parseCoordinatesForResolvedProjectDependencies(targetDependenciesConfiguration: Configuration) =
+    LazyResolvedConfiguration(targetDependenciesConfiguration)
+        .allResolvedDependencies
+        .mapNotNull { resolvedDependency ->
+            val requestedDependency = resolvedDependency.requested as? ModuleComponentSelector ?: return@mapNotNull null
+            val resolvedVariant = resolvedDependency.resolvedVariant.lastExternalVariantOrSelf()
+            if (resolvedVariant.attributes.getAttribute(withArtifactIdAttribute) != true) return@mapNotNull null
+            ModuleCoordinates(
+                requestedDependency.group,
+                requestedDependency.module,
+                requestedDependency.version
+            ) to ModuleCoordinates(
+                resolvedVariant.attributes.getAttribute(artifactGroupAttribute),
+                resolvedVariant.attributes.getAttribute(artifactIdAttribute) ?: "undefined",
+                resolvedVariant.attributes.getAttribute(artifactVersionAttribute)
+            )
+        }.associate { it }
 
 private fun KotlinTargetComponent.findUsageContext(configurationName: String): UsageContext? {
     val usageContexts = when (this) {

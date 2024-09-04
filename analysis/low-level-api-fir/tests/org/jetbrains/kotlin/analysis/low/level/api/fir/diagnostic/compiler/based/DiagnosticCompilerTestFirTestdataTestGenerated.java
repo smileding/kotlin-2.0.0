@@ -1516,6 +1516,18 @@ public class DiagnosticCompilerTestFirTestdataTestGenerated extends AbstractDiag
       }
 
       @Test
+      @TestMetadata("checkReturnValueBasic.kt")
+      public void testCheckReturnValueBasic() {
+        runTest("compiler/fir/analysis-tests/testData/resolve/checkers/checkReturnValueBasic.kt");
+      }
+
+      @Test
+      @TestMetadata("checkReturnValueLambdas.kt")
+      public void testCheckReturnValueLambdas() {
+        runTest("compiler/fir/analysis-tests/testData/resolve/checkers/checkReturnValueLambdas.kt");
+      }
+
+      @Test
       @TestMetadata("complexConflictingProjections.kt")
       public void testComplexConflictingProjections() {
         runTest("compiler/fir/analysis-tests/testData/resolve/checkers/complexConflictingProjections.kt");

@@ -866,6 +866,8 @@ object FirErrors {
     val USELESS_CALL_ON_NOT_NULL: KtDiagnosticFactory0 = KtDiagnosticFactory0("USELESS_CALL_ON_NOT_NULL", WARNING, SourceElementPositioningStrategies.SELECTOR_BY_QUALIFIED, PsiElement::class)
     val UNUSED_ANONYMOUS_PARAMETER: KtDiagnosticFactory1<FirValueParameterSymbol> = KtDiagnosticFactory1("UNUSED_ANONYMOUS_PARAMETER", WARNING, SourceElementPositioningStrategies.DECLARATION_NAME, KtElement::class)
 
+    val RETURN_VALUE_NOT_USED: KtDiagnosticFactory1<Name> = KtDiagnosticFactory1("RETURN_VALUE_NOT_USED", ERROR, SourceElementPositioningStrategies.DEFAULT, PsiElement::class)
+
     // Returns
     val RETURN_NOT_ALLOWED: KtDiagnosticFactory0 = KtDiagnosticFactory0("RETURN_NOT_ALLOWED", ERROR, SourceElementPositioningStrategies.RETURN_WITH_LABEL, KtReturnExpression::class)
     val NOT_A_FUNCTION_LABEL: KtDiagnosticFactory0 = KtDiagnosticFactory0("NOT_A_FUNCTION_LABEL", ERROR, SourceElementPositioningStrategies.RETURN_WITH_LABEL, KtReturnExpression::class)

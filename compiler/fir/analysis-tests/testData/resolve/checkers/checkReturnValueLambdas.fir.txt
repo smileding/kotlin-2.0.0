@@ -1,0 +1,48 @@
+FILE: checkReturnValueLambdas.kt
+    public final fun stringF(): R|kotlin/String| {
+        ^stringF String()
+    }
+    public final fun R|kotlin/Any|.consume(): R|kotlin/Unit| {
+        ^consume Q|kotlin/Unit|
+    }
+    public final fun returnsExp(): R|kotlin/String| {
+        ^returnsExp R|/stringF|()
+    }
+    public final fun returnsBody(): R|kotlin/String| {
+        ^returnsBody R|/stringF|()
+    }
+    public final fun vals(): R|kotlin/Unit| {
+        lval used: R|kotlin/String|
+        R|<local>/used| = R|/stringF|()
+        lateinit lvar used2: R|kotlin/String|
+        R|<local>/used2| = R|/stringF|()
+    }
+    public final class Inits : R|kotlin/Any| {
+        public constructor(): R|Inits| {
+            super<R|kotlin/Any|>()
+        }
+
+        public final val init1: R|kotlin/String| = R|/stringF|()
+            public get(): R|kotlin/String|
+
+        public final val explicit: R|kotlin/String|
+            public get(): R|kotlin/String| {
+                ^ R|/stringF|()
+            }
+
+        public final val unused: R|kotlin/String|
+            public get(): R|kotlin/String| {
+                R|/stringF|()
+                ^ String()
+            }
+
+    }
+    public final fun defaultValue(param: R|kotlin/String| = R|/stringF|()): R|kotlin/Unit| {
+    }
+    public final fun main(): R|kotlin/Unit| {
+        lval used: R|kotlin/String| = R|/stringF|()
+        R|kotlin/io/println|(R|/stringF|())
+        R|/stringF|().R|/consume|()
+        R|/stringF|().R|kotlin/String.toString|()
+        R|/stringF|()
+    }

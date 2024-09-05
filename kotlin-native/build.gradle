@@ -312,7 +312,7 @@ tasks.register("listDist", Exec) {
     commandLine 'find', distDir
 }
 
-tasks.register("distRuntime", Copy) {
+tasks.register("distRuntime") {
     dependsOn "${hostName}CrossDistRuntime"
 }
 
@@ -323,9 +323,8 @@ tasks.register("distStdlibCache") {
 }
 
 def stdlib = 'klib/common/stdlib'
-def stdlibDefaultComponent = "$stdlib/default"
 
-tasks.register("distStdlib", Copy) {
+tasks.register("distStdlib", Sync) {
     from(project(":kotlin-native:runtime")
             .tasks
             .named("nativeStdlib")
@@ -347,7 +346,7 @@ tasks.register("crossDistStdlibCache") {
 }
 
 targetList.each { target ->
-    tasks.register("${target}CrossDistBitcodeCopy", Copy) {
+    tasks.register("${target}CrossDistBitcodeCopy", Sync) {
         def bitcodeFiles = configurations.runtimeBitcode.incoming.artifactView {
             attributes {
                 attribute(TargetWithSanitizer.TARGET_ATTRIBUTE, new TargetWithSanitizer(platformManager.targetByName(target), null))
@@ -361,11 +360,9 @@ targetList.each { target ->
         }
     }
 
-    tasks.register("${target}CrossDistRuntime", Copy) {
+    tasks.register("${target}CrossDistRuntime") {
         dependsOn ":kotlin-native:distStdlib"
         dependsOn "${target}CrossDistBitcodeCopy"
-
-        destinationDir project.file("$distDir/$stdlibDefaultComponent")
     }
 
     tasks.register("${target}PlatformLibs") {
@@ -376,13 +373,13 @@ targetList.each { target ->
     }
 
     if (target in cacheableTargetNames) {
-        tasks.register("${target}StdlibCache", Copy) {
+        tasks.register("${target}StdlibCache", Sync) {
             dependsOn "distStdlib"
             dependsOn ":kotlin-native:runtime:${target}StdlibCache"
 
-            destinationDir project.file("$distDir/klib/cache/")
+            destinationDir project.file("$distDir/klib/cache/$target-gSTATIC/stdlib-cache")
 
-            from(project(":kotlin-native:runtime").layout.buildDirectory.dir("cache/$target")) {
+            from(project(":kotlin-native:runtime").layout.buildDirectory.dir("cache/$target/$target-gSTATIC/stdlib-cache")) {
                 include('**')
             }
         }

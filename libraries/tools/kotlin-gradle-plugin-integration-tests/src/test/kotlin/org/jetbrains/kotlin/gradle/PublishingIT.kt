@@ -129,7 +129,6 @@ class PublishingIT : KGPBaseTest() {
             gradleVersion,
             localRepoDir = localRepo,
             buildOptions = defaultBuildOptions.copy(kmpIsolatedProjectsSupport = KmpIsolatedProjectsSupport.ENABLE),
-            enableGradleDebug = true
         ) {
 
             projectPath.resolve("included").addDefaultSettingsToSettingsGradle(

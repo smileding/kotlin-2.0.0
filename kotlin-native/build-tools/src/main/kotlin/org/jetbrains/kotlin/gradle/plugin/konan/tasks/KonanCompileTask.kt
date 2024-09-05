@@ -10,16 +10,39 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.SourceDirectorySet
+import org.gradle.api.logging.Logging
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.*
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
+import org.gradle.workers.WorkerExecutor
+import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliRunnerIsolatedClassLoadersService
 import org.jetbrains.kotlin.gradle.plugin.konan.konanClasspath
 import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
 import org.jetbrains.kotlin.gradle.plugin.konan.runKonanTool
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
 import javax.inject.Inject
+
+private abstract class KonanCompileAction : WorkAction<KonanCompileAction.Parameters> {
+    interface Parameters : WorkParameters {
+        val isolatedClassLoadersService: Property<KonanCliRunnerIsolatedClassLoadersService>
+        val compilerDistribution: DirectoryProperty
+        val args: ListProperty<String>
+    }
+
+    override fun execute() {
+        parameters.isolatedClassLoadersService.get().getIsolatedClassLoader(parameters.compilerDistribution.get().konanClasspath.files).runKonanTool(
+                logger = Logging.getLogger(this::class.java),
+                useArgFile = true,
+                toolName = "konanc",
+                args = parameters.args.get()
+        )
+    }
+}
 
 /**
  * A task compiling the target library using Kotlin/Native compiler
@@ -27,6 +50,7 @@ import javax.inject.Inject
 @CacheableTask
 abstract class KonanCompileTask @Inject constructor(
         private val objectFactory: ObjectFactory,
+        private val workerExecutor: WorkerExecutor,
 ) : DefaultTask() {
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
@@ -81,11 +105,12 @@ abstract class KonanCompileTask @Inject constructor(
 
             sourceSets.flatMap { it.files }.mapTo(this) { it.absolutePath }
         }
-        isolatedClassLoadersService.get().getIsolatedClassLoader(compilerClasspath.get().files).runKonanTool(
-                logger = logger,
-                useArgFile = true,
-                toolName = "konanc",
-                args = args
-        )
+
+        val workQueue = workerExecutor.noIsolation()
+        workQueue.submit(KonanCompileAction::class.java) {
+            this.compilerDistribution.set(this@KonanCompileTask.compilerDistribution)
+            this.isolatedClassLoadersService.set(this@KonanCompileTask.isolatedClassLoadersService)
+            this.args.addAll(args)
+        }
     }
 }

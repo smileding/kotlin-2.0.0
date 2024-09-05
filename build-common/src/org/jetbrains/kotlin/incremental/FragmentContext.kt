@@ -37,7 +37,7 @@ class FragmentContext(
      */
     fun dirtySetTouchesNonLeafFragments(dirtySet: Iterable<File>): Boolean {
         return dirtySet.any { file ->
-            !leafFragments.contains(fileToFragment[file.absolutePath])
+            !leafFragments.contains(fileToFragment[file.normalize().absolutePath])
         }
     }
 

@@ -32,8 +32,8 @@ abstract class ModulesApiHistoryBase(rootProjectDir: File, protected val modules
     // with <some_dir>/<project_path>/build, and in that case, this path will be <some_dir>.
     // This is using set in order to de-dup paths, and avoid duplicate checks when possible.
     protected val possibleParentsToBuildDirs: Set<Path> = setOf(
-        Paths.get(modulesInfo.rootProjectBuildDir.parentFile.absolutePath),
-        Paths.get(rootProjectDir.absolutePath)
+        Paths.get(modulesInfo.rootProjectBuildDir.parentFile.normalize().absolutePath),
+        Paths.get(rootProjectDir.normalize().absolutePath)
     )
     private val dirToHistoryFileCache = HashMap<File, Set<File>>()
 
@@ -186,12 +186,12 @@ class ModulesApiHistoryAndroid(rootProjectDir: File, modulesInfo: IncrementalMod
         // Module detection is expensive, so we don't don it for jars outside of project dir
         if (!isInProjectBuildDir(jar)) return Either.Error("Non-project jar is modified $jar")
 
-        val jarPath = Paths.get(jar.absolutePath)
+        val jarPath = Paths.get(jar.normalize().absolutePath)
         return getHistoryForModuleNames(jarPath, getPossibleModuleNamesFromJar(jarPath), IncrementalModuleEntry::buildHistoryFile)
     }
 
     override fun abiSnapshot(jar: File): Either<Set<File>> {
-        val jarPath = Paths.get(jar.absolutePath)
+        val jarPath = Paths.get(jar.normalize().absolutePath)
         return when (val result = getHistoryForModuleNames(jarPath, getPossibleModuleNamesFromJar(jarPath), IncrementalModuleEntry::abiSnapshot)) {
             is Either.Success -> Either.Success(result.value)
             is Either.Error -> Either.Error(result.reason)
@@ -245,7 +245,7 @@ class ModulesApiHistoryAndroid(rootProjectDir: File, modulesInfo: IncrementalMod
     private fun getHistoryForModuleNames(path: Path, moduleNames: Iterable<String>, fileLocation: (IncrementalModuleEntry) -> File): Either<Set<File>> {
         val possibleModules =
             moduleNames.flatMapTo(HashSet()) { modulesInfo.nameToModules[it] ?: emptySet() }
-        val modules = possibleModules.filter { Paths.get(it.buildDir.absolutePath).isParentOf(path) }
+        val modules = possibleModules.filter { Paths.get(it.buildDir.normalize().absolutePath).isParentOf(path) }
         if (modules.isEmpty()) return Either.Error("Unknown module for $path (candidates: ${possibleModules.joinToString()})")
 
         val result = modules.mapTo(HashSet()) { fileLocation(it) }

@@ -72,7 +72,7 @@ abstract class AbstractIncrementalK1JsKlibMultiModuleCompilerRunnerTest :
 
     override fun K2JSCompilerArguments.updateForSingleModule(moduleDependencies: List<String>, outFile: File) {
         val additionalDeps = moduleDependencies.joinToString(File.pathSeparator) {
-            File(repository, it.klib).absolutePath
+            File(repository, it.klib).normalize().absolutePath
         }
 
         val sb = StringBuilder(STDLIB_DEPENDENCY)

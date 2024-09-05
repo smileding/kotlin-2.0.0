@@ -180,7 +180,7 @@ internal object CompilationServiceImpl : CompilationService {
                 ).asCompilationResult
             }
             else -> {
-                parsedArguments.freeArgs += sources.map { it.absolutePath }
+                parsedArguments.freeArgs += sources.map { it.normalize().absolutePath }
                 compiler.exec(loggerAdapter, Services.EMPTY, parsedArguments).asCompilationResult
             }
         }
@@ -223,7 +223,7 @@ internal object CompilationServiceImpl : CompilationService {
         val daemonCompileOptions = compilationConfiguration.asDaemonCompilationOptions
         val exitCode = daemon.compile(
             sessionId,
-            arguments.toTypedArray() + sources.map { it.absolutePath }, // TODO: pass the sources explicitly KT-62759
+            arguments.toTypedArray() + sources.map { it.normalize().absolutePath }, // TODO: pass the sources explicitly KT-62759
             daemonCompileOptions,
             BasicCompilerServicesWithResultsFacadeServer(loggerAdapter),
             DaemonCompilationResults(

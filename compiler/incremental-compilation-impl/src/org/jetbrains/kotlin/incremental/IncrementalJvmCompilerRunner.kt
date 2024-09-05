@@ -160,7 +160,7 @@ open class IncrementalJvmCompilerRunner(
                     if (result is Either.Success<Set<File>>) {
                         result.value.forEach { file ->
                             if (file.exists()) {
-                                abiSnapshots[it.absolutePath] = AbiSnapshotImpl.read(file)
+                                abiSnapshots[it.normalize().absolutePath] = AbiSnapshotImpl.read(file)
                             } else {
                                 // FIXME: We should throw an exception here
                                 reporter.warn { "Snapshot file does not exist: ${file.path}. Continue anyway." }
@@ -459,7 +459,7 @@ open class IncrementalJvmCompilerRunner(
     ): Pair<ExitCode, Collection<File>> {
         val compiler = K2JVMCompiler()
         val freeArgsBackup = args.freeArgs.toList()
-        args.freeArgs += sourcesToCompile.map { it.absolutePath }
+        args.freeArgs += sourcesToCompile.map { it.normalize().absolutePath }
         args.allowNoSourceFiles = true
         val exitCode = compiler.exec(messageCollector, services, args)
         args.freeArgs = freeArgsBackup

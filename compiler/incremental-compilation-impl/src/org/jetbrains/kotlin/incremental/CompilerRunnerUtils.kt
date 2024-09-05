@@ -23,13 +23,13 @@ import java.io.File
 var K2JVMCompilerArguments.destinationAsFile: File
     get() = File(destination)
     set(value) {
-        destination = value.absolutePath
+        destination = value.normalize().absolutePath
     }
 
 var K2JVMCompilerArguments.classpathAsList: List<File>
     get() = classpath.orEmpty().split(File.pathSeparator).map(::File)
     set(value) {
-        classpath = value.joinToString(separator = File.pathSeparator, transform = { it.absolutePath })
+        classpath = value.joinToString(separator = File.pathSeparator, transform = { it.normalize().absolutePath })
     }
 
 val K2JVMCompilerArguments.isK1ForcedByKapt: Boolean
@@ -65,7 +65,7 @@ fun makeJvmIncrementally(
     val files = rootsWalk.filter(File::isFile)
     val sourceFiles = files.filter { it.extension.lowercase() in allExtensions }.toList()
     val buildHistoryFile = File(cachesDir, "build-history.bin")
-    args.javaSourceRoots = sourceRoots.map { it.absolutePath }.toTypedArray()
+    args.javaSourceRoots = sourceRoots.map { it.normalize().absolutePath }.toTypedArray()
     val buildReporter = BuildReporter(icReporter = reporter, buildMetricsReporter = DoNothingBuildMetricsReporter)
 
     withIncrementalCompilation(args) {

@@ -100,7 +100,7 @@ abstract class AbstractIncrementalMultiModuleCompilerRunnerTest<Args : CommonCom
         val moduleBuildHistoryFile = buildHistoryFile(moduleCacheDir)
         val abiSnapshotFile = abiSnapshotFile(moduleCacheDir)
 
-        val moduleEntry = IncrementalModuleEntry(workingDir.absolutePath, moduleName, outDir, moduleBuildHistoryFile, abiSnapshotFile)
+        val moduleEntry = IncrementalModuleEntry(workingDir.normalize().absolutePath, moduleName, outDir, moduleBuildHistoryFile, abiSnapshotFile)
 
         dirToModule[moduleBuildDir] = moduleEntry
         nameToModules.getOrPut(moduleName) { mutableSetOf() }.add(moduleEntry)

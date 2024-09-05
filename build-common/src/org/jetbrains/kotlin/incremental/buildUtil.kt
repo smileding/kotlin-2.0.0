@@ -51,14 +51,14 @@ fun makeModuleFile(
     val builder = KotlinModuleXmlBuilder()
     builder.addModule(
         name,
-        outputDir.absolutePath,
+        outputDir.normalize().absolutePath,
         // important to transform file to absolute paths,
         // otherwise compiler will use module file's parent as base path (a temporary file; see below)
         // (see org.jetbrains.kotlin.cli.jvm.compiler.KotlinToJVMBytecodeCompiler.getAbsolutePaths)
-        sourcesToCompile.map { it.absoluteFile },
+        sourcesToCompile.map { it.normalize().absoluteFile },
         javaSourceRoots,
         classpath,
-        commonSources.map { it.absoluteFile },
+        commonSources.map { it.normalize().absoluteFile },
         null,
         "java-production",
         isTest,

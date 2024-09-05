@@ -69,7 +69,7 @@ abstract class AbstractIncrementalJvmCompilerRunnerTest : AbstractIncrementalCom
         val files = rootsWalk.filter(File::isFile)
         val sourceFiles = files.filter { it.extension.lowercase() in allExtensions }.toList()
         val buildHistoryFile = File(cachesDir, "build-history.bin")
-        args.javaSourceRoots = sourceRoots.map { it.absolutePath }.toTypedArray()
+        args.javaSourceRoots = sourceRoots.map { it.normalize().absolutePath }.toTypedArray()
         val buildReporter = TestBuildReporter(testICReporter = reporter, buildMetricsReporter = DoNothingBuildMetricsReporter)
 
         withIncrementalCompilation(args) {
@@ -123,8 +123,8 @@ abstract class AbstractIncrementalJvmCompilerRunnerTest : AbstractIncrementalCom
         }
         val args = arrayOf(
             "-cp", javaClasspath,
-            "-d", javaDestinationDir.canonicalPath,
-            *javaSources.map { it.canonicalPath }.toTypedArray()
+            "-d", javaDestinationDir.normalize().absolutePath,
+            *javaSources.map { it.normalize().absolutePath }.toTypedArray()
         )
 
         val err = ByteArrayOutputStream()
@@ -147,5 +147,5 @@ abstract class AbstractIncrementalJvmCompilerRunnerTest : AbstractIncrementalCom
         listOf(
             kotlinStdlibJvm,
             KtTestUtil.getAnnotationsJar()
-        ).joinToString(File.pathSeparator) { it.canonicalPath }
+        ).joinToString(File.pathSeparator) { it.normalize().absolutePath }
 }

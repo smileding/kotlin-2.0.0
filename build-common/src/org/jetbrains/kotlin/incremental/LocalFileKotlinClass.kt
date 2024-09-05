@@ -47,7 +47,7 @@ class LocalFileKotlinClass private constructor(
     val className: JvmClassName by lazy { JvmClassName.byClassId(classId) }
 
     override val location: String
-        get() = file.absolutePath
+        get() = file.normalize().absolutePath
 
     public override fun getFileContents(): ByteArray = fileContents
 

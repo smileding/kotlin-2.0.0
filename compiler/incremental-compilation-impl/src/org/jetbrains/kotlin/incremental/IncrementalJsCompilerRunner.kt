@@ -195,7 +195,7 @@ class IncrementalJsCompilerRunner(
 
         val compiler = K2JSCompiler()
         return try {
-            args.freeArgs += sourcesToCompile.map { it.absolutePath }
+            args.freeArgs += sourcesToCompile.map { it.normalize().absolutePath }
             compiler.exec(messageCollector, services, args) to sourcesToCompile
         } finally {
             args.freeArgs = freeArgsBackup

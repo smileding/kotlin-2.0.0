@@ -117,7 +117,7 @@ abstract class KotlinCompileCommon @Inject constructor(
         }
 
         sources { args ->
-            args.freeArgs += sources.asFileTree.map { it.absolutePath }
+            args.freeArgs += sources.asFileTree.map { it.normalize().absolutePath }
             args.commonSources = commonSourceSet.asFileTree.toPathsArray()
         }
     }

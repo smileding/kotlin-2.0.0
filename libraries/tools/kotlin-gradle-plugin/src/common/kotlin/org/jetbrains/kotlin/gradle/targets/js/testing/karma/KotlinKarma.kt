@@ -362,7 +362,7 @@ class KotlinKarma(
         if (!debug) {
             if (platformType == KotlinPlatformType.wasm) {
                 val wasmFile = file.parentFile.resolve("${file.nameWithoutExtension}.wasm")
-                val wasmFileString = wasmFile.normalize().absolutePath
+                val wasmFileString = wasmFile.normalize().normalize().absolutePath
                 config.files.add(
                     KarmaFile(
                         pattern = wasmFileString,
@@ -425,7 +425,7 @@ class KotlinKarma(
             ignoreOutOfRootNodes = true,
         )
 
-        config.basePath = npmProjectDir.getFile().absolutePath
+        config.basePath = npmProjectDir.getFile().normalize().absolutePath
 
         configurators.forEach {
             it(task)
@@ -467,7 +467,7 @@ class KotlinKarma(
 
         val nodeModules = listOf("karma/bin/karma")
 
-        val karmaConfigAbsolutePath = karmaConfJs.absolutePath
+        val karmaConfigAbsolutePath = karmaConfJs.normalize().absolutePath
         val args = if (debug) {
             nodeJsArgs + listOf(
                 npmProject.require("kotlin-web-helpers/dist/karma-debug-runner.js"),

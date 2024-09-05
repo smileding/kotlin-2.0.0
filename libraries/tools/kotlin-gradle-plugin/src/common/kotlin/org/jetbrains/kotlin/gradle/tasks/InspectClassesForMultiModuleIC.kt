@@ -48,7 +48,7 @@ internal abstract class InspectClassesForMultiModuleIC @Inject constructor(
         with(classesListFile.get().asFile) {
             parentFile.mkdirs()
             writeText(
-                classFiles.map { it.absolutePath }.sorted().joinToString(File.pathSeparator)
+                classFiles.map { it.normalize().absolutePath }.sorted().joinToString(File.pathSeparator)
             )
         }
     }

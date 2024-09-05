@@ -86,7 +86,7 @@ open class NativePerformanceReport : DefaultTask() {
         val upToDateTasks = allExecutedTasks.filter { it.state.upToDate }.map { it.name }
         if (upToDateTasks.isNotEmpty()) {
             if (outputFile.exists()) {
-                project.delete(outputFile.absolutePath)
+                project.delete(outputFile.normalize().absolutePath)
             }
             project.logger.warn(
                 "Next compile tasks which are needed for time measurement are upToDate" +

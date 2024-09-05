@@ -250,7 +250,7 @@ constructor(
         )
 
         primitive { args ->
-            args.outputName = outputFile.get().absolutePath
+            args.outputName = outputFile.get().normalize().absolutePath
             args.optimization = optimized
             args.debug = debuggable
             args.enableAssertions = debuggable

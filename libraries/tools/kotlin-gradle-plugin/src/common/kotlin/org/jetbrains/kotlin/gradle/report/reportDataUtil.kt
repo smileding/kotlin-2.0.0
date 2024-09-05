@@ -72,7 +72,7 @@ internal fun prepareData(
     )
     val buildAttributes = collectBuildAttributes(buildMetrics)
     val changes = if (buildOperationRecord is TaskRecord && buildOperationRecord.changedFiles is SourcesChanges.Known) {
-        buildOperationRecord.changedFiles.modifiedFiles.map { it.absolutePath } + buildOperationRecord.changedFiles.removedFiles.map { it.absolutePath }
+        buildOperationRecord.changedFiles.modifiedFiles.map { it.normalize().absolutePath } + buildOperationRecord.changedFiles.removedFiles.map { it.normalize().absolutePath }
     } else {
         emptyList<String>()
     }

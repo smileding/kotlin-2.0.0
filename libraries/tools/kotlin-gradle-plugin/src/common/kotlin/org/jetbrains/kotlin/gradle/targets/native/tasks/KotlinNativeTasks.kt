@@ -113,7 +113,7 @@ internal fun MutableList<String>.addArgIfNotNull(parameter: String, value: Strin
 
 internal fun MutableList<String>.addFileArgs(parameter: String, values: FileCollection) {
     values.files.forEach {
-        addArg(parameter, it.absolutePath)
+        addArg(parameter, it.normalize().absolutePath)
     }
 }
 
@@ -485,7 +485,7 @@ internal constructor(
             args.shortModuleName = shortModuleName
             args.multiPlatform = true
             args.noendorsedlibs = true
-            args.outputName = outputFile.get().absolutePath
+            args.outputName = outputFile.get().normalize().absolutePath
             args.optimization = optimized
             args.debug = debuggable
             args.enableAssertions = debuggable

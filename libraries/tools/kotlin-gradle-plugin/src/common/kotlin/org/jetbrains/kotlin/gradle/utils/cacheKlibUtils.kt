@@ -33,7 +33,7 @@ internal fun getCacheDirectory(
                 null
         }
         ?.let {
-            resolveSingleFileKlib(org.jetbrains.kotlin.konan.file.File(it.absolutePath))
+            resolveSingleFileKlib(org.jetbrains.kotlin.konan.file.File(it.normalize().absolutePath))
         }
         ?.uniqueName
 
@@ -59,7 +59,7 @@ private fun computeDependenciesHash(
 
         (listOf(dependency) + getAllDependencies(dependency))
             .flatMap { resolvedConfiguration.getArtifacts(it) }
-            .map { it.file.absolutePath }
+            .map { it.file.normalize().absolutePath }
             .distinct()
             .sortedBy { it }
             .joinTo(this, separator = "|")
@@ -122,4 +122,4 @@ internal class GradleLoggerAdapter(private val gradleLogger: Logger) : KLogger {
     override fun fatal(message: String): Nothing = kotlin.error(message) // WARNING: This would crash Gradle daemon!
 }
 
-private fun libraryFilter(artifact: ResolvedArtifactResult): Boolean = artifact.file.absolutePath.endsWith(".klib")
+private fun libraryFilter(artifact: ResolvedArtifactResult): Boolean = artifact.file.normalize().absolutePath.endsWith(".klib")

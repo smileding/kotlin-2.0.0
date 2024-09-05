@@ -145,7 +145,7 @@ class Executable constructor(
         set(value) {
             super.baseName = value
             runTaskProvider?.configure {
-                it.executable = outputFile.absolutePath
+                it.executable = outputFile.normalize().absolutePath
             }
         }
 

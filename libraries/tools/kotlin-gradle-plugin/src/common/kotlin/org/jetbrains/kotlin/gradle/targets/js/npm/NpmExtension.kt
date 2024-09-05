@@ -90,7 +90,7 @@ open class NpmExtension(
             val finalCommand = if (isWindows && customCommand == command) "$command.$windowsExtension" else customCommand
             return if (nodeJsEnvironmentValue.download)
                 nodeJsEnvironmentValue.nodeBinDir
-                    .resolve(finalCommand).absolutePath
+                    .resolve(finalCommand).normalize().absolutePath
             else
                 finalCommand
         }

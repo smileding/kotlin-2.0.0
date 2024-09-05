@@ -117,7 +117,7 @@ abstract class MetadataDependencyTransformationTask
         return transformationParameters.resolvedMetadataConfiguration.getArtifacts(dependency).map {
             TransformedMetadataLibraryRecord(
                 moduleId = dependency.id.serializableUniqueKey,
-                file = it.file.absolutePath,
+                file = it.file.normalize().absolutePath,
                 sourceSetName = null
             )
         }
@@ -130,7 +130,7 @@ abstract class MetadataDependencyTransformationTask
             libraryFiles.map { file ->
                 TransformedMetadataLibraryRecord(
                     moduleId = moduleId,
-                    file = file.absolutePath,
+                    file = file.normalize().absolutePath,
                     sourceSetName = sourceSetName
                 )
             }

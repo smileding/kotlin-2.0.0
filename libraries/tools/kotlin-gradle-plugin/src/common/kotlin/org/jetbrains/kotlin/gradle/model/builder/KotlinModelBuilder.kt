@@ -103,10 +103,10 @@ class KotlinModelBuilder(private val kotlinPluginVersion: String, private val an
             // Merge all sources and resource dirs from the different Source Sets that make up this variant.
             val sources = compilation.allKotlinSourceSets.flatMap {
                 it.kotlin.srcDirs
-            }.distinctBy { it.absolutePath }
+            }.distinctBy { it.normalize().absolutePath }
             val resources = compilation.allKotlinSourceSets.flatMap {
                 it.resources.srcDirs
-            }.distinctBy { it.absolutePath }
+            }.distinctBy { it.normalize().absolutePath }
             return SourceSetImpl(
                 sourceSetName.get(),
                 if (sourceSetName.get().contains("test", true)) SourceSet.SourceSetType.TEST else SourceSet.SourceSetType.PRODUCTION,

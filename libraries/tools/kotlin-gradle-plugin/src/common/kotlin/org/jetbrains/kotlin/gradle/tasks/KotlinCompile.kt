@@ -284,7 +284,7 @@ abstract class KotlinCompile @Inject constructor(
                 logger.info("Script file extensions: ${scriptExtensions.get().joinToString()}")
             }
 
-            args.freeArgs += (scriptSourcesFiles + javaSourcesFiles + sourcesFiles).map { it.absolutePath }
+            args.freeArgs += (scriptSourcesFiles + javaSourcesFiles + sourcesFiles).map { it.normalize().absolutePath }
         }
     }
 

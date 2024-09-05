@@ -37,7 +37,7 @@ open class BinaryenRootExtension(
     override fun finalizeConfiguration(): BinaryenEnv {
         val platform = platform.get()
         val requiredVersionName = "binaryen-version_$version"
-        val cleanableStore = CleanableStore[installationDir.absolutePath]
+        val cleanableStore = CleanableStore[installationDir.normalize().absolutePath]
         val targetPath = cleanableStore[requiredVersionName].use()
         val isWindows = platform.isWindows()
 
@@ -47,6 +47,7 @@ open class BinaryenRootExtension(
                 targetPath
                     .resolve("bin")
                     .resolve(finalCommand)
+                    .normalize()
                     .absolutePath
             else
                 finalCommand

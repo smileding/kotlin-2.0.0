@@ -135,14 +135,14 @@ open class NodeJsRootExtension(
         val architecture = platform.get().arch
 
         val nodeDirName = "node-v$version-$name-$architecture"
-        val cleanableStore = CleanableStore[installationDir.absolutePath]
+        val cleanableStore = CleanableStore[installationDir.normalize().absolutePath]
         val nodeDir = cleanableStore[nodeDirName].use()
         val isWindows = platform.get().isWindows()
         val nodeBinDir = if (isWindows) nodeDir else nodeDir.resolve("bin")
 
         fun getExecutable(command: String, customCommand: String, windowsExtension: String): String {
             val finalCommand = if (isWindows && customCommand == command) "$command.$windowsExtension" else customCommand
-            return if (download) File(nodeBinDir, finalCommand).absolutePath else finalCommand
+            return if (download) File(nodeBinDir, finalCommand).normalize().absolutePath else finalCommand
         }
 
         fun getIvyDependency(): String {

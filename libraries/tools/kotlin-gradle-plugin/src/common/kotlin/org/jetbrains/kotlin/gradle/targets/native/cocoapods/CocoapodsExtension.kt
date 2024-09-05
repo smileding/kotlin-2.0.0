@@ -318,7 +318,7 @@ abstract class CocoapodsExtension @Inject constructor(private val project: Proje
                 @get:IgnoreEmptyDirectories
                 val dir: File
             ) : PodLocation() {
-                override fun getPodSourcePath() = ":path => '${dir.absolutePath}'"
+                override fun getPodSourcePath() = ":path => '${dir.normalize().absolutePath}'"
             }
 
             data class Git(

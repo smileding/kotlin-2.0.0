@@ -29,7 +29,7 @@ private fun Project.createCinteropLibraryDependency(libraryFile: java.io.File): 
 
     val library = try {
         resolveSingleFileKlib(
-            libraryFile = File(libraryFile.absolutePath),
+            libraryFile = File(libraryFile.normalize().absolutePath),
             strategy = ToolingSingleFileKlibResolveStrategy
         )
     } catch (error: Throwable) {

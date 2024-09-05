@@ -156,7 +156,7 @@ private fun Project.createRunTask(binary: Executable) {
 
         exec.enabled = binary.konanTarget.isCurrentHost
 
-        exec.executable = binary.outputFile.absolutePath
+        exec.executable = binary.outputFile.normalize().absolutePath
         exec.workingDir = project.projectDir
 
         exec.onlyIf { binary.outputFile.exists() }

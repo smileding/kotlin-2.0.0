@@ -48,7 +48,7 @@ open class D8RootExtension(@Transient val rootProject: Project) : AbstractSettin
 
     override fun finalizeConfiguration(): D8Env {
         val requiredVersionName = "v8-${D8Platform.platform}-$edition-$version"
-        val cleanableStore = CleanableStore[installationDir.absolutePath]
+        val cleanableStore = CleanableStore[installationDir.normalize().absolutePath]
         val targetPath = cleanableStore[requiredVersionName].use()
         val isWindows = D8Platform.name == D8Platform.WIN
 
@@ -57,6 +57,7 @@ open class D8RootExtension(@Transient val rootProject: Project) : AbstractSettin
             return if (download)
                 targetPath
                     .resolve(finalCommand)
+                    .normalize()
                     .absolutePath
             else
                 finalCommand

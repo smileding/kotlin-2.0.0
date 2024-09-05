@@ -27,7 +27,7 @@ internal fun Project.resolveNativeDistributionLibraryForIde(
 ): IdeaKotlinResolvedBinaryDependency? {
     val resolvedLibrary = try {
         resolveSingleFileKlib(
-            libraryFile = org.jetbrains.kotlin.konan.file.File(library.absolutePath),
+            libraryFile = org.jetbrains.kotlin.konan.file.File(library.normalize().absolutePath),
             strategy = ToolingSingleFileKlibResolveStrategy
         )
     } catch (error: Throwable) {

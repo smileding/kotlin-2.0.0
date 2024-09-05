@@ -90,7 +90,7 @@ internal data class KotlinWebpackRunner(
         }
 
         args.add("--config")
-        args.add(configFile.absolutePath)
+        args.add(configFile.normalize().absolutePath)
         if (config.showProgress) {
             args.add("--progress")
         }

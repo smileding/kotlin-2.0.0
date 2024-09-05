@@ -63,7 +63,7 @@ abstract class K2MultiplatformStructure {
 internal val K2MultiplatformStructure.fragmentsCompilerArgs: Array<String>
     get() = fragments.get().map { it.fragmentName }.toSet().toTypedArray()
 
-private fun fragmentSourceCompilerArg(sourceFile: File, fragmentName: String) = "$fragmentName:${sourceFile.absolutePath}"
+private fun fragmentSourceCompilerArg(sourceFile: File, fragmentName: String) = "$fragmentName:${sourceFile.normalize().absolutePath}"
 
 internal fun K2MultiplatformStructure.fragmentSourcesCompilerArgs(
     allSources: Collection<File>,

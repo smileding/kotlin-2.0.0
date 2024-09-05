@@ -42,7 +42,7 @@ abstract class KonanPropertiesBuildService : BuildService<KonanPropertiesBuildSe
     private val logger = Logging.getLogger(this::class.java)
 
     private val properties: Properties by lazy {
-        Distribution(parameters.konanHome.get().asFile.absolutePath).properties
+        Distribution(parameters.konanHome.get().asFile.normalize().absolutePath).properties
     }
 
     private val cacheableTargets: List<KonanTarget> by lazy {

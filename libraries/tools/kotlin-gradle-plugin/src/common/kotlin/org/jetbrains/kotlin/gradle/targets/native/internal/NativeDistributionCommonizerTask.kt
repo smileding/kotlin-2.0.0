@@ -150,7 +150,7 @@ internal abstract class NativeDistributionCommonizerTask
 
     @TaskAction
     protected fun run() {
-        commonizedNativeDistributionLocationFile.get().asFile.writeText(rootOutputDirectoryProperty.get().asFile.absolutePath)
+        commonizedNativeDistributionLocationFile.get().asFile.writeText(rootOutputDirectoryProperty.get().asFile.normalize().absolutePath)
 
         val metricsReporter = metrics.get()
 

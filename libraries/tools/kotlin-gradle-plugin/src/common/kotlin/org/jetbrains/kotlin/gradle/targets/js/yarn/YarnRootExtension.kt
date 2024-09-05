@@ -105,7 +105,7 @@ open class YarnRootExtension(
             val finalCommand = if (isWindows && customCommand == command) "$command.$windowsExtension" else customCommand
             return if (download)
                 home
-                    .resolve("bin/yarn.js").absolutePath
+                    .resolve("bin/yarn.js").normalize().absolutePath
             else
                 finalCommand
         }

@@ -218,7 +218,7 @@ private fun Project.registerPackageGeneration(
 
         // Input
         task.kotlinRuntime.set(
-            file(Distribution(konanDistribution.root.absolutePath).kotlinRuntimeForSwiftHome)
+            file(Distribution(konanDistribution.root.normalize().absolutePath).kotlinRuntimeForSwiftHome)
         )
 
         task.swiftModulesFile.set(swiftExportTask.map { it.parameters.swiftModulesFile.get() })

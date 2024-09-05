@@ -66,7 +66,7 @@ abstract class KotlinNativeTest : KotlinTest() {
 
     @get:Input
     var workingDir: String
-        get() = processOptions.workingDir.absolutePath
+        get() = processOptions.workingDir.normalize().absolutePath
         set(value) {
             processOptions.workingDir = File(value)
         }
@@ -203,7 +203,7 @@ abstract class KotlinNativeHostTest : KotlinNativeTest() {
     @get:Internal
     override val testCommand: TestCommand = object : TestCommand() {
         override val executable: String
-            get() = this@KotlinNativeHostTest.executable.absolutePath
+            get() = this@KotlinNativeHostTest.executable.normalize().absolutePath
 
         override fun cliArgs(
             testLogger: String?,

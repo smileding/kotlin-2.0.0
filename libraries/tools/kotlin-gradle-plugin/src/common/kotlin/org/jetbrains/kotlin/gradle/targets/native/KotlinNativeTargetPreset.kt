@@ -37,7 +37,7 @@ abstract class AbstractKotlinNativeTargetPreset<T : KotlinNativeTarget>(
         if (!extensions.extraProperties.has(KOTLIN_NATIVE_HOME_PRIVATE_PROPERTY))
             extensions.extraProperties.set(
                 KOTLIN_NATIVE_HOME_PRIVATE_PROPERTY,
-                nativeProperties.actualNativeHomeDirectory.get().absolutePath
+                nativeProperties.actualNativeHomeDirectory.get().normalize().absolutePath
             )
     }
 

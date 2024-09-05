@@ -61,7 +61,7 @@ internal class KotlinWasmNode(kotlinJsTest: KotlinJsTest) : KotlinJsTestFramewor
         val args = mutableListOf<String>()
         with(args) {
             addAll(nodeJsArgs)
-            add(testRunnerFile.absolutePath)
+            add(testRunnerFile.normalize().absolutePath)
             addAll(cliArgs.toList())
         }
         return TCServiceMessagesTestExecutionSpec(

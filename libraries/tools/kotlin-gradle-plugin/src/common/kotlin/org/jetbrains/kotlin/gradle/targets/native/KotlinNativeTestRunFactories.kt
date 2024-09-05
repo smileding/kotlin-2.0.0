@@ -58,7 +58,7 @@ private inline fun <reified T : KotlinNativeTest> KotlinNativeTarget.registerNat
         testTask.description = "Executes Kotlin/Native unit tests for target ${targetName}."
         testTask.targetName = this@registerNativeTestTask.targetName
         testTask.enabled = konanTarget.isCurrentHost
-        testTask.workingDir = project.projectDir.absolutePath
+        testTask.workingDir = project.projectDir.normalize().absolutePath
         testTask.configureConventions()
         configure(testTask)
     }

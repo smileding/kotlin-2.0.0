@@ -5,14 +5,20 @@
 
 package org.jetbrains.kotlin.gradle
 
-import org.gradle.api.logging.configuration.WarningMode
 import org.gradle.util.GradleVersion
-import org.jetbrains.kotlin.gradle.testbase.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.KmpIsolatedProjectsSupport
+import org.jetbrains.kotlin.gradle.testbase.DependencyManagement
+import org.jetbrains.kotlin.gradle.testbase.GradleTest
+import org.jetbrains.kotlin.gradle.testbase.JvmGradlePluginTests
+import org.jetbrains.kotlin.gradle.testbase.KGPBaseTest
+import org.jetbrains.kotlin.gradle.testbase.addDefaultSettingsToSettingsGradle
+import org.jetbrains.kotlin.gradle.testbase.assertFileInProjectContains
+import org.jetbrains.kotlin.gradle.testbase.assertTasksExecuted
+import org.jetbrains.kotlin.gradle.testbase.build
+import org.jetbrains.kotlin.gradle.testbase.defaultLocalRepo
+import org.jetbrains.kotlin.gradle.testbase.project
+import org.jetbrains.kotlin.test.TestMetadata
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.condition.DisabledOnOs
-import org.junit.jupiter.api.condition.OS
-import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.appendText
 import kotlin.io.path.readLines

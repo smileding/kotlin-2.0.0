@@ -24,6 +24,12 @@ public class CompilerFacilityTestForComposeCompilerPluginGenerated extends Abstr
   }
 
   @Test
+  @TestMetadata("classContainingInlineFunction.kt")
+  public void testClassContainingInlineFunction() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/classContainingInlineFunction.kt");
+  }
+
+  @Test
   @TestMetadata("composeNavigationWithDataClass.kt")
   public void testComposeNavigationWithDataClass() {
     runTest("plugins/compose/compiler-hosted/testData/codegen/composeNavigationWithDataClass.kt");
@@ -45,6 +51,12 @@ public class CompilerFacilityTestForComposeCompilerPluginGenerated extends Abstr
   @TestMetadata("interface.kt")
   public void testInterface() {
     runTest("plugins/compose/compiler-hosted/testData/codegen/interface.kt");
+  }
+
+  @Test
+  @TestMetadata("interfaceDelegation.kt")
+  public void testInterfaceDelegation() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/interfaceDelegation.kt");
   }
 
   @Test
@@ -75,6 +87,36 @@ public class CompilerFacilityTestForComposeCompilerPluginGenerated extends Abstr
   @TestMetadata("propertyWithDelegateBackingField.kt")
   public void testPropertyWithDelegateBackingField() {
     runTest("plugins/compose/compiler-hosted/testData/codegen/propertyWithDelegateBackingField.kt");
+  }
+
+  @Test
+  @TestMetadata("sourceLibModuleInlineClass.kt")
+  public void testSourceLibModuleInlineClass() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/sourceLibModuleInlineClass.kt");
+  }
+
+  @Test
+  @TestMetadata("sourceLibModuleInlineFunc.kt")
+  public void testSourceLibModuleInlineFunc() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/sourceLibModuleInlineFunc.kt");
+  }
+
+  @Test
+  @TestMetadata("sourceLibModuleInlineFunc2.kt")
+  public void testSourceLibModuleInlineFunc2() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/sourceLibModuleInlineFunc2.kt");
+  }
+
+  @Test
+  @TestMetadata("sourceLibModuleInlineFuncRef.kt")
+  public void testSourceLibModuleInlineFuncRef() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/sourceLibModuleInlineFuncRef.kt");
+  }
+
+  @Test
+  @TestMetadata("sourceLibModuleInlineFuncRef2.kt")
+  public void testSourceLibModuleInlineFuncRef2() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/sourceLibModuleInlineFuncRef2.kt");
   }
 
   @Test

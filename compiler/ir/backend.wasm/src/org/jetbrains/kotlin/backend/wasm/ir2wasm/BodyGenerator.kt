@@ -825,45 +825,45 @@ class BodyGenerator(
                     body.buildSetLocal(functionContext.referenceLocal(SyntheticLocalType.IS_INTERFACE_PARAMETER), location)
                     generateInlineCache(WasmRefNullType(WasmHeapType.Type(context.referenceFunctionType(function.symbol))), location) {
                         val isSamInterface = klass.declarations.singleOrNull { it !is IrSimpleFunction || it.overriddenSymbols.isEmpty() } != null
-                        if (isSamInterface) {
-                            body.buildBlock("SAMFastTrack", WasmRefNullType(WasmHeapType.Type(context.referenceFunctionType(function.symbol)))) { samFastTrack ->
-                                body.buildBlock("SAMFunction", WasmRefNullType(WasmHeapType.Simple.Any)) { samFunction ->
-                                    body.buildGetLocal(functionContext.referenceLocal(SyntheticLocalType.IS_INTERFACE_PARAMETER), location)
-                                    body.buildStructGet(context.referenceGcType(irBuiltIns.anyClass), WasmSymbol(1), location)
-                                    body.buildConstI32(0, location)
-                                    body.buildInstr(WasmOp.ARRAY_GET, location, WasmImmediate.TypeIdx(context.wasmAnyArrayType))
-                                    body.buildBrOnCastInstr(
-                                        WasmOp.BR_ON_CAST_FAIL,
-                                        samFunction,
-                                        fromIsNullable = true,
-                                        toIsNullable = false,
-                                        from = WasmHeapType.Simple.Any,
-                                        to = WasmHeapType.Type(context.specialSlotITableType),
-                                        location,
-                                    )
-                                    body.buildStructGet(
-                                        context.specialSlotITableType,
-                                        WasmSymbol(backendContext.specialSlotITableTypes.size),
-                                        location
-                                    )
-                                    body.buildBrOnCastInstr(
-                                        WasmOp.BR_ON_CAST,
-                                        samFastTrack,
-                                        fromIsNullable = true,
-                                        toIsNullable = false,
-                                        from = WasmHeapType.Simple.Func,
-                                        to = WasmHeapType.Type(context.referenceFunctionType(function.symbol)),
-                                        location,
-                                    )
-                                    body.buildDrop(location)
-                                    body.buildRefNull(WasmHeapType.Simple.Any, location)
-                                }
-                                body.buildDrop(location)
-                                generateFallback(klass.symbol, function, location)
-                            }
-                        } else {
+//                        if (isSamInterface) {
+//                            body.buildBlock("SAMFastTrack", WasmRefNullType(WasmHeapType.Type(context.referenceFunctionType(function.symbol)))) { samFastTrack ->
+//                                body.buildBlock("SAMFunction", WasmRefNullType(WasmHeapType.Simple.Any)) { samFunction ->
+//                                    body.buildGetLocal(functionContext.referenceLocal(SyntheticLocalType.IS_INTERFACE_PARAMETER), location)
+//                                    body.buildStructGet(context.referenceGcType(irBuiltIns.anyClass), WasmSymbol(1), location)
+//                                    body.buildConstI32(0, location)
+//                                    body.buildInstr(WasmOp.ARRAY_GET, location, WasmImmediate.TypeIdx(context.wasmAnyArrayType))
+//                                    body.buildBrOnCastInstr(
+//                                        WasmOp.BR_ON_CAST_FAIL,
+//                                        samFunction,
+//                                        fromIsNullable = true,
+//                                        toIsNullable = false,
+//                                        from = WasmHeapType.Simple.Any,
+//                                        to = WasmHeapType.Type(context.specialSlotITableType),
+//                                        location,
+//                                    )
+//                                    body.buildStructGet(
+//                                        context.specialSlotITableType,
+//                                        WasmSymbol(backendContext.specialSlotITableTypes.size),
+//                                        location
+//                                    )
+//                                    body.buildBrOnCastInstr(
+//                                        WasmOp.BR_ON_CAST,
+//                                        samFastTrack,
+//                                        fromIsNullable = true,
+//                                        toIsNullable = false,
+//                                        from = WasmHeapType.Simple.Func,
+//                                        to = WasmHeapType.Type(context.referenceFunctionType(function.symbol)),
+//                                        location,
+//                                    )
+//                                    body.buildDrop(location)
+//                                    body.buildRefNull(WasmHeapType.Simple.Any, location)
+//                                }
+//                                body.buildDrop(location)
+//                                generateFallback(klass.symbol, function, location)
+//                            }
+//                        } else {
                             generateFallback(klass.symbol, function, location)
-                        }
+//                        }
                     }
                 }
 

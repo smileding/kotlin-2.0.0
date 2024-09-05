@@ -259,18 +259,20 @@ class DeclarationGenerator(
         )
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun getSamMethod(supportedIFaces: Set<IrClass>): Pair<IrClass, IrFunction>? {
-        var result: Pair<IrClass, IrFunction>? = null
-        for (iFace in supportedIFaces) {
-            val iFaceSamMethod = iFace.declarations.singleOrNull { declaration ->
-                declaration is IrSimpleFunction && declaration.overriddenSymbols.isEmpty()
-            }
-            if (iFaceSamMethod != null) {
-                if (result != null) return null
-                result = iFace to iFaceSamMethod as IrFunction
-            }
-        }
-        return result
+        return null
+//        var result: Pair<IrClass, IrFunction>? = null
+//        for (iFace in supportedIFaces) {
+//            val iFaceSamMethod = iFace.declarations.singleOrNull { declaration ->
+//                declaration is IrSimpleFunction && declaration.overriddenSymbols.isEmpty()
+//            }
+//            if (iFaceSamMethod != null) {
+//                if (result != null) return null
+//                result = iFace to iFaceSamMethod as IrFunction
+//            }
+//        }
+//        return result
     }
 
     private fun createClassITable(metadata: ClassMetadata) {

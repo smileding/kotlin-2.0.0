@@ -73,9 +73,7 @@ enabledTargets(platformManager).forEach { target ->
                     "-Xdisable-experimental-annotation",
                     "-no-default-libs",
                     "-no-endorsed-libs",
-            )
-            this.compilerOpts.addAll(
-                    "-fmodules-cache-path=${project.layout.buildDirectory.dir("clangModulesCache").get().asFile}"
+                    "-compiler-option", "-fmodules-cache-path=${project.layout.buildDirectory.dir("clangModulesCache").get().asFile}"
             )
         }
 

@@ -19,6 +19,12 @@ internal val Directory.konanClasspath: FileCollection
     }
 
 /**
+ * Get K/N stdlib when `this` is a compiler distribution directory.
+ */
+internal val Directory.konanStdlib: Directory
+    get() = dir("klib/common/stdlib")
+
+/**
  * Prepare `this` to be an output for the task:
  * * delete if exists
  * * make sure all parent directories exist

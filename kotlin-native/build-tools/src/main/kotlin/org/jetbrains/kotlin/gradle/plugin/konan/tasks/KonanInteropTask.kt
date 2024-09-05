@@ -8,7 +8,9 @@ package org.jetbrains.kotlin.gradle.plugin.konan.tasks
 import kotlinBuildProperties
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logging
@@ -76,6 +78,7 @@ private abstract class KonanInteropOutOfProcessAction @Inject constructor(
 /**
  * A task executing cinterop tool with the given args and compiling the stubs produced by this tool.
  */
+@CacheableTask
 abstract class KonanInteropTask @Inject constructor(
         private val workerExecutor: WorkerExecutor,
         private val layout: ProjectLayout,
@@ -94,24 +97,29 @@ abstract class KonanInteropTask @Inject constructor(
     abstract val extraOpts: ListProperty<String>
 
     @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val defFile: RegularFileProperty
-
-    @get:Input
-    abstract val compilerOpts: ListProperty<String>
 
     /**
      * Kotlin/Native distribution to use.
      */
-    @get:Internal // proper dependencies will be specified below
+    @get:Internal // proper dependencies will be specified below: `compilerClasspath`, `stdlib`
     abstract val compilerDistribution: DirectoryProperty
 
-    @get:Input
-    protected val compilerDistributionPath: Provider<String>
-        get() = compilerDistribution.asFile.map { it.absolutePath }
+    @get:Classpath // Depends on the compiler jar.
+    @Suppress("unused")
+    protected val compilerClasspath: Provider<FileCollection>
+        get() = compilerDistribution.map { it.konanClasspath }
+
+    @get:InputDirectory // Depends on the stdlib.
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    protected val stdlib: Provider<Directory>
+        get() = compilerDistribution.map { it.konanStdlib }
 
     @get:ServiceReference
     protected val isolatedClassLoadersService = usesIsolatedClassLoadersService()
 
+    // This does not affect the result, just how to build.
     private val allowRunningCInteropInProcess = project.kotlinBuildProperties.getBoolean("kotlin.native.allowRunningCinteropInProcess")
 
     @TaskAction
@@ -126,11 +134,6 @@ abstract class KonanInteropTask @Inject constructor(
             add(target.get())
             add("-def")
             add(defFile.asFile.get().canonicalPath)
-
-            compilerOpts.get().forEach {
-                add("-compiler-option")
-                add(it)
-            }
 
             klibFiles.forEach {
                 add("-library")

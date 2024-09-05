@@ -212,10 +212,10 @@ class PostponedArgumentsAnalyzer(
                     //    put("a", 1) // While `put` returns V, we should not enforce the latter to be a subtype of Unit
                     // }
                     // See KT-63602 for details.
-                    builder.addSubtypeConstraintIfCompatible(
-                        expression.resolvedType, returnTypeRef.coneType,
-                        ConeLambdaArgumentConstraintPosition(lambda.anonymousFunction)
-                    )
+//                    builder.addSubtypeConstraintIfCompatible(
+//                        expression.resolvedType, returnTypeRef.coneType,
+//                        ConeLambdaArgumentConstraintPosition(lambda.anonymousFunction)
+//                    )
                 }
                 continue
             }

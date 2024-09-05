@@ -187,8 +187,8 @@ class IdeBinaryDependencyResolver @JvmOverloads constructor(
                 is OpaqueComponentArtifactIdentifier -> {
                     /* Files within the build directory still require a custom resolver */
                     if (
-                        artifact.file.absoluteFile.startsWith(
-                            sourceSet.project.layout.buildDirectory.get().asFile.absoluteFile
+                        artifact.file.normalize().absoluteFile.startsWith(
+                            sourceSet.project.layout.buildDirectory.get().asFile.normalize().absoluteFile
                         )
                     ) {
                         return@mapNotNull null

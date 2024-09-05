@@ -52,7 +52,7 @@ internal class XcodeEnvironment(private val project: Project) {
         get() {
             val xcodeTargetBuildDir = readEnvVariable("TARGET_BUILD_DIR") ?: return null
             val xcodeFrameworksFolderPath = readEnvVariable("FRAMEWORKS_FOLDER_PATH") ?: return null
-            return File(xcodeTargetBuildDir, xcodeFrameworksFolderPath).absoluteFile
+            return File(xcodeTargetBuildDir, xcodeFrameworksFolderPath).normalize().absoluteFile
         }
 
     val sign: String?

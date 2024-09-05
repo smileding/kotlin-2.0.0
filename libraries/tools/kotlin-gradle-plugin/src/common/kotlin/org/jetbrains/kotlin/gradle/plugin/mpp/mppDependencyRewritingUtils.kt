@@ -9,15 +9,20 @@ import groovy.util.Node
 import groovy.util.NodeList
 import org.gradle.api.Project
 import org.gradle.api.XmlProvider
-import org.gradle.api.artifacts.*
+import org.gradle.api.artifacts.ModuleIdentifier
+import org.gradle.api.artifacts.ModuleVersionIdentifier
+import org.gradle.api.artifacts.component.ComponentSelector
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentSelector
+import org.gradle.api.artifacts.component.ProjectComponentSelector
+import org.gradle.api.artifacts.result.ResolvedVariantResult
 import org.gradle.api.internal.component.SoftwareComponentInternal
 import org.gradle.api.internal.component.UsageContext
 import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
 import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
 import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactIdAttribute
 import org.jetbrains.kotlin.gradle.internal.attributes.withArtifactIdAttribute
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetComponent
@@ -119,7 +124,8 @@ internal class PomDependenciesRewriter(
                 dependencyNode.setChildNodeByName("artifactId", mapDependencyTo.name)
                 dependencyNode.setChildNodeByName("version", mapDependencyTo.version)
             } else {
-                dependenciesNode.remove(dependencyNode)
+                // TODO(Dmitrii Krasnov): добваить ворнинг и оставить как есть
+//                dependenciesNode.remove(dependencyNode)
             }
         }
     }
@@ -141,33 +147,53 @@ private fun associateDependenciesWithActualModuleDependencies(
     return LazyResolvedConfiguration(targetDependenciesConfiguration)
         .allResolvedDependencies
         .mapNotNull { resolvedDependency ->
-            val requestedDependency = resolvedDependency.requested as? ModuleComponentSelector ?: return@mapNotNull null
             val resolvedVariant = resolvedDependency.resolvedVariant.lastExternalVariantOrSelf()
-            // with this check we separate project-to-project dependencies from the external depencencies
+            val requestedDependency = resolvedDependency.requested
+            createAssociationBetweenRequestedAndResolvedDependency(requestedDependency, resolvedVariant)
+        }.associate { it }
+}
+
+private fun createAssociationBetweenRequestedAndResolvedDependency(
+    requestedDependency: ComponentSelector,
+    resolvedVariant: ResolvedVariantResult,
+): Pair<ModuleCoordinates, ModuleCoordinates>? {
+    return when (requestedDependency) {
+        is ProjectComponentSelector -> {
+            ModuleCoordinates(
+                resolvedVariant.attributes.getAttribute(artifactGroupAttribute),
+                resolvedVariant.attributes.getAttribute(rootArtifactIdAttribute) ?: "undefined",
+                resolvedVariant.attributes.getAttribute(artifactVersionAttribute)
+            ) to ModuleCoordinates(
+                resolvedVariant.attributes.getAttribute(artifactGroupAttribute),
+                resolvedVariant.attributes.getAttribute(artifactIdAttribute) ?: "undefined",
+                resolvedVariant.attributes.getAttribute(artifactVersionAttribute)
+            )
+        }
+        is ModuleComponentSelector -> {
+            val requestedCoordinates = ModuleCoordinates(
+                requestedDependency.group,
+                requestedDependency.module,
+                requestedDependency.version
+            )
+            // with this check we separate project-to-project dependencies from the external dependencies
             if (resolvedVariant.attributes.contains(withArtifactIdAttribute)) {
-                if (resolvedVariant.attributes.getAttribute(withArtifactIdAttribute) != true) return@mapNotNull null
-                ModuleCoordinates(
-                    requestedDependency.group,
-                    requestedDependency.module,
-                    requestedDependency.version
-                ) to ModuleCoordinates(
+                if (resolvedVariant.attributes.getAttribute(withArtifactIdAttribute) != true) return null
+                requestedCoordinates to ModuleCoordinates(
                     resolvedVariant.attributes.getAttribute(artifactGroupAttribute),
                     resolvedVariant.attributes.getAttribute(artifactIdAttribute) ?: "undefined",
                     resolvedVariant.attributes.getAttribute(artifactVersionAttribute)
                 )
             } else {
-                val resolvedDependencyVariant = resolvedVariant.owner as? ModuleComponentIdentifier ?: return@mapNotNull null
-                ModuleCoordinates(
-                    requestedDependency.group,
-                    requestedDependency.module,
-                    requestedDependency.version
-                ) to ModuleCoordinates(
+                val resolvedDependencyVariant = resolvedVariant.owner as? ModuleComponentIdentifier ?: return null
+                requestedCoordinates to ModuleCoordinates(
                     resolvedDependencyVariant.group,
                     resolvedDependencyVariant.module,
                     resolvedDependencyVariant.version
                 )
             }
-        }.associate { it }
+        }
+        else -> return null
+    }
 }
 
 private fun KotlinTargetComponent.findUsageContext(configurationName: String): UsageContext? {

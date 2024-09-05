@@ -114,10 +114,17 @@ class PublishingIT : KGPBaseTest() {
     }
 
     @DisplayName("KT-69974: pom rewriting with substitutions and included builds")
+    @TestMetadata("pom-rewriter")
     @GradleTest
     fun testPomRewriter(gradleVersion: GradleVersion) {
         val localRepo = defaultLocalRepo(gradleVersion)
-        project("pom-rewriter", gradleVersion, localRepoDir = localRepo) {
+        project(
+            "pom-rewriter",
+            gradleVersion,
+            localRepoDir = localRepo,
+            buildOptions = defaultBuildOptions.copy(kmpIsolatedProjectsSupport = KmpIsolatedProjectsSupport.ENABLE),
+            enableGradleDebug = true
+        ) {
 
             projectPath.resolve("included").addDefaultSettingsToSettingsGradle(
                 gradleVersion,

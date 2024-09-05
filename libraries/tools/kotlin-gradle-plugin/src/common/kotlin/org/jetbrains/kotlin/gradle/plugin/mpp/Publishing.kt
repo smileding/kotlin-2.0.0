@@ -24,19 +24,30 @@ import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
 import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
 import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
 import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.withArtifactIdAttribute
-import org.jetbrains.kotlin.gradle.plugin.*
+import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactIdAttribute
+import org.jetbrains.kotlin.gradle.plugin.KotlinPluginLifecycle
+import org.jetbrains.kotlin.gradle.plugin.KotlinProjectSetupCoroutine
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
+import org.jetbrains.kotlin.gradle.plugin.attributeValueByName
+import org.jetbrains.kotlin.gradle.plugin.launchInStage
+import org.jetbrains.kotlin.gradle.plugin.setUsesPlatformOf
 import org.jetbrains.kotlin.gradle.plugin.sources.KotlinDependencyScope
 import org.jetbrains.kotlin.gradle.plugin.sources.sourceSetDependencyConfigurationByScope
+import org.jetbrains.kotlin.gradle.plugin.usageByName
+import org.jetbrains.kotlin.gradle.plugin.usesPlatformOf
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrTarget
 import org.jetbrains.kotlin.gradle.targets.metadata.isKotlinGranularMetadataEnabled
 import org.jetbrains.kotlin.gradle.tooling.buildKotlinToolingMetadataTask
-import org.jetbrains.kotlin.gradle.utils.*
 import org.jetbrains.kotlin.gradle.utils.CompletableFuture
 import org.jetbrains.kotlin.gradle.utils.Future
+import org.jetbrains.kotlin.gradle.utils.isPluginApplied
+import org.jetbrains.kotlin.gradle.utils.maybeCreateConsumable
+import org.jetbrains.kotlin.gradle.utils.named
 import org.jetbrains.kotlin.gradle.utils.projectStoredProperty
+import org.jetbrains.kotlin.gradle.utils.setAttribute
 import org.jetbrains.kotlin.gradle.utils.whenEvaluated
 
 private val Project.kotlinMultiplatformRootPublicationImpl: CompletableFuture<MavenPublication?>
@@ -100,6 +111,7 @@ private fun createTargetPublications(project: Project, publishing: PublishingExt
 
 private fun InternalKotlinTarget.createMavenPublications(publications: PublicationContainer) {
     val target = this
+    val rootPublication = publications.getByName("kotlinMultiplatform") as MavenPublication
     kotlinComponents
         .filter { kotlinComponent -> kotlinComponent.publishableOnCurrentHost }
         .forEach { kotlinComponent ->
@@ -118,7 +130,7 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
                 val shouldRewritePomDependencies =
                     project.provider { PropertiesProvider(project).keepMppDependenciesIntactInPoms != true }
 
-                addGavVariantToConfigurations(target, publication)
+                addGavVariantToConfigurations(target, publication, rootPublication)
                 rewritePom(
                     pom,
                     pomRewriter,
@@ -135,18 +147,27 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
 private fun InternalKotlinTarget.addGavVariantToConfigurations(
     target: InternalKotlinTarget,
     publication: MavenPublication,
+    rootPublication: MavenPublication,
 ) {
-    project.configurations.maybeCreateConsumable(target.apiElementsConfigurationName).addGavSecondaryVariant(project, publication)
-    project.configurations.maybeCreateConsumable(target.runtimeElementsConfigurationName).addGavSecondaryVariant(project, publication)
+    project.configurations.maybeCreateConsumable(target.apiElementsConfigurationName)
+        .addGavSecondaryVariant(project, publication, rootPublication)
+    project.configurations.maybeCreateConsumable(target.runtimeElementsConfigurationName)
+        .addGavSecondaryVariant(project, publication, rootPublication)
 }
 
-private fun Configuration.addGavSecondaryVariant(project: Project, publication: MavenPublication) {
-    outgoing.variants.create("gavSecondaryVariant") {
-        attributes.setAttribute(withArtifactIdAttribute, true)
-        attributes.attributeProvider(artifactGroupAttribute, project.provider { publication.groupId })
-        attributes.attributeProvider(artifactIdAttribute, project.provider { publication.artifactId })
-        attributes.attributeProvider(artifactVersionAttribute, project.provider { publication.version })
-    }
+private fun Configuration.addGavSecondaryVariant(project: Project, publication: MavenPublication, rootPublication: MavenPublication) {
+//    val originalArtifacts = this.artifacts
+//    outgoing.variants.create("gavSecondaryVariant") {
+//        attributes.setAttribute(withArtifactIdAttribute, true)
+    attributes.attributeProvider(artifactGroupAttribute, project.provider { publication.groupId })
+    attributes.attributeProvider(artifactIdAttribute, project.provider { publication.artifactId })
+    attributes.attributeProvider(artifactVersionAttribute, project.provider { publication.version })
+
+    attributes.attributeProvider(rootArtifactIdAttribute, project.provider { rootPublication.artifactId })
+//        originalArtifacts.forEach { publishArtifact ->
+//            it.artifact(publishArtifact)
+//        }
+//    }
 }
 
 private fun rewritePom(

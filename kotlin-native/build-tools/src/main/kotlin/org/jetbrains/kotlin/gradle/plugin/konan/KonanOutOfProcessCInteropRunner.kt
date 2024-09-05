@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.gradle.plugin.konan
 
+import org.gradle.api.file.Directory
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logger
 import org.gradle.process.ExecOperations
@@ -12,58 +13,67 @@ import org.jetbrains.kotlin.konan.properties.resolvablePropertyString
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.util.DependencyDirectories
-import java.io.File
 import java.util.Properties
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.plus
 
-internal class KonanOutOfProcessCInteropRunner(
-        private val execOperations: ExecOperations,
-        private val classpath: Set<File>,
-        private val konanProperties: File,
-        private val logger: Logger,
-        private val konanHome: String,
+private fun String.escapeQuotes() = replace("\"", "\\\"")
+
+private fun Sequence<Pair<String, String>>.escapeQuotesForWindows() =
+        if (HostManager.hostIsMingw) map { (key, value) -> key.escapeQuotes() to value.escapeQuotes() } else this
+
+private fun Properties.snapshot(): Properties = clone() as Properties
+
+internal fun ExecOperations.runCInteropOutOfProcess(
+        logger: Logger,
+        compilerDistribution: Directory,
+        args: List<String>,
 ) {
-    fun run(args: List<String>) {
-        val mainClass = "org.jetbrains.kotlin.cli.utilities.MainKt"
-        val jvmArgs = buildList {
-            add("-ea")
-            add("-Xmx3G")
+    val classpath = compilerDistribution.konanClasspath.files
+    val konanProperties = compilerDistribution.file("konan/konan.properties").asFile
+    val konanHome = compilerDistribution.asFile.absolutePath
+    val mainClass = "org.jetbrains.kotlin.cli.utilities.MainKt"
+    val jvmArgs = buildList {
+        add("-ea")
+        add("-Xmx3G")
 
-            // Disable C2 compiler for HotSpot VM to improve compilation speed.
-            System.getProperty("java.vm.name")?.let { vmName ->
-                if (vmName.contains("HotSpot", true)) add("-XX:TieredStopAtLevel=1")
+        // Disable C2 compiler for HotSpot VM to improve compilation speed.
+        System.getProperty("java.vm.name")?.let { vmName ->
+            if (vmName.contains("HotSpot", true)) add("-XX:TieredStopAtLevel=1")
+        }
+    }
+    val ignoredSystemProperties = setOf(
+            "java.endorsed.dirs",       // Fix for KT-25887
+            "user.dir",                 // Don't propagate the working dir of the current Gradle process
+            "java.system.class.loader",  // Don't use custom class loaders
+            "runFromDaemonPropertyName"
+    )
+    val systemProperties = System.getProperties()
+            /* Capture 'System.getProperties()' current state to avoid potential 'ConcurrentModificationException' */
+            .snapshot()
+            .asSequence()
+            .map { (k, v) -> k.toString() to v.toString() }
+            .filter { (k, _) -> k !in ignoredSystemProperties }
+            .escapeQuotesForWindows()
+            .toMap() + mapOf("konan.home" to konanHome)
+    val environment = buildMap {
+        this["LIBCLANG_DISABLE_CRASH_RECOVERY"] = "1"
+        if (HostManager.host == KonanTarget.MINGW_X64) {
+            Properties().apply {
+                konanProperties.inputStream().use(::load)
+            }.resolvablePropertyString("llvmHome.mingw_x64")?.let { toolchainDir ->
+                val llvmExecutablesPath = DependencyDirectories.defaultDependenciesRoot
+                        .resolve("$toolchainDir/bin")
+                        .absolutePath
+                this["PATH"] = "$llvmExecutablesPath;${System.getenv("PATH")}"
             }
         }
-        val ignoredSystemProperties = setOf(
-                "java.endorsed.dirs",       // Fix for KT-25887
-                "user.dir",                 // Don't propagate the working dir of the current Gradle process
-                "java.system.class.loader",  // Don't use custom class loaders
-                "runFromDaemonPropertyName"
-        )
-        val systemProperties = System.getProperties()
-                /* Capture 'System.getProperties()' current state to avoid potential 'ConcurrentModificationException' */
-                .snapshot()
-                .asSequence()
-                .map { (k, v) -> k.toString() to v.toString() }
-                .filter { (k, _) -> k !in ignoredSystemProperties }
-                .escapeQuotesForWindows()
-                .toMap() + mapOf("konan.home" to konanHome)
-        val environment = buildMap {
-            this["LIBCLANG_DISABLE_CRASH_RECOVERY"] = "1"
-            if (HostManager.host == KonanTarget.MINGW_X64) {
-                Properties().apply {
-                    konanProperties.inputStream().use(::load)
-                }.resolvablePropertyString("llvmHome.mingw_x64")?.let { toolchainDir ->
-                    val llvmExecutablesPath = DependencyDirectories.defaultDependenciesRoot
-                            .resolve("$toolchainDir/bin")
-                            .absolutePath
-                    this["PATH"] = "$llvmExecutablesPath;${System.getenv("PATH")}"
-                }
-            }
-        }
+    }
 
-        logger.log(
-                LogLevel.INFO,
-                """|Run "cinterop" tool in a separate JVM process
+    logger.log(
+            LogLevel.INFO,
+            """|Run "cinterop" tool in a separate JVM process
                    |Main class = $mainClass
                    |Arguments = ${args.toPrettyString()}
                    |Classpath = ${classpath.map { it.absolutePath }.toPrettyString()}
@@ -71,24 +81,14 @@ internal class KonanOutOfProcessCInteropRunner(
                    |Java system properties = ${systemProperties.toPrettyString()}
                    |Custom ENV variables = ${environment.toPrettyString()}
                 """.trimMargin()
-        )
+    )
 
-        execOperations.javaexec {
-            this.mainClass.set(mainClass)
-            this.classpath(this@KonanOutOfProcessCInteropRunner.classpath)
-            this.jvmArgs(jvmArgs)
-            this.systemProperties(systemProperties)
-            this.environment(environment)
-            this.args(listOf("cinterop") + args)
-        }
-    }
-
-    companion object {
-        private fun String.escapeQuotes() = replace("\"", "\\\"")
-
-        private fun Sequence<Pair<String, String>>.escapeQuotesForWindows() =
-                if (HostManager.hostIsMingw) map { (key, value) -> key.escapeQuotes() to value.escapeQuotes() } else this
-
-        private fun Properties.snapshot(): Properties = clone() as Properties
-    }
+    javaexec {
+        this.mainClass.set(mainClass)
+        this.classpath(classpath)
+        this.jvmArgs(jvmArgs)
+        this.systemProperties(systemProperties)
+        this.environment(environment)
+        this.args(listOf("cinterop") + args)
+    }.assertNormalExitValue()
 }

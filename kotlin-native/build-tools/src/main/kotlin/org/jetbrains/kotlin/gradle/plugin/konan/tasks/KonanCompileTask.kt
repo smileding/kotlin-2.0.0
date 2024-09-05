@@ -15,9 +15,9 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.plugin.konan.KonanInProcessCliRunner
 import org.jetbrains.kotlin.gradle.plugin.konan.konanClasspath
 import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
+import org.jetbrains.kotlin.gradle.plugin.konan.runKonanTool
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
 import javax.inject.Inject
 
@@ -81,11 +81,11 @@ abstract class KonanCompileTask @Inject constructor(
 
             sourceSets.flatMap { it.files }.mapTo(this) { it.absolutePath }
         }
-        KonanInProcessCliRunner(
-                toolName = "konanc",
-                classLoader = isolatedClassLoadersService.get().getIsolatedClassLoader(compilerClasspath.get().files),
+        isolatedClassLoadersService.get().getIsolatedClassLoader(compilerClasspath.get().files).runKonanTool(
                 logger = logger,
-                useArgFile = true
-        ).run(args)
+                useArgFile = true,
+                toolName = "konanc",
+                args = args
+        )
     }
 }

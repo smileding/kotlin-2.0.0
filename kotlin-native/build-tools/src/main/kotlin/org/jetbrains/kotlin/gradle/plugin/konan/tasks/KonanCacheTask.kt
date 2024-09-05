@@ -10,7 +10,6 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.plugin.konan.KonanInProcessCliRunner
 import org.jetbrains.kotlin.konan.library.defaultResolver
 import org.jetbrains.kotlin.konan.target.CompilerOutputKind
 import org.jetbrains.kotlin.konan.target.Distribution
@@ -18,6 +17,7 @@ import org.jetbrains.kotlin.konan.target.PlatformManager
 import org.jetbrains.kotlin.library.uniqueName
 import org.jetbrains.kotlin.gradle.plugin.konan.konanClasspath
 import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
+import org.jetbrains.kotlin.gradle.plugin.konan.runKonanTool
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
 import org.jetbrains.kotlin.util.Logger
 import java.io.File
@@ -100,11 +100,11 @@ abstract class KonanCacheTask @Inject constructor() : DefaultTask() {
             args += "-Xmake-per-file-cache"
         args += additionalCacheFlags
         args += cachedLibraries.map { "-Xcached-library=${it.key},${it.value}" }
-        KonanInProcessCliRunner(
-                toolName = "konanc",
-                classLoader = isolatedClassLoadersService.get().getIsolatedClassLoader(dist.konanClasspath.files),
+        isolatedClassLoadersService.get().getIsolatedClassLoader(dist.konanClasspath.files).runKonanTool(
                 logger = logger,
-                useArgFile = true
-        ).run(args)
+                useArgFile = true,
+                toolName = "konanc",
+                args = args,
+        )
     }
 }

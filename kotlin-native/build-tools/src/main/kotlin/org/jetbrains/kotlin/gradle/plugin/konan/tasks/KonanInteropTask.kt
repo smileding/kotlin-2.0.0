@@ -47,12 +47,12 @@ private abstract class KonanInteropInProcessAction @Inject constructor() : WorkA
                 load0.invoke(Runtime.getRuntime(), String::class.java, libclang)
             }
         }.prepare()
-        KonanInProcessCliRunner(
+        parameters.isolatedClassLoadersService.get().getIsolatedClassLoader(dist.konanClasspath.files).runKonanTool(
+                logger = Logging.getLogger(this::class.java),
+                useArgFile = false,
                 toolName = "cinterop",
-                classLoader = parameters.isolatedClassLoadersService.get().getIsolatedClassLoader(dist.konanClasspath.files),
-                Logging.getLogger(this::class.java),
-                useArgFile = false
-        ).run(parameters.args.get())
+                args = parameters.args.get()
+        )
     }
 }
 
@@ -65,14 +65,11 @@ private abstract class KonanInteropOutOfProcessAction @Inject constructor(
     }
 
     override fun execute() {
-        val dist = parameters.compilerDistribution.get()
-        KonanOutOfProcessCInteropRunner(
-                execOperations,
-                dist.konanClasspath.files,
-                dist.file("konan/konan.properties").asFile,
-                Logging.getLogger(this::class.java),
-                dist.asFile.absolutePath,
-        ).run(parameters.args.get())
+        execOperations.runCInteropOutOfProcess(
+                logger = Logging.getLogger(this::class.java),
+                compilerDistribution = parameters.compilerDistribution.get(),
+                args = parameters.args.get()
+        )
     }
 }
 

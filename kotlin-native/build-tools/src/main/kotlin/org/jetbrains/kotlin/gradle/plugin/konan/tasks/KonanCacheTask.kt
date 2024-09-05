@@ -10,10 +10,16 @@ import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
+import org.gradle.api.logging.Logging
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.*
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
+import org.gradle.workers.WorkerExecutor
+import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliRunnerIsolatedClassLoadersService
 import org.jetbrains.kotlin.konan.target.PlatformManager
 import org.jetbrains.kotlin.gradle.plugin.konan.konanClasspath
 import org.jetbrains.kotlin.gradle.plugin.konan.konanLLVMLibs
@@ -23,8 +29,27 @@ import org.jetbrains.kotlin.gradle.plugin.konan.runKonanTool
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
 import javax.inject.Inject
 
+private abstract class KonanCacheAction : WorkAction<KonanCacheAction.Parameters> {
+    interface Parameters : WorkParameters {
+        val isolatedClassLoadersService: Property<KonanCliRunnerIsolatedClassLoadersService>
+        val compilerDistribution: DirectoryProperty
+        val args: ListProperty<String>
+    }
+
+    override fun execute() {
+        parameters.isolatedClassLoadersService.get().getIsolatedClassLoader(parameters.compilerDistribution.get().konanClasspath.files).runKonanTool(
+                logger = Logging.getLogger(this::class.java),
+                useArgFile = false,
+                toolName = "konanc",
+                args = parameters.args.get()
+        )
+    }
+}
+
 @CacheableTask
-abstract class KonanCacheTask @Inject constructor() : DefaultTask() {
+abstract class KonanCacheTask @Inject constructor(
+        private val workerExecutor: WorkerExecutor,
+) : DefaultTask() {
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val klib: DirectoryProperty
@@ -87,11 +112,12 @@ abstract class KonanCacheTask @Inject constructor() : DefaultTask() {
                 addAll(platform(targetByName(target.get())).additionalCacheFlags)
             }
         }
-        isolatedClassLoadersService.get().getIsolatedClassLoader(dist.konanClasspath.files).runKonanTool(
-                logger = logger,
-                useArgFile = true,
-                toolName = "konanc",
-                args = args,
-        )
+
+        val workQueue = workerExecutor.noIsolation()
+        workQueue.submit(KonanCacheAction::class.java) {
+            this.compilerDistribution.set(this@KonanCacheTask.compilerDistribution)
+            this.isolatedClassLoadersService.set(this@KonanCacheTask.isolatedClassLoadersService)
+            this.args.addAll(args)
+        }
     }
 }

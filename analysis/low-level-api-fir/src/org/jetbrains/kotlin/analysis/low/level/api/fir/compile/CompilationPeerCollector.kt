@@ -6,6 +6,7 @@
 package org.jetbrains.kotlin.analysis.low.level.api.fir.compile
 
 import com.intellij.openapi.progress.ProgressManager
+import org.jetbrains.kotlin.analysis.low.level.api.fir.util.getContainingFile
 import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.contracts.FirContractDescription
@@ -13,18 +14,31 @@ import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.utils.hasBody
 import org.jetbrains.kotlin.fir.declarations.utils.isInline
 import org.jetbrains.kotlin.fir.expressions.FirBlock
+import org.jetbrains.kotlin.fir.expressions.FirCallableReferenceAccess
+import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
 import org.jetbrains.kotlin.fir.expressions.FirResolvable
 import org.jetbrains.kotlin.fir.expressions.impl.FirContractCallBlock
 import org.jetbrains.kotlin.fir.psi
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
+import org.jetbrains.kotlin.fir.references.symbol
+import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.fir.unwrapSubstitutionOverrides
 import org.jetbrains.kotlin.fir.visitors.FirDefaultVisitorVoid
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.utils.addIfNotNull
+
+/**
+ * This exception indicates that two or more source modules contain inline functions, and they reference each other.
+ * When we run the backend JVM IR CodeGen, it has to fill the inline function from source modules. If we have a cyclic
+ * dependency between inline functions, the backend cannot fill them. For example, inline function A needs inline
+ * function B's JVM IR, but B also needs A's JVM IR. In this case, it will throw this exception.
+ */
+class CyclicInlineDependencyException(message: String) : IllegalStateException(message)
 
 /**
  * Processes the declaration, collecting files that would need to be submitted to the backend (or handled specially)
@@ -38,9 +52,34 @@ import org.jetbrains.kotlin.utils.addIfNotNull
  */
 object CompilationPeerCollector {
     fun process(declaration: FirDeclaration): CompilationPeerData {
+        return processWithRecursiveInlineDependency(declaration, HashSet(), HashSet())
+    }
+
+    private fun processWithRecursiveInlineDependency(
+        declaration: FirDeclaration,
+        visited: HashSet<FirDeclaration>,
+        collected: HashSet<FirDeclaration>,
+    ): CompilationPeerData {
         val visitor = CompilationPeerCollectingVisitor()
         visitor.process(declaration)
-        return CompilationPeerData(visitor.files, visitor.inlinedClasses)
+        visited.add(declaration)
+        val dependencyPeerData = visitor.dependencyFilesContainingInlineFunction.mapNotNull { file ->
+            if (file in collected) return@mapNotNull null
+            if (file in visited) {
+                throw CyclicInlineDependencyException("Source library modules containing inline functions have a cyclic dependency:\n${
+                    visited.map { it.render() }
+                }")
+            }
+            processWithRecursiveInlineDependency(file, visited, collected)
+        }
+
+        collected.add(declaration)
+        val files = (dependencyPeerData.flatMap { it.files } + visitor.files).toSet()
+        val inlinedClasses = (dependencyPeerData.flatMap { it.inlinedClasses } + visitor.inlinedClasses).toSet()
+        val dependencyFilesForDeclaration = visitor.dependencyFilesContainingInlineFunction.mapNotNull { it.psi as? KtFile }
+        return CompilationPeerData(files.toList(),
+                                   inlinedClasses,
+                                   dependencyPeerData.flatMap { it.dependencyFilesContainingInlineFunction } + dependencyFilesForDeclaration)
     }
 }
 
@@ -49,7 +88,20 @@ class CompilationPeerData(
     val files: List<KtFile>,
 
     /** Local classes inlined as a part of inline functions. */
-    val inlinedClasses: Set<KtClassOrObject>
+    val inlinedClasses: Set<KtClassOrObject>,
+
+    /**
+     * Files containing inline functions that are declared in source library modules. [CompilationPeerCollector.process] recursively
+     * collects them and keeps them in [dependencyFilesContainingInlineFunction] in a post order. For example,
+     *  - A is main source module. A has dependency on source module libraries B and C.
+     *  - B contains an inline function. B has dependency on a source module library C.
+     *  - C contains an inline function.
+     *  - [dependencyFilesContainingInlineFunction] will be {C, B, A}.
+     *
+     * i-th element of [dependencyFilesContainingInlineFunction] will not have dependency on any j-th element of
+     * [dependencyFilesContainingInlineFunction], where j > i.
+     */
+    val dependencyFilesContainingInlineFunction: List<KtFile>
 )
 
 private class CompilationPeerCollectingVisitor : FirDefaultVisitorVoid() {
@@ -59,6 +111,8 @@ private class CompilationPeerCollectingVisitor : FirDefaultVisitorVoid() {
     private val collectedFiles = mutableSetOf<KtFile>()
     private val collectedInlinedClasses = mutableSetOf<KtClassOrObject>()
     private var isInlineFunctionContext = false
+    private lateinit var targetFir: FirDeclaration
+    private val dependencyFilesContainingInline = mutableSetOf<FirFile>()
 
     val files: List<KtFile>
         get() = collectedFiles.toList()
@@ -66,7 +120,12 @@ private class CompilationPeerCollectingVisitor : FirDefaultVisitorVoid() {
     val inlinedClasses: Set<KtClassOrObject>
         get() = collectedInlinedClasses
 
+    val dependencyFilesContainingInlineFunction: List<FirFile>
+        get() = dependencyFilesContainingInline.toList()
+
     fun process(declaration: FirDeclaration) {
+        targetFir = declaration
+
         processSingle(declaration)
 
         while (queue.isNotEmpty()) {
@@ -134,6 +193,28 @@ private class CompilationPeerCollectingVisitor : FirDefaultVisitorVoid() {
 
         if (isInlineFunctionContext) {
             collectedInlinedClasses.addIfNotNull(klass.psi as? KtClassOrObject)
+        }
+    }
+
+    override fun visitFunctionCall(functionCall: FirFunctionCall) {
+        super.visitFunctionCall(functionCall)
+        val symbol = functionCall.calleeReference.symbol as? FirNamedFunctionSymbol ?: return
+        collectKtFileContainingInlineFunction(symbol.fir)
+    }
+
+    override fun visitCallableReferenceAccess(callableReferenceAccess: FirCallableReferenceAccess) {
+        super.visitCallableReferenceAccess(callableReferenceAccess)
+        val symbol = callableReferenceAccess.calleeReference.symbol as? FirNamedFunctionSymbol ?: return
+        collectKtFileContainingInlineFunction(symbol.fir)
+    }
+
+    private fun collectKtFileContainingInlineFunction(fir: FirFunction) {
+        if (fir.isInline) {
+            // If fir and targetFir are in the same module, fir is not in a dependency.
+            assert(::targetFir.isInitialized)
+            if (fir.moduleData == targetFir.moduleData) return
+
+            fir.getContainingFile()?.let { dependencyFilesContainingInline.add(it) }
         }
     }
 

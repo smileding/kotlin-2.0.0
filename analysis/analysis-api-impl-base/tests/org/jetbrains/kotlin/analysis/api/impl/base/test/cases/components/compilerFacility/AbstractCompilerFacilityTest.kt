@@ -63,7 +63,6 @@ import org.jetbrains.org.objectweb.asm.Opcodes
 import org.jetbrains.org.objectweb.asm.Type
 import org.jetbrains.org.objectweb.asm.tree.ClassNode
 import java.io.File
-import kotlin.test.assertFalse
 
 abstract class AbstractFirPluginPrototypeMultiModuleCompilerFacilityTest : AbstractCompilerFacilityTest() {
     override fun extraCustomRuntimeClasspathProviders(): Array<Constructor<RuntimeClasspathProvider>> =
@@ -250,14 +249,11 @@ internal fun createCodeFragment(ktFile: KtFile, module: TestModule, testServices
 }
 
 private class CollectingIrGenerationExtension(private val annotationToCheckCalls: String?) : IrGenerationExtension {
-    lateinit var result: String
-        private set
+    var result: String = ""
 
     val functionsWithAnnotationToCheckCalls: MutableSet<String> = mutableSetOf()
 
     override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
-        assertFalse { ::result.isInitialized }
-
         val dumpOptions = DumpIrTreeOptions(
             normalizeNames = true,
             stableOrder = true,

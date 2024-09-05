@@ -326,7 +326,7 @@ private fun ConeKotlinType.collectTypeParameters(c: MutableCollection<FirTypePar
             upperBound.collectTypeParameters(c)
         }
         is ConeClassLikeType ->
-            for (projection in typeArguments) {
+            for (projection in type.typeArguments) {
                 if (projection is ConeKotlinTypeProjection) {
                     projection.type.collectTypeParameters(c)
                 }

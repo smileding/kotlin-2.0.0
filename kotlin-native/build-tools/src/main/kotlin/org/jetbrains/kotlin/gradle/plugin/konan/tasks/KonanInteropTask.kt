@@ -103,18 +103,14 @@ abstract class KonanInteropTask @Inject constructor(
     /**
      * Kotlin/Native distribution to use.
      */
-    @get:Internal // proper dependencies will be specified below: `compilerClasspath`, `stdlib`
+    @get:Internal // proper dependencies will be specified below: `compilerClasspath`
     abstract val compilerDistribution: DirectoryProperty
 
-    @get:Classpath // Depends on the compiler jar.
+    @get:Classpath // Depends only on the compiler jar.
+    // Even though stdlib klib is required for building, changing stdlib will not change the resulting klib.
     @Suppress("unused")
     protected val compilerClasspath: Provider<FileCollection>
         get() = compilerDistribution.map { it.konanClasspath }
-
-    @get:InputDirectory // Depends on the stdlib.
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    protected val stdlib: Provider<Directory>
-        get() = compilerDistribution.map { it.konanStdlib }
 
     @get:ServiceReference
     protected val isolatedClassLoadersService = usesIsolatedClassLoadersService()

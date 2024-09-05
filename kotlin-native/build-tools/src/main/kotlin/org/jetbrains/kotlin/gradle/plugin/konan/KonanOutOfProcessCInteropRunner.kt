@@ -31,7 +31,7 @@ internal fun ExecOperations.runCInteropOutOfProcess(
         args: List<String>,
 ) {
     val classpath = compilerDistribution.konanClasspath.files
-    val konanProperties = compilerDistribution.file("konan/konan.properties").asFile
+    val konanProperties = compilerDistribution.konanProperties.asFile
     val konanHome = compilerDistribution.asFile.absolutePath
     val mainClass = "org.jetbrains.kotlin.cli.utilities.MainKt"
     val jvmArgs = buildList {

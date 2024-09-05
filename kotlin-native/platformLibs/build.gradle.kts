@@ -24,6 +24,7 @@ fun KonanTarget.defFiles() = familyDefFiles(family).map { DefFile(it, this) }
 fun defFileToLibName(target: String, name: String) = "$target-$name"
 
 private fun interopTaskName(libName: String, targetName: String) = "compileKonan${libName.capitalized}${targetName.capitalized}"
+private fun cacheTaskName(target: String, name: String) = "${defFileToLibName(target, name)}Cache"
 
 // endregion
 
@@ -84,25 +85,29 @@ enabledTargets(platformManager).forEach { target ->
         installTasks.add(klibInstallTask)
 
         if (target.name in cacheableTargetNames) {
-            val cacheTask = tasks.register("${libName}Cache", KonanCacheTask::class.java) {
-                notCompatibleWithConfigurationCache("project used in execution time")
-
+            val cacheTask = tasks.register(cacheTaskName(targetName, df.name), KonanCacheTask::class.java) {
                 this.compilerDistribution.set(kotlinNativeDist)
                 dependsOn(":kotlin-native:${targetName}CrossDist")
 
-                this.target = targetName
-                originalKlib.fileProvider(libTask.map { it.outputs.files.singleFile })
-                klibUniqName = artifactName
-                cacheRoot = kotlinNativeDist.resolve("klib/cache").absolutePath
+                klib.fileProvider(libTask.map { it.outputs.files.singleFile })
+                this.target.set(targetName)
+                this.moduleName.set(artifactName)
+                this.cacheRootDirectory.set(kotlinNativeDist.resolve("klib/cache"))
 
                 dependsOn(":kotlin-native:${targetName}StdlibCache")
+                inputs.dir("$kotlinNativeDist/klib/cache/${targetName}-gSTATIC/stdlib-cache")
 
-                // Make it depend on platform libraries defined in def files and their caches
-                df.config.depends.map {
-                    defFileToLibName(targetName, it)
-                }.forEach {
-                    dependsOn(it)
-                    dependsOn("${it}Cache")
+                df.config.depends.forEach { dep ->
+                    // Depend on installed dependency cache
+                    tasks.named<KonanCacheTask>(cacheTaskName(targetName, dep)).apply {
+                        dependsOn(this)
+                        inputs.dir(flatMap { it.outputDirectory })
+                    }
+                    // And on installed dependency klib as well.
+                    tasks.named<Sync>(defFileToLibName(targetName, dep)).apply {
+                        dependsOn(this)
+                        inputs.dir(map { it.destinationDir })
+                    }
                 }
             }
             cacheTasks.add(cacheTask)

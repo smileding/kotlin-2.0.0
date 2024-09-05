@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.gradle.plugin.konan
 
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.RegularFile
 import java.io.File
 
 /**
@@ -19,10 +20,16 @@ internal val Directory.konanClasspath: FileCollection
     }
 
 /**
- * Get K/N stdlib when `this` is a compiler distribution directory.
+ * Get konan.properties when `this` is a compiler distribution directory.
  */
-internal val Directory.konanStdlib: Directory
-    get() = dir("klib/common/stdlib")
+internal val Directory.konanProperties: RegularFile
+    get() = file("konan/konan.properties")
+
+/**
+ * Get K/N llvm libraries when `this` is a compiler distribution directory.
+ */
+internal val Directory.konanLLVMLibs: Directory
+    get() = dir("konan/nativelib")
 
 /**
  * Prepare `this` to be an output for the task:

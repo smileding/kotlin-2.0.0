@@ -59,7 +59,7 @@ enabledTargets(platformManager).forEach { target ->
             dependsOn(":kotlin-native:${targetName}CrossDist")
             updateDefFileTasksPerFamily[target.family]?.let { dependsOn(it) }
 
-            this.konanTarget.set(target)
+            this.target.set(targetName)
             this.outputDirectory.set(
                     layout.buildDirectory.dir("konan/libs/$targetName/${fileNamePrefix}${df.name}")
             )
@@ -77,7 +77,6 @@ enabledTargets(platformManager).forEach { target ->
             this.compilerOpts.addAll(
                     "-fmodules-cache-path=${project.layout.buildDirectory.dir("clangModulesCache").get().asFile}"
             )
-            this.enableParallel.set(project.getBooleanProperty("kotlin.native.platformLibs.parallel") ?: true)
         }
 
         val klibInstallTask = tasks.register(libName, Sync::class.java) {

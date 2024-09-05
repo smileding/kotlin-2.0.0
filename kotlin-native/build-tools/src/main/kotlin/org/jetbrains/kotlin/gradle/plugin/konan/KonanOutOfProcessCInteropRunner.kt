@@ -21,8 +21,8 @@ internal class KonanOutOfProcessCInteropRunner(
         private val konanProperties: File,
         private val logger: Logger,
         private val konanHome: String,
-) : KonanCliRunner {
-    override fun run(args: List<String>) {
+) {
+    fun run(args: List<String>) {
         val mainClass = "org.jetbrains.kotlin.cli.utilities.MainKt"
         val jvmArgs = buildList {
             add("-ea")

@@ -18,8 +18,8 @@ internal class KonanInProcessCliRunner(
         private val classLoader: URLClassLoader,
         private val logger: Logger,
         private val useArgFile: Boolean,
-) : KonanCliRunner {
-    override fun run(args: List<String>) {
+) {
+    fun run(args: List<String>) {
         System.setProperty(runFromDaemonPropertyName, "true")
         val transformedArgs = if (useArgFile) {
             val argFile = Files.createTempFile(/* prefix = */ "konancArgs", /* suffix = */ ".lst").toFile().apply { deleteOnExit() }

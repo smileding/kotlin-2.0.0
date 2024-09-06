@@ -24,6 +24,7 @@ fun copyK2JVMCompilerArguments(from: K2JVMCompilerArguments, to: K2JVMCompilerAr
     to.disableStandardScript = from.disableStandardScript
     to.doNotClearBindingContext = from.doNotClearBindingContext
     to.emitJvmTypeAnnotations = from.emitJvmTypeAnnotations
+    to.enableDebugMode = from.enableDebugMode
     to.enableIrInliner = from.enableIrInliner
     to.enableJvmPreview = from.enableJvmPreview
     to.enhanceTypeParameterTypesToDefNotNull = from.enhanceTypeParameterTypesToDefNotNull

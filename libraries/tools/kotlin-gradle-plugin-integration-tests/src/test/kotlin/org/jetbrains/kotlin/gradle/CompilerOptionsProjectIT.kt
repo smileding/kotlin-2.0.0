@@ -98,6 +98,7 @@ class CompilerOptionsProjectIT : KGPBaseTest() {
                 |         apiVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
                 |         progressiveMode = true
                 |         optIn.add("my.custom.OptInAnnotation")
+                |         freeCompilerArgs.add("-Xdebug")
                 |    }
                 |}
                 """.trimMargin()
@@ -108,7 +109,7 @@ class CompilerOptionsProjectIT : KGPBaseTest() {
 
                 assertCompilerArguments(
                     ":compileKotlin",
-                    "-language-version 2.0", "-api-version 2.0", "-progressive", "-opt-in my.custom.OptInAnnotation",
+                    "-language-version 2.0", "-api-version 2.0", "-progressive", "-opt-in my.custom.OptInAnnotation", "-Xdebug",
                     logLevel = LogLevel.INFO
                 )
             }
@@ -133,6 +134,7 @@ class CompilerOptionsProjectIT : KGPBaseTest() {
                 |         apiVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
                 |         progressiveMode = true
                 |         optIn.add("my.custom.OptInAnnotation")
+                |         freeCompilerArgs.add("-Xdebug")
                 |    }
                 |    
                 |    sourceSets.all {
@@ -155,6 +157,7 @@ class CompilerOptionsProjectIT : KGPBaseTest() {
                     ":compileKotlin",
                     "-language-version 1.9",
                     "-api-version 1.9",
+                    "-Xdebug",
                     "-opt-in my.custom.OptInAnnotation,another.CustomOptInAnnotation",
                     "-XXLanguage:+UnitConversionsOnArbitraryExpressions",
                     logLevel = LogLevel.INFO

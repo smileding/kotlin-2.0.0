@@ -746,6 +746,17 @@ It has no effect when -language-version is 2.0 or higher."""
         }
 
     @Argument(
+        value = "-Xdebug",
+        description = """Enable debug mode for compilation.
+Currently this includes spilling all variables in a suspending context regardless of whether they are alive."""
+    )
+    var enableDebugMode = false
+        set(value) {
+            checkFrozen()
+            field = value
+        }
+
+    @Argument(
         value = "-Xno-new-java-annotation-targets",
         description = "Don't generate Java 1.8+ targets for Kotlin annotation classes."
     )

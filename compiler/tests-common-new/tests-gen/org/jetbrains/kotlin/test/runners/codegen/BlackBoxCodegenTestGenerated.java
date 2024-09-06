@@ -14898,6 +14898,66 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
         public void testAllFilesPresentInDebugMode() {
           KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/coroutines/varSpilling/debugMode"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JVM, true);
         }
+
+        @Test
+        @TestMetadata("backEdge.kt")
+        public void testBackEdge() {
+          runTest("compiler/testData/codegen/box/coroutines/varSpilling/debugMode/backEdge.kt");
+        }
+
+        @Test
+        @TestMetadata("if.kt")
+        public void testIf() {
+          runTest("compiler/testData/codegen/box/coroutines/varSpilling/debugMode/if.kt");
+        }
+
+        @Test
+        @TestMetadata("inlineOnly.kt")
+        public void testInlineOnly() {
+          runTest("compiler/testData/codegen/box/coroutines/varSpilling/debugMode/inlineOnly.kt");
+        }
+
+        @Test
+        @TestMetadata("kt63954.kt")
+        public void testKt63954() {
+          runTest("compiler/testData/codegen/box/coroutines/varSpilling/debugMode/kt63954.kt");
+        }
+
+        @Test
+        @TestMetadata("nullCleanup.kt")
+        public void testNullCleanup() {
+          runTest("compiler/testData/codegen/box/coroutines/varSpilling/debugMode/nullCleanup.kt");
+        }
+
+        @Test
+        @TestMetadata("nullNotSpill.kt")
+        public void testNullNotSpill() {
+          runTest("compiler/testData/codegen/box/coroutines/varSpilling/debugMode/nullNotSpill.kt");
+        }
+
+        @Test
+        @TestMetadata("simple.kt")
+        public void testSimple() {
+          runTest("compiler/testData/codegen/box/coroutines/varSpilling/debugMode/simple.kt");
+        }
+
+        @Test
+        @TestMetadata("twoRefs.kt")
+        public void testTwoRefs() {
+          runTest("compiler/testData/codegen/box/coroutines/varSpilling/debugMode/twoRefs.kt");
+        }
+
+        @Test
+        @TestMetadata("unusedParamNotSpill.kt")
+        public void testUnusedParamNotSpill() {
+          runTest("compiler/testData/codegen/box/coroutines/varSpilling/debugMode/unusedParamNotSpill.kt");
+        }
+
+        @Test
+        @TestMetadata("when.kt")
+        public void testWhen() {
+          runTest("compiler/testData/codegen/box/coroutines/varSpilling/debugMode/when.kt");
+        }
       }
     }
   }

@@ -40,9 +40,7 @@ import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.descriptors.toIrBasedDescriptor
 import org.jetbrains.kotlin.ir.descriptors.toIrBasedKotlinType
 import org.jetbrains.kotlin.ir.expressions.*
-import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrCompositeImpl
-import org.jetbrains.kotlin.ir.expressions.impl.fromSymbolOwner
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.symbols.IrValueParameterSymbol
@@ -758,6 +756,9 @@ class ExpressionCodegen(
             value.materializeAt(varType, declaration.type)
             declaration.markLineNumber(startOffset = true)
             mv.store(index, varType)
+            if (declaration.origin == JvmLoweredDeclarationOrigin.SUSPEND_LAMBDA_PARAMETER) {
+                addSuspendLambdaParameterMarker(mv)
+            }
         } else if (declaration.isVisibleInLVT) {
             declaration.markLineNumber(startOffset = true)
             pushDefaultValueOnStack(varType, mv)

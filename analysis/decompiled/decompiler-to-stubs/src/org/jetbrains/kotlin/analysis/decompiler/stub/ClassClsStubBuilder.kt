@@ -13,6 +13,8 @@ import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.metadata.ProtoBuf
 import org.jetbrains.kotlin.metadata.deserialization.*
+import org.jetbrains.kotlin.metadata.jvm.JvmProtoBuf
+import org.jetbrains.kotlin.metadata.jvm.deserialization.JvmFlags
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtSuperTypeEntry
@@ -145,6 +147,9 @@ private class ClassClsStubBuilder(
                     superTypeRefs,
                     isInterface = classKind == ProtoBuf.Class.Kind.INTERFACE,
                     isEnumEntry = classKind == ProtoBuf.Class.Kind.ENUM_ENTRY,
+                    isNewPlaceForBodyGeneration = JvmFlags.IS_COMPILED_IN_JVM_DEFAULT_MODE.get(
+                        classProto.getExtension(JvmProtoBuf.jvmClassFlags)
+                    ),
                     isLocal = false,
                     isTopLevel = !this.classId.isNestedClass,
                 )
@@ -195,6 +200,10 @@ private class ClassClsStubBuilder(
     private fun createEnumEntryStubs(classBody: KotlinPlaceHolderStubImpl<KtClassBody>) {
         if (classKind != ProtoBuf.Class.Kind.ENUM_CLASS) return
 
+        val isNewPlaceForBodyGeneration = JvmFlags.IS_COMPILED_IN_JVM_DEFAULT_MODE.get(
+            classProto.getExtension(JvmProtoBuf.jvmClassFlags)
+        )
+
         classProto.enumEntryList.forEach { entry ->
             val name = c.nameResolver.getName(entry.name)
             val annotations = c.components.annotationLoader.loadEnumEntryAnnotations(thisAsProtoContainer, entry)
@@ -207,6 +216,7 @@ private class ClassClsStubBuilder(
                 superNames = arrayOf(),
                 isInterface = false,
                 isEnumEntry = true,
+                isNewPlaceForBodyGeneration = isNewPlaceForBodyGeneration,
                 isLocal = false,
                 isTopLevel = false
             )

@@ -48,6 +48,12 @@ public class CompilerFacilityTestForComposeCompilerPluginGenerated extends Abstr
   }
 
   @Test
+  @TestMetadata("interfaceDefaultImplsForTooltipState.kt")
+  public void testInterfaceDefaultImplsForTooltipState() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/interfaceDefaultImplsForTooltipState.kt");
+  }
+
+  @Test
   @TestMetadata("lazyPropertyBackingField.kt")
   public void testLazyPropertyBackingField() {
     runTest("plugins/compose/compiler-hosted/testData/codegen/lazyPropertyBackingField.kt");

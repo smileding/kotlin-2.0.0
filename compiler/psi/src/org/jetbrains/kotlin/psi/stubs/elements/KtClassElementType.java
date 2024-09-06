@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.KtClass;
 import org.jetbrains.kotlin.psi.KtEnumEntry;
 import org.jetbrains.kotlin.psi.psiUtil.KtPsiUtilKt;
+import org.jetbrains.kotlin.psi.stubs.KotlinClassOrObjectStub;
 import org.jetbrains.kotlin.psi.stubs.KotlinClassStub;
 import org.jetbrains.kotlin.psi.stubs.StubUtils;
 import org.jetbrains.kotlin.psi.stubs.impl.KotlinClassStubImpl;
@@ -43,6 +44,11 @@ public class KtClassElementType extends KtStubElementType<KotlinClassStub, KtCla
         return node.getElementType() != KtStubElementTypes.ENUM_ENTRY ? new KtClass(node) : new KtEnumEntry(node);
     }
 
+    private static boolean isNewPlaceForBodyGeneration(KotlinClassOrObjectStub stub) {
+        if (!(stub instanceof KotlinClassStub)) return false;
+        return ((KotlinClassStub)stub).isNewPlaceForBodyGeneration();
+    }
+
     @NotNull
     @Override
     public KotlinClassStub createStub(@NotNull KtClass psi, StubElement parentStub) {
@@ -55,7 +61,7 @@ public class KtClassElementType extends KtStubElementType<KotlinClassStub, KtCla
                 StringRef.fromString(fqName != null ? fqName.asString() : null), classId,
                 StringRef.fromString(psi.getName()),
                 Utils.INSTANCE.wrapStrings(superNames),
-                psi.isInterface(), isEnumEntry, psi.isLocal(), psi.isTopLevel()
+                psi.isInterface(), isEnumEntry, isNewPlaceForBodyGeneration(psi.getStub()), psi.isLocal(), psi.isTopLevel()
         );
     }
 
@@ -70,6 +76,7 @@ public class KtClassElementType extends KtStubElementType<KotlinClassStub, KtCla
 
         dataStream.writeBoolean(stub.isInterface());
         dataStream.writeBoolean(stub.isEnumEntry());
+        dataStream.writeBoolean(stub.isNewPlaceForBodyGeneration());
         dataStream.writeBoolean(stub.isLocal());
         dataStream.writeBoolean(stub.isTopLevel());
 
@@ -90,6 +97,7 @@ public class KtClassElementType extends KtStubElementType<KotlinClassStub, KtCla
 
         boolean isTrait = dataStream.readBoolean();
         boolean isEnumEntry = dataStream.readBoolean();
+        boolean isNewPlaceForBodyGeneration = dataStream.readBoolean();
         boolean isLocal = dataStream.readBoolean();
         boolean isTopLevel = dataStream.readBoolean();
 
@@ -101,7 +109,7 @@ public class KtClassElementType extends KtStubElementType<KotlinClassStub, KtCla
 
         return new KotlinClassStubImpl(
                 getStubType(isEnumEntry), (StubElement<?>) parentStub, qualifiedName,classId, name, superNames,
-                isTrait, isEnumEntry, isLocal, isTopLevel
+                isTrait, isEnumEntry, isNewPlaceForBodyGeneration, isLocal, isTopLevel
         );
     }
 

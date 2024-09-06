@@ -58,6 +58,7 @@ interface KotlinClassOrObjectStub<T : KtClassOrObject> : KotlinClassifierStub, K
 interface KotlinClassStub : KotlinClassOrObjectStub<KtClass> {
     fun isInterface(): Boolean
     fun isEnumEntry(): Boolean
+    fun isNewPlaceForBodyGeneration(): Boolean
 }
 
 interface KotlinObjectStub : KotlinClassOrObjectStub<KtObjectDeclaration> {

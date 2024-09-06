@@ -56,6 +56,7 @@ dependencies {
     testImplementationArtifactOnly(compose("ui", "ui-graphics"))
     testImplementationArtifactOnly(compose("ui", "ui-text"))
     testImplementationArtifactOnly(compose("ui", "ui-unit"))
+    testImplementationArtifactOnly(compose("material3", "material3", "1.3.0"))
 
     testCompileOnly(toolsJarApi())
     testRuntimeOnly(toolsJar())

@@ -55,6 +55,8 @@ fun RepositoryHandler.composeGoogleMaven(composeStableVersion: String) {
             includeVersion("androidx.compose.ui", "ui-text-desktop", composeStableVersion)
             includeVersion("androidx.compose.ui", "ui-unit", composeStableVersion)
             includeVersion("androidx.compose.ui", "ui-unit-desktop", composeStableVersion)
+            includeVersion("androidx.compose.material3", "material3", "1.3.0")
+            includeVersion("androidx.compose.material3", "material3-desktop", "1.3.0")
         }
     }
 }

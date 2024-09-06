@@ -145,9 +145,6 @@ public class JVMConfigurationKeys {
     public static final CompilerConfigurationKey<Boolean> LINK_VIA_SIGNATURES =
             CompilerConfigurationKey.create("Link JVM IR symbols via signatures, instead of by descriptors on the K1 frontend");
 
-    public static final CompilerConfigurationKey<Boolean> ENABLE_DEBUG_MODE =
-            CompilerConfigurationKey.create("Enable debug mode");
-
     public static final CompilerConfigurationKey<Boolean> NO_NEW_JAVA_ANNOTATION_TARGETS =
             CompilerConfigurationKey.create("Do not generate Java 1.8+ targets for Kotlin annotation classes");
 

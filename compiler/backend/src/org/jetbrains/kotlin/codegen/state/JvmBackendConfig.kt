@@ -94,8 +94,6 @@ class JvmBackendConfig(configuration: CompilerConfiguration) {
 
     val supportMultiFieldValueClasses: Boolean = languageVersionSettings.supportsFeature(LanguageFeature.ValueClasses)
 
-    val enableDebugMode: Boolean = configuration.getBoolean(JVMConfigurationKeys.ENABLE_DEBUG_MODE)
-
     val enableIrInliner: Boolean = configuration.getBoolean(JVMConfigurationKeys.ENABLE_IR_INLINER)
 
     val useFir: Boolean = configuration.getBoolean(CommonConfigurationKeys.USE_FIR)

@@ -19,15 +19,6 @@ internal fun File.prepareAsOutput() {
     check(parentFile.exists()) { "Failed to create parent directories for $path" }
 }
 
-internal fun Map<String, String>.toPrettyString(): String = buildString {
-    append('[')
-    if (this@toPrettyString.isNotEmpty()) append('\n')
-    this@toPrettyString.entries.forEach { (key, value) ->
-        append('\t').append(key).append(" = ").append(value.toPrettyString()).append('\n')
-    }
-    append(']')
-}
-
 internal fun Collection<String>.toPrettyString(): String = buildString {
     append('[')
     if (this@toPrettyString.isNotEmpty()) append('\n')

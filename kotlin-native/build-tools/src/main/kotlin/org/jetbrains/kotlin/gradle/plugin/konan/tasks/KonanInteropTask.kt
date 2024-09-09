@@ -22,6 +22,7 @@ import org.gradle.process.ExecOperations
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
+import org.jetbrains.kotlin.PlatformInfo
 import org.jetbrains.kotlin.gradle.plugin.konan.*
 import org.jetbrains.kotlin.konan.target.AbstractToolConfig
 import org.jetbrains.kotlin.nativeDistribution.NativeDistributionProperty
@@ -67,11 +68,14 @@ private abstract class KonanInteropOutOfProcessAction @Inject constructor(
     }
 
     override fun execute() {
-        execOperations.runCInteropOutOfProcess(
-                logger = Logging.getLogger(this::class.java),
-                compilerDistribution = parameters.compilerDistribution.get(),
-                args = parameters.args.get()
-        )
+        val cinterop = parameters.compilerDistribution.get().cinterop
+        execOperations.exec {
+            if (PlatformInfo.isWindows()) {
+                commandLine("cmd.exe", "/d", "/c", cinterop, *parameters.args.get().toTypedArray())
+            } else {
+                commandLine(cinterop, *parameters.args.get().toTypedArray())
+            }
+        }.assertNormalExitValue()
     }
 }
 

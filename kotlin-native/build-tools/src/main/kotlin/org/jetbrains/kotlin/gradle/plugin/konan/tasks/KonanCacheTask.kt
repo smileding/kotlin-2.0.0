@@ -21,23 +21,21 @@ import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliRunnerIsolatedClassLoadersService
 import org.jetbrains.kotlin.konan.target.PlatformManager
-import org.jetbrains.kotlin.gradle.plugin.konan.konanClasspath
-import org.jetbrains.kotlin.gradle.plugin.konan.konanLLVMLibs
-import org.jetbrains.kotlin.gradle.plugin.konan.konanProperties
 import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
 import org.jetbrains.kotlin.gradle.plugin.konan.runKonanTool
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
+import org.jetbrains.kotlin.nativeDistribution.NativeDistributionProperty
 import javax.inject.Inject
 
 private abstract class KonanCacheAction : WorkAction<KonanCacheAction.Parameters> {
     interface Parameters : WorkParameters {
         val isolatedClassLoadersService: Property<KonanCliRunnerIsolatedClassLoadersService>
-        val compilerDistribution: DirectoryProperty
+        val compilerDistribution: NativeDistributionProperty
         val args: ListProperty<String>
     }
 
     override fun execute() {
-        parameters.isolatedClassLoadersService.get().getIsolatedClassLoader(parameters.compilerDistribution.get().konanClasspath.files).runKonanTool(
+        parameters.isolatedClassLoadersService.get().getIsolatedClassLoader(parameters.compilerDistribution.get().compilerClasspath.files).runKonanTool(
                 logger = Logging.getLogger(this::class.java),
                 useArgFile = false,
                 toolName = "konanc",
@@ -71,18 +69,18 @@ abstract class KonanCacheTask @Inject constructor(
      * Kotlin/Native distribution to use.
      */
     @get:Internal // proper dependencies will be specified below: `compilerClasspath`
-    abstract val compilerDistribution: DirectoryProperty
+    abstract val compilerDistribution: NativeDistributionProperty
 
     @get:Classpath // Depends on the compiler jar.
     @Suppress("unused")
     protected val compilerClasspath: Provider<FileCollection>
-        get() = compilerDistribution.map { it.konanClasspath }
+        get() = compilerDistribution.map { it.compilerClasspath }
 
     @get:InputDirectory // Depends on libraries used during code generation
     @get:PathSensitive(PathSensitivity.NONE)
     @Suppress("unused")
     protected val llvmCodegenLibs: Provider<Directory>
-        get() = compilerDistribution.map { it.konanLLVMLibs }
+        get() = compilerDistribution.map { it.nativeLibs }
 
     @get:InputFile // Depends on properties file with compilation flags used during code generation
     @get:PathSensitive(PathSensitivity.NONE)
@@ -98,8 +96,6 @@ abstract class KonanCacheTask @Inject constructor(
         // Compiler doesn't create a cache if the cacheFile already exists. So we need to remove it manually.
         outputDirectory.get().asFile.prepareAsOutput()
 
-        val dist = compilerDistribution.get()
-
         val args = buildList {
             add("-g")
             add("-target")
@@ -108,7 +104,7 @@ abstract class KonanCacheTask @Inject constructor(
             add("static_cache")
             add("-Xadd-cache=${klib.asFile.get().absolutePath}")
             add("-Xcache-directory=${outputDirectory.get().asFile.parentFile.absolutePath}")
-            PlatformManager(dist.asFile.absolutePath).apply {
+            PlatformManager(compilerDistribution.get().root.asFile.absolutePath).apply {
                 addAll(platform(targetByName(target.get())).additionalCacheFlags)
             }
         }

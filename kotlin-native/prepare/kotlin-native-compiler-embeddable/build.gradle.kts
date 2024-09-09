@@ -1,6 +1,5 @@
 import org.gradle.kotlin.dsl.support.serviceOf
-import org.jetbrains.kotlin.konan.target.HostManager
-import org.jetbrains.kotlin.kotlinNativeDist
+import org.jetbrains.kotlin.nativeDistribution.nativeDistribution
 
 plugins {
     kotlin("jvm")
@@ -110,6 +109,6 @@ projectTest {
     }
     doFirst {
         systemProperty("compilerClasspath", runtimeJarPathProvider.get())
-        systemProperty("kotlin.native.home", kotlinNativeDist)
+        systemProperty("kotlin.native.home", nativeDistribution.get().root.asFile.absolutePath)
     }
 }

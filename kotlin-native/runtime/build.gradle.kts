@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.cpp.CppUsage
 import org.jetbrains.kotlin.gradle.plugin.konan.tasks.KonanCacheTask
 import org.jetbrains.kotlin.gradle.plugin.konan.tasks.KonanCompileTask
 import org.jetbrains.kotlin.konan.target.*
-import org.jetbrains.kotlin.library.KOTLIN_NATIVE_STDLIB_NAME
+import org.jetbrains.kotlin.nativeDistribution.nativeDistribution
 import org.jetbrains.kotlin.konan.target.Architecture as TargetArchitecture
 
 plugins {
@@ -553,7 +553,7 @@ val stdlibBuildTask by tasks.registering(KonanCompileTask::class) {
     group = BasePlugin.BUILD_GROUP
     description = "Build the Kotlin/Native standard library '$name'"
 
-    this.compilerDistribution.set(kotlinNativeDist)
+    this.compilerDistribution.set(nativeDistribution)
     dependsOn(":kotlin-native:distCompiler")
 
     this.outputDirectory.set(
@@ -568,7 +568,7 @@ val stdlibBuildTask by tasks.registering(KonanCompileTask::class) {
             "-Xallow-kotlin-package",
             "-Xexplicit-api=strict",
             "-Xexpect-actual-classes",
-            "-module-name", KOTLIN_NATIVE_STDLIB_NAME,
+            "-module-name", "stdlib",
             "-opt-in=kotlin.RequiresOptIn",
             "-opt-in=kotlin.contracts.ExperimentalContracts",
             "-opt-in=kotlin.ExperimentalMultiplatform",
@@ -615,14 +615,15 @@ val cacheableTargetNames = platformManager.hostPlatform.cacheableTargets
 
 cacheableTargetNames.forEach { targetName ->
     tasks.register("${targetName}StdlibCache", KonanCacheTask::class.java) {
-        this.compilerDistribution.set(kotlinNativeDist)
+        val dist = project.nativeDistribution
+        compilerDistribution.set(dist)
         dependsOn(":kotlin-native:${targetName}CrossDistRuntime")
         // stdlib cache additionally links in runtime modules from the K/N distribution.
-        inputs.dir("$kotlinNativeDist/konan/targets/$targetName/native")
+        inputs.dir(dist.map { it.runtime(targetName) })
 
         target = targetName
         klib.fileProvider(stdlibTask.map { it.destinationDir })
-        moduleName.set(KOTLIN_NATIVE_STDLIB_NAME)
+        moduleName.set("stdlib")
         cacheRootDirectory.set(project.layout.buildDirectory.dir("cache/$targetName"))
     }
 }

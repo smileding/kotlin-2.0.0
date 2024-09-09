@@ -6,9 +6,9 @@
 import org.jetbrains.kotlin.gradle.plugin.konan.tasks.KonanCacheTask
 import org.jetbrains.kotlin.gradle.plugin.konan.tasks.KonanInteropTask
 import org.jetbrains.kotlin.PlatformInfo
-import org.jetbrains.kotlin.kotlinNativeDist
 import org.jetbrains.kotlin.konan.target.*
 import org.jetbrains.kotlin.konan.util.*
+import org.jetbrains.kotlin.nativeDistribution.nativeDistribution
 import org.jetbrains.kotlin.platformLibs.*
 import org.jetbrains.kotlin.platformManager
 import org.jetbrains.kotlin.utils.capitalized
@@ -56,7 +56,7 @@ enabledTargets(platformManager).forEach { target ->
             group = BasePlugin.BUILD_GROUP
             description = "Build the Kotlin/Native platform library '$libName' for '$target'"
 
-            this.compilerDistribution.set(kotlinNativeDist)
+            this.compilerDistribution.set(nativeDistribution)
             dependsOn(":kotlin-native:${targetName}CrossDist")
             updateDefFileTasksPerFamily[target.family]?.let { dependsOn(it) }
 
@@ -80,22 +80,24 @@ enabledTargets(platformManager).forEach { target ->
 
         val klibInstallTask = tasks.register(libName, Sync::class.java) {
             from(libTask)
-            into(kotlinNativeDist.resolve("klib/platform/$targetName/$artifactName"))
+            into(nativeDistribution.map { it.platformLib(name = artifactName, target = targetName) })
         }
         installTasks.add(klibInstallTask)
 
         if (target.name in cacheableTargetNames) {
             val cacheTask = tasks.register(cacheTaskName(targetName, df.name), KonanCacheTask::class.java) {
-                this.compilerDistribution.set(kotlinNativeDist)
+                val dist = nativeDistribution
+
+                compilerDistribution.set(dist)
                 dependsOn(":kotlin-native:${targetName}CrossDist")
 
                 klib.fileProvider(libTask.map { it.outputs.files.singleFile })
                 this.target.set(targetName)
                 this.moduleName.set(artifactName)
-                this.cacheRootDirectory.set(kotlinNativeDist.resolve("klib/cache"))
+                this.cacheRootDirectory.set(dist.map { it.cachesRoot })
 
                 dependsOn(":kotlin-native:${targetName}StdlibCache")
-                inputs.dir("$kotlinNativeDist/klib/cache/${targetName}-gSTATIC/stdlib-cache")
+                inputs.dir(dist.map { it.stdlibCache(targetName) })
 
                 df.config.depends.forEach { dep ->
                     // Depend on installed dependency cache

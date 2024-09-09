@@ -8,7 +8,6 @@ package org.jetbrains.kotlin.gradle.plugin.konan.tasks
 import kotlinBuildProperties
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.ProjectLayout
@@ -25,6 +24,7 @@ import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.gradle.plugin.konan.*
 import org.jetbrains.kotlin.konan.target.AbstractToolConfig
+import org.jetbrains.kotlin.nativeDistribution.NativeDistributionProperty
 import javax.inject.Inject
 
 private val load0 = Runtime::class.java.getDeclaredMethod("load0", Class::class.java, String::class.java).also {
@@ -34,14 +34,14 @@ private val load0 = Runtime::class.java.getDeclaredMethod("load0", Class::class.
 private abstract class KonanInteropInProcessAction @Inject constructor() : WorkAction<KonanInteropInProcessAction.Parameters> {
     interface Parameters : WorkParameters {
         val isolatedClassLoadersService: Property<KonanCliRunnerIsolatedClassLoadersService>
-        val compilerDistribution: DirectoryProperty
+        val compilerDistribution: NativeDistributionProperty
         val target: Property<String>
         val args: ListProperty<String>
     }
 
     override fun execute() {
         val dist = parameters.compilerDistribution.get()
-        object : AbstractToolConfig(dist.asFile.absolutePath, parameters.target.get(), emptyMap()) {
+        object : AbstractToolConfig(dist.root.asFile.absolutePath, parameters.target.get(), emptyMap()) {
             override fun loadLibclang() {
                 // Load libclang into the system class loader. This is needed to allow developers to make changes
                 // in the tooling infrastructure without having to stop the daemon (otherwise libclang might end up
@@ -49,7 +49,7 @@ private abstract class KonanInteropInProcessAction @Inject constructor() : WorkA
                 load0.invoke(Runtime.getRuntime(), String::class.java, libclang)
             }
         }.prepare()
-        parameters.isolatedClassLoadersService.get().getIsolatedClassLoader(dist.konanClasspath.files).runKonanTool(
+        parameters.isolatedClassLoadersService.get().getIsolatedClassLoader(dist.compilerClasspath.files).runKonanTool(
                 logger = Logging.getLogger(this::class.java),
                 useArgFile = false,
                 toolName = "cinterop",
@@ -62,7 +62,7 @@ private abstract class KonanInteropOutOfProcessAction @Inject constructor(
         private val execOperations: ExecOperations,
 ) : WorkAction<KonanInteropOutOfProcessAction.Parameters> {
     interface Parameters : WorkParameters {
-        val compilerDistribution: DirectoryProperty
+        val compilerDistribution: NativeDistributionProperty
         val args: ListProperty<String>
     }
 
@@ -104,13 +104,13 @@ abstract class KonanInteropTask @Inject constructor(
      * Kotlin/Native distribution to use.
      */
     @get:Internal // proper dependencies will be specified below: `compilerClasspath`
-    abstract val compilerDistribution: DirectoryProperty
+    abstract val compilerDistribution: NativeDistributionProperty
 
     @get:Classpath // Depends only on the compiler jar.
     // Even though stdlib klib is required for building, changing stdlib will not change the resulting klib.
     @Suppress("unused")
     protected val compilerClasspath: Provider<FileCollection>
-        get() = compilerDistribution.map { it.konanClasspath }
+        get() = compilerDistribution.map { it.compilerClasspath }
 
     @get:ServiceReference
     protected val isolatedClassLoadersService = usesIsolatedClassLoadersService()

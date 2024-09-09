@@ -21,21 +21,21 @@ import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliRunnerIsolatedClassLoadersService
-import org.jetbrains.kotlin.gradle.plugin.konan.konanClasspath
 import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
 import org.jetbrains.kotlin.gradle.plugin.konan.runKonanTool
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
+import org.jetbrains.kotlin.nativeDistribution.NativeDistributionProperty
 import javax.inject.Inject
 
 private abstract class KonanCompileAction : WorkAction<KonanCompileAction.Parameters> {
     interface Parameters : WorkParameters {
         val isolatedClassLoadersService: Property<KonanCliRunnerIsolatedClassLoadersService>
-        val compilerDistribution: DirectoryProperty
+        val compilerDistribution: NativeDistributionProperty
         val args: ListProperty<String>
     }
 
     override fun execute() {
-        parameters.isolatedClassLoadersService.get().getIsolatedClassLoader(parameters.compilerDistribution.get().konanClasspath.files).runKonanTool(
+        parameters.isolatedClassLoadersService.get().getIsolatedClassLoader(parameters.compilerDistribution.get().compilerClasspath.files).runKonanTool(
                 logger = Logging.getLogger(this::class.java),
                 useArgFile = true,
                 toolName = "konanc",
@@ -62,11 +62,12 @@ abstract class KonanCompileTask @Inject constructor(
      * Kotlin/Native distribution to use.
      */
     @get:Internal // proper dependencies will be specified below: `compilerClasspath`
-    abstract val compilerDistribution: DirectoryProperty
+    abstract val compilerDistribution: NativeDistributionProperty
 
     @get:Classpath // Since this task only compiles into klib, it's enough to depend only on the compiler jar.
+    @Suppress("unused")
     protected val compilerClasspath: Provider<FileCollection>
-        get() = compilerDistribution.map { it.konanClasspath }
+        get() = compilerDistribution.map { it.compilerClasspath }
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)

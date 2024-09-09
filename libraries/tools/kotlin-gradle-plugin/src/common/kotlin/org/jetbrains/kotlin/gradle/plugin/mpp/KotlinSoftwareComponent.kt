@@ -22,10 +22,6 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.dsl.metadataTarget
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.withArtifactIdAttribute
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginLifecycle.Stage.AfterFinaliseCompilations

@@ -131,13 +131,13 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
                 val shouldRewritePomDependencies =
                     project.provider { PropertiesProvider(project).keepMppDependenciesIntactInPoms != true }
 
-                addGavVariantToConfigurations(target, publication, rootPublication)
                 rewritePom(
                     pom,
                     pomRewriter,
                     shouldRewritePomDependencies,
                     dependenciesForPomRewriting(this@createMavenPublications)
                 )
+                addGavVariantToConfigurations(target, publication, rootPublication)
             }
 
             (kotlinComponent as? KotlinTargetComponentWithPublication)?.publicationDelegate = componentPublication
@@ -150,10 +150,10 @@ private fun InternalKotlinTarget.addGavVariantToConfigurations(
     publication: MavenPublication,
     rootPublication: MavenPublication,
 ) {
-    project.configurations.maybeCreateConsumable(target.apiElementsConfigurationName)
-        .addGavSecondaryVariant(project, publication, rootPublication)
-    project.configurations.maybeCreateConsumable(target.runtimeElementsConfigurationName)
-        .addGavSecondaryVariant(project, publication, rootPublication)
+    project.configurations.findByName(target.apiElementsConfigurationName)
+        ?.addGavSecondaryVariant(project, publication, rootPublication)
+    project.configurations.findByName(target.runtimeElementsConfigurationName)
+        ?.addGavSecondaryVariant(project, publication, rootPublication)
 }
 
 private fun Configuration.addGavSecondaryVariant(project: Project, publication: MavenPublication, rootPublication: MavenPublication) {

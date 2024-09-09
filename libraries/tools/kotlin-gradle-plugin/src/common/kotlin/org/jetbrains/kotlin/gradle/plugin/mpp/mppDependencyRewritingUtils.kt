@@ -138,9 +138,19 @@ private fun associateDependenciesWithActualModuleDependencies(
     val project = compilation.target.project
 
     val targetDependenciesConfiguration = project.configurations.getByName(
-        when (mavenScope) {
-            MavenScope.COMPILE -> compilation.compileDependencyConfigurationName
-            MavenScope.RUNTIME -> compilation.runtimeDependencyConfigurationName ?: return emptyMap()
+        when (compilation) {
+            is KotlinJvmAndroidCompilation -> {
+                // TODO handle Android configuration names in a general way once we drop AGP < 3.0.0
+                val variantName = compilation.name
+                when (mavenScope) {
+                    MavenScope.COMPILE -> variantName + "CompileClasspath"
+                    MavenScope.RUNTIME -> variantName + "RuntimeClasspath"
+                }
+            }
+            else -> when (mavenScope) {
+                MavenScope.COMPILE -> compilation.compileDependencyConfigurationName
+                MavenScope.RUNTIME -> compilation.runtimeDependencyConfigurationName ?: return emptyMap()
+            }
         }
     )
 

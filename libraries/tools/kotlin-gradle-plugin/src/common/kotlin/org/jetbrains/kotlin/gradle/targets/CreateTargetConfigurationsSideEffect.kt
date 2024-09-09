@@ -47,7 +47,6 @@ internal val CreateTargetConfigurationsSideEffect = KotlinTargetSideEffect { tar
         isVisible = false
         attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.producerApiUsage(target))
         attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, project.categoryByName(Category.LIBRARY))
-        attributes.setAttribute(withArtifactIdAttribute, false)
         extendsFrom(apiElementScope)
         @Suppress("TYPEALIAS_EXPANSION_DEPRECATION")
         if (mainCompilation is DeprecatedKotlinCompilationToRunnableFiles) {
@@ -71,7 +70,6 @@ internal val CreateTargetConfigurationsSideEffect = KotlinTargetSideEffect { tar
             isVisible = false
             attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.producerRuntimeUsage(target))
             attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, project.categoryByName(Category.LIBRARY))
-            attributes.setAttribute(withArtifactIdAttribute, false)
             val runtimeConfiguration = mainCompilation.internal.configurations.deprecatedRuntimeConfiguration
             extendsFrom(implementationConfiguration)
             extendsFrom(runtimeOnlyConfiguration)

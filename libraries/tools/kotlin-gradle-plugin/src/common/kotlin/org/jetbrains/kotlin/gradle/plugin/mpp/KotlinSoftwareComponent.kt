@@ -255,19 +255,7 @@ class DefaultKotlinUsageContext(
                      * Another option could be to put this attribute only on the secondary variant that is non-packed.
                      * However, disambiguation rules do not work well on old Gradle versions with this.
                      */
-                    it.name != KlibPackaging.ATTRIBUTE.name &&
-
-                    /**
-                     * Attributes with GAV(groupId, artifactId, version) only used for project-to-project interaction.
-                     * So there is no need to publish them.
-                     */
-                    it.name !in
-                    listOf(
-                        withArtifactIdAttribute.name,
-                        artifactIdAttribute.name,
-                        artifactVersionAttribute.name,
-                        artifactGroupAttribute.name
-                    )
+                    it.name != KlibPackaging.ATTRIBUTE.name
         }
 
 }

@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
 import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
 import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
 import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactIdAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.withArtifactIdAttribute
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginLifecycle
 import org.jetbrains.kotlin.gradle.plugin.KotlinProjectSetupCoroutine
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
@@ -156,18 +157,12 @@ private fun InternalKotlinTarget.addGavVariantToConfigurations(
 }
 
 private fun Configuration.addGavSecondaryVariant(project: Project, publication: MavenPublication, rootPublication: MavenPublication) {
-//    val originalArtifacts = this.artifacts
-//    outgoing.variants.create("gavSecondaryVariant") {
-//        attributes.setAttribute(withArtifactIdAttribute, true)
+    attributes.setAttribute(withArtifactIdAttribute, true)
     attributes.attributeProvider(artifactGroupAttribute, project.provider { publication.groupId })
     attributes.attributeProvider(artifactIdAttribute, project.provider { publication.artifactId })
     attributes.attributeProvider(artifactVersionAttribute, project.provider { publication.version })
 
     attributes.attributeProvider(rootArtifactIdAttribute, project.provider { rootPublication.artifactId })
-//        originalArtifacts.forEach { publishArtifact ->
-//            it.artifact(publishArtifact)
-//        }
-//    }
 }
 
 private fun rewritePom(

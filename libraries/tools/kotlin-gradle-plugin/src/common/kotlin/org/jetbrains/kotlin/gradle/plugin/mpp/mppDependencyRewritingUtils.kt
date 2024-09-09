@@ -144,11 +144,14 @@ private fun associateDependenciesWithActualModuleDependencies(
         }
     )
 
-    return LazyResolvedConfiguration(targetDependenciesConfiguration)
+    val lazyResolvedConfiguration = LazyResolvedConfiguration(targetDependenciesConfiguration, true)
+    return lazyResolvedConfiguration
         .allResolvedDependencies
         .mapNotNull { resolvedDependency ->
-            val resolvedVariant = resolvedDependency.resolvedVariant.lastExternalVariantOrSelf()
+            val resolvedArtifact = lazyResolvedConfiguration.getArtifacts(resolvedDependency).singleOrNull() ?: return@mapNotNull null
+            val resolvedVariant = resolvedArtifact.variant.lastExternalVariantOrSelf()
             val requestedDependency = resolvedDependency.requested
+
             createAssociationBetweenRequestedAndResolvedDependency(requestedDependency, resolvedVariant)
         }.associate { it }
 }

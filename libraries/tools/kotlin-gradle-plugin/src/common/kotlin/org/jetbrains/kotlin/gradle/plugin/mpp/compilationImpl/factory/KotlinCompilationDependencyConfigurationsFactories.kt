@@ -170,7 +170,7 @@ private fun KotlinCompilationDependencyConfigurationsContainer(
             usesPlatformOf(target)
             isVisible = false
             attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.consumerApiUsage(target))
-            attributes.setAttribute(withArtifactIdAttribute, true)
+//            attributes.setAttribute(withArtifactIdAttribute, true)
             if (target.platformType != KotlinPlatformType.androidJvm) {
                 attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, target.project.categoryByName(Category.LIBRARY))
             }
@@ -184,7 +184,7 @@ private fun KotlinCompilationDependencyConfigurationsContainer(
             usesPlatformOf(target)
             isVisible = false
             attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.consumerRuntimeUsage(target))
-            attributes.setAttribute(withArtifactIdAttribute, true)
+//            attributes.setAttribute(withArtifactIdAttribute, true)
             if (target.platformType != KotlinPlatformType.androidJvm) {
                 attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, target.project.categoryByName(Category.LIBRARY))
             }

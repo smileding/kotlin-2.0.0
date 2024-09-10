@@ -173,6 +173,8 @@ class DependencyDownloader(
             "The destination file is a directory: ${destination.canonicalPath}. Remove it and try again."
         }
 
+        println("Downloading dependency $source to $destination")
+
         var attempt = 1
         var waitTime = 0L
         val handleException = { e: Exception ->

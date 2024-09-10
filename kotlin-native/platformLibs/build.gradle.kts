@@ -68,13 +68,15 @@ enabledTargets(platformManager).forEach { target ->
             df.config.depends.forEach { defName ->
                 this.klibFiles.from(tasks.named(interopTaskName(defFileToLibName(targetName, defName), targetName)))
             }
+            // Keep the path relative to hit build cache.
+            val fmodulesCache = project.layout.buildDirectory.dir("clangModulesCache").get().asFile.toRelativeString(project.layout.projectDirectory.asFile)
             this.extraOpts.addAll(
                     "-Xpurge-user-libs",
                     "-Xshort-module-name", df.name,
                     "-Xdisable-experimental-annotation",
                     "-no-default-libs",
                     "-no-endorsed-libs",
-                    "-compiler-option", "-fmodules-cache-path=${project.layout.buildDirectory.dir("clangModulesCache").get().asFile}"
+                    "-compiler-option", "\"-fmodules-cache-path=$fmodulesCache\"" // "" are required for command-line parsing on Windows.
             )
         }
 

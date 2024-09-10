@@ -5,18 +5,17 @@
 
 package org.jetbrains.kotlin.gradle.plugin.konan
 
-import java.io.File
+import org.gradle.api.file.Directory
 
 /**
  * Prepare `this` to be an output for the task:
  * * delete if exists
  * * make sure all parent directories exist
  */
-internal fun File.prepareAsOutput() {
+internal fun Directory.prepareAsOutputDirectory() = with(asFile) {
     val deleted = deleteRecursively()
-    check(deleted) { "Failed to delete $path" }
-    parentFile.mkdirs()
-    check(parentFile.exists()) { "Failed to create parent directories for $path" }
+    check(deleted) { "Failed to delete $absolutePath" }
+    check(parentFile.exists()) { "Parent directory for $absolutePath does not exist" }
 }
 
 internal fun Collection<String>.toPrettyString(): String = buildString {

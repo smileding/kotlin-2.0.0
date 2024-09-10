@@ -21,7 +21,7 @@ import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliRunnerIsolatedClassLoadersService
-import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
+import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutputDirectory
 import org.jetbrains.kotlin.gradle.plugin.konan.runKonanTool
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
 import org.jetbrains.kotlin.nativeDistribution.NativeDistributionProperty
@@ -82,7 +82,7 @@ open class KonanCompileTask @Inject constructor(
 
     @TaskAction
     fun run() {
-        outputDirectory.get().asFile.prepareAsOutput()
+        outputDirectory.get().prepareAsOutputDirectory()
 
         val args = buildList {
             add("-nopack")

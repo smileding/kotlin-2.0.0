@@ -22,7 +22,7 @@ import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliRunnerIsolatedClassLoadersService
 import org.jetbrains.kotlin.konan.target.PlatformManager
-import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
+import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutputDirectory
 import org.jetbrains.kotlin.gradle.plugin.konan.runKonanTool
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
 import org.jetbrains.kotlin.nativeDistribution.NativeDistributionProperty
@@ -93,7 +93,7 @@ open class KonanCacheTask @Inject constructor(
     @TaskAction
     fun compile() {
         // Compiler doesn't create a cache if the cacheFile already exists. So we need to remove it manually.
-        outputDirectory.get().asFile.prepareAsOutput()
+        outputDirectory.get().prepareAsOutputDirectory()
 
         val args = buildList {
             add("-g")

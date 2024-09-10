@@ -126,7 +126,7 @@ open class KonanInteropTask @Inject constructor(
 
     @TaskAction
     fun run() {
-        outputDirectory.get().asFile.prepareAsOutput()
+        outputDirectory.get().prepareAsOutputDirectory()
 
         val args = buildList {
             add("-nopack")

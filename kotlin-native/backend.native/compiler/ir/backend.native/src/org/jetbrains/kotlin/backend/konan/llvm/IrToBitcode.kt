@@ -2173,8 +2173,13 @@ internal class CodeGeneratorVisitor(
                 }
             }
 
-            assert(value.type.isUnit())
-            return codegen.theUnitInstanceRef.llvm
+            return when {
+                value.type.isUnit() -> codegen.theUnitInstanceRef.llvm
+                value.type.isNothing() -> functionGenerationContext.kNothingFakeValue
+                else -> if (value is IrInlinedFunctionBlock)
+                    LLVMGetUndef(value.type.toLLVMType(llvm))!!
+                else error(value.type.render())
+            }
         }
     }
 

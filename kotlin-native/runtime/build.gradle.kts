@@ -553,6 +553,8 @@ val stdlibBuildTask by tasks.registering(KonanCompileTask::class) {
     group = BasePlugin.BUILD_GROUP
     description = "Build the Kotlin/Native standard library '$name'"
 
+    // Requires `nativeDistribution` with the compiler JARs. The task
+    // will properly depend on the required parts of the distribution.
     this.compilerDistribution.set(nativeDistribution)
     dependsOn(":kotlin-native:distCompiler")
 
@@ -616,9 +618,11 @@ val cacheableTargetNames = platformManager.hostPlatform.cacheableTargets
 cacheableTargetNames.forEach { targetName ->
     tasks.register("${targetName}StdlibCache", KonanCacheTask::class.java) {
         val dist = project.nativeDistribution
+        // Requires `nativeDistribution` with stdlib klib and runtime modules for `targetName`. The task
+        // will properly depend on required parts of the distribution. But we need to additionally depend
+        // on runtime modules, because they get linked in.
         compilerDistribution.set(dist)
         dependsOn(":kotlin-native:${targetName}CrossDistRuntime")
-        // stdlib cache additionally links in runtime modules from the K/N distribution.
         inputs.dir(dist.map { it.runtime(targetName) })
 
         target = targetName

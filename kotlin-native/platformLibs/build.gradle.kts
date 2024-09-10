@@ -56,9 +56,12 @@ enabledTargets(platformManager).forEach { target ->
             group = BasePlugin.BUILD_GROUP
             description = "Build the Kotlin/Native platform library '$libName' for '$target'"
 
-            this.compilerDistribution.set(nativeDistribution)
-            dependsOn(":kotlin-native:${targetName}CrossDist")
             updateDefFileTasksPerFamily[target.family]?.let { dependsOn(it) }
+
+            // Requires `nativeDistribution` with stdlib klib. The task
+            // will properly depend on required parts of the distribution.
+            this.compilerDistribution.set(nativeDistribution)
+            dependsOn(":kotlin-native:distStdlib")
 
             this.target.set(targetName)
             this.outputDirectory.set(
@@ -97,17 +100,12 @@ enabledTargets(platformManager).forEach { target ->
             val cacheTask = tasks.register(cacheTaskName(targetName, df.name), KonanCacheTask::class.java) {
                 val dist = nativeDistribution
 
+                // Requires `nativeDistribution` with stdlib klib, runtime modules for `targetName`, stdlib cache, and
+                // depended upon platform libs klibs with their caches. The task will properly depend on required parts of the distribution.
+                // But we need to manually depend on stdlib cache, and depended upon platform libs.
                 compilerDistribution.set(dist)
                 dependsOn(":kotlin-native:${targetName}CrossDist")
-
-                klib.fileProvider(libTask.map { it.outputs.files.singleFile })
-                this.target.set(targetName)
-                this.moduleName.set(artifactName)
-                this.cacheRootDirectory.set(dist.map { it.cachesRoot })
-
-                dependsOn(":kotlin-native:${targetName}StdlibCache")
                 inputs.dir(dist.map { it.stdlibCache(targetName) })
-
                 df.config.depends.forEach { dep ->
                     // Depend on installed dependency cache
                     tasks.named<KonanCacheTask>(cacheTaskName(targetName, dep)).apply {
@@ -120,6 +118,11 @@ enabledTargets(platformManager).forEach { target ->
                         inputs.dir(map { it.destinationDir })
                     }
                 }
+
+                klib.fileProvider(libTask.map { it.outputs.files.singleFile })
+                this.target.set(targetName)
+                this.moduleName.set(artifactName)
+                this.cacheRootDirectory.set(dist.map { it.cachesRoot })
             }
             cacheTasks.add(cacheTask)
         }

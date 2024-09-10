@@ -135,7 +135,7 @@ class PublishingIT : KGPBaseTest() {
                 gradleVersion,
                 DependencyManagement.DefaultDependencyManagement(),
                 localRepo,
-                buildOptions.projectIsolation
+                true
             )
 
             build("publishJvmPublicationToCustomRepository") {

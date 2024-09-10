@@ -70,13 +70,20 @@ enabledTargets(platformManager).forEach { target ->
             }
             // Keep the path relative to hit build cache.
             val fmodulesCache = project.layout.buildDirectory.dir("clangModulesCache").get().asFile.toRelativeString(project.layout.projectDirectory.asFile)
+            val fmodulesCacheOption = "-fmodules-cache-path=$fmodulesCache".let {
+                if (PlatformInfo.isWindows()) {
+                    "\"$it\""
+                } else {
+                    it
+                }
+            }
             this.extraOpts.addAll(
                     "-Xpurge-user-libs",
                     "-Xshort-module-name", df.name,
                     "-Xdisable-experimental-annotation",
                     "-no-default-libs",
                     "-no-endorsed-libs",
-                    "-compiler-option", "\"-fmodules-cache-path=$fmodulesCache\"" // "" are required for command-line parsing on Windows.
+                    "-compiler-option", fmodulesCacheOption
             )
         }
 

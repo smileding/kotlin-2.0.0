@@ -21,6 +21,7 @@ import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.ExecClang
 import org.jetbrains.kotlin.execLlvmUtility
 import org.jetbrains.kotlin.konan.target.*
+import org.jetbrains.kotlin.nativeDistribution.nativeProtoDistribution
 import java.io.OutputStream
 import javax.inject.Inject
 
@@ -136,10 +137,20 @@ private abstract class CompileToExecutableJob : WorkAction<CompileToExecutableJo
  *
  * @see CompileToBitcodePlugin
  */
+@CacheableTask
 abstract class CompileToExecutable : DefaultTask() {
+    // Marked as input via [konanProperties], [konanDataDir].
+    private val platformManager = project.extensions.getByType<PlatformManager>()
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    @Suppress("unused")
+    protected val konanProperties = project.nativeProtoDistribution.konanProperties
 
     @get:Input
-    val platformManager = project.extensions.getByType<PlatformManager>()
+    @get:Optional
+    @Suppress("unused")
+    protected val konanDataDir = project.providers.gradleProperty("konan.data.dir")
 
     /**
      * Target for which to compile.
@@ -154,17 +165,11 @@ abstract class CompileToExecutable : DefaultTask() {
     @get:Optional
     abstract val sanitizer: Property<SanitizerKind>
 
-    // TODO: Should be replaced by a list of libraries to be linked with.
-    /**
-     * Controls whether linker should add library dependencies.
-     */
-    @get:Input
-    abstract val mimallocEnabled: Property<Boolean>
-
     /**
      * Bitcode file with the `main()` entrypoint.
      */
     @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
     abstract val mainFile: RegularFileProperty
 
     /**
@@ -174,6 +179,7 @@ abstract class CompileToExecutable : DefaultTask() {
      */
     @get:SkipWhenEmpty
     @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
     abstract val inputFiles: ConfigurableFileCollection
 
     /**
@@ -224,7 +230,7 @@ abstract class CompileToExecutable : DefaultTask() {
                     debug = true,
                     kind = LinkerOutputKind.EXECUTABLE,
                     outputDsymBundle = outputFile.asFile.get().absolutePath + ".dSYM",
-                    mimallocEnabled = mimallocEnabled.get(),
+                    mimallocEnabled = false, // Unused in the linker
                     sanitizer = sanitizer.orNull
             ).map { it.argsWithExecutable }
 

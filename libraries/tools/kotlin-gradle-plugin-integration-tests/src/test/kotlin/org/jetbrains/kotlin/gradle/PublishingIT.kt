@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.gradle.testbase.assertTasksExecuted
 import org.jetbrains.kotlin.gradle.testbase.build
 import org.jetbrains.kotlin.gradle.testbase.defaultLocalRepo
 import org.jetbrains.kotlin.gradle.testbase.project
+import org.jetbrains.kotlin.gradle.util.replaceText
 import org.jetbrains.kotlin.test.TestMetadata
 import org.junit.jupiter.api.DisplayName
 import kotlin.io.path.absolutePathString
@@ -143,7 +144,10 @@ class PublishingIT : KGPBaseTest() {
                     .resolve("pom-rewriter-root-jvm")
                     .resolve("1.0.0")
                     .resolve("pom-rewriter-root-jvm-1.0.0.pom")
+
                 val pathToExpectedPom = projectPath.resolve("expected-pom.xml")
+                pathToExpectedPom.replaceText("{kotlin_version}", buildOptions.kotlinVersion)
+
                 assertFileInProjectContains(pathToActualPom.absolutePathString(), pathToExpectedPom.readText())
             }
         }

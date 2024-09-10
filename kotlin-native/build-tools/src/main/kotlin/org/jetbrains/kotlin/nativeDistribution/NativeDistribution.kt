@@ -11,6 +11,7 @@ import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.specs.Spec
@@ -123,7 +124,7 @@ class NativeDistribution(val root: Directory) {
 }
 
 @JvmInline
-value class NativeDistributionProperty(private val directoryProperty: DirectoryProperty) : Property<NativeDistribution> {
+value class NativeDistributionProperty internal constructor(private val directoryProperty: DirectoryProperty) : Property<NativeDistribution> {
     private inline fun <T : Any?> fwd(f: DirectoryProperty.() -> T) = directoryProperty.f()
     private inline fun <T : Any?> fwdNullable(value: NativeDistribution?, f: DirectoryProperty.(Directory?) -> T) =
         directoryProperty.f(value?.root)
@@ -175,6 +176,11 @@ value class NativeDistributionProperty(private val directoryProperty: DirectoryP
     override fun <U : Any?, R : Any?> zip(right: Provider<U?>, combiner: BiFunction<in NativeDistribution, in U, out R?>): Provider<R> =
         directoryProperty.zip<U, R>(right) { lhs, rhs -> combiner.apply(ret(lhs), rhs) }
 }
+
+/**
+ * Creates a new [NativeDistributionProperty]. The property has no initial value.
+ */
+fun ObjectFactory.nativeDistributionProperty() = NativeDistributionProperty(directoryProperty())
 
 /**
  * Get the default Native distribution.

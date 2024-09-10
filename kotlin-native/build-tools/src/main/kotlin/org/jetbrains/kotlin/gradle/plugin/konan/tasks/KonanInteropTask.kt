@@ -13,6 +13,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.logging.Logging
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -26,6 +27,7 @@ import org.jetbrains.kotlin.PlatformInfo
 import org.jetbrains.kotlin.gradle.plugin.konan.*
 import org.jetbrains.kotlin.konan.target.AbstractToolConfig
 import org.jetbrains.kotlin.nativeDistribution.NativeDistributionProperty
+import org.jetbrains.kotlin.nativeDistribution.nativeDistributionProperty
 import javax.inject.Inject
 
 private val load0 = Runtime::class.java.getDeclaredMethod("load0", Class::class.java, String::class.java).also {
@@ -83,38 +85,38 @@ private abstract class KonanInteropOutOfProcessAction @Inject constructor(
  * A task executing cinterop tool with the given args and compiling the stubs produced by this tool.
  */
 @CacheableTask
-abstract class KonanInteropTask @Inject constructor(
+open class KonanInteropTask @Inject constructor(
         private val workerExecutor: WorkerExecutor,
         private val layout: ProjectLayout,
+        objectFactory: ObjectFactory,
 ) : DefaultTask() {
     @get:Input
-    abstract val target: Property<String>
+    val target: Property<String> = objectFactory.property(String::class.java)
 
     @get:OutputDirectory
-    abstract val outputDirectory: DirectoryProperty
+    val outputDirectory: DirectoryProperty = objectFactory.directoryProperty()
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val klibFiles: ConfigurableFileCollection
+    val klibFiles: ConfigurableFileCollection = objectFactory.fileCollection()
 
     @get:Input
-    abstract val extraOpts: ListProperty<String>
+    val extraOpts: ListProperty<String> = objectFactory.listProperty(String::class.java)
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val defFile: RegularFileProperty
+    val defFile: RegularFileProperty = objectFactory.fileProperty()
 
     /**
      * Kotlin/Native distribution to use.
      */
     @get:Internal // proper dependencies will be specified below: `compilerClasspath`
-    abstract val compilerDistribution: NativeDistributionProperty
+    val compilerDistribution: NativeDistributionProperty = objectFactory.nativeDistributionProperty()
 
     @get:Classpath // Depends only on the compiler jar.
     // Even though stdlib klib is required for building, changing stdlib will not change the resulting klib.
     @Suppress("unused")
-    protected val compilerClasspath: Provider<FileCollection>
-        get() = compilerDistribution.map { it.compilerClasspath }
+    protected val compilerClasspath: Provider<FileCollection> = compilerDistribution.map { it.compilerClasspath }
 
     @get:ServiceReference
     protected val isolatedClassLoadersService = usesIsolatedClassLoadersService()

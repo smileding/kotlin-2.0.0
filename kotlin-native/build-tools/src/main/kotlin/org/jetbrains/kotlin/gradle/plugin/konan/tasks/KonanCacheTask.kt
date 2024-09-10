@@ -11,6 +11,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.logging.Logging
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -25,6 +26,7 @@ import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
 import org.jetbrains.kotlin.gradle.plugin.konan.runKonanTool
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
 import org.jetbrains.kotlin.nativeDistribution.NativeDistributionProperty
+import org.jetbrains.kotlin.nativeDistribution.nativeDistributionProperty
 import javax.inject.Inject
 
 private abstract class KonanCacheAction : WorkAction<KonanCacheAction.Parameters> {
@@ -45,48 +47,45 @@ private abstract class KonanCacheAction : WorkAction<KonanCacheAction.Parameters
 }
 
 @CacheableTask
-abstract class KonanCacheTask @Inject constructor(
+open class KonanCacheTask @Inject constructor(
         private val workerExecutor: WorkerExecutor,
+        objectFactory: ObjectFactory,
 ) : DefaultTask() {
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val klib: DirectoryProperty
+    val klib: DirectoryProperty = objectFactory.directoryProperty()
 
     @get:Input
-    abstract val target: Property<String>
+    val target: Property<String> = objectFactory.property(String::class.java)
 
     @get:Internal // used to construct the output place
-    abstract val moduleName: Property<String>
+    val moduleName: Property<String> = objectFactory.property(String::class.java)
 
     @get:Internal // used to construct the output place
-    abstract val cacheRootDirectory: DirectoryProperty
+    val cacheRootDirectory: DirectoryProperty = objectFactory.directoryProperty()
 
     @get:OutputDirectory
-    val outputDirectory: Provider<Directory>
-        get() = cacheRootDirectory.dir(target.flatMap { target -> moduleName.map { name -> "$target-gSTATIC/$name-cache" } })
+    val outputDirectory: Provider<Directory> = cacheRootDirectory.dir(target.zip(moduleName) { target, name -> "$target-gSTATIC/$name-cache" })
 
     /**
      * Kotlin/Native distribution to use.
      */
     @get:Internal // proper dependencies will be specified below: `compilerClasspath`
-    abstract val compilerDistribution: NativeDistributionProperty
+    val compilerDistribution: NativeDistributionProperty = objectFactory.nativeDistributionProperty()
 
     @get:Classpath // Depends on the compiler jar.
     @Suppress("unused")
-    protected val compilerClasspath: Provider<FileCollection>
-        get() = compilerDistribution.map { it.compilerClasspath }
+    protected val compilerClasspath: Provider<FileCollection> = compilerDistribution.map { it.compilerClasspath }
 
     @get:InputDirectory // Depends on libraries used during code generation
     @get:PathSensitive(PathSensitivity.NONE)
     @Suppress("unused")
-    protected val llvmCodegenLibs: Provider<Directory>
-        get() = compilerDistribution.map { it.nativeLibs }
+    protected val llvmCodegenLibs: Provider<Directory> = compilerDistribution.map { it.nativeLibs }
 
     @get:InputFile // Depends on properties file with compilation flags used during code generation
     @get:PathSensitive(PathSensitivity.NONE)
     @Suppress("unused")
-    protected val konanProperties: Provider<RegularFile>
-        get() = compilerDistribution.map { it.konanProperties }
+    protected val konanProperties: Provider<RegularFile> = compilerDistribution.map { it.konanProperties }
 
     @get:ServiceReference
     protected val isolatedClassLoadersService = usesIsolatedClassLoadersService()

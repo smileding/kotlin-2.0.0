@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
 import org.jetbrains.kotlin.gradle.plugin.konan.runKonanTool
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
 import org.jetbrains.kotlin.nativeDistribution.NativeDistributionProperty
+import org.jetbrains.kotlin.nativeDistribution.nativeDistributionProperty
 import javax.inject.Inject
 
 private abstract class KonanCompileAction : WorkAction<KonanCompileAction.Parameters> {
@@ -48,26 +49,25 @@ private abstract class KonanCompileAction : WorkAction<KonanCompileAction.Parame
  * A task compiling the target library using Kotlin/Native compiler
  */
 @CacheableTask
-abstract class KonanCompileTask @Inject constructor(
+open class KonanCompileTask @Inject constructor(
         private val objectFactory: ObjectFactory,
         private val workerExecutor: WorkerExecutor,
 ) : DefaultTask() {
     @get:OutputDirectory
-    abstract val outputDirectory: DirectoryProperty
+    val outputDirectory: DirectoryProperty = objectFactory.directoryProperty()
 
     @get:Input
-    abstract val extraOpts: ListProperty<String>
+    val extraOpts: ListProperty<String> = objectFactory.listProperty(String::class.java)
 
     /**
      * Kotlin/Native distribution to use.
      */
     @get:Internal // proper dependencies will be specified below: `compilerClasspath`
-    abstract val compilerDistribution: NativeDistributionProperty
+    val compilerDistribution: NativeDistributionProperty = objectFactory.nativeDistributionProperty()
 
     @get:Classpath // Since this task only compiles into klib, it's enough to depend only on the compiler jar.
     @Suppress("unused")
-    protected val compilerClasspath: Provider<FileCollection>
-        get() = compilerDistribution.map { it.compilerClasspath }
+    protected val compilerClasspath: Provider<FileCollection> = compilerDistribution.map { it.compilerClasspath }
 
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)

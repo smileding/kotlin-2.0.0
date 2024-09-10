@@ -1300,8 +1300,9 @@ internal object DevirtualizationAnalysis {
     fun run(context: Context, irModule: IrModuleFragment, moduleDFG: ModuleDFG) =
             DevirtualizationAnalysisImpl(context, irModule, moduleDFG).analyze()
 
-    fun devirtualize(irModule: IrModuleFragment, context: Context,
+    fun devirtualize(irModule: IrModuleFragment, moduleDFG: ModuleDFG, generationState: NativeGenerationState,
                      maxVTableUnfoldFactor: Int, maxITableUnfoldFactor: Int) {
+        val context = generationState.context
         val symbols = context.ir.symbols
         val nativePtrEqualityOperatorSymbol = symbols.areEqualByValue[PrimitiveBinaryType.POINTER]!!
         val isSubtype = symbols.isSubtype
@@ -1429,6 +1430,7 @@ internal object DevirtualizationAnalysis {
             }
         }
 
+        val changedDeclarations = mutableSetOf<IrDeclaration>()
         var callSitesCount = 0
         var devirtualizedCallSitesCount = 0
         var actuallyDevirtualizedCallSitesCount = 0
@@ -1457,12 +1459,12 @@ internal object DevirtualizationAnalysis {
                     return expression
                 }
                 ++actuallyDevirtualizedCallSitesCount
+                changedDeclarations.add(caller as IrDeclaration)
 
                 val startOffset = expression.startOffset
                 val endOffset = expression.endOffset
-                val function = expression.symbol.owner
-                val type = function.returnType
-                val irBuilder = context.createIrBuilder((caller as IrDeclaration).symbol, startOffset, endOffset)
+                val type = callee.returnType
+                val irBuilder = context.createIrBuilder(caller.symbol, startOffset, endOffset)
                 irBuilder.run {
                     return when {
                         possibleCallees.isEmpty() -> irBlock(expression) {
@@ -1604,6 +1606,21 @@ internal object DevirtualizationAnalysis {
                 }
             }
         }, null)
+
+        for (declaration in changedDeclarations) {
+            val irBody = when (declaration) {
+                is IrFunction -> declaration.body!!
+                is IrField -> with(declaration) {
+                    IrSetFieldImpl(startOffset, endOffset, symbol, null,
+                            initializer!!.expression, context.irBuiltIns.unitType)
+                }
+                else -> error("Unknown declaration: $declaration")
+            }
+            val rebuiltFunction = FunctionDFGBuilder(generationState, moduleDFG.symbolTable).build(declaration, irBody)
+            val functionSymbol = moduleDFG.symbolTable.mapFunction(declaration)
+            moduleDFG.functions[functionSymbol] = rebuiltFunction
+        }
+
         context.logMultiple {
             +"Devirtualized: ${devirtualizedCallSitesCount * 100.0 / callSitesCount}%"
             +"Actually devirtualized: ${actuallyDevirtualizedCallSitesCount * 100.0 / callSitesCount}%"

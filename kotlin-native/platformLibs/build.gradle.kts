@@ -107,16 +107,8 @@ enabledTargets(platformManager).forEach { target ->
                 dependsOn(":kotlin-native:${targetName}CrossDist")
                 inputs.dir(dist.map { it.stdlibCache(targetName) })
                 df.config.depends.forEach { dep ->
-                    // Depend on installed dependency cache
-                    tasks.named<KonanCacheTask>(cacheTaskName(targetName, dep)).apply {
-                        dependsOn(this)
-                        inputs.dir(flatMap { it.outputDirectory })
-                    }
-                    // And on installed dependency klib as well.
-                    tasks.named<Sync>(defFileToLibName(targetName, dep)).apply {
-                        dependsOn(this)
-                        inputs.dir(map { it.destinationDir })
-                    }
+                    inputs.dir(tasks.named<KonanCacheTask>(cacheTaskName(targetName, dep)).map { it.outputDirectory })
+                    inputs.dir(tasks.named<Sync>(defFileToLibName(targetName, dep)).map { it.destinationDir })
                 }
 
                 klib.fileProvider(libTask.map { it.outputs.files.singleFile })

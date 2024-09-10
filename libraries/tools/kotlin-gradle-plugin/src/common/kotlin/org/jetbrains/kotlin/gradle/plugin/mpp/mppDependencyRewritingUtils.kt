@@ -154,7 +154,7 @@ private fun associateDependenciesWithActualModuleDependencies(
         }
     )
 
-    val lazyResolvedConfiguration = LazyResolvedConfiguration(targetDependenciesConfiguration, true)
+    val lazyResolvedConfiguration = LazyResolvedConfiguration(targetDependenciesConfiguration, hasPublishedArtifact = true)
     return lazyResolvedConfiguration
         .allResolvedDependencies
         .mapNotNull { resolvedDependency ->

@@ -10,9 +10,14 @@ import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.process.ExecOperations
@@ -21,6 +26,7 @@ import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.execLlvmUtility
 import org.jetbrains.kotlin.konan.target.PlatformManager
+import org.jetbrains.kotlin.nativeDistribution.nativeProtoDistribution
 import javax.inject.Inject
 
 private abstract class LlvmLinkJob : WorkAction<LlvmLinkJob.Parameters> {
@@ -46,11 +52,13 @@ private abstract class LlvmLinkJob : WorkAction<LlvmLinkJob.Parameters> {
 /**
  * Run `llvm-link` on [inputFiles] with extra [arguments] and produce [outputFile]
  */
+@CacheableTask
 abstract class LlvmLink : DefaultTask() {
     /**
      * Bitcode files to link together.
      */
     @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
     abstract val inputFiles: ConfigurableFileCollection
 
     /**
@@ -68,7 +76,18 @@ abstract class LlvmLink : DefaultTask() {
     @get:Inject
     protected abstract val workerExecutor: WorkerExecutor
 
+    // Marked as input via [konanProperties], [konanDataDir].
     private val platformManager = project.extensions.getByType<PlatformManager>()
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    @Suppress("unused")
+    protected val konanProperties = project.nativeProtoDistribution.konanProperties
+
+    @get:Input
+    @get:Optional
+    @Suppress("unused")
+    protected val konanDataDir = project.providers.gradleProperty("konan.data.dir")
 
     @TaskAction
     fun link() {

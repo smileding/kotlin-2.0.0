@@ -5,13 +5,16 @@
 
 package org.jetbrains.kotlin.gradle.plugin.mpp
 
-import com.android.build.api.artifact.SingleArtifact
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
-import org.gradle.api.attributes.*
-import org.gradle.api.file.RegularFile
+import org.gradle.api.attributes.Bundling
+import org.gradle.api.attributes.Category
+import org.gradle.api.attributes.DocsType
+import org.gradle.api.attributes.HasAttributes
+import org.gradle.api.attributes.LibraryElements
+import org.gradle.api.attributes.Usage
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -26,19 +29,39 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.work.DisableCachingByDefault
-import org.jetbrains.kotlin.gradle.dsl.awaitMetadataTarget
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
-import org.jetbrains.kotlin.gradle.internal.attributes.*
-import org.jetbrains.kotlin.gradle.plugin.*
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactGroupAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactIdAttribute
+import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactVersionAttribute
+import org.jetbrains.kotlin.gradle.plugin.KotlinPluginLifecycle
+import org.jetbrains.kotlin.gradle.plugin.KotlinProjectSetupCoroutine
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
+import org.jetbrains.kotlin.gradle.plugin.attributeValueByName
+import org.jetbrains.kotlin.gradle.plugin.launchInStage
+import org.jetbrains.kotlin.gradle.plugin.setUsesPlatformOf
 import org.jetbrains.kotlin.gradle.plugin.sources.KotlinDependencyScope
 import org.jetbrains.kotlin.gradle.plugin.sources.sourceSetDependencyConfigurationByScope
+import org.jetbrains.kotlin.gradle.plugin.usageByName
+import org.jetbrains.kotlin.gradle.plugin.usesPlatformOf
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrTarget
 import org.jetbrains.kotlin.gradle.targets.metadata.isKotlinGranularMetadataEnabled
 import org.jetbrains.kotlin.gradle.tasks.locateOrRegisterTask
 import org.jetbrains.kotlin.gradle.tooling.buildKotlinToolingMetadataTask
-import org.jetbrains.kotlin.gradle.utils.*
+import org.jetbrains.kotlin.gradle.utils.CompletableFuture
+import org.jetbrains.kotlin.gradle.utils.Future
+import org.jetbrains.kotlin.gradle.utils.JsonUtils
+import org.jetbrains.kotlin.gradle.utils.isPluginApplied
+import org.jetbrains.kotlin.gradle.utils.named
+import org.jetbrains.kotlin.gradle.utils.projectStoredProperty
+import org.jetbrains.kotlin.gradle.utils.setAttribute
+import org.jetbrains.kotlin.gradle.utils.whenEvaluated
 
 private val Project.kotlinMultiplatformRootPublicationImpl: CompletableFuture<MavenPublication?>
         by projectStoredProperty { CompletableFuture() }

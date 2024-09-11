@@ -9,34 +9,17 @@ import groovy.util.Node
 import groovy.util.NodeList
 import org.gradle.api.Project
 import org.gradle.api.XmlProvider
-import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.artifacts.ModuleIdentifier
 import org.gradle.api.artifacts.ModuleVersionIdentifier
-import org.gradle.api.artifacts.ProjectDependency
-import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.artifacts.component.ComponentSelector
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentSelector
-import org.gradle.api.artifacts.component.ProjectComponentSelector
-import org.gradle.api.artifacts.result.ResolvedVariantResult
-import org.gradle.api.artifacts.type.ArtifactTypeDefinition
-import org.gradle.api.internal.component.SoftwareComponentInternal
-import org.gradle.api.internal.component.UsageContext
+import org.gradle.api.artifacts.result.ResolvedArtifactResult
 import org.gradle.api.provider.Provider
-import org.jetbrains.kotlin.gradle.dsl.multiplatformExtensionOrNull
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactGroupAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactIdAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactVersionAttribute
-import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetComponent
-import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinUsageContext.MavenScope
+import org.jetbrains.kotlin.gradle.utils.JsonUtils
 import org.jetbrains.kotlin.gradle.utils.LazyResolvedConfiguration
-import org.jetbrains.kotlin.gradle.utils.getValue
-import org.jetbrains.kotlin.gradle.utils.lastExternalVariantOrSelf
 
 internal data class ModuleCoordinates(
     private val moduleGroup: String?,
@@ -167,55 +150,41 @@ private fun associateDependenciesWithActualModuleDependencies(
     val associate = lazyResolvedConfiguration
         .allResolvedDependencies
         .mapNotNull { resolvedDependency ->
-            val resolvedVariant =
-                lazyResolvedConfiguration.getArtifacts(resolvedDependency).singleOrNull()?.variant?.lastExternalVariantOrSelf()
-                    ?: resolvedDependency.resolvedVariant.lastExternalVariantOrSelf()
+            val resolvedArtifact = lazyResolvedConfiguration.getArtifacts(resolvedDependency).singleOrNull()
             val requestedDependency = resolvedDependency.requested
 
-            createAssociationBetweenRequestedAndResolvedDependency(requestedDependency, resolvedVariant)
+            createAssociationBetweenRequestedAndResolvedDependency(requestedDependency, resolvedArtifact)
         }.associate { it }
     return associate
 }
 
-
 private fun createAssociationBetweenRequestedAndResolvedDependency(
     requestedDependency: ComponentSelector,
-    resolvedVariant: ResolvedVariantResult,
+    resolvedArtifact: ResolvedArtifactResult?,
 ): Pair<ModuleCoordinates, ModuleCoordinates>? {
-    return when (requestedDependency) {
-        is ProjectComponentSelector -> {
-            ModuleCoordinates(
-                resolvedVariant.attributes.getAttribute(rootArtifactGroupAttribute),
-                resolvedVariant.attributes.getAttribute(rootArtifactIdAttribute) ?: "undefined",
-                resolvedVariant.attributes.getAttribute(rootArtifactVersionAttribute)
-            ) to ModuleCoordinates(
-                resolvedVariant.attributes.getAttribute(artifactGroupAttribute),
-                resolvedVariant.attributes.getAttribute(artifactIdAttribute) ?: "undefined",
-                resolvedVariant.attributes.getAttribute(artifactVersionAttribute)
-            )
-        }
-        is ModuleComponentSelector -> {
-            val requestedCoordinates = ModuleCoordinates(
-                requestedDependency.group,
-                requestedDependency.module,
-                requestedDependency.version
-            )
-            // with this check we separate project-to-project dependencies from the external dependencies
-            if (resolvedVariant.attributes.getAttribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE) == "kotlin-publication-coordinates") {
-                requestedCoordinates to ModuleCoordinates(
-                    resolvedVariant.attributes.getAttribute(artifactGroupAttribute),
-                    resolvedVariant.attributes.getAttribute(artifactIdAttribute) ?: "undefined",
-                    resolvedVariant.attributes.getAttribute(artifactVersionAttribute)
-                )
-            } else {
-                val resolvedDependencyVariant = resolvedVariant.owner as? ModuleComponentIdentifier ?: return null
-                requestedCoordinates to ModuleCoordinates(
-                    resolvedDependencyVariant.group,
-                    resolvedDependencyVariant.module,
-                    resolvedDependencyVariant.version
-                )
-            }
-        }
-        else -> return null
+    val publicationCoordinates = resolvedArtifact?.file?.let { artifact -> JsonUtils.gson.fromJson(artifact.readText(), PublicationCoordinates::class.java) }
+    return if (publicationCoordinates != null) {
+        ModuleCoordinates(
+            publicationCoordinates.rootPublicationGAV.group,
+            publicationCoordinates.rootPublicationGAV.artifactId,
+            publicationCoordinates.rootPublicationGAV.version
+        ) to ModuleCoordinates(
+            publicationCoordinates.targetPublicationGAV.group,
+            publicationCoordinates.targetPublicationGAV.artifactId,
+            publicationCoordinates.targetPublicationGAV.version
+        )
+    } else {
+        if (requestedDependency !is ModuleComponentSelector) return null
+        val resolvedDependencyVariant = resolvedArtifact?.variant as? ModuleComponentIdentifier ?: return null
+        val requestedCoordinates = ModuleCoordinates(
+            requestedDependency.group,
+            requestedDependency.module,
+            requestedDependency.version
+        )
+        requestedCoordinates to ModuleCoordinates(
+            resolvedDependencyVariant.group,
+            resolvedDependencyVariant.module,
+            resolvedDependencyVariant.version
+        )
     }
 }

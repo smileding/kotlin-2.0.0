@@ -343,8 +343,8 @@ internal class CodeGeneratorVisitor(
         val functionContext = findCodeContext(symbol.owner, currentCodeContext) {
             val declaration = (this as? FunctionScope)?.declaration
             val inlinedBlock = (this as? InlinedBlockScope)?.inlinedBlock
-            val inlinedFunction = inlinedBlock?.inlineFunction
-            declaration == it || inlinedFunction == it
+            val inlinedFunctionSymbol = inlinedBlock?.inlineFunctionSymbol
+            declaration == it || inlinedFunctionSymbol == it.symbol
         } ?: return null
 
         /**
@@ -1986,16 +1986,16 @@ internal class CodeGeneratorVisitor(
     //-------------------------------------------------------------------------//
 
     private inner class InlinedBlockScope(val inlinedBlock: IrInlinedFunctionBlock) :
-            FileScope(inlinedBlock.inlineFunction.let {
-                require(it is IrSimpleFunction) { "Inline constructors should've been lowered: ${it.render()}" }
+            FileScope(inlinedBlock.inlineFunctionSymbol?.owner.let {
+                require(it is IrSimpleFunction) { "Inline constructors should've been lowered: ${it?.render()}" }
                 generationState.inlineFunctionOrigins[it]?.irFile ?: it.fileOrNull
             }
                     ?: (currentCodeContext.fileScope() as? FileScope)?.file
                     ?: error("returnable block should belong to current file at least")) {
 
         private val functionScope by lazy {
-            inlinedBlock.inlineFunction.let {
-                require(it is IrSimpleFunction) { "Inline constructors should've been lowered: ${it.render()}" }
+            inlinedBlock.inlineFunctionSymbol?.owner.let {
+                require(it is IrSimpleFunction) { "Inline constructors should've been lowered: ${it?.render()}" }
                 it.scope(file().fileEntry.line(generationState.inlineFunctionOrigins[it]?.startOffset ?: it.startOffset))
             }
         }

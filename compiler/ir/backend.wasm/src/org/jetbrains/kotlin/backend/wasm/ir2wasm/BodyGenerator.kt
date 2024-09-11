@@ -728,8 +728,9 @@ class BodyGenerator(
 //        if (isInLoop) {
 //            generateInlineCacheLocal(type, location, content)
 //        } else {
-            generateInlineCacheGlobal(type, location, content)
+//            generateInlineCacheGlobal(type, location, content)
 //        }
+        content()
     }
 
     private fun generateCall(call: IrFunctionAccessExpression) {

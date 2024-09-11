@@ -139,7 +139,7 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
                 (this as MavenPublicationInternal).publishWithOriginalFileName()
                 artifactId = kotlinComponent.defaultArtifactId
 
-                val pomRewriter = PomDependenciesRewriter(project, kotlinComponent)
+                val pomRewriter = PomDependenciesRewriter(createLazyResolvableConfiguration(project, kotlinComponent))
                 val shouldRewritePomDependencies =
                     project.provider { PropertiesProvider(project).keepMppDependenciesIntactInPoms != true }
 
@@ -169,6 +169,8 @@ private fun KotlinTargetComponent.addGavVariantToConfigurations(
 
     val consumableConfigurations = internal.usages
         .filter { it.mavenScope != null }
+        // TODO(Dmitrii Krasnov): разобраться кто подтыкает published
+        //  secondaryVariant опубликуется!!!
         .map { it.dependencyConfigurationName }
         .toSet() + target.apiElementsConfigurationName + target.runtimeElementsConfigurationName
 
@@ -206,10 +208,12 @@ private fun Configuration.addGavSecondaryVariant(
                 )
             )
         }
+        // TODO(Dmitrii Krasnov): нужно, чтобы arifact type был не json - подглядеть у android
         variant.artifact(task.map { it.outputJsonFile }) {
             it.builtBy(task)
+            it.type = "kotlin-publication-coordinates"
         }
-
+        // TODO(Dmitrii Krasnov): нужно, чтобы arifact type был не json - подглядеть у android
         variant.attributes.attributeProvider(
             ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
             project.provider { "kotlin-publication-coordinates" })

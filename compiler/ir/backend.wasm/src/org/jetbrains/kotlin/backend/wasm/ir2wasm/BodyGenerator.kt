@@ -725,11 +725,12 @@ class BodyGenerator(
     }
 
     private fun generateInlineCache(type: WasmType, location: SourceLocation, content: () -> Unit) {
-        if (isInLoop) {
-            generateInlineCacheLocal(type, location, content)
-        } else {
-            generateInlineCacheGlobal(type, location, content)
-        }
+//        if (isInLoop) {
+//            generateInlineCacheLocal(type, location, content)
+//        } else {
+//            generateInlineCacheGlobal(type, location, content)
+//        }
+        content()
     }
 
     private fun generateCall(call: IrFunctionAccessExpression) {
@@ -824,7 +825,7 @@ class BodyGenerator(
                 } else {
                     body.buildSetLocal(functionContext.referenceLocal(SyntheticLocalType.IS_INTERFACE_PARAMETER), location)
                     generateInlineCache(WasmRefNullType(WasmHeapType.Type(context.referenceFunctionType(function.symbol))), location) {
-                        val isSamInterface = klass.declarations.singleOrNull { it !is IrSimpleFunction || it.overriddenSymbols.isEmpty() } != null
+                        val isSamInterface = false //klass.declarations.singleOrNull { it !is IrSimpleFunction || it.overriddenSymbols.isEmpty() } != null
                         if (isSamInterface) {
                             body.buildBlock("SAMFastTrack", WasmRefNullType(WasmHeapType.Type(context.referenceFunctionType(function.symbol)))) { samFastTrack ->
                                 body.buildBlock("SAMFunction", WasmRefNullType(WasmHeapType.Simple.Any)) { samFunction ->

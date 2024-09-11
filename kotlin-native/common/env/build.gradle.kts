@@ -1,7 +1,6 @@
 import org.jetbrains.kotlin.konan.target.TargetWithSanitizer
 
 plugins {
-    id("kotlin.native.build-tools-conventions")
     id("compile-to-bitcode")
     kotlin("jvm")
     id("native-interop-plugin")
@@ -27,6 +26,14 @@ kotlinNativeInterop {
         linkOutputs(bitcode.hostTarget.module("env").get().sourceSets.main.get().task.get())
         headers(layout.projectDirectory.files("include/Env.h"))
     }
+}
+
+configurations.apiElements.configure {
+    extendsFrom(kotlinNativeInterop["env"].configuration)
+}
+
+configurations.runtimeElements.configure {
+    extendsFrom(kotlinNativeInterop["env"].configuration)
 }
 
 val nativeLibs by configurations.creating {

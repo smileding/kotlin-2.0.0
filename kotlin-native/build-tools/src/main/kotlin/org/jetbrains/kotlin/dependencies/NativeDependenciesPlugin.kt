@@ -13,6 +13,7 @@ import org.gradle.api.attributes.Usage
 import org.gradle.api.file.FileCollection
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.PlatformManagerPlugin
+import org.jetbrains.kotlin.PlatformManagerProvider
 import org.jetbrains.kotlin.konan.target.*
 import java.io.File
 import java.nio.file.Paths
@@ -45,7 +46,7 @@ private fun File.matchesDependency(dependency: String): Boolean {
  * @see NativeDependenciesPlugin
  */
 abstract class NativeDependenciesExtension @Inject constructor(private val project: Project) {
-    private val platformManager = project.extensions.getByType<PlatformManager>()
+    private val platformManagerProvider = project.extensions.getByType<PlatformManagerProvider>()
 
     val nativeDependencies: Configuration by project.configurations.creating {
         description = "Native dependencies"
@@ -60,11 +61,11 @@ abstract class NativeDependenciesExtension @Inject constructor(private val proje
     }
 
     private val llvmFileCollection: FileCollection = nativeDependencies.incoming.artifacts.artifactFiles.filter {
-        it.matchesDependency(platformManager.hostPlatform.llvmHome!!)
+        it.matchesDependency(platformManagerProvider.platformManager.hostPlatform.llvmHome!!)
     }
 
     private val libffiFileCollection: FileCollection = nativeDependencies.incoming.artifacts.artifactFiles.filter {
-        it.matchesDependency(platformManager.hostPlatform.libffiDir!!)
+        it.matchesDependency(platformManagerProvider.platformManager.hostPlatform.libffiDir!!)
     }
 
     /**
@@ -107,7 +108,7 @@ abstract class NativeDependenciesExtension @Inject constructor(private val proje
      * on [hostPlatformDependency] in tasks that need it.
      */
     val hostPlatform: Platform
-        get() = platformManager.hostPlatform
+        get() = platformManagerProvider.platformManager.hostPlatform
 
     /**
      * Dependency on [target] platform.

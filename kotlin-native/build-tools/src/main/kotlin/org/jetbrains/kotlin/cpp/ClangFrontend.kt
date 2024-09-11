@@ -11,18 +11,16 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.*
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.ExecClang
+import org.jetbrains.kotlin.PlatformManagerProvider
 import org.jetbrains.kotlin.bitcode.CompileToBitcodePlugin
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.PlatformManager
-import org.jetbrains.kotlin.nativeDistribution.nativeProtoDistribution
 import java.io.File
 import javax.inject.Inject
 
@@ -64,7 +62,6 @@ abstract class ClangFrontend @Inject constructor(
         private val workerExecutor: WorkerExecutor,
         private val objects: ObjectFactory,
         private val layout: ProjectLayout,
-        providers: ProviderFactory,
 ) : DefaultTask() {
     private data class WorkUnit(
             val inputPathRelativeToWorkingDir: String,
@@ -186,26 +183,14 @@ abstract class ClangFrontend @Inject constructor(
         }
     }
 
-    // Marked as input via [konanProperties], [konanDataDir].
-    private val platformManager = project.extensions.getByType<PlatformManager>()
-
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    @Suppress("unused")
-    protected val konanProperties = project.nativeProtoDistribution.konanProperties
-
-    @get:Input
-    @get:Optional
-    @Suppress("unused")
-    protected val konanDataDir = project.providers.gradleProperty("konan.data.dir")
-
-    private val execClang by lazy { ExecClang.create(objects, platformManager) }
+    @get:Nested
+    abstract val platformManagerProvider: Property<PlatformManagerProvider>
 
     // TODO: Consider configuring full clang execution from the plugin instead.  
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
     val executable: Provider<RegularFile> = layout.file(compiler.map {
-        val executable = execClang.resolveExecutable(it)
+        val executable = platformManagerProvider.get().execClang.resolveExecutable(it)
         val executableSuffix = when (HostManager.host.family) {
             Family.MINGW -> ".exe"
             else -> ""
@@ -226,7 +211,7 @@ abstract class ClangFrontend @Inject constructor(
                 compilerExecutable.set(this@ClangFrontend.compiler)
                 arguments.set(defaultCompilerFlags(this@ClangFrontend.headersDirs))
                 arguments.addAll(this@ClangFrontend.arguments)
-                platformManager.set(this@ClangFrontend.platformManager)
+                platformManager.set(platformManagerProvider.map { it.platformManager })
             }
         }
     }

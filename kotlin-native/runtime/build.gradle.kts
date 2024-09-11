@@ -26,8 +26,6 @@ googletest {
     refresh = project.hasProperty("refresh-gtest")
 }
 
-val targetList = enabledTargets(extensions.getByType<PlatformManager>())
-
 bitcode {
     allTargets {
         module("main") {
@@ -508,6 +506,8 @@ dependencies {
     runtimeBitcode(project(":kotlin-native:runtime"))
 }
 
+val targetList = platformManagerProvider.enabledTargets
+
 targetList.forEach { target ->
     // TODO: replace with a more convenient user-facing task that can build for a specific target.
     //       like compileToBitcode with optional argument --target.
@@ -582,7 +582,7 @@ val stdlibBuildTask by tasks.registering(KonanCompileTask::class) {
             "-Xdont-warn-on-error-suppression",
             "-Xstdlib-compilation",
             "-Xfragment-refines=nativeMain:nativeWasm,nativeMain:common,nativeWasm:common",
-            "-Xmanifest-native-targets=${platformManager.targetValues.joinToString(separator = ",") { it.visibleName }}",
+            "-Xmanifest-native-targets=${platformManagerProvider.allTargets.joinToString(separator = ",") { it.visibleName }}",
     )
 
     val common by sourceSets.creating {
@@ -613,9 +613,7 @@ val stdlibTask = tasks.register<Sync>("nativeStdlib") {
     into(project.layout.buildDirectory.dir("nativeStdlib"))
 }
 
-val cacheableTargetNames = platformManager.hostPlatform.cacheableTargets
-
-cacheableTargetNames.forEach { targetName ->
+platformManagerProvider.cacheableTargetNames.forEach { targetName ->
     tasks.register("${targetName}StdlibCache", KonanCacheTask::class.java) {
         val dist = project.nativeDistribution
         // Requires `nativeDistribution` with stdlib klib and runtime modules for `targetName`. The task

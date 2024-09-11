@@ -9,6 +9,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.PlatformManagerPlugin
+import org.jetbrains.kotlin.PlatformManagerProvider
 import org.jetbrains.kotlin.dependencies.NativeDependenciesExtension
 import org.jetbrains.kotlin.dependencies.NativeDependenciesPlugin
 
@@ -25,6 +26,7 @@ open class GitClangFormatPlugin : Plugin<Project> {
         target.tasks.register<GitClangFormat>("clangFormat") {
             description = "Run clang-format in $directory"
             group = TASK_GROUP
+            platformManagerProvider.set(target.extensions.getByType<PlatformManagerProvider>())
             parent.convention("origin/master")
             this.directory.convention(directory)
             interactive.convention(false)

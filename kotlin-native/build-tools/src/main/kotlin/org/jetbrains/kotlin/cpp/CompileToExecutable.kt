@@ -13,15 +13,14 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.process.ExecOperations
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.ExecClang
+import org.jetbrains.kotlin.PlatformManagerProvider
 import org.jetbrains.kotlin.execLlvmUtility
 import org.jetbrains.kotlin.konan.target.*
-import org.jetbrains.kotlin.nativeDistribution.nativeProtoDistribution
 import java.io.OutputStream
 import javax.inject.Inject
 
@@ -138,19 +137,11 @@ private abstract class CompileToExecutableJob : WorkAction<CompileToExecutableJo
  * @see CompileToBitcodePlugin
  */
 @CacheableTask
-abstract class CompileToExecutable : DefaultTask() {
-    // Marked as input via [konanProperties], [konanDataDir].
-    private val platformManager = project.extensions.getByType<PlatformManager>()
-
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    @Suppress("unused")
-    protected val konanProperties = project.nativeProtoDistribution.konanProperties
-
-    @get:Input
-    @get:Optional
-    @Suppress("unused")
-    protected val konanDataDir = project.providers.gradleProperty("konan.data.dir")
+abstract class CompileToExecutable @Inject constructor(
+        objects: ObjectFactory,
+) : DefaultTask() {
+    @get:Nested
+    abstract val platformManagerProvider: Property<PlatformManagerProvider>
 
     /**
      * Target for which to compile.
@@ -218,35 +209,36 @@ abstract class CompileToExecutable : DefaultTask() {
     @get:Input
     abstract val linkerArgs: ListProperty<String>
 
-    fun linkCommands(): List<List<String>> =
-    // Getting link commands requires presence of a target toolchain.
-            // Thus we cannot get them at the configuration stage because the toolchain may be not downloaded yet.
-            platformManager.platform(target.get()).linker.finalLinkCommands(
-                    listOf(compilerOutputFile.asFile.get().absolutePath),
-                    outputFile.asFile.get().absolutePath,
-                    listOf(),
-                    linkerArgs.get(),
-                    optimize = false,
-                    debug = true,
-                    kind = LinkerOutputKind.EXECUTABLE,
-                    outputDsymBundle = outputFile.asFile.get().absolutePath + ".dSYM",
-                    mimallocEnabled = false, // Unused in the linker
-                    sanitizer = sanitizer.orNull
-            ).map { it.argsWithExecutable }
-
     @get:Inject
     protected abstract val workerExecutor: WorkerExecutor
 
     @TaskAction
     fun compile() {
         val workQueue = workerExecutor.noIsolation()
+        val platformManager = platformManagerProvider.get().platformManager
+        val platform = platformManager.platform(target.get())
 
-        val defaultClangFlags = buildClangFlags(platformManager.platform(target.get()).configurables)
+        val defaultClangFlags = buildClangFlags(platform.configurables)
         val sanitizerFlags = when (sanitizer.orNull) {
             null -> listOf()
             SanitizerKind.ADDRESS -> listOf("-fsanitize=address")
             SanitizerKind.THREAD -> listOf("-fsanitize=thread")
         }
+
+        // Getting link commands requires presence of a target toolchain.
+        // Thus we cannot get them at the configuration stage because the toolchain may be not downloaded yet.
+        val linkCommands = platform.linker.finalLinkCommands(
+                listOf(compilerOutputFile.asFile.get().absolutePath),
+                outputFile.asFile.get().absolutePath,
+                listOf(),
+                linkerArgs.get(),
+                optimize = false,
+                debug = true,
+                kind = LinkerOutputKind.EXECUTABLE,
+                outputDsymBundle = outputFile.asFile.get().absolutePath + ".dSYM",
+                mimallocEnabled = false, // Unused in the linker
+                sanitizer = sanitizer.orNull
+        ).map { it.argsWithExecutable }
 
         workQueue.submit(CompileToExecutableJob::class.java) {
             mainFile.set(this@CompileToExecutable.mainFile)
@@ -257,8 +249,8 @@ abstract class CompileToExecutable : DefaultTask() {
             outputFile.set(this@CompileToExecutable.outputFile)
             targetName.set(this@CompileToExecutable.target.get().name)
             clangFlags.addAll(defaultClangFlags + compilerArgs.get() + sanitizerFlags)
-            linkCommands.set(this@CompileToExecutable.linkCommands())
-            platformManager.set(this@CompileToExecutable.platformManager)
+            this.linkCommands.set(linkCommands)
+            this.platformManager.set(platformManager)
         }
     }
 }

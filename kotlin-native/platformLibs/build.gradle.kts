@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.konan.target.*
 import org.jetbrains.kotlin.konan.util.*
 import org.jetbrains.kotlin.nativeDistribution.nativeDistribution
 import org.jetbrains.kotlin.platformLibs.*
-import org.jetbrains.kotlin.platformManager
 import org.jetbrains.kotlin.utils.capitalized
 
 plugins {
@@ -32,8 +31,6 @@ if (HostManager.host == KonanTarget.MACOS_ARM64) {
     project.configureJvmToolchain(JdkMajorVersion.JDK_17_0)
 }
 
-val cacheableTargetNames = platformManager.hostPlatform.cacheableTargets
-
 val updateDefFileDependenciesTask = tasks.register("updateDefFileDependencies")
 val updateDefFileTasksPerFamily = if (HostManager.hostIsMac) {
     registerUpdateDefFileDependenciesForAppleFamiliesTasks(updateDefFileDependenciesTask)
@@ -41,8 +38,7 @@ val updateDefFileTasksPerFamily = if (HostManager.hostIsMac) {
     emptyMap()
 }
 
-
-enabledTargets(platformManager).forEach { target ->
+platformManagerProvider.enabledTargets.forEach { target ->
     val targetName = target.visibleName
     val installTasks = mutableListOf<TaskProvider<out Task>>()
     val cacheTasks = mutableListOf<TaskProvider<out Task>>()
@@ -96,7 +92,7 @@ enabledTargets(platformManager).forEach { target ->
         }
         installTasks.add(klibInstallTask)
 
-        if (target.name in cacheableTargetNames) {
+        if (target.name in platformManagerProvider.cacheableTargetNames) {
             val cacheTask = tasks.register(cacheTaskName(targetName, df.name), KonanCacheTask::class.java) {
                 val dist = nativeDistribution
 
@@ -124,7 +120,7 @@ enabledTargets(platformManager).forEach { target ->
         dependsOn(installTasks)
     }
 
-    if (target.name in cacheableTargetNames) {
+    if (target.name in platformManagerProvider.cacheableTargetNames) {
         tasks.register("${targetName}Cache") {
             dependsOn(cacheTasks)
 

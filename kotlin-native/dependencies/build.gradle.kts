@@ -3,7 +3,6 @@
  * that can be found in the LICENSE file.
  */
 
-import org.jetbrains.kotlin.konan.target.allTargetsWithSanitizers
 import org.jetbrains.kotlin.konan.util.DependencyDirectories
 
 plugins {
@@ -22,7 +21,7 @@ nativeDependenciesDownloader {
  * Download all dependencies.
  */
 val update by tasks.registering {
-    platformManager.allTargetsWithSanitizers.forEach {
+    platformManagerProvider.enabledTargetsWithSanitizers.forEach {
         dependsOn(nativeDependencies.targetDependency(it))
     }
 }

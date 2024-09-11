@@ -10,9 +10,11 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.UntrackedTask
 import org.gradle.kotlin.dsl.getByType
+import org.jetbrains.kotlin.PlatformManagerProvider
 import org.jetbrains.kotlin.konan.properties.KonanPropertiesLoader
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.PlatformManager
@@ -43,11 +45,12 @@ abstract class NativeDependenciesDownloader : DefaultTask() {
     @get:Internal
     abstract val repositoryURL: Property<String>
 
-    private val platformManager = project.extensions.getByType<PlatformManager>()
+    @get:Nested
+    abstract val platformManagerProvider: Property<PlatformManagerProvider>
 
     @TaskAction
     fun downloadAndExtract() {
-        val loader = platformManager.loader(target.get())
+        val loader = platformManagerProvider.get().platformManager.loader(target.get())
         check(loader is KonanPropertiesLoader)
         val dependencyProcessor =
                 DependencyProcessor(

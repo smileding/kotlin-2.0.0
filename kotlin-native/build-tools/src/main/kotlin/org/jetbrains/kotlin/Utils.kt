@@ -7,19 +7,10 @@ package org.jetbrains.kotlin
 
 import com.google.gson.GsonBuilder
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
-import org.gradle.api.plugins.ExtraPropertiesExtension
-import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.TaskProvider
-import org.gradle.kotlin.dsl.*
-import org.jetbrains.kotlin.konan.target.*
 import java.io.File
 
 //region Project properties.
-
-val Project.platformManager
-    get() = extensions.getByType<PlatformManager>()
 
 val Project.kotlinNativeDist: File
     get() = rootProject.project(":kotlin-native").run {

@@ -14,6 +14,7 @@ import org.gradle.api.logging.LogLevel
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.PlatformManagerPlugin
+import org.jetbrains.kotlin.PlatformManagerProvider
 import org.jetbrains.kotlin.konan.properties.KonanPropertiesLoader
 import org.jetbrains.kotlin.konan.target.PlatformManager
 import org.jetbrains.kotlin.konan.target.TargetDomainObjectContainer
@@ -90,9 +91,9 @@ abstract class NativeDependenciesDownloaderExtension @Inject constructor(private
 
         private val project by owner::project
 
-        private val platformManager = project.extensions.getByType<PlatformManager>()
+        private val platformManagerProvider = project.extensions.getByType<PlatformManagerProvider>()
 
-        private val loader: KonanPropertiesLoader = platformManager.loader(target).let {
+        private val loader: KonanPropertiesLoader = platformManagerProvider.platformManager.loader(target).let {
             require(it is KonanPropertiesLoader) {
                 "loader for $target must implement ${KonanPropertiesLoader::class}"
             }
@@ -114,6 +115,7 @@ abstract class NativeDependenciesDownloaderExtension @Inject constructor(private
         val task = project.tasks.register<NativeDependenciesDownloader>("nativeDependencies${_target.name.capitalized}") {
             description = "Download dependencies for $_target"
             group = "native dependencies"
+            platformManagerProvider.set(this@Target.platformManagerProvider)
             target.set(this@Target.target)
             dependenciesDirectory.set(owner.dependenciesDirectory)
             repositoryURL.set(owner.repositoryURL)

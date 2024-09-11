@@ -8,12 +8,12 @@ package org.jetbrains.kotlin.cpp
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.UntrackedTask
 import org.gradle.api.tasks.options.Option
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.process.ExecOperations
-import org.jetbrains.kotlin.konan.target.PlatformManager
+import org.jetbrains.kotlin.PlatformManagerProvider
 import org.jetbrains.kotlin.resolveLlvmUtility
 import java.io.ByteArrayOutputStream
 import javax.inject.Inject
@@ -25,7 +25,8 @@ import javax.inject.Inject
  */
 @UntrackedTask(because = "Formatter should always run when asked")
 abstract class GitClangFormat : DefaultTask() {
-    private val platformManager = project.extensions.getByType<PlatformManager>()
+    @get:Nested
+    abstract val platformManagerProvider: Property<PlatformManagerProvider>
 
     /**
      * Parent branch for the current branch.
@@ -53,6 +54,7 @@ abstract class GitClangFormat : DefaultTask() {
 
     @TaskAction
     fun run() {
+        val platformManager = platformManagerProvider.get().platformManager
         val gitClangFormat = platformManager.resolveLlvmUtility("git-clang-format")
         val clangFormat = platformManager.resolveLlvmUtility("clang-format")
         val parent = this.parent.get()

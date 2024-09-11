@@ -48,16 +48,6 @@ class TargetWithSanitizer(
  */
 fun KonanTarget.withSanitizer(sanitizer: SanitizerKind? = null) = TargetWithSanitizer(this, sanitizer)
 
-/**
- * All known targets with their sanitizers.
- */
-val PlatformManager.allTargetsWithSanitizers
-    get() = enabledTargets(this).flatMap { target ->
-        listOf(target.withSanitizer()) + target.supportedSanitizers().map {
-            target.withSanitizer(it)
-        }
-    }
-
 private class TargetDisambiguationRule : AttributeDisambiguationRule<TargetWithSanitizer> {
     override fun execute(details: MultipleCandidatesDetails<TargetWithSanitizer>) = details.run {
         if (consumerValue == null) {

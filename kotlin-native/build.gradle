@@ -66,10 +66,9 @@ allprojects {
     }
 }
 
-def platformManager = project.extensions.platformManager
+def platformManagerProvider = project.extensions.platformManagerProvider
 def hostName = PlatformInfo.hostName
-def targetList = EnabledTargetsKt.enabledTargets(platformManager).collect { it.visibleName } as List
-def cacheableTargetNames = platformManager.hostPlatform.cacheableTargets
+def targetList = platformManagerProvider.enabledTargets.collect { it.visibleName } as List
 def nativeDistribution = NativeDistributionKt.getNativeDistribution(project)
 
 configurations {
@@ -301,7 +300,7 @@ tasks.register("distDef", Sync) {
     into(nativeDistribution.map { it.platformLibsDefinitions })
     dependsOn ":kotlin-native:platformLibs:updateDefFileDependencies"
 
-    platformManager.targetValues.each { target ->
+    platformManagerProvider.allTargets.each { target ->
         from(project(":kotlin-native:platformLibs").file("src/platform/${target.family.name().toLowerCase()}")) {
             into target.visibleName
             include '**/*.def'
@@ -314,7 +313,7 @@ tasks.register("distRuntime") {
 }
 
 tasks.register("distStdlibCache") {
-    if (hostName in cacheableTargetNames) {
+    if (hostName in platformManagerProvider.cacheableTargetNames) {
         dependsOn("${hostName}StdlibCache")
     }
 }
@@ -337,14 +336,14 @@ tasks.register("crossDistPlatformLibs") {
 }
 
 tasks.register("crossDistStdlibCache") {
-    dependsOn.addAll(targetList.findAll { it in cacheableTargetNames }.collect { "${it}StdlibCache" })
+    dependsOn.addAll(targetList.findAll { it in platformManagerProvider.cacheableTargetNames }.collect { "${it}StdlibCache" })
 }
 
 targetList.each { target ->
     tasks.register("${target}CrossDistBitcodeCopy", Sync) {
         def bitcodeFiles = configurations.runtimeBitcode.incoming.artifactView {
             attributes {
-                attribute(TargetWithSanitizer.TARGET_ATTRIBUTE, new TargetWithSanitizer(platformManager.targetByName(target), null))
+                attribute(TargetWithSanitizer.TARGET_ATTRIBUTE, new TargetWithSanitizer(platformManagerProvider.platformManager.targetByName(target), null))
             }
         }.files
 
@@ -362,12 +361,12 @@ targetList.each { target ->
 
     tasks.register("${target}PlatformLibs") {
         dependsOn ":kotlin-native:platformLibs:${target}Install"
-        if (target in cacheableTargetNames) {
+        if (target in platformManagerProvider.cacheableTargetNames) {
             dependsOn(":kotlin-native:platformLibs:${target}Cache")
         }
     }
 
-    if (target in cacheableTargetNames) {
+    if (target in platformManagerProvider.cacheableTargetNames) {
         tasks.register("${target}StdlibCache", Sync) {
             dependsOn "distStdlib"
             dependsOn ":kotlin-native:runtime:${target}StdlibCache"
@@ -382,7 +381,7 @@ targetList.each { target ->
 
     tasks.register("${target}CrossDist") {
         dependsOn "${target}CrossDistRuntime", "distCompiler"
-        if (target in cacheableTargetNames) {
+        if (target in platformManagerProvider.cacheableTargetNames) {
             dependsOn "${target}StdlibCache"
         }
     }

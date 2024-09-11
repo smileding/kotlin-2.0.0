@@ -11,6 +11,7 @@ import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.kotlin.dsl.getByType
+import org.jetbrains.kotlin.PlatformManagerProvider
 
 /**
  * Associative container from a [KonanTarget] with optional [SanitizerKind] to [T].
@@ -47,9 +48,9 @@ import org.gradle.kotlin.dsl.getByType
 // TODO: Consider implementing everything from `NamedDomainObjectContainer` but keyed on a target instead of a name.
 open class TargetDomainObjectContainer<T : Any> constructor(
         private val providerFactory: ProviderFactory,
-        private val platformManager: PlatformManager,
+        private val enabledTargetsWithSanitizers: List<TargetWithSanitizer>,
 ) {
-    constructor(project: Project) : this(project.providers, project.extensions.getByType<PlatformManager>())
+    constructor(project: Project) : this(project.providers, project.extensions.getByType<PlatformManagerProvider>().enabledTargetsWithSanitizers)
 
     /**
      * How to create [T]. Must be set before using the rest of API.
@@ -88,7 +89,7 @@ open class TargetDomainObjectContainer<T : Any> constructor(
      * @param action action to apply to the configuration
      * @return list of configurations
      */
-    fun allTargets(action: Action<in T>): List<T> = platformManager.allTargetsWithSanitizers.map {
+    fun allTargets(action: Action<in T>): List<T> = enabledTargetsWithSanitizers.map {
         this.target(it, action)
     }
 

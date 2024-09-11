@@ -189,9 +189,3 @@ fun ObjectFactory.nativeDistributionProperty() = NativeDistributionProperty(dire
 //       and sometimes incompatible with Gradle isolation mechanisms.
 val Project.nativeDistribution: Provider<NativeDistribution>
     get() = layout.dir(provider { kotlinNativeDist }).map { NativeDistribution(it) }
-
-/**
- * Get the "proto" Native distribution. Contains only [konan.properties][NativeDistribution.konanProperties] file.
- */
-val Project.nativeProtoDistribution: NativeDistribution
-    get() = NativeDistribution(project(":kotlin-native").layout.projectDirectory)

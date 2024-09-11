@@ -32,7 +32,7 @@ val libclang =
 
 val cflags = mutableListOf( "-I${nativeDependencies.llvmPath}/include",
         "-I${project(":kotlin-native:libclangext").projectDir.absolutePath}/src/main/include",
-                            *platformManager.hostPlatform.clangForJni.hostCompilerArgsForJni)
+                            *nativeDependencies.hostPlatform.clangForJni.hostCompilerArgsForJni)
 
 val ldflags = mutableListOf("${nativeDependencies.llvmPath}/$libclang", "-L${libclangextDir.absolutePath}", "-lclangext")
 

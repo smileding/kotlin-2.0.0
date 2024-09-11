@@ -22,21 +22,21 @@ import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.*
 import org.gradle.language.base.plugins.LifecycleBasePlugin
-import org.jetbrains.kotlin.ExecClang
 import org.jetbrains.kotlin.PlatformManagerPlugin
+import org.jetbrains.kotlin.PlatformManagerProvider
+import org.jetbrains.kotlin.bitcode.CompileToBitcodeExtension.SourceSet
 import org.jetbrains.kotlin.cpp.*
 import org.jetbrains.kotlin.dependencies.NativeDependenciesExtension
 import org.jetbrains.kotlin.dependencies.NativeDependenciesPlugin
 import org.jetbrains.kotlin.konan.target.KonanTarget
-import org.jetbrains.kotlin.konan.target.PlatformManager
 import org.jetbrains.kotlin.konan.target.SanitizerKind
 import org.jetbrains.kotlin.konan.target.TargetDomainObjectContainer
 import org.jetbrains.kotlin.konan.target.TargetWithSanitizer
-import org.jetbrains.kotlin.konan.target.enabledTargets
 import org.jetbrains.kotlin.testing.native.GoogleTestExtension
 import org.jetbrains.kotlin.utils.capitalized
 import java.time.Duration
 import javax.inject.Inject
+import kotlin.text.set
 
 private fun String.snakeCaseToUpperCamelCase() = split('_').joinToString(separator = "") { it.capitalized }
 
@@ -160,8 +160,7 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
 
     private val allTestsTasks by lazy {
         val name = project.name.capitalized
-        val platformManager = project.extensions.getByType<PlatformManager>()
-        enabledTargets(platformManager).associateBy(keySelector = { it.visibleName }, valueTransform = {
+        project.extensions.getByType<PlatformManagerProvider>().enabledTargets.associateBy(keySelector = { it.visibleName }, valueTransform = {
             project.tasks.register("${it}${name}Tests") {
                 description = "Runs all $name tests for $it"
                 group = VERIFICATION_TASK_GROUP
@@ -222,8 +221,7 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
         }
 
         private val compilationDatabase = project.extensions.getByType<CompilationDatabaseExtension>()
-        private val platformManager = project.extensions.getByType<PlatformManager>()
-        private val execClang = ExecClang.create(project.objects, platformManager)
+        private val platformManagerProvider = project.extensions.getByType<PlatformManagerProvider>()
         private val nativeDependencies = project.extensions.getByType<NativeDependenciesExtension>()
 
         /**
@@ -239,6 +237,7 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
             }
             configure {
                 this.description = "Compiles '${module.name}' (${this@SourceSet.name} sources) to bitcode for $_target"
+                this.platformManagerProvider.set(this@SourceSet.platformManagerProvider)
                 this.outputDirectory.set(this@SourceSet.outputDirectory)
                 this.targetName.set(target.name)
                 this.compiler.set(module.compiler)
@@ -259,10 +258,10 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
                 entry {
                     directory.set(module.compilerWorkingDirectory)
                     files.setFrom(this@SourceSet.inputFiles)
-                    arguments.set(listOf(execClang.resolveExecutable(module.compiler.get())))
+                    arguments.set(listOf(platformManagerProvider.execClang.resolveExecutable(module.compiler.get())))
                     arguments.addAll(ClangFrontend.defaultCompilerFlags(this@SourceSet.headersDirs))
                     arguments.addAll(args)
-                    arguments.addAll(execClang.clangArgsForCppRuntime(target.name))
+                    arguments.addAll(platformManagerProvider.execClang.clangArgsForCppRuntime(target.name))
                     output.set(this@SourceSet.outputDirectory.map { it.asFile.absolutePath })
                 }
                 task.configure {
@@ -282,6 +281,7 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
         val task = project.tasks.register<LlvmLink>("llvmLink${module.name.capitalized}${name.capitalized}${_target.toString().capitalized}").apply {
             configure {
                 this.description = "Link '${module.name}' bitcode files (${this@SourceSet.name} sources) into a single bitcode file for $_target"
+                this.platformManagerProvider.set(this@SourceSet.platformManagerProvider)
                 this.inputFiles.from(compileTask)
                 this.outputFile.set(this@SourceSet.outputFile)
                 this.arguments.set(module.linkerArgs)
@@ -595,6 +595,7 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
             val compileTask = project.tasks.register<CompileToExecutable>("${testName}Compile") {
                 description = "Compile tests group '$testTaskName' for $target${sanitizer.description}"
                 group = VERIFICATION_BUILD_TASK_GROUP
+                this.platformManagerProvider.set(project.extensions.getByType<PlatformManagerProvider>())
                 this.target.set(target)
                 this.sanitizer.set(sanitizer)
                 this.outputFile.set(project.layout.buildDirectory.file("bin/test/${target}/$testName.${target.family.exeSuffix}"))

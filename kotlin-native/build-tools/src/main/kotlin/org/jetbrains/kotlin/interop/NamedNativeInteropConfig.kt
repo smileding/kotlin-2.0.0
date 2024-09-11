@@ -70,6 +70,10 @@ class NamedNativeInteropConfig(
         headers = headers + files.toSet().map { it.absolutePath }
     }
 
+    fun headers(files: List<String>) {
+        headers = headers + files
+    }
+
     private var linker: String? = null
 
     fun linker(value: String) {
@@ -114,6 +118,9 @@ class NamedNativeInteropConfig(
         }
     }
 
+    var skipNatives: Boolean = false
+    fun skipNatives() { this.skipNatives = true }
+
     val configuration: Configuration = project.configurations.create(interopStubs.name)
 
     init {
@@ -152,7 +159,9 @@ class NamedNativeInteropConfig(
             environment(mapOf("LIBCLANG_DISABLE_CRASH_RECOVERY" to "1"))
 
             outputs.dir(generatedSrcDir)
-            outputs.dir(nativeLibsDir)
+            if (!skipNatives) {
+                outputs.dir(nativeLibsDir)
+            }
             outputs.dir(temporaryFilesDir)
 
             // defer as much as possible
@@ -166,7 +175,9 @@ class NamedNativeInteropConfig(
                 linkerOpts.addAll(linkFiles.files.map { it.absolutePath })
 
                 args("-generated", generatedSrcDir)
-                args("-natives", nativeLibsDir)
+                if (!skipNatives) {
+                    args("-natives", nativeLibsDir)
+                }
                 args("-Xtemporary-files-dir", temporaryFilesDir)
                 args("-flavor", "jvm")
 
@@ -193,6 +204,27 @@ class NamedNativeInteropConfig(
                 headers.forEach {
                     args("-header", it)
                 }
+            }
+
+            doLast {
+                // interop tool uses precompiled headers, generated .c file does not have required includes. Add them manually.
+                val generatedName = defFile?.replace("\\.def$".toRegex(), "")
+                        ?: pkg?.replace(".", "")
+                        ?: error("Either defFile or pkg must have been specified")
+                val originalStubs = temporaryFilesDir.resolve("${generatedName}stubs_original.c")
+                val modifiedStubs = temporaryFilesDir.resolve("${generatedName}stubs.c")
+                modifiedStubs.copyTo(originalStubs, overwrite = true)
+                modifiedStubs.printWriter().use { writer ->
+                    (listOf("stdint.h", "string.h", "jni.h") + headers).forEach {
+                        writer.appendLine("#include <$it>")
+                    }
+                    originalStubs.useLines { lines ->
+                        lines.forEach {
+                            writer.appendLine(it)
+                        }
+                    }
+                }
+                originalStubs.delete()
             }
         }
     }

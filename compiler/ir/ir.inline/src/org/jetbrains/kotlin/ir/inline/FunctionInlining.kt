@@ -57,7 +57,13 @@ interface CallInlinerStrategy {
     }
 }
 
-abstract class InlineFunctionResolver {
+enum class InlineMode {
+    PRIVATE_INLINE_FUNCTIONS,
+    ALL_INLINE_FUNCTIONS,
+    ALL_FUNCTIONS,
+}
+
+abstract class InlineFunctionResolver(val inlineMode: InlineMode) {
     open val callInlinerStrategy: CallInlinerStrategy
         get() = CallInlinerStrategy.DEFAULT
     open val allowExternalInlining: Boolean
@@ -82,11 +88,9 @@ abstract class InlineFunctionResolver {
 }
 
 abstract class InlineFunctionResolverReplacingCoroutineIntrinsics<Ctx : CommonBackendContext>(
-    protected val context: Ctx
-) : InlineFunctionResolver() {
-    protected open val inlineOnlyPrivateFunctions: Boolean
-        get() = false
-
+    protected val context: Ctx,
+    inlineMode: InlineMode,
+) : InlineFunctionResolver(inlineMode) {
     override fun getFunctionDeclaration(symbol: IrFunctionSymbol): IrFunction? {
         val function = super.getFunctionDeclaration(symbol) ?: return null
         // TODO: Remove these hacks when coroutine intrinsics are fixed.
@@ -103,7 +107,7 @@ abstract class InlineFunctionResolverReplacingCoroutineIntrinsics<Ctx : CommonBa
 
     override fun shouldExcludeFunctionFromInlining(symbol: IrFunctionSymbol): Boolean {
         return super.shouldExcludeFunctionFromInlining(symbol) ||
-                (inlineOnlyPrivateFunctions && !symbol.owner.isConsideredAsPrivateForInlining())
+                (inlineMode == InlineMode.PRIVATE_INLINE_FUNCTIONS && !symbol.owner.isConsideredAsPrivateForInlining())
     }
 }
 
@@ -235,7 +239,7 @@ open class FunctionInlining(
              */
             val irBuilder = context.createIrBuilder(irReturnableBlockSymbol, endOffset, endOffset)
 
-            val returnType = if (inlineFunctionResolver.preCodegenInlining) callee.returnType else callSite.type
+            val returnType = if (inlineFunctionResolver.inlineMode == InlineMode.ALL_FUNCTIONS) callee.returnType else callSite.type
 
             val transformer = ParameterSubstitutor()
             val newStatements = statements.map { it.transform(transformer, data = null) as IrStatement }
@@ -244,7 +248,7 @@ open class FunctionInlining(
                 startOffset = callSite.startOffset,
                 endOffset = callSite.endOffset,
                 type = returnType,
-                inlineFunction = if (inlineFunctionResolver.preCodegenInlining) callee else callee.originalFunction,
+                inlineFunction = if (inlineFunctionResolver.inlineMode == InlineMode.ALL_FUNCTIONS) callee else callee.originalFunction,
                 origin = null,
                 statements = evaluationStatements + newStatements
             ).apply {
@@ -706,7 +710,9 @@ open class FunctionInlining(
                  * For simplicity and to produce simpler IR we don't create temporaries for every immutable variable,
                  * not only for those referring to inlinable lambdas.
                  */
-                if ((argument.isInlinableLambdaArgument || argument.isInlinablePropertyReference) && !inlineFunctionResolver.preCodegenInlining) {
+                if ((argument.isInlinableLambdaArgument || argument.isInlinablePropertyReference)
+                    && inlineFunctionResolver.inlineMode != InlineMode.ALL_FUNCTIONS
+                ) {
                     substituteMap[parameter] = argument.argumentExpression
                     val arg = argument.argumentExpression
                     when {
@@ -761,7 +767,7 @@ open class FunctionInlining(
 
         private fun ParameterToArgument.doesNotNeedTemporaryVariable(): Boolean =
             argumentExpression.isPure(false, context = context)
-                    && (inlineFunctionResolver.preCodegenInlining || parameter.isInlineParameter())
+                    && (inlineFunctionResolver.inlineMode == InlineMode.ALL_FUNCTIONS || parameter.isInlineParameter())
 
         private fun createTemporaryVariable(
             parameter: IrValueParameter,

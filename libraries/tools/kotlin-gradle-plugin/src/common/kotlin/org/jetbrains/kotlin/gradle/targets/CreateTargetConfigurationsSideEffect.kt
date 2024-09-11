@@ -8,15 +8,8 @@ package org.jetbrains.kotlin.gradle.targets
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtensionOrNull
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.withArtifactIdAttribute
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.configureSourcesPublicationAttributes
-import org.jetbrains.kotlin.gradle.plugin.mpp.internal
-import org.jetbrains.kotlin.gradle.plugin.mpp.isSourcesPublishableFuture
 import org.jetbrains.kotlin.gradle.plugin.mpp.resources.resourcesPublicationExtension
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrTarget
 import org.jetbrains.kotlin.gradle.utils.addSecondaryOutgoingJvmClassesVariant

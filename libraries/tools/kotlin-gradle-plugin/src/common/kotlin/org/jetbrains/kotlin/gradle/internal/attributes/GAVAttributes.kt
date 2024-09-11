@@ -17,7 +17,9 @@ internal val artifactGroupAttribute = Attribute.of("org.jetbrains.kotlin.publish
 internal val artifactIdAttribute = Attribute.of("org.jetbrains.kotlin.publish.artifact-id", String::class.java)
 internal val artifactVersionAttribute = Attribute.of("org.jetbrains.kotlin.publish.artifact-version", String::class.java)
 
+internal val rootArtifactGroupAttribute = Attribute.of("org.jetbrains.kotlin.publish.root-artifact-group", String::class.java)
 internal val rootArtifactIdAttribute = Attribute.of("org.jetbrains.kotlin.publish.root-artifact-id", String::class.java)
+internal val rootArtifactVersionAttribute = Attribute.of("org.jetbrains.kotlin.publish.root-artifact-version", String::class.java)
 
 internal fun setupGavAttributesMatchingStrategy(attributesSchema: AttributesSchema) {
     attributesSchema.attribute(withArtifactIdAttribute) { strategy ->

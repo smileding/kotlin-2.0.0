@@ -5,51 +5,40 @@
 
 package org.jetbrains.kotlin.gradle.plugin.mpp
 
+import com.android.build.api.artifact.SingleArtifact
+import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.attributes.Bundling
-import org.gradle.api.attributes.Category
-import org.gradle.api.attributes.DocsType
-import org.gradle.api.attributes.HasAttributes
-import org.gradle.api.attributes.LibraryElements
-import org.gradle.api.attributes.Usage
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.attributes.*
+import org.gradle.api.file.RegularFile
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.internal.publication.MavenPublicationInternal
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.TaskProvider
+import org.gradle.work.DisableCachingByDefault
+import org.jetbrains.kotlin.gradle.dsl.awaitMetadataTarget
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactIdAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.withArtifactIdAttribute
-import org.jetbrains.kotlin.gradle.plugin.KotlinPluginLifecycle
-import org.jetbrains.kotlin.gradle.plugin.KotlinProjectSetupCoroutine
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
-import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
-import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
+import org.jetbrains.kotlin.gradle.internal.attributes.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
-import org.jetbrains.kotlin.gradle.plugin.attributeValueByName
-import org.jetbrains.kotlin.gradle.plugin.launchInStage
-import org.jetbrains.kotlin.gradle.plugin.setUsesPlatformOf
 import org.jetbrains.kotlin.gradle.plugin.sources.KotlinDependencyScope
 import org.jetbrains.kotlin.gradle.plugin.sources.sourceSetDependencyConfigurationByScope
-import org.jetbrains.kotlin.gradle.plugin.usageByName
-import org.jetbrains.kotlin.gradle.plugin.usesPlatformOf
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrTarget
 import org.jetbrains.kotlin.gradle.targets.metadata.isKotlinGranularMetadataEnabled
+import org.jetbrains.kotlin.gradle.tasks.locateOrRegisterTask
 import org.jetbrains.kotlin.gradle.tooling.buildKotlinToolingMetadataTask
-import org.jetbrains.kotlin.gradle.utils.CompletableFuture
-import org.jetbrains.kotlin.gradle.utils.Future
-import org.jetbrains.kotlin.gradle.utils.isPluginApplied
-import org.jetbrains.kotlin.gradle.utils.maybeCreateConsumable
-import org.jetbrains.kotlin.gradle.utils.named
-import org.jetbrains.kotlin.gradle.utils.projectStoredProperty
-import org.jetbrains.kotlin.gradle.utils.setAttribute
-import org.jetbrains.kotlin.gradle.utils.whenEvaluated
+import org.jetbrains.kotlin.gradle.utils.*
 
 private val Project.kotlinMultiplatformRootPublicationImpl: CompletableFuture<MavenPublication?>
         by projectStoredProperty { CompletableFuture() }
@@ -111,7 +100,6 @@ private fun createTargetPublications(project: Project, publishing: PublishingExt
 }
 
 private fun InternalKotlinTarget.createMavenPublications(publications: PublicationContainer) {
-    val target = this
     val rootPublication = publications.getByName("kotlinMultiplatform") as MavenPublication
     kotlinComponents
         .filter { kotlinComponent -> kotlinComponent.publishableOnCurrentHost }
@@ -137,7 +125,7 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
                     shouldRewritePomDependencies,
                     dependenciesForPomRewriting(this@createMavenPublications)
                 )
-                addGavVariantToConfigurations(target, publication, rootPublication)
+                addGavVariantToConfigurations(publication, rootPublication)
             }
 
             (kotlinComponent as? KotlinTargetComponentWithPublication)?.publicationDelegate = componentPublication
@@ -146,23 +134,58 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
 }
 
 private fun InternalKotlinTarget.addGavVariantToConfigurations(
-    target: InternalKotlinTarget,
     publication: MavenPublication,
     rootPublication: MavenPublication,
 ) {
+
+    val target = this
+    val task =
+        project.locateOrRegisterTask<ExportKotlinPublishCoordinatesTask>(target.disambiguateName("ExportPublishCoordinates")) { task ->
+            task.outputJsonFile.set(project.layout.buildDirectory.file("internal/kmp/${target.disambiguateName("PublishCoordinates")}.json"))
+        }
     project.configurations.findByName(target.apiElementsConfigurationName)
-        ?.addGavSecondaryVariant(project, publication, rootPublication)
+        ?.addGavSecondaryVariant(task, project, publication, rootPublication)
     project.configurations.findByName(target.runtimeElementsConfigurationName)
-        ?.addGavSecondaryVariant(project, publication, rootPublication)
+        ?.addGavSecondaryVariant(task, project, publication, rootPublication)
 }
 
-private fun Configuration.addGavSecondaryVariant(project: Project, publication: MavenPublication, rootPublication: MavenPublication) {
-    attributes.setAttribute(withArtifactIdAttribute, true)
-    attributes.attributeProvider(artifactGroupAttribute, project.provider { publication.groupId })
-    attributes.attributeProvider(artifactIdAttribute, project.provider { publication.artifactId })
-    attributes.attributeProvider(artifactVersionAttribute, project.provider { publication.version })
+private fun Configuration.addGavSecondaryVariant(
+    task: TaskProvider<ExportKotlinPublishCoordinatesTask>,
+    project: Project,
+    publication: MavenPublication,
+    rootPublication: MavenPublication,
+) {
 
-    attributes.attributeProvider(rootArtifactIdAttribute, project.provider { rootPublication.artifactId })
+    outgoing.variants.create("gavSecondaryVariant") { variant ->
+        variant.attributes.attributeProvider(artifactGroupAttribute, project.provider { publication.groupId })
+        variant.attributes.attributeProvider(artifactIdAttribute, project.provider { publication.artifactId })
+        variant.attributes.attributeProvider(artifactVersionAttribute, project.provider { publication.version })
+
+        variant.attributes.attributeProvider(rootArtifactGroupAttribute, project.provider { rootPublication.groupId })
+        variant.attributes.attributeProvider(rootArtifactIdAttribute, project.provider { rootPublication.artifactId })
+        variant.attributes.attributeProvider(rootArtifactVersionAttribute, project.provider { rootPublication.version })
+
+        task.configure {
+            it.data.set(
+                PublicationCoordinatesProperty(
+                    project.provider { rootPublication.groupId },
+                    project.provider { rootPublication.artifactId },
+                    project.provider { rootPublication.version },
+                    project.provider { publication.groupId },
+                    project.provider { publication.artifactId },
+                    project.provider { publication.version },
+                )
+            )
+        }
+        variant.artifact(task.map { it.outputJsonFile }) {
+            it.builtBy(task)
+        }
+
+        variant.attributes.attributeProvider(
+            ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
+            project.provider { "kotlin-publication-coordinates" })
+
+    }
 }
 
 private fun rewritePom(
@@ -243,3 +266,52 @@ internal fun HasAttributes.configureResourcesPublicationAttributes(target: Kotli
 
     setUsesPlatformOf(target)
 }
+
+
+@DisableCachingByDefault(because = "Only I/O operations")
+internal abstract class ExportKotlinPublishCoordinatesTask : DefaultTask() {
+
+    @get:OutputFile
+    abstract val outputJsonFile: RegularFileProperty
+
+    @get:Nested
+    abstract val data: Property<PublicationCoordinatesProperty>
+
+    @TaskAction
+    fun action() {
+
+        val file = outputJsonFile.get().asFile
+        val json = JsonUtils.gson.toJson(data.get().toPublicationCoordinates())
+        file.writeText(json)
+    }
+}
+
+internal data class PublicationCoordinatesProperty(
+    @get:Input
+    val rootGroup: Provider<String>,
+
+    @get:Input
+    val rootArtifactId: Provider<String>,
+
+    @get:Input
+    val rootVersion: Provider<String>,
+
+    @get:Input
+    val targetGroup: Provider<String>,
+
+    @get:Input
+    val targetArtifactId: Provider<String>,
+
+    @get:Input
+    val targetVersion: Provider<String>,
+) {
+    fun toPublicationCoordinates(): PublicationCoordinates {
+        return PublicationCoordinates(
+            rootPublicationGAV = GAV(rootGroup.get(), rootArtifactId.get(), rootVersion.get()),
+            targetPublicationGAV = GAV(targetGroup.get(), targetArtifactId.get(), targetVersion.get())
+        )
+    }
+}
+
+internal data class PublicationCoordinates(val rootPublicationGAV: GAV, val targetPublicationGAV: GAV)
+internal data class GAV(val group: String, val artifactId: String, val version: String)

@@ -725,11 +725,11 @@ class BodyGenerator(
     }
 
     private fun generateInlineCache(type: WasmType, location: SourceLocation, content: () -> Unit) {
-        if (isInLoop) {
+//        if (isInLoop) {
             generateInlineCacheLocal(type, location, content)
-        } else {
-            generateInlineCacheGlobal(type, location, content)
-        }
+//        } else {
+//            generateInlineCacheGlobal(type, location, content)
+//        }
     }
 
     private fun generateCall(call: IrFunctionAccessExpression) {

@@ -7,6 +7,7 @@ plugins {
 
 kotlin {
     jvm()
+    macosArm64()
 }
 
 publishing {

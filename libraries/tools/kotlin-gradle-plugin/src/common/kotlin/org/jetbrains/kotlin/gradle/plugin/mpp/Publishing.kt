@@ -41,6 +41,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPluginLifecycle
 import org.jetbrains.kotlin.gradle.plugin.KotlinProjectSetupCoroutine
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinTargetComponent
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.attributeValueByName
@@ -148,7 +149,7 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
                     shouldRewritePomDependencies,
                     dependenciesForPomRewriting(this@createMavenPublications)
                 )
-                addGavVariantToConfigurations(publication, rootPublication)
+                kotlinComponent.addGavVariantToConfigurations(project, publication, rootPublication)
             }
 
             (kotlinComponent as? KotlinTargetComponentWithPublication)?.publicationDelegate = componentPublication
@@ -156,20 +157,25 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
         }
 }
 
-private fun InternalKotlinTarget.addGavVariantToConfigurations(
+private fun KotlinTargetComponent.addGavVariantToConfigurations(
+    project: Project,
     publication: MavenPublication,
     rootPublication: MavenPublication,
 ) {
-
-    val target = this
     val task =
         project.locateOrRegisterTask<ExportKotlinPublishCoordinatesTask>(target.disambiguateName("ExportPublishCoordinates")) { task ->
             task.outputJsonFile.set(project.layout.buildDirectory.file("internal/kmp/${target.disambiguateName("PublishCoordinates")}.json"))
         }
-    project.configurations.findByName(target.apiElementsConfigurationName)
-        ?.addGavSecondaryVariant(task, project, publication, rootPublication)
-    project.configurations.findByName(target.runtimeElementsConfigurationName)
-        ?.addGavSecondaryVariant(task, project, publication, rootPublication)
+
+    val consumableConfigurations = internal.usages
+        .filter { it.mavenScope != null }
+        .map { it.dependencyConfigurationName }
+        .toSet() + target.apiElementsConfigurationName + target.runtimeElementsConfigurationName
+
+    consumableConfigurations.forEach {
+        project.configurations.findByName(it)?.addGavSecondaryVariant(task, project, publication, rootPublication)
+    }
+
 }
 
 private fun Configuration.addGavSecondaryVariant(

@@ -771,6 +771,17 @@ class ControlFlowGraphBuilder {
         return exitGraph()
     }
 
+    fun enterReplSnippet(snippet: FirReplSnippet): ReplSnippetEnterNode {
+        return enterGraph(snippet, "REPL_SNIPPET_GRAPH", ControlFlowGraph.Kind.Function) {
+            createReplSnippetEnterNode(it) to createReplSnippetExitNode(it)
+        }
+    }
+
+    fun exitReplSnippet(): Pair<ReplSnippetExitNode, ControlFlowGraph> {
+        return exitGraph()
+    }
+
+
     // ----------------------------------- Value parameters (and it's defaults) -----------------------------------
 
     fun enterValueParameter(valueParameter: FirValueParameter): Pair<EnterValueParameterNode, EnterDefaultArgumentsNode>? {

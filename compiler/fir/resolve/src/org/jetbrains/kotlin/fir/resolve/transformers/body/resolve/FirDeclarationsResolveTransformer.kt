@@ -776,6 +776,15 @@ open class FirDeclarationsResolveTransformer(
         }
     }
 
+    override fun transformReplSnippet(replSnippet: FirReplSnippet, data: ResolutionMode): FirReplSnippet {
+        dataFlowAnalyzer.enterReplSnippet(replSnippet)
+        context.withReplSnippet(replSnippet, components) {
+            transformBlock(replSnippet.runBody!!, data)
+        }
+        dataFlowAnalyzer.exitReplSnippet()
+        return replSnippet
+    }
+
     override fun transformCodeFragment(codeFragment: FirCodeFragment, data: ResolutionMode): FirCodeFragment {
         dataFlowAnalyzer.enterCodeFragment(codeFragment)
         context.withCodeFragment(codeFragment, components) {

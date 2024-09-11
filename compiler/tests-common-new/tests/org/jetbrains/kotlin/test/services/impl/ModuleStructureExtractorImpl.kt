@@ -98,6 +98,7 @@ class ModuleStructureExtractorImpl(
         private var filesOfCurrentModule = mutableListOf<TestFile>()
 
         private var currentFileName: String? = null
+        private var currentSnippetNumber: Int = 1
         private var firstFileInModule: Boolean = true
         private var linesOfCurrentFile = mutableListOf<String>()
         private var endLineNumberOfLastFile = -1
@@ -223,6 +224,21 @@ class ModuleStructureExtractorImpl(
                         resetFileCaches()
                     }
                     currentFileName = (values.first() as String).also(::validateFileName)
+                }
+                ModuleStructureDirectives.SNIPPET -> {
+                    if (currentFileName != null) {
+                        finishFile(lineNumber)
+                    } else {
+                        resetFileCaches()
+                    }
+                    val arg = values.firstOrNull()
+                    if (arg != null) {
+                        currentSnippetNumber = (arg as String).toIntOrNull()?.takeIf { it > 0 } ?: assertions.fail {
+                            "$arg is not a valid argument for the SNIPPET directive, only positive integer values are supported"
+                        }
+                    }
+                    currentFileName = "snippet_$currentSnippetNumber.kts"
+                    currentSnippetNumber++
                 }
                 ModuleStructureDirectives.ALLOW_FILES_WITH_SAME_NAMES -> {
                     allowFilesWithSameNames = true

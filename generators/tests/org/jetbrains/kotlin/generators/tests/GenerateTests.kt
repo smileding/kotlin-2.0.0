@@ -41,6 +41,7 @@ import org.jetbrains.kotlin.parcelize.test.runners.*
 import org.jetbrains.kotlin.powerassert.AbstractFirLightTreeBlackBoxCodegenTestForPowerAssert
 import org.jetbrains.kotlin.powerassert.AbstractIrBlackBoxCodegenTestForPowerAssert
 import org.jetbrains.kotlin.samWithReceiver.*
+import org.jetbrains.kotlin.scripting.test.AbstractReplWithCustomDefDiagnosticsTestBase
 import org.jetbrains.kotlin.scripting.test.AbstractScriptWithCustomDefBlackBoxCodegenTest
 import org.jetbrains.kotlin.scripting.test.AbstractScriptWithCustomDefDiagnosticsTestBase
 import org.jetbrains.kotlin.test.TargetBackend
@@ -417,6 +418,12 @@ fun main(args: Array<String>) {
         testGroup("plugins/scripting/scripting-tests/tests-gen", "plugins/scripting/scripting-tests") {
             testClass<AbstractScriptWithCustomDefBlackBoxCodegenTest> {
                 model("testData/codegen/testScripts", extension = "kts")
+            }
+        }
+
+        testGroup("plugins/scripting/scripting-tests/tests-gen", "plugins/scripting/scripting-tests") {
+            testClass<AbstractReplWithCustomDefDiagnosticsTestBase> {
+                model("testData/diagnostics/repl", extension = "kts")
             }
         }
 

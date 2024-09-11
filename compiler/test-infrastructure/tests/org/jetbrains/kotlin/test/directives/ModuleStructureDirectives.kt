@@ -39,6 +39,13 @@ object ModuleStructureDirectives : SimpleDirectivesContainer() {
         """.trimIndent()
     )
 
+    val SNIPPET by stringDirective(
+        """
+            Usage: // SNIPPET[: number]
+            Declares snippet with specified or auto-incremented number
+        """.trimIndent()
+    )
+
     val ALLOW_FILES_WITH_SAME_NAMES by directive(
         """
         Allows specifying test files with the same names using the // FILE directive.

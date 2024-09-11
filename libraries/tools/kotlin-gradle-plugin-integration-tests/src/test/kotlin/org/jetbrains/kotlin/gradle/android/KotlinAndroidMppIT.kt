@@ -393,7 +393,7 @@ class KotlinAndroidMppIT : KGPBaseTest() {
         project(
             "new-mpp-android",
             gradleVersion,
-            buildOptions = defaultBuildOptions.copy(androidVersion = agpVersion),
+            buildOptions = defaultBuildOptions.copy(androidVersion = agpVersion).disableConfigurationCache_KT70416(),
             buildJdk = jdkVersion.location
         ) {
             // Convert the 'app' project to a library, publish two flavors without metadata,
@@ -526,9 +526,7 @@ class KotlinAndroidMppIT : KGPBaseTest() {
                     .replace("""\s+""".toRegex(), "")
                 assertContains(
                     pomText,
-                    // TODO: When KT-69974 is fixed replace it with this
-                    // ...<artifactId>libFromIncluded-android</artifactId>...
-                    """<groupId>com.example</groupId><artifactId>libFromIncluded</artifactId><version>1.0</version>"""
+                    """<groupId>com.example</groupId><artifactId>libFromIncluded-androidlib</artifactId><version>1.0</version>"""
                 )
             }
         }

@@ -34,12 +34,12 @@ internal class LazyResolvedConfiguration private constructor(
      *
      * Pass [artifactType] to select different artifacts if available.
      */
-    constructor(configuration: Configuration, artifactType: Provider<String>? = null, hasPublishedArtifact: Boolean = false) : this(
+    constructor(configuration: Configuration, artifactType: Provider<String>? = null) : this(
         // Calling resolutionResult doesn't actually trigger resolution. But accessing its root ResolvedComponentResult
         // via ResolutionResult::root does. ResolutionResult can't be serialised for Configuration Cache
         // but ResolvedComponentResult can. Wrapping it in `lazy` makes it resolve upon serialisation.
         resolvedComponentsRootProvider = configuration.incoming.resolutionResult.let { rr -> lazy { rr.root } },
-        artifactCollection = configuration.lazyArtifactCollection(artifactType, hasPublishedArtifact),
+        artifactCollection = configuration.lazyArtifactCollection(artifactType),
         configurationName = configuration.name
     )
 
@@ -77,14 +77,11 @@ internal class LazyResolvedConfiguration private constructor(
     override fun toString(): String = "LazyResolvedConfiguration(configuration='$configurationName')"
 }
 
-private fun Configuration.lazyArtifactCollection(artifactType: Provider<String>?, hasPublishedArtifact: Boolean): ArtifactCollection =
+private fun Configuration.lazyArtifactCollection(artifactType: Provider<String>?): ArtifactCollection =
     incoming.artifactView { view ->
         view.isLenient = true
         if (artifactType != null) {
             view.attributes.attributeProvider(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, artifactType)
-        }
-        if (hasPublishedArtifact) {
-            view.attributes.setAttribute(withArtifactIdAttribute, hasPublishedArtifact)
         }
     }.artifacts
 

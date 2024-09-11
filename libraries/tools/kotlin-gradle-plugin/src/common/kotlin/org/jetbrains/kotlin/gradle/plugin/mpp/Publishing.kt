@@ -23,11 +23,13 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.internal.publication.MavenPublicationInternal
+import org.gradle.api.publish.maven.tasks.GenerateMavenPom
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.internal.extensions.stdlib.capitalized
 import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
@@ -63,6 +65,7 @@ import org.jetbrains.kotlin.gradle.utils.named
 import org.jetbrains.kotlin.gradle.utils.projectStoredProperty
 import org.jetbrains.kotlin.gradle.utils.setAttribute
 import org.jetbrains.kotlin.gradle.utils.whenEvaluated
+import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 
 private val Project.kotlinMultiplatformRootPublicationImpl: CompletableFuture<MavenPublication?>
         by projectStoredProperty { CompletableFuture() }
@@ -135,21 +138,34 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
                 project.launchInStage(KotlinPluginLifecycle.Stage.AfterFinaliseCompilations) {
                     val gradleComponent = components.find { kotlinComponent.name == it.name } ?: return@launchInStage
                     from(gradleComponent)
+
+                    (publication as MavenPublicationInternal).publishWithOriginalFileName()
+                    artifactId = kotlinComponent.defaultArtifactId
+
+                    val lazyResolvedConfigurations = createLazyResolvableConfiguration(project, kotlinComponent)
+                    val artifacts = lazyResolvedConfigurations.map { lazyResolvedConfiguration ->
+                        lazyResolvedConfiguration.files
+                    }
+
+                    project.tasks.withType(GenerateMavenPom::class.java).configureEach {
+                        if (it.name.contains(publication.name.capitalizeAsciiOnly())) {
+                            it.dependsOn(artifacts)
+                        }
+                    }
+
+
+                    val pomRewriter = PomDependenciesRewriter(lazyResolvedConfigurations)
+                    val shouldRewritePomDependencies =
+                        project.provider { PropertiesProvider(project).keepMppDependenciesIntactInPoms != true }
+
+                    rewritePom(
+                        pom,
+                        pomRewriter,
+                        shouldRewritePomDependencies,
+                        dependenciesForPomRewriting(this@createMavenPublications)
+                    )
+                    kotlinComponent.addGavVariantToConfigurations(project, publication, rootPublication)
                 }
-                (this as MavenPublicationInternal).publishWithOriginalFileName()
-                artifactId = kotlinComponent.defaultArtifactId
-
-                val pomRewriter = PomDependenciesRewriter(createLazyResolvableConfiguration(project, kotlinComponent))
-                val shouldRewritePomDependencies =
-                    project.provider { PropertiesProvider(project).keepMppDependenciesIntactInPoms != true }
-
-                rewritePom(
-                    pom,
-                    pomRewriter,
-                    shouldRewritePomDependencies,
-                    dependenciesForPomRewriting(this@createMavenPublications)
-                )
-                kotlinComponent.addGavVariantToConfigurations(project, publication, rootPublication)
             }
 
             (kotlinComponent as? KotlinTargetComponentWithPublication)?.publicationDelegate = componentPublication
@@ -167,16 +183,14 @@ private fun KotlinTargetComponent.addGavVariantToConfigurations(
             task.outputJsonFile.set(project.layout.buildDirectory.file("internal/kmp/${target.disambiguateName("PublishCoordinates")}.json"))
         }
 
-    val consumableConfigurations = internal.usages
+    internal.usages
         .filter { it.mavenScope != null }
         // TODO(Dmitrii Krasnov): разобраться кто подтыкает published
         //  secondaryVariant опубликуется!!!
-        .map { it.dependencyConfigurationName }
-        .toSet() + target.apiElementsConfigurationName + target.runtimeElementsConfigurationName
-
-    consumableConfigurations.forEach {
-        project.configurations.findByName(it)?.addGavSecondaryVariant(task, project, publication, rootPublication)
-    }
+        .map { originalVariantNameFromPublished(it.dependencyConfigurationName) ?: it.dependencyConfigurationName }
+        .forEach {
+            project.configurations.findByName(it)?.addGavSecondaryVariant(task, project, publication, rootPublication)
+        }
 
 }
 
@@ -213,10 +227,6 @@ private fun Configuration.addGavSecondaryVariant(
             it.builtBy(task)
             it.type = "kotlin-publication-coordinates"
         }
-        // TODO(Dmitrii Krasnov): нужно, чтобы arifact type был не json - подглядеть у android
-        variant.attributes.attributeProvider(
-            ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
-            project.provider { "kotlin-publication-coordinates" })
 
     }
 }

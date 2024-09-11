@@ -153,7 +153,8 @@ internal fun createLazyResolvableConfiguration(
                         MavenScope.RUNTIME -> compilation.runtimeDependencyConfigurationName ?: return@mapNotNull null
                     }
                 }
-            )
+            ),
+            project.provider { "kotlin-publication-coordinates" }
         )
     }
 

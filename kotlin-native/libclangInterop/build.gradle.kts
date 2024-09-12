@@ -121,10 +121,10 @@ tasks.named(solib("clangstubs")).configure {
 }
 
 val nativelibs by project.tasks.registering(Sync::class) {
-    val clangstubsSolib = solib("clangstubs")
-    dependsOn(clangstubsSolib)
+    val lib = solib("clangstubs")
+    dependsOn(lib)
 
-    from(layout.buildDirectory.dir(clangstubsSolib))
+    from(layout.buildDirectory.dir(lib))
     into(layout.buildDirectory.dir("nativelibs"))
 }
 

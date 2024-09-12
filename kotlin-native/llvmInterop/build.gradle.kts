@@ -130,10 +130,10 @@ tasks.named(solib("llvmstubs")).configure {
 }
 
 val nativelibs by project.tasks.registering(Sync::class) {
-    val llvmstubsSolib = solib("llvmstubs")
-    dependsOn(llvmstubsSolib)
+    val lib = solib("llvmstubs")
+    dependsOn(lib)
 
-    from(layout.buildDirectory.dir(llvmstubsSolib))
+    from(layout.buildDirectory.dir(lib))
     into(layout.buildDirectory.dir("nativelibs"))
 }
 

@@ -1,9 +1,13 @@
+import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.TargetWithSanitizer
+import org.jetbrains.kotlin.tools.solib
 
 plugins {
     id("compile-to-bitcode")
     kotlin("jvm")
     id("native-interop-plugin")
+    id("native")
+    id("native-dependencies")
 }
 
 bitcode {
@@ -19,13 +23,66 @@ bitcode {
     }
 }
 
+val cflags = listOf(
+        "-I${layout.projectDirectory.dir("include").asFile}",
+        *nativeDependencies.hostPlatform.clangForJni.hostCompilerArgsForJni
+)
+
+val ldflags = listOf(
+        bitcode.hostTarget.module("env").get().sourceSets.main.get().task.get().outputFile.get().asFile.absolutePath
+)
+
+native {
+    val obj = if (HostManager.hostIsMingw) "obj" else "o"
+    suffixes {
+        (".c" to ".$obj") {
+            tool(*hostPlatform.clangForJni.clangC("").toTypedArray())
+            flags(*cflags.toTypedArray(),
+                    "-c", "-o", ruleOut(), ruleInFirst())
+        }
+    }
+    sourceSet {
+        "main" {
+            file(layout.buildDirectory.file("interopTemp/orgjetbrainskotlinbackendkonanenvstubs.c").get().asFile.toRelativeString(layout.projectDirectory.asFile))
+        }
+    }
+
+    target(solib("orgjetbrainskotlinbackendkonanenvstubs"), sourceSets["main"]!!.transform(".c" to ".$obj")) {
+        tool(*hostPlatform.clangForJni.clangCXX("").toTypedArray())
+        flags(
+                "-shared",
+                "-o", ruleOut(), *ruleInAll(),
+                *ldflags.toTypedArray())
+    }
+}
+
+val nativelibs by project.tasks.registering(Sync::class) {
+    val lib = solib("orgjetbrainskotlinbackendkonanenvstubs")
+    dependsOn(lib)
+
+    from(layout.buildDirectory.dir(lib))
+    into(layout.buildDirectory.dir("nativelibs"))
+}
+
 kotlinNativeInterop {
     create("env") {
         defFile("env.konan.backend.kotlin.jetbrains.org.def")
-        linker("clang++")
-        linkOutputs(bitcode.hostTarget.module("env").get().sourceSets.main.get().task.get())
-        headers(layout.projectDirectory.files("include/Env.h"))
+        compilerOpts(cflags)
+        headers(listOf("Env.h"))
+        skipNatives()
+
+        dependsOn(bitcode.hostTarget.module("env").get().sourceSets.main.get().task.get())
     }
+}
+
+tasks.named(solib("orgjetbrainskotlinbackendkonanenvstubs")).configure {
+    dependsOn(bitcode.hostTarget.module("env").get().sourceSets.main.get().task.get())
+}
+
+native.sourceSets["main"]!!.implicitTasks()
+tasks.named("orgjetbrainskotlinbackendkonanenvstubs.o").configure {
+    dependsOn(kotlinNativeInterop["env"].genTask)
+    inputs.file(layout.buildDirectory.file("interopTemp/orgjetbrainskotlinbackendkonanenvstubs.c"))
 }
 
 configurations.apiElements.configure {
@@ -46,7 +103,7 @@ val nativeLibs by configurations.creating {
 }
 
 artifacts {
-    add(nativeLibs.name, layout.buildDirectory.dir("nativelibs/${TargetWithSanitizer.host}")) {
-        builtBy(kotlinNativeInterop["env"].genTask)
+    add(nativeLibs.name, layout.buildDirectory.dir("nativelibs")) {
+        builtBy(nativelibs)
     }
 }

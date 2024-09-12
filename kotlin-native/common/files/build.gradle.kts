@@ -69,7 +69,6 @@ kotlinNativeInterop {
         defFile("files.konan.backend.kotlin.jetbrains.org.def")
         compilerOpts(cflags)
         headers(listOf("Files.h"))
-        skipNatives()
 
         dependsOn(bitcode.hostTarget.module("files").get().sourceSets.main.get().task.get())
     }

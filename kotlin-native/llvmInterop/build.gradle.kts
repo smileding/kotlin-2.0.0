@@ -147,7 +147,6 @@ kotlinNativeInterop {
                 "llvm-c/TargetMachine.h", "llvm-c/Target.h", "llvm-c/Linker.h",
                 "llvm-c/DebugInfo.h", "DebugInfoC.h", "CAPIExtensions.h", "RemoveRedundantSafepoints.h", "OpaquePointerAPI.h"
         ))
-        skipNatives()
 
         dependsOn(":kotlin-native:llvmDebugInfoC:${lib("debugInfo")}")
         dependsOn(":kotlin-native:libllvmext:${lib("llvmext")}")

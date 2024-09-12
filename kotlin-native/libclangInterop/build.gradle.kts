@@ -133,7 +133,7 @@ kotlinNativeInterop {
         defFile("clang.def")
         compilerOpts(cflags)
         headers(listOf("clang-c/Index.h", "clang-c/ext.h"))
-        skipNatives()
+
         genTask.configure {
             dependsOn(libclangextTask)
             inputs.dir(libclangextDir)

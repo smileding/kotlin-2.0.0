@@ -21,7 +21,7 @@ bitcode {
 
 kotlinNativeInterop {
     create("files") {
-        pkg("org.jetbrains.kotlin.backend.konan.files")
+        defFile("files.konan.backend.kotlin.jetbrains.org.def")
         linker("clang++")
         linkOutputs(bitcode.hostTarget.module("files").get().sourceSets.main.get().task.get())
         headers(layout.projectDirectory.files("include/Files.h"))

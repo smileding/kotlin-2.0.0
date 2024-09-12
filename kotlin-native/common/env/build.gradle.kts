@@ -21,7 +21,7 @@ bitcode {
 
 kotlinNativeInterop {
     create("env") {
-        pkg("org.jetbrains.kotlin.backend.konan.env")
+        defFile("env.konan.backend.kotlin.jetbrains.org.def")
         linker("clang++")
         linkOutputs(bitcode.hostTarget.module("env").get().sourceSets.main.get().task.get())
         headers(layout.projectDirectory.files("include/Env.h"))

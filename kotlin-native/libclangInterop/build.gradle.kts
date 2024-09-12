@@ -120,7 +120,7 @@ tasks.named(solib("clangstubs")).configure {
     dependsOn(":kotlin-native:libclangext:${lib("clangext")}")
 }
 
-val nativelibs = project.tasks.register<Copy>("nativelibs") {
+val nativelibs by project.tasks.registering(Sync::class) {
     val clangstubsSolib = solib("clangstubs")
     dependsOn(clangstubsSolib)
 

@@ -208,7 +208,7 @@ class NamedNativeInteropConfig(
 
             doLast {
                 // interop tool uses precompiled headers, generated .c file does not have required includes. Add them manually.
-                val generatedName = defFile?.replace("\\.def$".toRegex(), "")
+                val generatedName = defFile?.split(".")?.reversed()?.drop(1)?.joinToString(separator = "")
                         ?: pkg?.replace(".", "")
                         ?: error("Either defFile or pkg must have been specified")
                 val originalStubs = temporaryFilesDir.resolve("${generatedName}stubs_original.c")

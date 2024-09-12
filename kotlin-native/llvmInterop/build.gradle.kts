@@ -1,6 +1,8 @@
 import org.jetbrains.kotlin.PlatformInfo
+import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.TargetWithSanitizer
 import org.jetbrains.kotlin.tools.lib
+import org.jetbrains.kotlin.tools.solib
 
 plugins {
     kotlin("jvm")
@@ -98,6 +100,43 @@ val ldflags = listOfNotNull(
     emptyList()
 }
 
+native {
+    val obj = if (HostManager.hostIsMingw) "obj" else "o"
+    suffixes {
+        (".c" to ".$obj") {
+            tool(*hostPlatform.clangForJni.clangC("").toTypedArray())
+            flags(*cflags.toTypedArray(),
+                    "-c", "-o", ruleOut(), ruleInFirst())
+        }
+    }
+    sourceSet {
+        "main" {
+            file(layout.buildDirectory.file("interopTemp/llvmstubs.c").get().asFile.toRelativeString(layout.projectDirectory.asFile))
+        }
+    }
+
+    target(solib("llvmstubs"), sourceSets["main"]!!.transform(".c" to ".$obj")) {
+        tool(*hostPlatform.clangForJni.clangCXX("").toTypedArray())
+        flags(
+                "-shared",
+                "-o", ruleOut(), *ruleInAll(),
+                *ldflags.toTypedArray())
+    }
+}
+
+tasks.named(solib("llvmstubs")).configure {
+    dependsOn(":kotlin-native:llvmDebugInfoC:${lib("debugInfo")}")
+    dependsOn(":kotlin-native:libllvmext:${lib("llvmext")}")
+}
+
+val nativelibs by project.tasks.registering(Sync::class) {
+    val llvmstubsSolib = solib("llvmstubs")
+    dependsOn(llvmstubsSolib)
+
+    from(layout.buildDirectory.dir(llvmstubsSolib))
+    into(layout.buildDirectory.dir("nativelibs"))
+}
+
 kotlinNativeInterop {
     create("llvm") {
         defFile("llvm.def")
@@ -108,13 +147,17 @@ kotlinNativeInterop {
                 "llvm-c/TargetMachine.h", "llvm-c/Target.h", "llvm-c/Linker.h",
                 "llvm-c/DebugInfo.h", "DebugInfoC.h", "CAPIExtensions.h", "RemoveRedundantSafepoints.h", "OpaquePointerAPI.h"
         ))
-
-        linker("clang++")
-        linkerOpts(ldflags)
+        skipNatives()
 
         dependsOn(":kotlin-native:llvmDebugInfoC:${lib("debugInfo")}")
         dependsOn(":kotlin-native:libllvmext:${lib("llvmext")}")
     }
+}
+
+native.sourceSets["main"]!!.implicitTasks()
+tasks.named("llvmstubs.o").configure {
+    dependsOn(kotlinNativeInterop["llvm"].genTask)
+    inputs.file(layout.buildDirectory.file("interopTemp/llvmstubs.c"))
 }
 
 configurations.apiElements.configure {
@@ -135,7 +178,7 @@ val nativeLibs by configurations.creating {
 }
 
 artifacts {
-    add(nativeLibs.name, layout.buildDirectory.dir("nativelibs/${TargetWithSanitizer.host}")) {
-        builtBy(kotlinNativeInterop["llvm"].genTask)
+    add(nativeLibs.name, layout.buildDirectory.dir("nativelibs")) {
+        builtBy(nativelibs)
     }
 }

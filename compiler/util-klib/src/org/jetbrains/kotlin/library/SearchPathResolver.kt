@@ -173,7 +173,16 @@ abstract class KotlinLibrarySearchPathResolver<L : KotlinLibrary>(
         // resolution) so we can pass it to the compiler directly. This code takes this into account and looks for
         // a library dependencies also in libs passed to the compiler as files (passed to the resolver as the
         // 'directLibraries' property).
-        return generateSequence { directLibraryUniqueNames[givenName] }
+        return generateSequence {
+            directLibraryUniqueNames[givenName]?.also { libraryPath ->
+                logger.strongWarning(
+                    "KLIB resolver: Library '${libraryPath.path}' was found by its unique name '${givenName}'. " +
+                            "This could happen if the library unique name was passed instead of the library path as one of compiler's CLI arguments. " +
+                            "Note, that using unique name is deprecated and will become unavailable in one of the future Kotlin releases. " +
+                            "Please, specify full paths to libraries in compiler CLI arguments."
+                )
+            }
+        }
     }
 
     override fun resolutionSequence(givenPath: String): Sequence<File> {

@@ -8,13 +8,7 @@ package org.jetbrains.kotlin.gradle.plugin.mpp
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.type.ArtifactTypeDefinition
-import org.gradle.api.attributes.Bundling
-import org.gradle.api.attributes.Category
-import org.gradle.api.attributes.DocsType
-import org.gradle.api.attributes.HasAttributes
-import org.gradle.api.attributes.LibraryElements
-import org.gradle.api.attributes.Usage
+import org.gradle.api.attributes.*
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -24,47 +18,20 @@ import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.internal.publication.MavenPublicationInternal
 import org.gradle.api.publish.maven.tasks.GenerateMavenPom
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Nested
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.TaskProvider
-import org.gradle.internal.extensions.stdlib.capitalized
+import org.gradle.api.tasks.*
 import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactGroupAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactIdAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.artifactVersionAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactGroupAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactIdAttribute
-import org.jetbrains.kotlin.gradle.internal.attributes.rootArtifactVersionAttribute
-import org.jetbrains.kotlin.gradle.plugin.KotlinPluginLifecycle
-import org.jetbrains.kotlin.gradle.plugin.KotlinProjectSetupCoroutine
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
-import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
-import org.jetbrains.kotlin.gradle.plugin.KotlinTargetComponent
-import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider
+import org.jetbrains.kotlin.gradle.internal.attributes.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
-import org.jetbrains.kotlin.gradle.plugin.attributeValueByName
-import org.jetbrains.kotlin.gradle.plugin.launchInStage
-import org.jetbrains.kotlin.gradle.plugin.setUsesPlatformOf
 import org.jetbrains.kotlin.gradle.plugin.sources.KotlinDependencyScope
 import org.jetbrains.kotlin.gradle.plugin.sources.sourceSetDependencyConfigurationByScope
-import org.jetbrains.kotlin.gradle.plugin.usageByName
-import org.jetbrains.kotlin.gradle.plugin.usesPlatformOf
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrTarget
 import org.jetbrains.kotlin.gradle.targets.metadata.isKotlinGranularMetadataEnabled
 import org.jetbrains.kotlin.gradle.tasks.locateOrRegisterTask
 import org.jetbrains.kotlin.gradle.tooling.buildKotlinToolingMetadataTask
-import org.jetbrains.kotlin.gradle.utils.CompletableFuture
-import org.jetbrains.kotlin.gradle.utils.Future
-import org.jetbrains.kotlin.gradle.utils.JsonUtils
-import org.jetbrains.kotlin.gradle.utils.isPluginApplied
-import org.jetbrains.kotlin.gradle.utils.named
-import org.jetbrains.kotlin.gradle.utils.projectStoredProperty
-import org.jetbrains.kotlin.gradle.utils.setAttribute
-import org.jetbrains.kotlin.gradle.utils.whenEvaluated
+import org.jetbrains.kotlin.gradle.utils.*
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 
 private val Project.kotlinMultiplatformRootPublicationImpl: CompletableFuture<MavenPublication?>
@@ -133,14 +100,15 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
         .forEach { kotlinComponent ->
             val componentPublication = publications.create(kotlinComponent.name, MavenPublication::class.java).apply {
                 val publication = this
+
+                (publication as MavenPublicationInternal).publishWithOriginalFileName()
+                artifactId = kotlinComponent.defaultArtifactId
+
                 // do await for usages since older Gradle versions seem to check the files in the variant eagerly:
                 // We are deferring this to 'AfterFinaliseCompilations' as safety measure for now.
                 project.launchInStage(KotlinPluginLifecycle.Stage.AfterFinaliseCompilations) {
                     val gradleComponent = components.find { kotlinComponent.name == it.name } ?: return@launchInStage
                     from(gradleComponent)
-
-                    (publication as MavenPublicationInternal).publishWithOriginalFileName()
-                    artifactId = kotlinComponent.defaultArtifactId
 
                     val lazyResolvedConfigurations = createLazyResolvableConfiguration(project, kotlinComponent)
                     val artifacts = lazyResolvedConfigurations.map { lazyResolvedConfiguration ->
@@ -152,7 +120,6 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
                             it.dependsOn(artifacts)
                         }
                     }
-
 
                     val pomRewriter = PomDependenciesRewriter(lazyResolvedConfigurations)
                     val shouldRewritePomDependencies =
@@ -178,18 +145,21 @@ private fun KotlinTargetComponent.addGavVariantToConfigurations(
     publication: MavenPublication,
     rootPublication: MavenPublication,
 ) {
-    val task =
-        project.locateOrRegisterTask<ExportKotlinPublishCoordinatesTask>(target.disambiguateName("ExportPublishCoordinates")) { task ->
-            task.outputJsonFile.set(project.layout.buildDirectory.file("internal/kmp/${target.disambiguateName("PublishCoordinates")}.json"))
-        }
+
 
     internal.usages
         .filter { it.mavenScope != null }
         // TODO(Dmitrii Krasnov): разобраться кто подтыкает published
         //  secondaryVariant опубликуется!!!
         .map { originalVariantNameFromPublished(it.dependencyConfigurationName) ?: it.dependencyConfigurationName }
-        .forEach {
-            project.configurations.findByName(it)?.addGavSecondaryVariant(task, project, publication, rootPublication)
+        .forEach {configurationName ->
+
+            val configuration = project.configurations.findByName(configurationName) ?: return@forEach
+            val task =
+                project.locateOrRegisterTask<ExportKotlinPublishCoordinatesTask>(lowerCamelCaseName(configurationName, "ExportPublishCoordinates")) { task ->
+                    task.outputJsonFile.set(project.layout.buildDirectory.file("internal/kmp/${lowerCamelCaseName(configurationName, "PublishCoordinates")}.json"))
+                }
+            configuration.addGavSecondaryVariant(task, project, publication, rootPublication)
         }
 
 }
@@ -217,7 +187,9 @@ private fun Configuration.addGavSecondaryVariant(
                     project.provider { rootPublication.artifactId },
                     project.provider { rootPublication.version },
                     project.provider { publication.groupId },
-                    project.provider { publication.artifactId },
+                    project.provider {
+                        publication.artifactId
+                    },
                     project.provider { publication.version },
                 )
             )

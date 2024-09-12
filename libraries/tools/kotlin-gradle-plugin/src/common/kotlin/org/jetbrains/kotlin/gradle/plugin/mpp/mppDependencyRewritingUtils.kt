@@ -11,15 +11,15 @@ import org.gradle.api.Project
 import org.gradle.api.XmlProvider
 import org.gradle.api.artifacts.ModuleIdentifier
 import org.gradle.api.artifacts.ModuleVersionIdentifier
-import org.gradle.api.artifacts.component.ComponentSelector
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentSelector
-import org.gradle.api.artifacts.result.ResolvedArtifactResult
+import org.gradle.api.artifacts.component.ProjectComponentSelector
 import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetComponent
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinUsageContext.MavenScope
 import org.jetbrains.kotlin.gradle.utils.JsonUtils
 import org.jetbrains.kotlin.gradle.utils.LazyResolvedConfiguration
+import org.jetbrains.kotlin.gradle.utils.lastExternalVariantOrSelf
 
 internal data class ModuleCoordinates(
     private val moduleGroup: String?,
@@ -37,7 +37,7 @@ internal data class ModuleCoordinates(
 }
 
 internal class PomDependenciesRewriter(
-    private val lazyResolvedConfigurations: List<LazyResolvedConfiguration>
+    private val lazyResolvedConfigurations: List<LazyResolvedConfiguration>,
 ) {
 
 
@@ -147,44 +147,44 @@ private fun associateDependenciesWithActualModuleDependencies(
     lazyResolvedConfiguration: LazyResolvedConfiguration,
 ): Map<ModuleCoordinates, ModuleCoordinates> {
 
-    val associate = lazyResolvedConfiguration
-        .allResolvedDependencies
-        .mapNotNull { resolvedDependency ->
-            val resolvedArtifact = lazyResolvedConfiguration.getArtifacts(resolvedDependency).singleOrNull()
-            val requestedDependency = resolvedDependency.requested
+    val resolvedDependenciesByComponentIdentifier =
+        lazyResolvedConfiguration.allResolvedDependencies.associateBy { it.resolvedVariant.owner }
 
-            createAssociationBetweenRequestedAndResolvedDependency(requestedDependency, resolvedArtifact)
+    val mapForProjectCoordinatesMap = lazyResolvedConfiguration
+        .resolvedArtifacts
+        .mapNotNull { resolvedArtifact ->
+            val resolvedDependency = resolvedDependenciesByComponentIdentifier.get(resolvedArtifact.variant.owner) ?: return@mapNotNull null
+            val publicationCoordinates = resolvedArtifact.file.let { artifact ->
+                JsonUtils.gson.fromJson(artifact.readText(), PublicationCoordinates::class.java)
+            } ?: return@mapNotNull null
+            val fromModuleCoordinates = when (val requested = resolvedDependency.requested) {
+                is ProjectComponentSelector -> ModuleCoordinates(
+                    publicationCoordinates.rootPublicationGAV.group,
+                    publicationCoordinates.rootPublicationGAV.artifactId,
+                    publicationCoordinates.rootPublicationGAV.version
+                )
+                is ModuleComponentSelector -> ModuleCoordinates(requested.group, requested.module, requested.version)
+                else -> return@mapNotNull null
+            }
+            fromModuleCoordinates to ModuleCoordinates(
+                publicationCoordinates.targetPublicationGAV.group,
+                publicationCoordinates.targetPublicationGAV.artifactId,
+                publicationCoordinates.targetPublicationGAV.version
+            )
         }.associate { it }
-    return associate
-}
 
-private fun createAssociationBetweenRequestedAndResolvedDependency(
-    requestedDependency: ComponentSelector,
-    resolvedArtifact: ResolvedArtifactResult?,
-): Pair<ModuleCoordinates, ModuleCoordinates>? {
-    val publicationCoordinates = resolvedArtifact?.file?.let { artifact -> JsonUtils.gson.fromJson(artifact.readText(), PublicationCoordinates::class.java) }
-    return if (publicationCoordinates != null) {
-        ModuleCoordinates(
-            publicationCoordinates.rootPublicationGAV.group,
-            publicationCoordinates.rootPublicationGAV.artifactId,
-            publicationCoordinates.rootPublicationGAV.version
-        ) to ModuleCoordinates(
-            publicationCoordinates.targetPublicationGAV.group,
-            publicationCoordinates.targetPublicationGAV.artifactId,
-            publicationCoordinates.targetPublicationGAV.version
-        )
-    } else {
-        if (requestedDependency !is ModuleComponentSelector) return null
-        val resolvedDependencyVariant = resolvedArtifact?.variant as? ModuleComponentIdentifier ?: return null
-        val requestedCoordinates = ModuleCoordinates(
-            requestedDependency.group,
-            requestedDependency.module,
-            requestedDependency.version
-        )
-        requestedCoordinates to ModuleCoordinates(
-            resolvedDependencyVariant.group,
-            resolvedDependencyVariant.module,
-            resolvedDependencyVariant.version
-        )
-    }
+    val externalLibraryCoordinatesMap = lazyResolvedConfiguration
+        .allResolvedDependencies
+        // externalVariant is not available for project dependency
+        .filter { resolvedDependency -> resolvedDependency.resolvedVariant.externalVariant.isPresent }
+        .filter { resolvedDependency -> resolvedDependency.resolvedVariant.owner is ModuleComponentIdentifier }
+        .mapNotNull { resolvedDependency ->
+            val componentSelector = resolvedDependency.requested as? ModuleComponentSelector ?: return@mapNotNull null
+            val resolvedId =
+                resolvedDependency.resolvedVariant.lastExternalVariantOrSelf().owner as? ModuleComponentIdentifier ?: return@mapNotNull null
+            ModuleCoordinates(componentSelector.group, componentSelector.module, componentSelector.version) to
+                    ModuleCoordinates(resolvedId.group, resolvedId.module, resolvedId.version)
+        }.associate { it }
+
+    return mapForProjectCoordinatesMap + externalLibraryCoordinatesMap
 }

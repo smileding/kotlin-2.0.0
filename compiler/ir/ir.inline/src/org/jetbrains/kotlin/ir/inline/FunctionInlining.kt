@@ -68,8 +68,6 @@ abstract class InlineFunctionResolver(val inlineMode: InlineMode) {
         get() = CallInlinerStrategy.DEFAULT
     open val allowExternalInlining: Boolean
         get() = false
-    open val preCodegenInlining: Boolean
-        get() = false
 
     open fun needsInlining(function: IrFunction) = function.isInline && (allowExternalInlining || !function.isExternal)
 

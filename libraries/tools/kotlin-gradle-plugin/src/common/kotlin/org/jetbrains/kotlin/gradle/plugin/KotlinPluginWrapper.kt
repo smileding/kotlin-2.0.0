@@ -194,9 +194,7 @@ abstract class DefaultKotlinBasePlugin : KotlinBasePlugin {
             KotlinNativeBundleArtifactFormat.setupTransform(project)
         }
 
-        if (project.kotlinPropertiesProvider.kotlinKmpProjectIsolationEnabled) {
-            setupGavAttributesMatchingStrategy(this)
-        }
+        setupGavAttributesMatchingStrategy(this)
     }
 
     open fun whenBuildEvaluated(project: Project) {

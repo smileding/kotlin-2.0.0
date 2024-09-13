@@ -21,6 +21,7 @@ import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtensionOrNull
 import org.jetbrains.kotlin.gradle.internal.attributes.PUBLISH_COORDINATES_TYPE_ATTRIBUTE
 import org.jetbrains.kotlin.gradle.internal.attributes.WITH_PUBLISH_COORDINATES
+import org.jetbrains.kotlin.gradle.internal.publishing.PublicationCoordinates
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetComponent
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider

@@ -24,6 +24,8 @@ import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
 import org.jetbrains.kotlin.gradle.internal.attributes.PUBLISH_COORDINATES_TYPE_ATTRIBUTE
 import org.jetbrains.kotlin.gradle.internal.attributes.WITH_PUBLISH_COORDINATES
+import org.jetbrains.kotlin.gradle.internal.publishing.ExportKotlinPublishCoordinatesTask
+import org.jetbrains.kotlin.gradle.internal.publishing.PublicationCoordinatesProperty
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.sources.KotlinDependencyScope
@@ -156,34 +158,27 @@ private fun KotlinTargetComponent.addGavVariantToConfigurations(
 
     internal.usages
         .filter { it.mavenScope != null }
-        // TODO(Dmitrii Krasnov): разобраться кто подтыкает published
-        //  secondaryVariant опубликуется!!!
         .map { originalVariantNameFromPublished(it.dependencyConfigurationName) ?: it.dependencyConfigurationName }
         .forEach { configurationName ->
 
             val configuration = project.configurations.findByName(configurationName) ?: return@forEach
-            val task =
-                project.locateOrRegisterTask<ExportKotlinPublishCoordinatesTask>(
-                    lowerCamelCaseName(
-                        configurationName,
-                        "ExportPublishCoordinates"
-                    )
-                ) { task ->
-                    task.outputJsonFile.set(
-                        project.layout.buildDirectory.file(
-                            "internal/kmp/${
-                                lowerCamelCaseName(
-                                    configurationName,
-                                    "PublishCoordinates"
-                                )
-                            }.json"
-                        )
-                    )
-                }
+            val task = createExportPublishCoordinatesTask(project, configurationName)
             configuration.addGavSecondaryVariant(task, project, publication, rootPublication)
         }
 
 }
+
+private fun createExportPublishCoordinatesTask(
+    project: Project,
+    configurationName: String,
+) =
+    project.locateOrRegisterTask<ExportKotlinPublishCoordinatesTask>(
+        lowerCamelCaseName(configurationName, "ExportPublishCoordinates")
+    ) { task ->
+        task.outputJsonFile.set(
+            project.layout.buildDirectory.file("internal/kmp/${lowerCamelCaseName(configurationName, "PublishCoordinates")}.json")
+        )
+    }
 
 private fun Configuration.addGavSecondaryVariant(
     task: TaskProvider<ExportKotlinPublishCoordinatesTask>,
@@ -208,7 +203,6 @@ private fun Configuration.addGavSecondaryVariant(
                 )
             )
         }
-        // TODO(Dmitrii Krasnov): нужно, чтобы arifact type был не json - подглядеть у android
         variant.artifact(task.map { it.outputJsonFile }) {
             it.builtBy(task)
             it.type = "kotlin-publication-coordinates"
@@ -295,52 +289,3 @@ internal fun HasAttributes.configureResourcesPublicationAttributes(target: Kotli
 
     setUsesPlatformOf(target)
 }
-
-
-@DisableCachingByDefault(because = "Only I/O operations")
-internal abstract class ExportKotlinPublishCoordinatesTask : DefaultTask() {
-
-    @get:OutputFile
-    abstract val outputJsonFile: RegularFileProperty
-
-    @get:Nested
-    abstract val data: Property<PublicationCoordinatesProperty>
-
-    @TaskAction
-    fun action() {
-
-        val file = outputJsonFile.get().asFile
-        val json = JsonUtils.gson.toJson(data.get().toPublicationCoordinates())
-        file.writeText(json)
-    }
-}
-
-internal data class PublicationCoordinatesProperty(
-    @get:Input
-    val rootGroup: Provider<String>,
-
-    @get:Input
-    val rootArtifactId: Provider<String>,
-
-    @get:Input
-    val rootVersion: Provider<String>,
-
-    @get:Input
-    val targetGroup: Provider<String>,
-
-    @get:Input
-    val targetArtifactId: Provider<String>,
-
-    @get:Input
-    val targetVersion: Provider<String>,
-) {
-    fun toPublicationCoordinates(): PublicationCoordinates {
-        return PublicationCoordinates(
-            rootPublicationGAV = GAV(rootGroup.get(), rootArtifactId.get(), rootVersion.get()),
-            targetPublicationGAV = GAV(targetGroup.get(), targetArtifactId.get(), targetVersion.get())
-        )
-    }
-}
-
-internal data class PublicationCoordinates(val rootPublicationGAV: GAV, val targetPublicationGAV: GAV)
-internal data class GAV(val group: String, val artifactId: String, val version: String)

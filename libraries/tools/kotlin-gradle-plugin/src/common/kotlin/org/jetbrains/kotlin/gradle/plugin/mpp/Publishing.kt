@@ -22,7 +22,8 @@ import org.gradle.api.tasks.*
 import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
-import org.jetbrains.kotlin.gradle.internal.attributes.HAS_PUBLISH_COORDINATES_ATTRIBUTE
+import org.jetbrains.kotlin.gradle.internal.attributes.PUBLISH_COORDINATES_TYPE_ATTRIBUTE
+import org.jetbrains.kotlin.gradle.internal.attributes.WITH_PUBLISH_COORDINATES
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.sources.KotlinDependencyScope
@@ -192,7 +193,7 @@ private fun Configuration.addGavSecondaryVariant(
 ) {
 
     outgoing.variants.create("gavSecondaryVariant") { variant ->
-        variant.attributes.setAttribute(HAS_PUBLISH_COORDINATES_ATTRIBUTE, true)
+        variant.attributes.setAttribute(PUBLISH_COORDINATES_TYPE_ATTRIBUTE, WITH_PUBLISH_COORDINATES)
         task.configure {
             it.data.set(
                 PublicationCoordinatesProperty(

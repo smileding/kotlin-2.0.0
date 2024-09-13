@@ -19,7 +19,8 @@ import org.gradle.api.internal.component.SoftwareComponentInternal
 import org.gradle.api.internal.component.UsageContext
 import org.gradle.api.provider.Provider
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtensionOrNull
-import org.jetbrains.kotlin.gradle.internal.attributes.HAS_PUBLISH_COORDINATES_ATTRIBUTE
+import org.jetbrains.kotlin.gradle.internal.attributes.PUBLISH_COORDINATES_TYPE_ATTRIBUTE
+import org.jetbrains.kotlin.gradle.internal.attributes.WITH_PUBLISH_COORDINATES
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetComponent
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
@@ -141,7 +142,7 @@ internal fun createLazyResolvedConfigurationsFromKotlinComponent(
             attributeContainer.attributeProvider(
                 ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
                 project.provider { "kotlin-publication-coordinates" })
-            attributeContainer.attributeProvider(HAS_PUBLISH_COORDINATES_ATTRIBUTE, project.provider { true })
+            attributeContainer.attributeProvider(PUBLISH_COORDINATES_TYPE_ATTRIBUTE, project.provider { WITH_PUBLISH_COORDINATES })
 
         }
 

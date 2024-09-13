@@ -113,7 +113,7 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
                     val gradleComponent = components.find { kotlinComponent.name == it.name } ?: return@launchInStage
                     from(gradleComponent)
 
-                    val pomRewriter = if (project.kotlinPropertiesProvider.kotlinKmpProjectIsolationEnabled) {
+                    @Suppress("DEPRECATION") val pomRewriter = if (project.kotlinPropertiesProvider.kotlinKmpProjectIsolationEnabled) {
                         val lazyResolvedConfigurations = createLazyResolvedConfigurationsFromKotlinComponent(project, kotlinComponent)
                         val artifacts = lazyResolvedConfigurations.map { lazyResolvedConfiguration ->
                             lazyResolvedConfiguration.files

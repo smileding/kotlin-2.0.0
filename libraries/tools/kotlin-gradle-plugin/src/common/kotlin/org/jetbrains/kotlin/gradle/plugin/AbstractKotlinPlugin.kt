@@ -135,7 +135,7 @@ internal abstract class AbstractKotlinPlugin(
 
         project.pluginManager.withPlugin("maven-publish") {
             project.extensions.configure(PublishingExtension::class.java) { publishing ->
-                val pomRewriter = if (project.kotlinPropertiesProvider.kotlinKmpProjectIsolationEnabled) {
+                @Suppress("DEPRECATION") val pomRewriter = if (project.kotlinPropertiesProvider.kotlinKmpProjectIsolationEnabled) {
                     val lazyResolvedConfigurationsFromKotlinComponent =
                         createLazyResolvedConfigurationsFromKotlinComponent(project, target.kotlinComponents.single())
                     publishing.publications.withType(MavenPublication::class.java).all { publication ->

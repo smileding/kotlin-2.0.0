@@ -68,9 +68,6 @@ kotlinNativeInterop.create("files").genTask.configure {
     defFile.set(layout.projectDirectory.file("files.konan.backend.kotlin.jetbrains.org.def"))
     headersDirs.from(layout.projectDirectory.dir("include"))
     headersToProcess.add("Files.h")
-
-    // TODO: This is not true.
-    dependsOn(bitcode.hostTarget.module("files").get().sourceSets.main.get().task.get())
 }
 
 tasks.named(solib("orgjetbrainskotlinbackendkonanfilesstubs")).configure {

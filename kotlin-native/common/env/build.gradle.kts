@@ -69,9 +69,6 @@ kotlinNativeInterop.create("env").genTask.configure {
     defFile.set(layout.projectDirectory.file("env.konan.backend.kotlin.jetbrains.org.def"))
     headersDirs.from(layout.projectDirectory.dir("include"))
     headersToProcess.add("Env.h")
-
-    // TODO: This is not true.
-    dependsOn(bitcode.hostTarget.module("env").get().sourceSets.main.get().task.get())
 }
 
 tasks.named(solib("orgjetbrainskotlinbackendkonanenvstubs")).configure {

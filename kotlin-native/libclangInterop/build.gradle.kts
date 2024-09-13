@@ -11,7 +11,6 @@ plugins {
 }
 
 val libclangextProject = project(":kotlin-native:libclangext")
-val libclangextTask = libclangextProject.path + ":build"
 val libclangextDir = libclangextProject.layout.buildDirectory.get().asFile
 val libclangextIsEnabled = libclangextProject.findProperty("isEnabled")!! as Boolean
 
@@ -136,10 +135,6 @@ kotlinNativeInterop.create("clang").genTask.configure {
             "${project(":kotlin-native:libclangext").projectDir.absolutePath}/src/main/include",
     )
     headersToProcess.addAll("clang-c/Index.h", "clang-c/ext.h")
-
-    // TODO: This is not true.
-    dependsOn(libclangextTask)
-    inputs.dir(libclangextDir)
 }
 
 dependencies {

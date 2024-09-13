@@ -153,10 +153,6 @@ kotlinNativeInterop.create("llvm").genTask.configure {
             "llvm-c/TargetMachine.h", "llvm-c/Target.h", "llvm-c/Linker.h",
             "llvm-c/DebugInfo.h", "DebugInfoC.h", "CAPIExtensions.h", "RemoveRedundantSafepoints.h", "OpaquePointerAPI.h"
     )
-
-    // TODO: This is not true.
-    dependsOn(":kotlin-native:llvmDebugInfoC:${lib("debugInfo")}")
-    dependsOn(":kotlin-native:libllvmext:${lib("llvmext")}")
 }
 
 native.sourceSets["main"]!!.implicitTasks()

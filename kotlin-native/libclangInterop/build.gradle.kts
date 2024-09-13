@@ -166,5 +166,14 @@ artifacts {
 // TODO: Replace with a common way to generate sources. Also add a test that generation didn't change checked-in sources.
 val updatePrebuilt by tasks.registering(Sync::class) {
     into(layout.projectDirectory.dir("prebuilt/nativeInteropStubs"))
-    from(kotlinNativeInterop["clang"].genTask.map { layout.buildDirectory.dir("nativeInteropStubs") })
+
+    from(kotlinNativeInterop["clang"].genTask.map { it.kotlinBridges }) {
+        include("clang/clang.kt")
+        into("kotlin")
+    }
+
+    from(kotlinNativeInterop["clang"].genTask.map { it.cBridge }) {
+        into("c")
+        rename("stubs.c", "clangstubs.c")
+    }
 }

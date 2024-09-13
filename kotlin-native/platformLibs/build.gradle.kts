@@ -26,6 +26,23 @@ fun defFileToLibName(target: String, name: String) = "$target-$name"
 private fun interopTaskName(libName: String, targetName: String) = "compileKonan${libName.capitalized}${targetName.capitalized}"
 private fun cacheTaskName(target: String, name: String) = "${defFileToLibName(target, name)}Cache"
 
+private abstract class CompilePlatformLibsSemaphore : BuildService<BuildServiceParameters.None>
+private abstract class CachePlatformLibsSemaphore : BuildService<BuildServiceParameters.None>
+
+private val compilePlatformLibsSemaphore = gradle.sharedServices.registerIfAbsent("compilePlatformLibsSemaphore", CompilePlatformLibsSemaphore::class.java) {
+    if (!kotlinBuildProperties.getBoolean("kotlin.native.platformLibs.parallel", true)) {
+        maxParallelUsages.set(1)
+    }
+}
+
+private val cachePlatformLibsSemaphore = gradle.sharedServices.registerIfAbsent("cachePlatformLibsSemaphore", CachePlatformLibsSemaphore::class.java) {
+    // if platform libs compilation parallelism is disabled, also disable parallel cache building by default.
+    val defaultParallelCache = kotlinBuildProperties.getBoolean("kotlin.native.platformLibs.parallel", true)
+    if (!kotlinBuildProperties.getBoolean("kotlin.native.platformLibs.parallelCache", defaultParallelCache)) {
+        maxParallelUsages.set(1)
+    }
+}
+
 // endregion
 
 if (HostManager.host == KonanTarget.MACOS_ARM64) {
@@ -88,6 +105,7 @@ enabledTargets(platformManager).forEach { target ->
                     "-no-endorsed-libs",
                     "-compiler-option", fmodulesCacheOption
             )
+            usesService(compilePlatformLibsSemaphore)
         }
 
         val klibInstallTask = tasks.register(libName, Sync::class.java) {
@@ -115,6 +133,7 @@ enabledTargets(platformManager).forEach { target ->
                 this.target.set(targetName)
                 this.moduleName.set(artifactName)
                 this.cacheRootDirectory.set(dist.map { it.cachesRoot })
+                usesService(cachePlatformLibsSemaphore)
             }
             cacheTasks.add(cacheTask)
         }

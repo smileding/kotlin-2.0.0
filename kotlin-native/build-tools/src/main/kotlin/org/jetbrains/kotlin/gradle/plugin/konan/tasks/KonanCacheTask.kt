@@ -39,7 +39,7 @@ private abstract class KonanCacheAction : WorkAction<KonanCacheAction.Parameters
     override fun execute() {
         parameters.isolatedClassLoadersService.get().getIsolatedClassLoader(parameters.compilerDistribution.get().compilerClasspath.files).runKonanTool(
                 logger = Logging.getLogger(this::class.java),
-                useArgFile = false,
+                useArgFile = true,
                 toolName = "konanc",
                 args = parameters.args.get()
         )

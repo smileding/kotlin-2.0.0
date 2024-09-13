@@ -157,12 +157,12 @@ open class KonanJvmInteropTask @Inject constructor(
                 val spacesRegex = "\\s+".toRegex()
                 var line = lines.next().replace("^headers\\s*=\\s*".toRegex(), "")
                 while (true) {
-                    val elements = line.split(spacesRegex)
+                    val elements = line.split(spacesRegex).filterNot { it.isEmpty() }
                     if (elements.lastOrNull() != "\\") {
                         addAll(elements)
                         break // if the line did not end on \, stop parsing.
                     }
-                    addAll(elements.drop(1))
+                    addAll(elements.dropLast(1))
                     if (!lines.hasNext()) {
                         break
                     }

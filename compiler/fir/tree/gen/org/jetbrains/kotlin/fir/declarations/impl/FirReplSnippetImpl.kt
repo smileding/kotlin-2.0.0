@@ -17,7 +17,7 @@ import org.jetbrains.kotlin.fir.MutableOrEmptyList
 import org.jetbrains.kotlin.fir.builder.toMutableOrEmpty
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.expressions.FirAnnotation
-import org.jetbrains.kotlin.fir.expressions.FirBlock
+import org.jetbrains.kotlin.fir.expressions.FirStatement
 import org.jetbrains.kotlin.fir.references.FirControlFlowGraphReference
 import org.jetbrains.kotlin.fir.symbols.impl.FirReplSnippetSymbol
 import org.jetbrains.kotlin.fir.types.FirTypeRef
@@ -36,8 +36,8 @@ internal class FirReplSnippetImpl(
     override val attributes: FirDeclarationAttributes,
     override val name: Name,
     override val symbol: FirReplSnippetSymbol,
-    override var runBody: FirBlock?,
     override var receivers: MutableOrEmptyList<FirScriptReceiverParameter>,
+    override val statements: MutableList<FirStatement>,
     override var runReturnTypeRef: FirTypeRef,
 ) : FirReplSnippet() {
     override var controlFlowGraphReference: FirControlFlowGraphReference? = null
@@ -50,16 +50,16 @@ internal class FirReplSnippetImpl(
     override fun <R, D> acceptChildren(visitor: FirVisitor<R, D>, data: D) {
         annotations.forEach { it.accept(visitor, data) }
         controlFlowGraphReference?.accept(visitor, data)
-        runBody?.accept(visitor, data)
         receivers.forEach { it.accept(visitor, data) }
+        statements.forEach { it.accept(visitor, data) }
         runReturnTypeRef.accept(visitor, data)
     }
 
     override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirReplSnippetImpl {
         transformAnnotations(transformer, data)
         controlFlowGraphReference = controlFlowGraphReference?.transform(transformer, data)
-        transformRunBody(transformer, data)
         transformReceivers(transformer, data)
+        transformStatements(transformer, data)
         transformRunReturnTypeRef(transformer, data)
         return this
     }
@@ -69,13 +69,13 @@ internal class FirReplSnippetImpl(
         return this
     }
 
-    override fun <D> transformRunBody(transformer: FirTransformer<D>, data: D): FirReplSnippetImpl {
-        runBody = runBody?.transform(transformer, data)
+    override fun <D> transformReceivers(transformer: FirTransformer<D>, data: D): FirReplSnippetImpl {
+        receivers.transformInplace(transformer, data)
         return this
     }
 
-    override fun <D> transformReceivers(transformer: FirTransformer<D>, data: D): FirReplSnippetImpl {
-        receivers.transformInplace(transformer, data)
+    override fun <D> transformStatements(transformer: FirTransformer<D>, data: D): FirReplSnippetImpl {
+        statements.transformInplace(transformer, data)
         return this
     }
 
@@ -90,10 +90,6 @@ internal class FirReplSnippetImpl(
 
     override fun replaceControlFlowGraphReference(newControlFlowGraphReference: FirControlFlowGraphReference?) {
         controlFlowGraphReference = newControlFlowGraphReference
-    }
-
-    override fun replaceRunBody(newRunBody: FirBlock?) {
-        runBody = newRunBody
     }
 
     override fun replaceRunReturnTypeRef(newRunReturnTypeRef: FirTypeRef) {

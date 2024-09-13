@@ -45,6 +45,7 @@ import org.jetbrains.kotlin.fir.types.impl.FirImplicitTypeRefImplWithoutSource
 import org.jetbrains.kotlin.fir.utils.exceptions.withFirEntry
 import org.jetbrains.kotlin.fir.visitors.FirTransformer
 import org.jetbrains.kotlin.fir.visitors.transformSingle
+import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.resolve.calls.inference.buildCurrentSubstitutor
 import org.jetbrains.kotlin.resolve.calls.inference.components.TypeVariableDirectionCalculator
 import org.jetbrains.kotlin.resolve.calls.inference.model.ProvideDelegateFixationPosition
@@ -776,14 +777,28 @@ open class FirDeclarationsResolveTransformer(
         }
     }
 
-    override fun transformReplSnippet(replSnippet: FirReplSnippet, data: ResolutionMode): FirReplSnippet {
-        dataFlowAnalyzer.enterReplSnippet(replSnippet)
-        context.withReplSnippet(replSnippet, components) {
-            transformBlock(replSnippet.runBody!!, data)
+    open fun withReplSnippet(snippet: FirReplSnippet, action: () -> FirReplSnippet): FirReplSnippet {
+        val result = context.withReplSnippet(snippet, components) {
+            dataFlowAnalyzer.enterReplSnippet(snippet, buildGraph = transformer.buildCfgForScripts)
+            action()
         }
         dataFlowAnalyzer.exitReplSnippet()
-        return replSnippet
+        return result
     }
+
+    override fun transformReplSnippet(replSnippet: FirReplSnippet, data: ResolutionMode): FirReplSnippet =
+        withReplSnippet(replSnippet) {
+            if (transformer.buildCfgForScripts) {
+                replSnippet.transformStatements(this, data)
+                val returnType = replSnippet.statements.lastOrNull()?.let {
+                    (it as? FirExpression)?.resolvedType
+                } ?: StandardClassIds.Unit.constructClassLikeType()
+                replSnippet.replaceRunReturnTypeRef(
+                    returnType.toFirResolvedTypeRef(replSnippet.source?.fakeElement(KtFakeSourceElementKind.ImplicitFunctionReturnType))
+                )
+            }
+            replSnippet
+        }
 
     override fun transformCodeFragment(codeFragment: FirCodeFragment, data: ResolutionMode): FirCodeFragment {
         dataFlowAnalyzer.enterCodeFragment(codeFragment)

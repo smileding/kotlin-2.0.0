@@ -308,14 +308,14 @@ abstract class FirDataFlowAnalyzer(
 
     // ----------------------------------- REPL Snippet ------------------------------------------
 
-    fun enterReplSnippet(snippet: FirReplSnippet) {
-        graphBuilder.enterReplSnippet(snippet).mergeIncomingFlow()
+    fun enterReplSnippet(snippet: FirReplSnippet, buildGraph: Boolean) {
+        graphBuilder.enterReplSnippet(snippet, buildGraph)?.mergeIncomingFlow()
     }
 
-    fun exitReplSnippet(): ControlFlowGraph {
-        val (node, graph) = graphBuilder.exitCodeFragment()
-        node.mergeIncomingFlow()
-        graph.completePostponedNodes()
+    fun exitReplSnippet(): ControlFlowGraph? {
+        val (node, graph) = graphBuilder.exitReplSnippet()
+        node?.mergeIncomingFlow()
+        graph?.completePostponedNodes()
         return graph
     }
 

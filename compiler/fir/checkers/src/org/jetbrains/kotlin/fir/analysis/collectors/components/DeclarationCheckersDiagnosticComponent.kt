@@ -127,6 +127,10 @@ class DeclarationCheckersDiagnosticComponent(
         checkers.allBasicDeclarationCheckers.check(codeFragment, data)
     }
 
+    override fun visitReplSnippet(replSnippet: FirReplSnippet, data: CheckerContext) {
+        checkers.allReplSnippetCheckers.check(replSnippet, data)
+    }
+
     private fun <D : FirDeclaration> Collection<FirDeclarationChecker<D>>.check(
         declaration: D,
         context: CheckerContext

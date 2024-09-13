@@ -160,6 +160,7 @@ fun main(args: Array<String>) {
             alias<FirConstructor>("ConstructorChecker")
             alias<FirFile>("FileChecker")
             alias<FirScript>("ScriptChecker")
+            alias<FirReplSnippet>("ReplSnippetChecker")
             alias<FirTypeParameter>("FirTypeParameterChecker")
             alias<FirTypeAlias>("TypeAliasChecker")
             alias<FirAnonymousFunction>("AnonymousFunctionChecker")

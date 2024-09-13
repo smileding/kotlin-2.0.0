@@ -314,6 +314,21 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
             }
         }
 
+        override fun withReplSnippet(snippet: FirReplSnippet, action: () -> FirReplSnippet): FirReplSnippet {
+            return context.withReplSnippet(snippet, components) {
+                action()
+            }
+        }
+
+        override fun transformReplSnippet(replSnippet: FirReplSnippet, data: ResolutionMode): FirReplSnippet {
+            return withReplSnippet(replSnippet) {
+//                transformDeclarationContent(replSnippet, data) as FirReplSnippet
+//                replSnippet.runBody!!.transformStatements(this, data)
+//                transformBlock(replSnippet.runBody!!, data)
+                replSnippet
+            }
+        }
+
         override fun transformAnonymousObject(
             anonymousObject: FirAnonymousObject,
             data: ResolutionMode

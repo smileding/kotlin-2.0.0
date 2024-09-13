@@ -771,13 +771,22 @@ class ControlFlowGraphBuilder {
         return exitGraph()
     }
 
-    fun enterReplSnippet(snippet: FirReplSnippet): ReplSnippetEnterNode {
-        return enterGraph(snippet, "REPL_SNIPPET_GRAPH", ControlFlowGraph.Kind.Function) {
+    fun enterReplSnippet(snippet: FirReplSnippet, buildGraph: Boolean): ReplSnippetEnterNode? {
+        if (!buildGraph) {
+            graphs.push(ControlFlowGraph(declaration = null, "<discarded snippet graph>", ControlFlowGraph.Kind.Script))
+            return null
+        }
+        return enterGraph(snippet, "REPL_SNIPPET_GRAPH", ControlFlowGraph.Kind.Script) {
             createReplSnippetEnterNode(it) to createReplSnippetExitNode(it)
         }
     }
 
-    fun exitReplSnippet(): Pair<ReplSnippetExitNode, ControlFlowGraph> {
+    fun exitReplSnippet(): Pair<ReplSnippetExitNode?, ControlFlowGraph?> {
+        require(currentGraph.kind == ControlFlowGraph.Kind.Script)
+        if (currentGraph.declaration == null) {
+            graphs.pop() // Discard empty graph
+            return null to null
+        }
         return exitGraph()
     }
 

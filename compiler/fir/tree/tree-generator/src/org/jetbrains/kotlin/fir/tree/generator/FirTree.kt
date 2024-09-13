@@ -766,8 +766,8 @@ object FirTree : AbstractFirTreeBuilder() {
         +FieldSets.name
         +declaredSymbol(replSnippetSymbolType)
 
-        +field("runBody", block, nullable = true, withReplace = true, withTransform = true)
         +listField("receivers", scriptReceiverParameter, useMutableOrEmpty = true, withTransform = true)
+        +listField(statement, withTransform = true)
         +field("runReturnTypeRef", typeRef, withReplace = true, withTransform = true)
     }
 

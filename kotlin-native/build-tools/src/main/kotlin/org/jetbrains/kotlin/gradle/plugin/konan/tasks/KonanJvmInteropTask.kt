@@ -8,13 +8,18 @@ package org.jetbrains.kotlin.gradle.plugin.konan.tasks
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileCollection
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.LocalState
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputDirectory
@@ -33,6 +38,7 @@ import javax.inject.Inject
 
 open class KonanJvmInteropTask @Inject constructor(
         objectFactory: ObjectFactory,
+        layout: ProjectLayout,
         private val execOperations: ExecOperations
 ) : DefaultTask() {
     /**
@@ -51,9 +57,36 @@ open class KonanJvmInteropTask @Inject constructor(
     /**
      * For which headers to generate the bridges.
      */
-    // TODO: The header paths and their contents need to be an input
+    // Contents marked as input via [headers].
     @Input
     val headersToProcess: ListProperty<String> = objectFactory.listProperty()
+
+    /**
+     * Locations to search for headers.
+     *
+     * Will be passed to the compiler as `-I…` and will also be used to compute task dependencies: recompile if the headers change.
+     */
+    // Marked as input via [headers].
+    @get:Internal
+    val headersDirs: ConfigurableFileCollection = objectFactory.fileCollection()
+
+    /**
+     * Computed header files used for task dependencies tracking.
+     */
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE) // manually computed: [headersPathsRelativeToWorkingDir]
+    protected val headers: FileCollection = layout.files(headersDirs.files).asFileTree.matching {
+        include("**/*.h")
+    }
+
+    @get:Input
+    @Suppress("unused")
+    protected val headersPathsRelativeToWorkingDir: Provider<List<String>> = headers.elements.map { elements ->
+        val base = layout.projectDirectory
+        elements.map {
+            it.asFile.toRelativeString(base.asFile)
+        }
+    }
 
     // TODO: Must depend on the libraries themselves.
     @Input
@@ -85,6 +118,12 @@ open class KonanJvmInteropTask @Inject constructor(
 
     @TaskAction
     fun run() {
+        val compilerArgs = buildList {
+            headersDirs.mapTo(this) { "-I${it.absolutePath}" }
+            addAll(platformManagerProvider.get().platformManager.hostPlatform.clangForJni.hostCompilerArgsForJni)
+            addAll(compilerOptions.get())
+        }
+
         execOperations.javaexec {
             classpath(interopStubGeneratorClasspath)
             mainClass.assign("org.jetbrains.kotlin.native.interop.gen.jvm.MainKt")
@@ -106,7 +145,7 @@ open class KonanJvmInteropTask @Inject constructor(
             args("-flavor", "jvm")
             args("-def", defFile.get().asFile.absolutePath)
             args("-target", HostManager.Companion.host)
-            args(compilerOptions.get().flatMap { listOf("-compiler-option", it) })
+            args(compilerArgs.flatMap { listOf("-compiler-option", it) })
             args(headersToProcess.get().flatMap { listOf("-header", it) })
         }.assertNormalExitValue()
 

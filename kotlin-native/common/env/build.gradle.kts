@@ -24,7 +24,7 @@ bitcode {
     }
 }
 
-val cflags = listOf(
+val includeFlags = listOf(
         "-I${layout.projectDirectory.dir("include").asFile}",
         *nativeDependencies.hostPlatform.clangForJni.hostCompilerArgsForJni
 )
@@ -38,7 +38,7 @@ native {
     suffixes {
         (".c" to ".$obj") {
             tool(*hostPlatform.clangForJni.clangC("").toTypedArray())
-            flags(*cflags.toTypedArray(),
+            flags(*includeFlags.toTypedArray(),
                     "-c", "-o", ruleOut(), ruleInFirst())
         }
     }
@@ -67,7 +67,7 @@ val nativelibs by project.tasks.registering(Sync::class) {
 
 kotlinNativeInterop.create("env").genTask.configure {
     defFile.set(layout.projectDirectory.file("env.konan.backend.kotlin.jetbrains.org.def"))
-    compilerOptions.addAll(cflags)
+    headersDirs.from(layout.projectDirectory.dir("include"))
     headersToProcess.add("Env.h")
 
     // TODO: This is not true.

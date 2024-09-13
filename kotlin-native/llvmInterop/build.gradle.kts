@@ -11,14 +11,16 @@ plugins {
     id("native-dependencies")
 }
 
-val commonFlags = listOf(
+val includeFlags = listOf(
         "-I${nativeDependencies.llvmPath}/include",
         "-I${rootProject.project(":kotlin-native:llvmDebugInfoC").projectDir}/src/main/include",
         "-I${rootProject.project(":kotlin-native:libllvmext").projectDir}/src/main/include",
+        *nativeDependencies.hostPlatform.clangForJni.hostCompilerArgsForJni
+)
+val commonFlags = listOf(
         "-Wall", "-W", "-Wno-unused-parameter", "-Wwrite-strings", "-Wmissing-field-initializers",
         "-pedantic", "-Wno-long-long", "-Wcovered-switch-default", "-Wdelete-non-virtual-dtor",
         "-DNDEBUG", "-D__STDC_CONSTANT_MACROS", "-D__STDC_FORMAT_MACROS", "-D__STDC_LIMIT_MACROS",
-        *nativeDependencies.hostPlatform.clangForJni.hostCompilerArgsForJni
 )
 val cflags = commonFlags + listOf("-std=c99")
 
@@ -105,7 +107,7 @@ native {
     suffixes {
         (".c" to ".$obj") {
             tool(*hostPlatform.clangForJni.clangC("").toTypedArray())
-            flags(*cflags.toTypedArray(),
+            flags(*includeFlags.toTypedArray(), *cflags.toTypedArray(),
                     "-c", "-o", ruleOut(), ruleInFirst())
         }
     }
@@ -140,6 +142,11 @@ val nativelibs by project.tasks.registering(Sync::class) {
 kotlinNativeInterop.create("llvm").genTask.configure {
     defFile.set(layout.projectDirectory.file("llvm.def"))
     compilerOptions.addAll(cflags)
+    headersDirs.from(
+            "${nativeDependencies.llvmPath}/include",
+            "${rootProject.project(":kotlin-native:llvmDebugInfoC").projectDir}/src/main/include",
+            "${rootProject.project(":kotlin-native:libllvmext").projectDir}/src/main/include",
+    )
     headersToProcess.addAll(
             "llvm-c/Core.h", "llvm-c/Target.h", "llvm-c/Analysis.h", "llvm-c/BitWriter.h",
             "llvm-c/BitReader.h", "llvm-c/Transforms/PassBuilder.h",

@@ -23,6 +23,7 @@ import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.jetbrains.kotlin.gradle.dsl.KotlinSingleJavaTargetExtension
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.model.builder.KotlinModelBuilder
+import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.internal.compatibilityConventionRegistrar
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.plugin.sources.DefaultKotlinSourceSet
@@ -32,9 +33,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinTasksProvider
 import org.jetbrains.kotlin.gradle.tasks.locateTask
 import org.jetbrains.kotlin.gradle.tasks.registerTask
 import org.jetbrains.kotlin.gradle.utils.*
-import org.jetbrains.kotlin.gradle.utils.archivePathCompatible
-import org.jetbrains.kotlin.gradle.utils.setAttribute
-import org.jetbrains.kotlin.gradle.utils.whenEvaluated
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 
 const val PLUGIN_CLASSPATH_CONFIGURATION_NAME = "kotlinCompilerPluginClasspath"
@@ -137,18 +135,25 @@ internal abstract class AbstractKotlinPlugin(
 
         project.pluginManager.withPlugin("maven-publish") {
             project.extensions.configure(PublishingExtension::class.java) { publishing ->
-                val lazyResolvedConfigurations = createLazyResolvableConfiguration(project, target.kotlinComponents.single())
-                val pomRewriter = PomDependenciesRewriter(lazyResolvedConfigurations)
-                publishing.publications.withType(MavenPublication::class.java).all { publication ->
-                    val artifacts = lazyResolvedConfigurations.map { lazyResolvedConfiguration ->
-                        lazyResolvedConfiguration.files
-                    }
+                val pomRewriter = if (project.kotlinPropertiesProvider.kotlinKmpProjectIsolationEnabled) {
+                    val lazyResolvedConfigurationsFromKotlinComponent =
+                        createLazyResolvedConfigurationsFromKotlinComponent(project, target.kotlinComponents.single())
+                    publishing.publications.withType(MavenPublication::class.java).all { publication ->
+                        val artifacts = lazyResolvedConfigurationsFromKotlinComponent.map { lazyResolvedConfiguration ->
+                            lazyResolvedConfiguration.files
+                        }
 
-                    project.tasks.withType(GenerateMavenPom::class.java).configureEach {
-                        if (it.name.contains(publication.name.capitalizeAsciiOnly())) {
-                            it.dependsOn(artifacts)
+                        project.tasks.withType(GenerateMavenPom::class.java).configureEach {
+                            if (it.name.contains(publication.name.capitalizeAsciiOnly())) {
+                                it.dependsOn(artifacts)
+                            }
                         }
                     }
+                    PomDependenciesRewriterImpl(lazyResolvedConfigurationsFromKotlinComponent)
+                } else {
+                    DeprecatedPomDependenciesRewriter(project, target.kotlinComponents.single())
+                }
+                publishing.publications.withType(MavenPublication::class.java).all { publication ->
                     rewritePom(publication.pom, pomRewriter, shouldRewritePoms)
                 }
             }

@@ -22,7 +22,7 @@ import org.gradle.api.tasks.*
 import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
-import org.jetbrains.kotlin.gradle.internal.attributes.WITH_PUBLISH_COORDINATES_ATTRIBUTE
+import org.jetbrains.kotlin.gradle.internal.attributes.HAS_PUBLISH_COORDINATES_ATTRIBUTE
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.sources.KotlinDependencyScope
@@ -110,18 +110,25 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
                     val gradleComponent = components.find { kotlinComponent.name == it.name } ?: return@launchInStage
                     from(gradleComponent)
 
-                    val lazyResolvedConfigurations = createLazyResolvableConfiguration(project, kotlinComponent)
-                    val artifacts = lazyResolvedConfigurations.map { lazyResolvedConfiguration ->
-                        lazyResolvedConfiguration.files
-                    }
-
-                    project.tasks.withType(GenerateMavenPom::class.java).configureEach {
-                        if (it.name.contains(publication.name.capitalizeAsciiOnly())) {
-                            it.dependsOn(artifacts)
+                    val pomRewriter = if (project.kotlinPropertiesProvider.kotlinKmpProjectIsolationEnabled) {
+                        val lazyResolvedConfigurations = createLazyResolvedConfigurationsFromKotlinComponent(project, kotlinComponent)
+                        val artifacts = lazyResolvedConfigurations.map { lazyResolvedConfiguration ->
+                            lazyResolvedConfiguration.files
                         }
+
+                        project.tasks.withType(GenerateMavenPom::class.java).configureEach {
+                            if (it.name.contains(publication.name.capitalizeAsciiOnly())) {
+                                it.dependsOn(artifacts)
+                            }
+                        }
+
+                        kotlinComponent.addGavVariantToConfigurations(project, publication, rootPublication)
+
+                        PomDependenciesRewriterImpl(lazyResolvedConfigurations)
+                    } else {
+                        DeprecatedPomDependenciesRewriter(project, kotlinComponent)
                     }
 
-                    val pomRewriter = PomDependenciesRewriter(lazyResolvedConfigurations)
                     val shouldRewritePomDependencies =
                         project.provider { PropertiesProvider(project).keepMppDependenciesIntactInPoms != true }
 
@@ -131,7 +138,6 @@ private fun InternalKotlinTarget.createMavenPublications(publications: Publicati
                         shouldRewritePomDependencies,
                         dependenciesForPomRewriting(this@createMavenPublications)
                     )
-                    kotlinComponent.addGavVariantToConfigurations(project, publication, rootPublication)
                 }
             }
 
@@ -152,12 +158,26 @@ private fun KotlinTargetComponent.addGavVariantToConfigurations(
         // TODO(Dmitrii Krasnov): разобраться кто подтыкает published
         //  secondaryVariant опубликуется!!!
         .map { originalVariantNameFromPublished(it.dependencyConfigurationName) ?: it.dependencyConfigurationName }
-        .forEach {configurationName ->
+        .forEach { configurationName ->
 
             val configuration = project.configurations.findByName(configurationName) ?: return@forEach
             val task =
-                project.locateOrRegisterTask<ExportKotlinPublishCoordinatesTask>(lowerCamelCaseName(configurationName, "ExportPublishCoordinates")) { task ->
-                    task.outputJsonFile.set(project.layout.buildDirectory.file("internal/kmp/${lowerCamelCaseName(configurationName, "PublishCoordinates")}.json"))
+                project.locateOrRegisterTask<ExportKotlinPublishCoordinatesTask>(
+                    lowerCamelCaseName(
+                        configurationName,
+                        "ExportPublishCoordinates"
+                    )
+                ) { task ->
+                    task.outputJsonFile.set(
+                        project.layout.buildDirectory.file(
+                            "internal/kmp/${
+                                lowerCamelCaseName(
+                                    configurationName,
+                                    "PublishCoordinates"
+                                )
+                            }.json"
+                        )
+                    )
                 }
             configuration.addGavSecondaryVariant(task, project, publication, rootPublication)
         }
@@ -172,7 +192,7 @@ private fun Configuration.addGavSecondaryVariant(
 ) {
 
     outgoing.variants.create("gavSecondaryVariant") { variant ->
-        variant.attributes.setAttribute(WITH_PUBLISH_COORDINATES_ATTRIBUTE, true)
+        variant.attributes.setAttribute(HAS_PUBLISH_COORDINATES_ATTRIBUTE, true)
         task.configure {
             it.data.set(
                 PublicationCoordinatesProperty(

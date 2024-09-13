@@ -7,10 +7,10 @@ package org.jetbrains.kotlin.gradle.internal.attributes
 
 import org.gradle.api.attributes.*
 
-internal val WITH_PUBLISH_COORDINATES_ATTRIBUTE = Attribute.of("org.jetbrains.kotlin.publish.has-publish-coordinates", Boolean::class.javaObjectType)
+internal val HAS_PUBLISH_COORDINATES_ATTRIBUTE = Attribute.of("org.jetbrains.kotlin.publish.has-publish-coordinates", Boolean::class.javaObjectType)
 
 internal fun setupGavAttributesMatchingStrategy(attributesSchema: AttributesSchema) {
-    attributesSchema.attribute(WITH_PUBLISH_COORDINATES_ATTRIBUTE) { strategy ->
+    attributesSchema.attribute(HAS_PUBLISH_COORDINATES_ATTRIBUTE) { strategy ->
         strategy.compatibilityRules.add(WithArtifactIdAttributeCompatibilityRule::class.java)
         strategy.disambiguationRules.add(WithArtifactIdAttributeDisambiguationRule::class.java)
     }

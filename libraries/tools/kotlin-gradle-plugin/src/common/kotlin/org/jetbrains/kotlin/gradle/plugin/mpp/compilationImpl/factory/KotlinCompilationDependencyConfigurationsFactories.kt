@@ -8,7 +8,7 @@ package org.jetbrains.kotlin.gradle.plugin.mpp.compilationImpl.factory
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.Usage
-import org.jetbrains.kotlin.gradle.internal.attributes.WITH_PUBLISH_COORDINATES_ATTRIBUTE
+import org.jetbrains.kotlin.gradle.internal.attributes.HAS_PUBLISH_COORDINATES_ATTRIBUTE
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinUsages
@@ -169,7 +169,7 @@ private fun KotlinCompilationDependencyConfigurationsContainer(
             extendsFrom(compileOnlyConfiguration, implementationConfiguration)
             usesPlatformOf(target)
             isVisible = false
-            attributes.setAttribute(WITH_PUBLISH_COORDINATES_ATTRIBUTE, false)
+            attributes.setAttribute(HAS_PUBLISH_COORDINATES_ATTRIBUTE, false)
             attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.consumerApiUsage(target))
             if (target.platformType != KotlinPlatformType.androidJvm) {
                 attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, target.project.categoryByName(Category.LIBRARY))
@@ -183,7 +183,7 @@ private fun KotlinCompilationDependencyConfigurationsContainer(
             deprecatedRuntimeConfiguration?.let { extendsFrom(it) }
             usesPlatformOf(target)
             isVisible = false
-            attributes.setAttribute(WITH_PUBLISH_COORDINATES_ATTRIBUTE, false)
+            attributes.setAttribute(HAS_PUBLISH_COORDINATES_ATTRIBUTE, false)
             attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.consumerRuntimeUsage(target))
             if (target.platformType != KotlinPlatformType.androidJvm) {
                 attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, target.project.categoryByName(Category.LIBRARY))

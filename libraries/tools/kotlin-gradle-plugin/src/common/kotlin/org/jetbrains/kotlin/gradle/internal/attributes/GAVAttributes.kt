@@ -5,12 +5,7 @@
 
 package org.jetbrains.kotlin.gradle.internal.attributes
 
-import org.gradle.api.attributes.Attribute
-import org.gradle.api.attributes.AttributeCompatibilityRule
-import org.gradle.api.attributes.AttributeDisambiguationRule
-import org.gradle.api.attributes.AttributesSchema
-import org.gradle.api.attributes.CompatibilityCheckDetails
-import org.gradle.api.attributes.MultipleCandidatesDetails
+import org.gradle.api.attributes.*
 
 internal val WITH_PUBLISH_COORDINATES_ATTRIBUTE = Attribute.of("org.jetbrains.kotlin.publish.has-publish-coordinates", Boolean::class.javaObjectType)
 
@@ -26,11 +21,18 @@ internal class WithArtifactIdAttributeCompatibilityRule : AttributeCompatibility
         if (consumerValue == true && producerValue == false) {
             compatible()
         }
+
+        if (consumerValue == false && producerValue == null) {
+            compatible()
+        }
     }
 }
 
 internal class WithArtifactIdAttributeDisambiguationRule : AttributeDisambiguationRule<Boolean> {
     override fun execute(details: MultipleCandidatesDetails<Boolean>) = with(details) {
+        if (consumerValue == null){
+            closestMatch(false)
+        }
         consumerValue?.let { closestMatch(it) } ?: return@with
     }
 }

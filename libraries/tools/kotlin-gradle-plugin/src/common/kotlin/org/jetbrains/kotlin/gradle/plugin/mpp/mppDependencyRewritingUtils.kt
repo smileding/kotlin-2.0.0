@@ -340,9 +340,19 @@ internal fun createLazyResolvedConfigurationsFromKotlinComponent(
         val mavenScope = usage.mavenScope ?: return@mapNotNull null
         val compilation = usage.compilation
         val mavenScopeResolvableConfiguration = project.configurations.getByName(
-            when (mavenScope) {
-                MavenScope.COMPILE -> compilation.compileDependencyConfigurationName
-                MavenScope.RUNTIME -> compilation.runtimeDependencyConfigurationName ?: return@mapNotNull null
+            when (compilation) {
+                is KotlinJvmAndroidCompilation -> {
+                    // TODO handle Android configuration names in a general way once we drop AGP < 3.0.0
+                    val variantName = compilation.name
+                    when (mavenScope) {
+                        MavenScope.COMPILE -> variantName + "CompileClasspath"
+                        MavenScope.RUNTIME -> variantName + "RuntimeClasspath"
+                    }
+                }
+                else -> when (mavenScope) {
+                    MavenScope.COMPILE -> compilation.compileDependencyConfigurationName
+                    MavenScope.RUNTIME -> compilation.runtimeDependencyConfigurationName ?: return@mapNotNull null
+                }
             }
         )
         val configureArtifactViewAttributes: (AttributeContainer) -> Unit = { attributeContainer ->

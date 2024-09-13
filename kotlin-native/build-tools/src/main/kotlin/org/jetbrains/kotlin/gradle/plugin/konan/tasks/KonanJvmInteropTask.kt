@@ -32,6 +32,7 @@ import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.PlatformManagerProvider
+import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutputDirectory
 import org.jetbrains.kotlin.konan.target.HostManager
 import java.io.File
 import javax.inject.Inject
@@ -111,6 +112,8 @@ open class KonanJvmInteropTask @Inject constructor(
 
     @TaskAction
     fun run() {
+        kotlinBridges.get().prepareAsOutputDirectory()
+
         val compilerArgs = buildList {
             headersDirs.mapTo(this) { "-I${it.absolutePath}" }
             addAll(platformManagerProvider.get().platformManager.hostPlatform.clangForJni.hostCompilerArgsForJni)

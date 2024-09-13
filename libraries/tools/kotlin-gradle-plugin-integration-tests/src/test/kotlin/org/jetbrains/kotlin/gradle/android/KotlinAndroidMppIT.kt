@@ -526,7 +526,9 @@ class KotlinAndroidMppIT : KGPBaseTest() {
                     .replace("""\s+""".toRegex(), "")
                 assertContains(
                     pomText,
-                    """<groupId>com.example</groupId><artifactId>libFromIncluded-androidlib</artifactId><version>1.0</version>"""
+                    // TODO: When KT-69974 is fixed replace it with this
+                    // ...<artifactId>libFromIncluded-android</artifactId>...
+                    """<groupId>com.example</groupId><artifactId>libFromIncluded</artifactId><version>1.0</version>"""
                 )
             }
         }

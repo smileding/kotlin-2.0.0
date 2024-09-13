@@ -9,8 +9,8 @@ import org.gradle.api.attributes.*
 
 internal val PUBLISH_COORDINATES_TYPE_ATTRIBUTE = Attribute.of("org.jetbrains.kotlin.publish.publish-coordinates-type", String::class.java)
 
-internal val WITHOUT_PUBLISH_COORDINATES = "without-publish-coordinates"
-internal val WITH_PUBLISH_COORDINATES = "with-publish-coordinates"
+internal const val WITHOUT_PUBLISH_COORDINATES = "without-publish-coordinates"
+internal const val WITH_PUBLISH_COORDINATES = "with-publish-coordinates"
 
 internal fun setupGavAttributesMatchingStrategy(attributesSchema: AttributesSchema) {
     attributesSchema.attribute(PUBLISH_COORDINATES_TYPE_ATTRIBUTE) { strategy ->

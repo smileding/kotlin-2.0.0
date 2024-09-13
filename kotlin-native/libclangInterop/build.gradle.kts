@@ -134,7 +134,6 @@ kotlinNativeInterop.create("clang").genTask.configure {
             "${nativeDependencies.llvmPath}/include",
             "${project(":kotlin-native:libclangext").projectDir.absolutePath}/src/main/include",
     )
-    headersToProcess.addAll("clang-c/Index.h", "clang-c/ext.h")
 }
 
 dependencies {

@@ -68,7 +68,6 @@ val nativelibs by project.tasks.registering(Sync::class) {
 kotlinNativeInterop.create("env").genTask.configure {
     defFile.set(layout.projectDirectory.file("env.konan.backend.kotlin.jetbrains.org.def"))
     headersDirs.from(layout.projectDirectory.dir("include"))
-    headersToProcess.add("Env.h")
 }
 
 tasks.named(solib("orgjetbrainskotlinbackendkonanenvstubs")).configure {

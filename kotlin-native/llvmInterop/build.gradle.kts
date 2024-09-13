@@ -147,12 +147,6 @@ kotlinNativeInterop.create("llvm").genTask.configure {
             "${rootProject.project(":kotlin-native:llvmDebugInfoC").projectDir}/src/main/include",
             "${rootProject.project(":kotlin-native:libllvmext").projectDir}/src/main/include",
     )
-    headersToProcess.addAll(
-            "llvm-c/Core.h", "llvm-c/Target.h", "llvm-c/Analysis.h", "llvm-c/BitWriter.h",
-            "llvm-c/BitReader.h", "llvm-c/Transforms/PassBuilder.h",
-            "llvm-c/TargetMachine.h", "llvm-c/Target.h", "llvm-c/Linker.h",
-            "llvm-c/DebugInfo.h", "DebugInfoC.h", "CAPIExtensions.h", "RemoveRedundantSafepoints.h", "OpaquePointerAPI.h"
-    )
 }
 
 native.sourceSets["main"]!!.implicitTasks()

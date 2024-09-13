@@ -55,13 +55,6 @@ open class KonanJvmInteropTask @Inject constructor(
     val defFile: RegularFileProperty = objectFactory.fileProperty()
 
     /**
-     * For which headers to generate the bridges.
-     */
-    // Contents marked as input via [headers].
-    @get:Input
-    val headersToProcess: ListProperty<String> = objectFactory.listProperty()
-
-    /**
      * Locations to search for headers.
      *
      * Will be passed to the compiler as `-I…` and will also be used to compute task dependencies: recompile if the headers change.
@@ -146,7 +139,6 @@ open class KonanJvmInteropTask @Inject constructor(
             args("-def", defFile.get().asFile.absolutePath)
             args("-target", HostManager.Companion.host)
             args(compilerArgs.flatMap { listOf("-compiler-option", it) })
-            args(headersToProcess.get().flatMap { listOf("-header", it) })
         }.assertNormalExitValue()
 
         val generatedName = defFile.get().asFile.nameWithoutExtension.split(".").reversed().joinToString(separator = "")
@@ -154,8 +146,30 @@ open class KonanJvmInteropTask @Inject constructor(
         require(originalStubs.exists())
 
         // interop tool uses precompiled headers, generated .c file does not have required includes. Add them manually.
+
+        val processedHeaders = buildList {
+            defFile.get().asFile.useLines {
+                val lines = it.dropWhile { !it.startsWith("headers") }.iterator()
+                require(lines.hasNext()) { "${defFile.get().asFile} does not have `headers` field" }
+                val spacesRegex = "\\s+".toRegex()
+                var line = lines.next().replace("^headers\\s*=\\s*".toRegex(), "")
+                while (true) {
+                    val elements = line.split(spacesRegex)
+                    if (elements.lastOrNull() != "\\") {
+                        addAll(elements)
+                        break // if the line did not end on \, stop parsing.
+                    }
+                    addAll(elements.drop(1))
+                    if (!lines.hasNext()) {
+                        break
+                    }
+                    line = lines.next()
+                }
+            }
+        }
+
         cBridge.get().asFile.printWriter().use { writer ->
-            (listOf("stdint.h", "string.h", "jni.h") + headersToProcess.get()).forEach {
+            (listOf("stdint.h", "string.h", "jni.h") + processedHeaders).forEach {
                 writer.appendLine("#include <$it>")
             }
             originalStubs.useLines { lines ->

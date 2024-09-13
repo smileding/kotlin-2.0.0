@@ -44,21 +44,21 @@ open class KonanJvmInteropTask @Inject constructor(
     /**
      * Classpath with Interop Stub Generator CLI tool.
      */
-    @Classpath
+    @get:Classpath
     val interopStubGeneratorClasspath: ConfigurableFileCollection = objectFactory.fileCollection()
 
     /**
      * `.def` file for which to generate bridges.
      */
-    @InputFile
-    @PathSensitive(PathSensitivity.NAME_ONLY) // The name is used for generated package name
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NAME_ONLY) // The name is used for generated package name
     val defFile: RegularFileProperty = objectFactory.fileProperty()
 
     /**
      * For which headers to generate the bridges.
      */
     // Contents marked as input via [headers].
-    @Input
+    @get:Input
     val headersToProcess: ListProperty<String> = objectFactory.listProperty()
 
     /**
@@ -89,31 +89,31 @@ open class KonanJvmInteropTask @Inject constructor(
     }
 
     // TODO: Must depend on the libraries themselves.
-    @Input
+    @get:Input
     val nativeLibrariesPaths: ListProperty<String> = objectFactory.listProperty()
 
     /**
      * Compiler options for `clang`.
      */
-    @Input
+    @get:Input
     val compilerOptions: ListProperty<String> = objectFactory.listProperty()
 
     /**
      * Generated Kotlin bridges.
      */
-    @OutputDirectory
+    @get:OutputDirectory
     val kotlinBridges: DirectoryProperty = objectFactory.directoryProperty()
 
     /**
      * Generated C bridge.
      */
-    @OutputFile
+    @get:OutputFile
     val cBridge: RegularFileProperty = objectFactory.fileProperty()
 
-    @LocalState
+    @get:LocalState
     val temporaryFilesDir: DirectoryProperty = objectFactory.directoryProperty()
 
-    @Nested
+    @get:Nested
     val platformManagerProvider: Property<PlatformManagerProvider> = objectFactory.property()
 
     @TaskAction

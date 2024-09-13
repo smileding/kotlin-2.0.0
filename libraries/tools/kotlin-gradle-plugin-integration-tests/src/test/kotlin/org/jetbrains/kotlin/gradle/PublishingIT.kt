@@ -24,6 +24,7 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.appendText
 import kotlin.io.path.readLines
 import kotlin.io.path.readText
+import kotlin.test.assertContains
 import kotlin.test.assertTrue
 
 @DisplayName("Artifacts publication")
@@ -140,15 +141,19 @@ class PublishingIT : KGPBaseTest() {
             )
 
             build("publishJvmPublicationToCustomRepository") {
-                val pathToActualPom = localRepo.resolve("pom-rewriter")
+                val actualPomContext = localRepo.resolve("pom-rewriter")
                     .resolve("pom-rewriter-root-jvm")
                     .resolve("1.0.0")
                     .resolve("pom-rewriter-root-jvm-1.0.0.pom")
+                    .readText()
+                    .replace("""\s+""".toRegex(), "")
 
-                val pathToExpectedPom = projectPath.resolve("expected-pom.xml")
-                pathToExpectedPom.replaceText("{kotlin_version}", buildOptions.kotlinVersion)
+                val expectedPomContext = projectPath.resolve("expected-pom.xml")
+                    .readText()
+                    .replace("""\s+""".toRegex(), "")
+                    .replace("{kotlin_version}", buildOptions.kotlinVersion)
 
-                assertFileInProjectContains(pathToActualPom.absolutePathString(), pathToExpectedPom.readText())
+                assertContains(actualPomContext, expectedPomContext)
             }
         }
     }

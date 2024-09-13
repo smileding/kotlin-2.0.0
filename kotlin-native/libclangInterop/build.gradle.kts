@@ -128,17 +128,14 @@ val nativelibs by project.tasks.registering(Sync::class) {
     into(layout.buildDirectory.dir("nativelibs"))
 }
 
-kotlinNativeInterop {
-    this.create("clang") {
-        defFile("clang.def")
-        compilerOpts(cflags)
-        headers(listOf("clang-c/Index.h", "clang-c/ext.h"))
+kotlinNativeInterop.create("clang").genTask.configure {
+    defFile.set(layout.projectDirectory.file("clang.def"))
+    compilerOptions.addAll(cflags)
+    headersToProcess.addAll("clang-c/Index.h", "clang-c/ext.h")
 
-        genTask.configure {
-            dependsOn(libclangextTask)
-            inputs.dir(libclangextDir)
-        }
-    }
+    // TODO: This is not true.
+    dependsOn(libclangextTask)
+    inputs.dir(libclangextDir)
 }
 
 dependencies {

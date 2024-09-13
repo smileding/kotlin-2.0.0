@@ -64,14 +64,13 @@ val nativelibs by project.tasks.registering(Sync::class) {
     into(layout.buildDirectory.dir("nativelibs"))
 }
 
-kotlinNativeInterop {
-    create("files") {
-        defFile("files.konan.backend.kotlin.jetbrains.org.def")
-        compilerOpts(cflags)
-        headers(listOf("Files.h"))
+kotlinNativeInterop.create("files").genTask.configure {
+    defFile.set(layout.projectDirectory.file("files.konan.backend.kotlin.jetbrains.org.def"))
+    compilerOptions.addAll(cflags)
+    headersToProcess.add("Files.h")
 
-        dependsOn(bitcode.hostTarget.module("files").get().sourceSets.main.get().task.get())
-    }
+    // TODO: This is not true.
+    dependsOn(bitcode.hostTarget.module("files").get().sourceSets.main.get().task.get())
 }
 
 tasks.named(solib("orgjetbrainskotlinbackendkonanfilesstubs")).configure {

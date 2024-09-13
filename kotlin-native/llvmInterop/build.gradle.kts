@@ -137,20 +137,19 @@ val nativelibs by project.tasks.registering(Sync::class) {
     into(layout.buildDirectory.dir("nativelibs"))
 }
 
-kotlinNativeInterop {
-    create("llvm") {
-        defFile("llvm.def")
-        compilerOpts(cflags)
-        headers(listOf(
-                "llvm-c/Core.h", "llvm-c/Target.h", "llvm-c/Analysis.h", "llvm-c/BitWriter.h",
-                "llvm-c/BitReader.h", "llvm-c/Transforms/PassBuilder.h",
-                "llvm-c/TargetMachine.h", "llvm-c/Target.h", "llvm-c/Linker.h",
-                "llvm-c/DebugInfo.h", "DebugInfoC.h", "CAPIExtensions.h", "RemoveRedundantSafepoints.h", "OpaquePointerAPI.h"
-        ))
+kotlinNativeInterop.create("llvm").genTask.configure {
+    defFile.set(layout.projectDirectory.file("llvm.def"))
+    compilerOptions.addAll(cflags)
+    headersToProcess.addAll(
+            "llvm-c/Core.h", "llvm-c/Target.h", "llvm-c/Analysis.h", "llvm-c/BitWriter.h",
+            "llvm-c/BitReader.h", "llvm-c/Transforms/PassBuilder.h",
+            "llvm-c/TargetMachine.h", "llvm-c/Target.h", "llvm-c/Linker.h",
+            "llvm-c/DebugInfo.h", "DebugInfoC.h", "CAPIExtensions.h", "RemoveRedundantSafepoints.h", "OpaquePointerAPI.h"
+    )
 
-        dependsOn(":kotlin-native:llvmDebugInfoC:${lib("debugInfo")}")
-        dependsOn(":kotlin-native:libllvmext:${lib("llvmext")}")
-    }
+    // TODO: This is not true.
+    dependsOn(":kotlin-native:llvmDebugInfoC:${lib("debugInfo")}")
+    dependsOn(":kotlin-native:libllvmext:${lib("llvmext")}")
 }
 
 native.sourceSets["main"]!!.implicitTasks()

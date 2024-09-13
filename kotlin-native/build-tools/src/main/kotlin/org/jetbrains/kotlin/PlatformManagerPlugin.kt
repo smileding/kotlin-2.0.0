@@ -19,7 +19,7 @@ open class PlatformManagerProvider @Inject constructor(
         private val objectFactory: ObjectFactory,
 ) {
     @get:Internal // Marked as input via [konanProperties]
-    protected val nativeProtoDistribution = NativeDistribution(project.project(":kotlin-native").layout.projectDirectory)
+    val nativeProtoDistribution = NativeDistribution(project.project(":kotlin-native").layout.projectDirectory)
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)

@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.TargetWithSanitizer
+import org.jetbrains.kotlin.tools.lib
 import org.jetbrains.kotlin.tools.solib
 
 plugins {
@@ -64,14 +65,13 @@ val nativelibs by project.tasks.registering(Sync::class) {
     into(layout.buildDirectory.dir("nativelibs"))
 }
 
-kotlinNativeInterop {
-    create("env") {
-        defFile("env.konan.backend.kotlin.jetbrains.org.def")
-        compilerOpts(cflags)
-        headers(listOf("Env.h"))
+kotlinNativeInterop.create("env").genTask.configure {
+    defFile.set(layout.projectDirectory.file("env.konan.backend.kotlin.jetbrains.org.def"))
+    compilerOptions.addAll(cflags)
+    headersToProcess.add("Env.h")
 
-        dependsOn(bitcode.hostTarget.module("env").get().sourceSets.main.get().task.get())
-    }
+    // TODO: This is not true.
+    dependsOn(bitcode.hostTarget.module("env").get().sourceSets.main.get().task.get())
 }
 
 tasks.named(solib("orgjetbrainskotlinbackendkonanenvstubs")).configure {

@@ -1079,7 +1079,7 @@ open class FirExpressionsResolveTransformer(transformer: FirAbstractBodyResolveT
                             it.typeArguments.isNotEmpty() ||
                             it.lookupTag.toSymbol(session)?.fir?.typeParameters?.isEmpty() == true
                 }?.let {
-                    if (operation == SAFE_AS)
+                    if (typeOperatorCall.operation == SAFE_AS)
                         it.withNullability(nullable = true, session.typeContext)
                     else
                         it

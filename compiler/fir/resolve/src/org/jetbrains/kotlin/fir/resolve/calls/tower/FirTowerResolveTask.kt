@@ -25,7 +25,6 @@ import org.jetbrains.kotlin.fir.resolve.calls.candidate.CandidateCollector
 import org.jetbrains.kotlin.fir.resolve.calls.candidate.CandidateFactory
 import org.jetbrains.kotlin.fir.resolve.setTypeOfQualifier
 import org.jetbrains.kotlin.fir.scopes.FirScope
-import org.jetbrains.kotlin.fir.scopes.composite
 import org.jetbrains.kotlin.fir.scopes.impl.FirWhenSubjectImportingScope
 import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.name.Name
@@ -190,18 +189,12 @@ internal abstract class FirBaseTowerResolveTask(
         }
 
         if (session.languageVersionSettings.supportsContextSensitiveResolution) {
-            val contextClasses = resolutionMode?.improvedResolutionTypes(components, session)
-
-            if (contextClasses != null) {
-                contextClasses.mapNotNull { it.staticScope(session, components.scopeSession) }.composite()?.also {
-                    onScope(it, null, TowerGroup.Last)
-                }
-
-                for (contextClass in contextClasses) {
-                    contextClass.companionObjectSymbol?.fir?.also { companion ->
-                        val receiver = ImplicitDispatchReceiverValue(companion.symbol, session, components.scopeSession)
-                        onImplicitReceiver(receiver, TowerGroup.Last)
-                    }
+            val contextClass = resolutionMode?.fullyExpandedClassFromContext(components, session)
+            if (contextClass != null) {
+                contextClass.staticScope(session, components.scopeSession)?.also { onScope(it, null, TowerGroup.Last) }
+                contextClass.companionObjectSymbol?.fir?.also { companion ->
+                    val receiver = ImplicitDispatchReceiverValue(companion.symbol, session, components.scopeSession)
+                    onImplicitReceiver(receiver, TowerGroup.Last)
                 }
             }
         }

@@ -8,8 +8,11 @@ package org.jetbrains.kotlin.fir.resolve
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationStatus
 import org.jetbrains.kotlin.fir.declarations.FirRegularClass
+import org.jetbrains.kotlin.fir.declarations.staticScope
 import org.jetbrains.kotlin.fir.expressions.FirVariableAssignment
 import org.jetbrains.kotlin.fir.render
+import org.jetbrains.kotlin.fir.symbols.impl.FirClassSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.builder.buildResolvedTypeRef
 
@@ -137,25 +140,12 @@ fun ResolutionMode.contextType(components: BodyResolveComponents): FirTypeRef? =
     else -> expectedType(components)
 }
 
-fun ResolutionMode.improvedResolutionTypes(components: BodyResolveComponents, session: FirSession): Set<FirRegularClass>? =
-    contextType(components)
-        ?.coneTypeOrNull
-        ?.gatherSuperTypes(session)
-        ?.toSet()
+fun ResolutionMode.fullyExpandedClassFromContext(components: BodyResolveComponents, session: FirSession): FirRegularClass? =
+    contextType(components)?.coneTypeOrNull?.simplifyIntersection(session)?.toRegularClassSymbol(session)?.fir
 
-private fun ConeKotlinType.gatherSuperTypes(session: FirSession): Collection<FirRegularClass> =
-    fullyExpandedType(session)
-        .expandIntersection()
-        .flatMap {
-            when (val klass = it.toRegularClassSymbol(session)) {
-                null -> emptyList()
-                else -> listOf(klass.fir) + klass.resolvedSuperTypes.flatMap { it.gatherSuperTypes(session) }
-            }
-        }
-
-private fun ConeKotlinType.expandIntersection(): Collection<ConeKotlinType> = when (this) {
-    is ConeIntersectionType -> intersectedTypes.flatMap { it.expandIntersection() }
-    else -> listOf(this)
+fun ConeKotlinType.simplifyIntersection(session: FirSession): ConeKotlinType? = when (this) {
+    is ConeIntersectionType -> ConeTypeIntersector.intersectTypes(session.typeContext, intersectedTypes)
+    else -> this
 }
 
 fun withExpectedType(expectedTypeRef: FirTypeRef, expectedTypeMismatchIsReportedInChecker: Boolean = false): ResolutionMode = when {

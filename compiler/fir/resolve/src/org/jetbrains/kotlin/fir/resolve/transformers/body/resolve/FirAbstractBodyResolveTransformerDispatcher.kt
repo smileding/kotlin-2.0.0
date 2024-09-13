@@ -13,11 +13,10 @@ import org.jetbrains.kotlin.fir.resolve.ScopeSession
 import org.jetbrains.kotlin.fir.resolve.calls.ResolutionContext
 import org.jetbrains.kotlin.fir.resolve.createCurrentScopeList
 import org.jetbrains.kotlin.fir.resolve.dfa.DataFlowAnalyzerContext
-import org.jetbrains.kotlin.fir.resolve.improvedResolutionTypes
+import org.jetbrains.kotlin.fir.resolve.fullyExpandedClassFromContext
 import org.jetbrains.kotlin.fir.resolve.transformers.ReturnTypeCalculator
 import org.jetbrains.kotlin.fir.resolve.transformers.ReturnTypeCalculatorForFullBodyResolve
 import org.jetbrains.kotlin.fir.resolve.transformers.ScopeClassDeclaration
-import org.jetbrains.kotlin.fir.scopes.composite
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.visitors.FirTransformer
@@ -88,9 +87,7 @@ abstract class FirAbstractBodyResolveTransformerDispatcher(
         } else {
             val contextScope = when {
                 session.languageVersionSettings.supportsContextSensitiveResolution -> { ->
-                    data.improvedResolutionTypes(components, session)
-                        ?.mapNotNull { it.staticScope(session, scopeSession) }
-                        ?.composite()
+                    data.fullyExpandedClassFromContext(components, session)?.staticScope(session, scopeSession)
                 }
                 else -> null
             }

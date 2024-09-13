@@ -165,13 +165,13 @@ private fun KotlinCompilationDependencyConfigurationsContainer(
         description = "Runtime only dependencies for '$compilationCoordinates'."
     }
 
-    val kotlinKmpProjectIsolationEnabled = target.project.kotlinPropertiesProvider.kotlinKmpProjectIsolationEnabled
+//    val kotlinKmpProjectIsolationEnabled = target.project.kotlinPropertiesProvider.kotlinKmpProjectIsolationEnabled
     val compileDependencyConfiguration = target.project.configurations
         .maybeCreateResolvable(compileClasspathConfigurationName).apply {
             extendsFrom(compileOnlyConfiguration, implementationConfiguration)
             usesPlatformOf(target)
             isVisible = false
-            if (kotlinKmpProjectIsolationEnabled)
+//            if (kotlinKmpProjectIsolationEnabled)
                 attributes.setAttribute(PUBLISH_COORDINATES_TYPE_ATTRIBUTE, WITHOUT_PUBLISH_COORDINATES)
             attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.consumerApiUsage(target))
             if (target.platformType != KotlinPlatformType.androidJvm) {
@@ -186,7 +186,7 @@ private fun KotlinCompilationDependencyConfigurationsContainer(
             deprecatedRuntimeConfiguration?.let { extendsFrom(it) }
             usesPlatformOf(target)
             isVisible = false
-            if (kotlinKmpProjectIsolationEnabled)
+//            if (kotlinKmpProjectIsolationEnabled)
                 attributes.setAttribute(PUBLISH_COORDINATES_TYPE_ATTRIBUTE, WITHOUT_PUBLISH_COORDINATES)
             attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.consumerRuntimeUsage(target))
             if (target.platformType != KotlinPlatformType.androidJvm) {

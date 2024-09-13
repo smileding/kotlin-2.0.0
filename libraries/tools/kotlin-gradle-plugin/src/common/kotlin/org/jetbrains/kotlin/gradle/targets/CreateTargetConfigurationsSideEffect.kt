@@ -38,12 +38,12 @@ internal val CreateTargetConfigurationsSideEffect = KotlinTargetSideEffect { tar
 
     val apiElementScope = configurations.maybeCreateDependencyScope(mainCompilation.apiConfigurationName)
 
-    val kotlinKmpProjectIsolationEnabled = project.kotlinPropertiesProvider.kotlinKmpProjectIsolationEnabled
+//    val kotlinKmpProjectIsolationEnabled = project.kotlinPropertiesProvider.kotlinKmpProjectIsolationEnabled
 
     configurations.maybeCreateConsumable(target.apiElementsConfigurationName).apply {
         description = "API elements for main."
         isVisible = false
-        if (kotlinKmpProjectIsolationEnabled)
+//        if (kotlinKmpProjectIsolationEnabled)
             attributes.setAttribute(PUBLISH_COORDINATES_TYPE_ATTRIBUTE, WITHOUT_PUBLISH_COORDINATES)
         attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.producerApiUsage(target))
         attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, project.categoryByName(Category.LIBRARY))
@@ -68,7 +68,7 @@ internal val CreateTargetConfigurationsSideEffect = KotlinTargetSideEffect { tar
         configurations.maybeCreateConsumable(target.runtimeElementsConfigurationName).apply {
             description = "Elements of runtime for main."
             isVisible = false
-            if (kotlinKmpProjectIsolationEnabled)
+//            if (kotlinKmpProjectIsolationEnabled)
                 attributes.setAttribute(PUBLISH_COORDINATES_TYPE_ATTRIBUTE, WITHOUT_PUBLISH_COORDINATES)
             attributes.setAttribute(Usage.USAGE_ATTRIBUTE, KotlinUsages.producerRuntimeUsage(target))
             attributes.setAttribute(Category.CATEGORY_ATTRIBUTE, project.categoryByName(Category.LIBRARY))

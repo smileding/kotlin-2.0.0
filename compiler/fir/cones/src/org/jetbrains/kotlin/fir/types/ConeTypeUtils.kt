@@ -206,7 +206,7 @@ fun ConeRigidType.getConstructor(): TypeConstructorMarker {
 }
 
 val ConeKotlinType.typeArgumentsOfLowerBoundIfFlexible: Array<out ConeTypeProjection>
-    get() = when(this) {
+    get() = when (this) {
         is ConeClassLikeType -> typeArguments
         is ConeFlexibleType -> lowerBound.typeArgumentsOfLowerBoundIfFlexible
         else -> ConeTypeProjection.EMPTY_ARRAY

@@ -10,10 +10,8 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ResolveException
 import org.gradle.api.artifacts.ResolvedConfiguration
 import org.gradle.api.artifacts.result.*
-import org.gradle.api.artifacts.type.ArtifactTypeDefinition
+import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.file.FileCollection
-import org.gradle.api.provider.Provider
-import org.jetbrains.kotlin.gradle.internal.attributes.withArtifactIdAttribute
 import org.jetbrains.kotlin.tooling.core.withClosure
 
 /**
@@ -34,12 +32,12 @@ internal class LazyResolvedConfiguration private constructor(
      *
      * Pass [artifactType] to select different artifacts if available.
      */
-    constructor(configuration: Configuration, artifactType: Provider<String>? = null) : this(
+    constructor(configuration: Configuration, configureArtifactViewAttributes: (AttributeContainer) -> Unit = {}) : this(
         // Calling resolutionResult doesn't actually trigger resolution. But accessing its root ResolvedComponentResult
         // via ResolutionResult::root does. ResolutionResult can't be serialised for Configuration Cache
         // but ResolvedComponentResult can. Wrapping it in `lazy` makes it resolve upon serialisation.
         resolvedComponentsRootProvider = configuration.incoming.resolutionResult.let { rr -> lazy { rr.root } },
-        artifactCollection = configuration.lazyArtifactCollection(artifactType),
+        artifactCollection = configuration.lazyArtifactCollection(configureArtifactViewAttributes),
         configurationName = configuration.name
     )
 
@@ -77,12 +75,10 @@ internal class LazyResolvedConfiguration private constructor(
     override fun toString(): String = "LazyResolvedConfiguration(configuration='$configurationName')"
 }
 
-private fun Configuration.lazyArtifactCollection(artifactType: Provider<String>?): ArtifactCollection =
+private fun Configuration.lazyArtifactCollection(configureAttributes: AttributeContainer.() -> Unit): ArtifactCollection =
     incoming.artifactView { view ->
         view.isLenient = true
-        if (artifactType != null) {
-            view.attributes.attributeProvider(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, artifactType)
-        }
+        configureAttributes.invoke(view.attributes)
     }.artifacts
 
 internal tailrec fun ResolvedVariantResult.lastExternalVariantOrSelf(): ResolvedVariantResult {

@@ -14,7 +14,9 @@ import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentSelector
 import org.gradle.api.artifacts.component.ProjectComponentSelector
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.provider.Provider
+import org.jetbrains.kotlin.gradle.internal.attributes.WITH_PUBLISH_COORDINATES_ATTRIBUTE
 import org.jetbrains.kotlin.gradle.plugin.KotlinTargetComponent
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinUsageContext.MavenScope
 import org.jetbrains.kotlin.gradle.utils.JsonUtils
@@ -137,7 +139,13 @@ internal fun createLazyResolvableConfiguration(
                     }
                 }
             ),
-            project.provider { "kotlin-publication-coordinates" }
+            { attributeContainer ->
+                attributeContainer.attributeProvider(
+                    ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
+                    project.provider { "kotlin-publication-coordinates" })
+                attributeContainer.attributeProvider(WITH_PUBLISH_COORDINATES_ATTRIBUTE, project.provider { true })
+
+            }
         )
     }
 

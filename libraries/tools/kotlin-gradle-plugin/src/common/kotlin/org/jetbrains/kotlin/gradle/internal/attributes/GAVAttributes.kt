@@ -12,17 +12,10 @@ import org.gradle.api.attributes.AttributesSchema
 import org.gradle.api.attributes.CompatibilityCheckDetails
 import org.gradle.api.attributes.MultipleCandidatesDetails
 
-internal val withArtifactIdAttribute = Attribute.of("org.jetbrains.kotlin.publish.has-artifact-id", Boolean::class.javaObjectType)
-internal val artifactGroupAttribute = Attribute.of("org.jetbrains.kotlin.publish.artifact-group", String::class.java)
-internal val artifactIdAttribute = Attribute.of("org.jetbrains.kotlin.publish.artifact-id", String::class.java)
-internal val artifactVersionAttribute = Attribute.of("org.jetbrains.kotlin.publish.artifact-version", String::class.java)
-
-internal val rootArtifactGroupAttribute = Attribute.of("org.jetbrains.kotlin.publish.root-artifact-group", String::class.java)
-internal val rootArtifactIdAttribute = Attribute.of("org.jetbrains.kotlin.publish.root-artifact-id", String::class.java)
-internal val rootArtifactVersionAttribute = Attribute.of("org.jetbrains.kotlin.publish.root-artifact-version", String::class.java)
+internal val WITH_PUBLISH_COORDINATES_ATTRIBUTE = Attribute.of("org.jetbrains.kotlin.publish.has-publish-coordinates", Boolean::class.javaObjectType)
 
 internal fun setupGavAttributesMatchingStrategy(attributesSchema: AttributesSchema) {
-    attributesSchema.attribute(withArtifactIdAttribute) { strategy ->
+    attributesSchema.attribute(WITH_PUBLISH_COORDINATES_ATTRIBUTE) { strategy ->
         strategy.compatibilityRules.add(WithArtifactIdAttributeCompatibilityRule::class.java)
         strategy.disambiguationRules.add(WithArtifactIdAttributeDisambiguationRule::class.java)
     }

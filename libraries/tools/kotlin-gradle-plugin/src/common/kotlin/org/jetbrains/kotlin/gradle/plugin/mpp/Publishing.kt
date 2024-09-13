@@ -22,7 +22,7 @@ import org.gradle.api.tasks.*
 import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.dsl.multiplatformExtension
-import org.jetbrains.kotlin.gradle.internal.attributes.*
+import org.jetbrains.kotlin.gradle.internal.attributes.WITH_PUBLISH_COORDINATES_ATTRIBUTE
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.PropertiesProvider.Companion.kotlinPropertiesProvider
 import org.jetbrains.kotlin.gradle.plugin.sources.KotlinDependencyScope
@@ -172,14 +172,7 @@ private fun Configuration.addGavSecondaryVariant(
 ) {
 
     outgoing.variants.create("gavSecondaryVariant") { variant ->
-        variant.attributes.attributeProvider(artifactGroupAttribute, project.provider { publication.groupId })
-        variant.attributes.attributeProvider(artifactIdAttribute, project.provider { publication.artifactId })
-        variant.attributes.attributeProvider(artifactVersionAttribute, project.provider { publication.version })
-
-        variant.attributes.attributeProvider(rootArtifactGroupAttribute, project.provider { rootPublication.groupId })
-        variant.attributes.attributeProvider(rootArtifactIdAttribute, project.provider { rootPublication.artifactId })
-        variant.attributes.attributeProvider(rootArtifactVersionAttribute, project.provider { rootPublication.version })
-
+        variant.attributes.setAttribute(WITH_PUBLISH_COORDINATES_ATTRIBUTE, true)
         task.configure {
             it.data.set(
                 PublicationCoordinatesProperty(

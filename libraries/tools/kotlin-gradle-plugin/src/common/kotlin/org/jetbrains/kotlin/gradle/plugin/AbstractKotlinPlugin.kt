@@ -15,6 +15,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.maven.tasks.GenerateMavenPom
 import org.gradle.api.tasks.SourceSet
 import org.gradle.internal.component.external.model.TestFixturesSupport.TEST_FIXTURES_FEATURE_NAME
 import org.gradle.jvm.tasks.Jar
@@ -34,6 +35,7 @@ import org.jetbrains.kotlin.gradle.utils.*
 import org.jetbrains.kotlin.gradle.utils.archivePathCompatible
 import org.jetbrains.kotlin.gradle.utils.setAttribute
 import org.jetbrains.kotlin.gradle.utils.whenEvaluated
+import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 
 const val PLUGIN_CLASSPATH_CONFIGURATION_NAME = "kotlinCompilerPluginClasspath"
 const val NATIVE_COMPILER_PLUGIN_CLASSPATH_CONFIGURATION_NAME = "kotlinNativeCompilerPluginClasspath"
@@ -135,8 +137,18 @@ internal abstract class AbstractKotlinPlugin(
 
         project.pluginManager.withPlugin("maven-publish") {
             project.extensions.configure(PublishingExtension::class.java) { publishing ->
-                val pomRewriter = PomDependenciesRewriter(createLazyResolvableConfiguration(project, target.kotlinComponents.single()))
+                val lazyResolvedConfigurations = createLazyResolvableConfiguration(project, target.kotlinComponents.single())
+                val pomRewriter = PomDependenciesRewriter(lazyResolvedConfigurations)
                 publishing.publications.withType(MavenPublication::class.java).all { publication ->
+                    val artifacts = lazyResolvedConfigurations.map { lazyResolvedConfiguration ->
+                        lazyResolvedConfiguration.files
+                    }
+
+                    project.tasks.withType(GenerateMavenPom::class.java).configureEach {
+                        if (it.name.contains(publication.name.capitalizeAsciiOnly())) {
+                            it.dependsOn(artifacts)
+                        }
+                    }
                     rewritePom(publication.pom, pomRewriter, shouldRewritePoms)
                 }
             }

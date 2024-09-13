@@ -111,7 +111,7 @@ native {
     }
     sourceSet {
         "main" {
-            file(layout.buildDirectory.file("interopTemp/llvmstubs.c").get().asFile.toRelativeString(layout.projectDirectory.asFile))
+            file(layout.buildDirectory.file("nativeInteropStubs/llvm/c/stubs.c").get().asFile.toRelativeString(layout.projectDirectory.asFile))
         }
     }
 
@@ -153,9 +153,8 @@ kotlinNativeInterop.create("llvm").genTask.configure {
 }
 
 native.sourceSets["main"]!!.implicitTasks()
-tasks.named("llvmstubs.o").configure {
-    dependsOn(kotlinNativeInterop["llvm"].genTask)
-    inputs.file(layout.buildDirectory.file("interopTemp/llvmstubs.c"))
+tasks.named("stubs.o").configure {
+    inputs.file(kotlinNativeInterop["llvm"].genTask.map { it.cBridge })
 }
 
 dependencies {

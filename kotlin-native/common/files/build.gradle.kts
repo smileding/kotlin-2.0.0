@@ -43,7 +43,7 @@ native {
     }
     sourceSet {
         "main" {
-            file(layout.buildDirectory.file("interopTemp/orgjetbrainskotlinbackendkonanfilesstubs.c").get().asFile.toRelativeString(layout.projectDirectory.asFile))
+            file(layout.buildDirectory.file("nativeInteropStubs/files/c/stubs.c").get().asFile.toRelativeString(layout.projectDirectory.asFile))
         }
     }
 
@@ -78,9 +78,8 @@ tasks.named(solib("orgjetbrainskotlinbackendkonanfilesstubs")).configure {
 }
 
 native.sourceSets["main"]!!.implicitTasks()
-tasks.named("orgjetbrainskotlinbackendkonanfilesstubs.o").configure {
-    dependsOn(kotlinNativeInterop["files"].genTask)
-    inputs.file(layout.buildDirectory.file("interopTemp/orgjetbrainskotlinbackendkonanfilesstubs.c"))
+tasks.named("stubs.o").configure {
+    inputs.file(kotlinNativeInterop["files"].genTask.map { it.cBridge })
 }
 
 

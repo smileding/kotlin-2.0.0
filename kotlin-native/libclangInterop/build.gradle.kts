@@ -164,20 +164,8 @@ artifacts {
     }
 }
 
-// Please note that list of headers should be fixed manually.
-// See KT-46231 for details.
+// TODO: Replace with a common way to generate sources. Also add a test that generation didn't change checked-in sources.
 val updatePrebuilt by tasks.registering(Sync::class) {
-    dependsOn("genClangInteropStubs")
-
     into(layout.projectDirectory.dir("prebuilt/nativeInteropStubs"))
-
-    from(layout.buildDirectory.dir("nativeInteropStubs/clang/kotlin")) {
-        include("clang/clang.kt")
-        into("kotlin")
-    }
-
-    from(layout.buildDirectory.dir("interopTemp")) {
-        include("clangstubs.c")
-        into("c")
-    }
+    from(kotlinNativeInterop["clang"].genTask.map { layout.buildDirectory.dir("nativeInteropStubs") })
 }

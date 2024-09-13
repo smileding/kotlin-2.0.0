@@ -15,8 +15,10 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.LocalState
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
@@ -69,8 +71,13 @@ open class KonanJvmInteropTask @Inject constructor(
     @OutputDirectory
     val kotlinBridges: DirectoryProperty = objectFactory.directoryProperty()
 
-    // TODO: Point to generated .c file instead
-    @OutputDirectory
+    /**
+     * Generated C bridge.
+     */
+    @OutputFile
+    val cBridge: RegularFileProperty = objectFactory.fileProperty()
+
+    @LocalState
     val temporaryFilesDir: DirectoryProperty = objectFactory.directoryProperty()
 
     @Nested
@@ -103,12 +110,12 @@ open class KonanJvmInteropTask @Inject constructor(
             args(headersToProcess.get().flatMap { listOf("-header", it) })
         }.assertNormalExitValue()
 
-        // interop tool uses precompiled headers, generated .c file does not have required includes. Add them manually.
         val generatedName = defFile.get().asFile.nameWithoutExtension.split(".").reversed().joinToString(separator = "")
-        val originalStubs = temporaryFilesDir.file("${generatedName}stubs_original.c").get().asFile
-        val modifiedStubs = temporaryFilesDir.file("${generatedName}stubs.c").get().asFile
-        modifiedStubs.copyTo(originalStubs, overwrite = true)
-        modifiedStubs.printWriter().use { writer ->
+        val originalStubs = temporaryFilesDir.file("${generatedName}stubs.c").get().asFile
+        require(originalStubs.exists())
+
+        // interop tool uses precompiled headers, generated .c file does not have required includes. Add them manually.
+        cBridge.get().asFile.printWriter().use { writer ->
             (listOf("stdint.h", "string.h", "jni.h") + headersToProcess.get()).forEach {
                 writer.appendLine("#include <$it>")
             }
@@ -118,6 +125,5 @@ open class KonanJvmInteropTask @Inject constructor(
                 }
             }
         }
-        originalStubs.delete()
     }
 }

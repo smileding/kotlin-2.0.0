@@ -29,6 +29,7 @@ class NamedNativeInteropConfig(
             dependsOn(project.extensions.getByType<NativeDependenciesExtension>().llvmDependency)
             interopStubGeneratorClasspath.from(project.configurations.getByName(NativeInteropPlugin.INTEROP_STUB_GENERATOR_CONFIGURATION))
             kotlinBridges.set(project.layout.buildDirectory.dir("nativeInteropStubs/${this@NamedNativeInteropConfig.name}/kotlin"))
+            cBridge.set(project.layout.buildDirectory.file("nativeInteropStubs/${this@NamedNativeInteropConfig.name}/c/stubs.c"))
             temporaryFilesDir.set(project.layout.buildDirectory.dir("interopTemp"))
 
             nativeLibrariesPaths.addAll(

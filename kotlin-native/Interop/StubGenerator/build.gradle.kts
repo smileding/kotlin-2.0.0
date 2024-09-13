@@ -1,7 +1,22 @@
+import org.jetbrains.kotlin.cpp.CppConsumerPlugin
+import org.jetbrains.kotlin.cpp.CppUsage
+import org.jetbrains.kotlin.konan.target.TargetWithSanitizer
+
 plugins {
     kotlin("jvm")
     application
     id("native-dependencies")
+}
+
+apply<CppConsumerPlugin>()
+
+val cppRuntimeOnly by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    attributes {
+        attribute(CppUsage.USAGE_ATTRIBUTE, objects.named(CppUsage.LIBRARY_RUNTIME))
+        attribute(TargetWithSanitizer.TARGET_ATTRIBUTE, TargetWithSanitizer.host)
+    }
 }
 
 application {
@@ -19,6 +34,9 @@ dependencies {
     implementation(project(":compiler:ir.serialization.common"))
 
     testImplementation(kotlinTest("junit"))
+
+    cppRuntimeOnly(project(":kotlin-native:libclangInterop"))
+    cppRuntimeOnly(project(":kotlin-native:Interop:Runtime"))
 }
 
 sourceSets {
@@ -29,14 +47,10 @@ sourceSets {
 tasks {
     // Copy-pasted from Indexer build.gradle.kts.
     withType<Test>().configureEach {
-        val projectsWithNativeLibs = listOf(
-                project(":kotlin-native:libclangInterop"),
-                project(":kotlin-native:Interop:Runtime")
-        )
-        dependsOn(projectsWithNativeLibs.map { "${it.path}:nativelibs" })
+        inputs.files(cppRuntimeOnly)
         dependsOn(nativeDependencies.llvmDependency)
-        systemProperty("java.library.path", projectsWithNativeLibs.joinToString(File.pathSeparator) {
-            it.layout.buildDirectory.dir("nativelibs").get().asFile.absolutePath
+        systemProperty("java.library.path", cppRuntimeOnly.elements.map { elements ->
+            elements.joinToString(File.pathSeparator) { it.asFile.parentFile.absolutePath }
         })
         val libclangPath = "${nativeDependencies.llvmPath}/" + if (org.jetbrains.kotlin.konan.target.HostManager.hostIsMingw) {
             "bin/libclang.dll"

@@ -99,6 +99,9 @@ configurations {
     nativeLibs {
         canBeConsumed = false
         canBeResolved = true
+        attributes {
+            attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, CppUsage.LIBRARY_RUNTIME))
+        }
     }
 
     trove4j_jar {
@@ -120,10 +123,13 @@ dependencies {
     runtimeBitcode project(":kotlin-native:runtime")
     objcExportApi project(":kotlin-native:runtime")
     embeddableJar project(path: ':kotlin-native:prepare:kotlin-native-compiler-embeddable', configuration: 'runtimeElements')
-    nativeLibs project(path: ':kotlin-native:common:env', configuration: 'nativeLibs')
-    nativeLibs project(path: ':kotlin-native:common:files', configuration: 'nativeLibs')
-    nativeLibs project(path: ':kotlin-native:llvmInterop', configuration: 'nativeLibs')
-    nativeLibs project(path: ':kotlin-native:libclangInterop', configuration: 'nativeLibs')
+    nativeLibs project(':kotlin-native:Interop:Runtime')
+    nativeLibs project(':kotlin-native:common:env')
+    nativeLibs project(':kotlin-native:common:files')
+    nativeLibs project(':kotlin-native:libclangInterop')
+    nativeLibs project(':kotlin-native:libllvmext')
+    nativeLibs project(':kotlin-native:llvmDebugInfoC')
+    nativeLibs project(':kotlin-native:llvmInterop')
     use(RepoDependencies) {
         trove4j_jar commonDependency("org.jetbrains.intellij.deps:trove4j")
     }
@@ -236,18 +242,6 @@ tasks.register("distCompiler", Copy) {
         }
         into("konan/lib")
         fileMode(0644)
-    }
-
-    from(project(':kotlin-native:Interop').file('Runtime/build/nativelibs')) {
-        into('konan/nativelib')
-    }
-
-    from(project(':kotlin-native:libllvmext').file('build/libs/llvmext/shared')) {
-        into('konan/nativelib')
-    }
-
-    from(project(':kotlin-native:llvmDebugInfoC').file('build/libs/debugInfo/shared')) {
-        into('konan/nativelib')
     }
 
     from(project(':kotlin-native:llvmDebugInfoC').file('src/scripts/konan_lldb.py')) {

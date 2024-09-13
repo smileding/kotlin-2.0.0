@@ -72,15 +72,11 @@ internal abstract class PomDependenciesRewriter {
         }.toSet()
 
         val dependenciesMappingForEachUsageContext = createDependenciesMappingForEachUsageContext()
-        val resultDependenciesForEachUsageContext = dependencies.mapNotNull { key ->
-            val value = dependenciesMappingForEachUsageContext.find { key in it }?.get(key)
-                ?: dependenciesMappingForEachUsageContext.find { it -> key in it.values }
-                    ?.map { it.value }
-                    ?.filter { key == it }
-                    ?.firstOrNull()
-                ?: return@mapNotNull null
-            key to value
-        }.toMap()
+        val resultDependenciesForEachUsageContext = dependencies.associateWith { key ->
+            val map = dependenciesMappingForEachUsageContext.find { key in it }
+            val value = map?.get(key) ?: key
+            value
+        }
 
         val includeOnlySpecifiedDependenciesSet = includeOnlySpecifiedDependencies?.get()
 
@@ -115,42 +111,6 @@ internal abstract class PomDependenciesRewriter {
     }
 }
 
-internal fun createLazyResolvedConfigurationsFromKotlinComponent(
-    project: Project,
-    component: KotlinTargetComponent,
-): List<LazyResolvedConfiguration> {
-    return component.internal.usages.mapNotNull { usage ->
-        val mavenScope = usage.mavenScope ?: return@mapNotNull null
-        val compilation = usage.compilation
-        val mavenScopeResolvableConfiguration = project.configurations.getByName(
-            when (compilation) {
-                is KotlinJvmAndroidCompilation -> {
-                    // TODO handle Android configuration names in a general way once we drop AGP < 3.0.0
-                    val variantName = compilation.name
-                    when (mavenScope) {
-                        MavenScope.COMPILE -> variantName + "CompileClasspath"
-                        MavenScope.RUNTIME -> variantName + "RuntimeClasspath"
-                    }
-                }
-                else -> when (mavenScope) {
-                    MavenScope.COMPILE -> compilation.compileDependencyConfigurationName
-                    MavenScope.RUNTIME -> compilation.runtimeDependencyConfigurationName ?: return@mapNotNull null
-                }
-            }
-        )
-        val configureArtifactViewAttributes: (AttributeContainer) -> Unit = { attributeContainer ->
-            attributeContainer.attributeProvider(
-                ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
-                project.provider { "kotlin-publication-coordinates" })
-            attributeContainer.attributeProvider(PUBLISH_COORDINATES_TYPE_ATTRIBUTE, project.provider { WITH_PUBLISH_COORDINATES })
-
-        }
-
-        return@mapNotNull LazyResolvedConfiguration(mavenScopeResolvableConfiguration, configureArtifactViewAttributes)
-    }
-
-}
-
 internal class PomDependenciesRewriterImpl(
     private val lazyResolvedConfigurations: List<LazyResolvedConfiguration>,
 ) : PomDependenciesRewriter() {
@@ -169,14 +129,14 @@ internal class PomDependenciesRewriterImpl(
         val resolvedDependenciesByComponentIdentifier =
             lazyResolvedConfiguration.allResolvedDependencies.associateBy { it.resolvedVariant.owner }
 
-        val mapForProjectCoordinatesMap = lazyResolvedConfiguration
+        val projectCoordinatesMap = lazyResolvedConfiguration
             .resolvedArtifacts
             .mapNotNull { resolvedArtifact ->
-                val resolvedDependency =
-                    resolvedDependenciesByComponentIdentifier.get(resolvedArtifact.variant.owner) ?: return@mapNotNull null
+                val resolvedDependency = resolvedDependenciesByComponentIdentifier[resolvedArtifact.variant.owner] ?: return@mapNotNull null
                 val publicationCoordinates = resolvedArtifact.file.let { artifact ->
                     JsonUtils.gson.fromJson(artifact.readText(), PublicationCoordinates::class.java)
                 } ?: return@mapNotNull null
+
                 val fromModuleCoordinates = when (val requested = resolvedDependency.requested) {
                     is ProjectComponentSelector -> ModuleCoordinates(
                         publicationCoordinates.rootPublicationGAV.group,
@@ -186,6 +146,7 @@ internal class PomDependenciesRewriterImpl(
                     is ModuleComponentSelector -> ModuleCoordinates(requested.group, requested.module, requested.version)
                     else -> return@mapNotNull null
                 }
+
                 fromModuleCoordinates to ModuleCoordinates(
                     publicationCoordinates.targetPublicationGAV.group,
                     publicationCoordinates.targetPublicationGAV.artifactId,
@@ -207,11 +168,16 @@ internal class PomDependenciesRewriterImpl(
                         ModuleCoordinates(resolvedId.group, resolvedId.module, resolvedId.version)
             }.associate { it }
 
-        return mapForProjectCoordinatesMap + externalLibraryCoordinatesMap
+        return projectCoordinatesMap + externalLibraryCoordinatesMap
     }
 
 }
 
+// TODO(Dmitrii Krasnov): remove it with KT-71454
+@Deprecated(
+    message = "This implementation is not compatible with isolated projects and will be removed soon.",
+    replaceWith = ReplaceWith("PomDependenciesRewriterImpl")
+)
 internal class DeprecatedPomDependenciesRewriter(
     project: Project,
     component: KotlinTargetComponent,
@@ -362,5 +328,30 @@ internal class DeprecatedPomDependenciesRewriter(
             }
             configurationName in outgoingConfigurations
         }
+    }
+}
+
+internal fun createLazyResolvedConfigurationsFromKotlinComponent(
+    project: Project,
+    component: KotlinTargetComponent,
+): List<LazyResolvedConfiguration> {
+    return component.internal.usages.mapNotNull { usage ->
+        val mavenScope = usage.mavenScope ?: return@mapNotNull null
+        val compilation = usage.compilation
+        val mavenScopeResolvableConfiguration = project.configurations.getByName(
+            when (mavenScope) {
+                MavenScope.COMPILE -> compilation.compileDependencyConfigurationName
+                MavenScope.RUNTIME -> compilation.runtimeDependencyConfigurationName ?: return@mapNotNull null
+            }
+        )
+        val configureArtifactViewAttributes: (AttributeContainer) -> Unit = { attributeContainer ->
+            attributeContainer.attributeProvider(
+                ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE,
+                project.provider { "kotlin-publication-coordinates" })
+            attributeContainer.attributeProvider(PUBLISH_COORDINATES_TYPE_ATTRIBUTE, project.provider { WITH_PUBLISH_COORDINATES })
+
+        }
+
+        return@mapNotNull LazyResolvedConfiguration(mavenScopeResolvableConfiguration, configureArtifactViewAttributes)
     }
 }

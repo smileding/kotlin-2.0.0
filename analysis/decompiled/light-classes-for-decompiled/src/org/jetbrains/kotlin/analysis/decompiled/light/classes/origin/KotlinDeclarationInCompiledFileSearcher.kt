@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.load.java.propertyNamesBySetMethodName
 import org.jetbrains.kotlin.load.kotlin.MemberSignature
 import org.jetbrains.kotlin.name.JvmStandardClassIds
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtDeclarationContainer
@@ -124,7 +125,12 @@ abstract class KotlinDeclarationInCompiledFileSearcher {
                 if (container is KtObjectDeclaration && memberName == "INSTANCE") {
                     return container
                 }
+
                 declarations.singleOrNull { it !is KtNamedFunction && it.name == memberName }
+                    ?: (container as? KtClass)?.companionObjects?.firstNotNullOfOrNull {
+                        // Fields for properties from companion objects are materialized in the containing class
+                        it.declarations.singleOrNull { it is KtProperty && it.name == memberName }
+                    }
             }
             else -> declarations.singleOrNull { it.name == memberName }
         }

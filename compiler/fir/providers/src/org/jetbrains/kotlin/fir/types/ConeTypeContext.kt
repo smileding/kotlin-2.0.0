@@ -226,6 +226,7 @@ interface ConeTypeContext : TypeSystemContext, TypeSystemOptimizationContext, Ty
     override fun TypeConstructorMarker.parametersCount(): Int {
         require(this is ConeTypeConstructorMarker)
         return when (this) {
+            is ConeTypeParameterLookupTag, // handled here for optimization reasons
             is ConeCapturedTypeConstructor,
             is ConeTypeVariableTypeConstructor,
             is ConeIntersectionType
@@ -235,7 +236,8 @@ interface ConeTypeContext : TypeSystemContext, TypeSystemOptimizationContext, Ty
                     is FirAnonymousObjectSymbol -> symbol.fir.typeParameters.size
                     is FirRegularClassSymbol -> symbol.fir.typeParameters.size
                     is FirTypeAliasSymbol -> symbol.fir.typeParameters.size
-                    is FirTypeParameterSymbol, null -> 0
+                    null -> 0
+                    is FirTypeParameterSymbol -> error("Type parameters should be handled earlier")
                 }
             }
             is ConeIntegerLiteralType -> 0
@@ -270,12 +272,13 @@ interface ConeTypeContext : TypeSystemContext, TypeSystemOptimizationContext, Ty
         return when (this) {
             is ConeStubTypeConstructor -> listOf(session.builtinTypes.nullableAnyType.coneType)
             is ConeTypeVariableTypeConstructor -> emptyList()
+            is ConeTypeParameterLookupTag -> bounds().map { it.coneType } // handled here for optimization reasons
             is ConeClassifierLookupTag -> {
                 when (val symbol = toSymbol(session).also { it?.lazyResolveToPhase(FirResolvePhase.TYPES) }) {
-                    is FirTypeParameterSymbol -> symbol.resolvedBounds.map { it.coneType }
                     is FirClassSymbol<*> -> symbol.fir.superConeTypes
                     is FirTypeAliasSymbol -> listOfNotNull(symbol.fir.expandedConeType)
                     null -> listOf(session.builtinTypes.anyType.coneType)
+                    is FirTypeParameterSymbol -> error("Type parameters should be handled earlier")
                 }
             }
             is ConeCapturedTypeConstructor -> supertypes.orEmpty()

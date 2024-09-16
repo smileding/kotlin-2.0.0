@@ -18,6 +18,7 @@ suspend fun test() = foo(A("OK", 1)) { (x_param, y_param) ->
 // VARIABLE : NAME=$result TYPE=Ljava/lang/Object; INDEX=1
 
 // JVM_IR_TEMPLATES
+// VARIABLE : NAME=<name for destructuring parameter 0> TYPE=LA; INDEX=*
 // VARIABLE : NAME=x_param TYPE=Ljava/lang/String; INDEX=3
 // VARIABLE : NAME=y_param TYPE=I INDEX=4
 // VARIABLE : NAME=this TYPE=LGenericKt$test$2; INDEX=0

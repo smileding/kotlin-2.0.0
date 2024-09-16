@@ -12,5 +12,6 @@ package kotlin.coroutines.jvm.internal
  *
  * This way, we avoid memory leaks, and do not hinder debuggability.
  */
+@PublishedApi
 @Suppress("UNUSED_PARAMETER", "unused")
 internal fun nullOutSpilledVariable(value: Any?): Any? = null

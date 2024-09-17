@@ -373,6 +373,7 @@ abstract class FirAbstractContractResolveTransformerDispatcher(
 }
 
 private val FirContractDescriptionOwner.valueParameters: List<FirValueParameter>
+    @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
     get() = when (this) {
         is FirFunction -> valueParameters
         else -> errorWithAttachment("Expected ${FirFunction::class.java} but ${this::class.java} found") {
@@ -381,6 +382,7 @@ private val FirContractDescriptionOwner.valueParameters: List<FirValueParameter>
     }
 
 private val FirContractDescriptionOwner.body: FirBlock
+    @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
     get() = when (this) {
         is FirFunction -> body!!
         else -> errorWithAttachment("Expected ${FirFunction::class.java} but ${this::class.java} found") {

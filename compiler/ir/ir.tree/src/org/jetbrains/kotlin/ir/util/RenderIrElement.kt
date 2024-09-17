@@ -791,6 +791,7 @@ private fun IrType.renderTypeWithRenderer(renderer: RenderIrElementVisitor?, opt
     "${renderTypeAnnotations(annotations, renderer, options)}${renderTypeInner(renderer, options)}"
 
 private fun IrType.renderTypeInner(renderer: RenderIrElementVisitor?, options: DumpIrTreeOptions) =
+    @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
     when (this) {
         is IrDynamicType -> "dynamic"
 

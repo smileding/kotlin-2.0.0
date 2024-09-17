@@ -511,6 +511,7 @@ class ControlFlowGraphBuilder {
             else -> null
         }?.also { addNewSimpleNode(it) }
 
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
         val name = when (klass) {
             is FirAnonymousObject -> "<anonymous object>"
             is FirRegularClass -> klass.name.asString()

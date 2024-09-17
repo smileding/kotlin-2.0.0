@@ -232,6 +232,7 @@ internal class NotNullTypeParameterImpl(override val delegate: SimpleType) : Not
         val unwrappedType = replacement.unwrap()
         if (!unwrappedType.isTypeParameter() && !TypeUtils.isNullableType(unwrappedType)) return unwrappedType
 
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
         return when (unwrappedType) {
             is SimpleType -> unwrappedType.prepareReplacement()
             is FlexibleType -> KotlinTypeFactory.flexibleType(

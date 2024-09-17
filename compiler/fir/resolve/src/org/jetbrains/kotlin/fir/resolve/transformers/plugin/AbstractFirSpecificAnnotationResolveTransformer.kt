@@ -649,6 +649,7 @@ abstract class AbstractFirSpecificAnnotationResolveTransformer(
     }
 
     private fun FirTypeProjection.createDeepCopy(): FirTypeProjection {
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
         return when (val original = this) {
             is FirTypeProjectionWithVariance -> buildTypeProjectionWithVariance {
                 source = original.source

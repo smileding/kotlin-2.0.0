@@ -33,6 +33,7 @@ fun IrType.isSubtypeOf(superType: IrType, typeSystem: IrTypeSystemContext): Bool
     AbstractTypeChecker.isSubtypeOf(createIrTypeCheckerState(typeSystem), this, superType)
 
 fun IrType.isNullable(): Boolean =
+    @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
     when (this) {
         is IrSimpleType -> when (val classifier = classifier) {
             is IrClassSymbol -> nullability == SimpleTypeNullability.MARKED_NULLABLE

@@ -343,6 +343,8 @@ open class IrFileSerializer(
 
     private fun serializeIrTypeData(type: IrType): ProtoType {
         val proto = ProtoType.newBuilder()
+
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
         when (type) {
             is IrSimpleType ->
                 proto.simple = serializeSimpleType(type)
@@ -385,6 +387,7 @@ open class IrFileSerializer(
     private val IrType.toIrTypeKey: IrTypeKey
         get() {
             val type = this
+            @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
             return IrTypeKey(
                 kind = when (this) {
                     is IrSimpleType -> IrTypeKind.SIMPLE

@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.metadata.deserialization.VersionRequirement
 fun VersionRequirement.isFulfilled(languageVersionSettings: LanguageVersionSettings): Boolean {
     val requiredVersion = createVersion(version.asString())
 
+    @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
     val currentVersion = when (kind) {
         ProtoBuf.VersionRequirement.VersionKind.LANGUAGE_VERSION ->
             MavenComparableVersion(languageVersionSettings.languageVersion.versionString)

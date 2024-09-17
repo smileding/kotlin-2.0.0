@@ -1192,6 +1192,7 @@ private fun createCompileTimeConstantForCompareTo(result: Any?, operationReferen
 fun isIntegerType(value: Any?) = value is Byte || value is Short || value is Int || value is Long
 
 private fun getReceiverExpressionType(resolvedCall: ResolvedCall<*>): KotlinType? {
+    @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
     return when (resolvedCall.explicitReceiverKind) {
         ExplicitReceiverKind.DISPATCH_RECEIVER -> resolvedCall.dispatchReceiver!!.type
         ExplicitReceiverKind.EXTENSION_RECEIVER -> resolvedCall.extensionReceiver!!.type

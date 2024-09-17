@@ -1139,6 +1139,7 @@ private fun getContainingDeclaration(declaration: IrDeclaration): DeclarationDes
     }
 }
 
+@Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
 fun IrType.toIrBasedKotlinType(builtins: KotlinBuiltIns? = null): KotlinType = when (this) {
     is IrSimpleType ->
         makeKotlinType(classifier, arguments, isMarkedNullable(), builtins).let {

@@ -48,6 +48,7 @@ abstract class BaseIrTypeSubstitutor : AbstractIrTypeSubstitutor() {
             }
         }
 
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
         return when (irType) {
             is IrSimpleType -> with(irType.toBuilder()) {
                 arguments = irType.arguments.memoryOptimizedMap { substituteTypeArgument(it) }

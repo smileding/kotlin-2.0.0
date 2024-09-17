@@ -313,6 +313,8 @@ object FirExpressionEvaluator {
 
             val leftBoolean = left.unwrapOr<FirLiteralExpression> { return it }?.value as? Boolean ?: return NotEvaluated
             val rightBoolean = right.unwrapOr<FirLiteralExpression> { return it }?.value as? Boolean ?: return NotEvaluated
+
+            @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
             val result = when (booleanOperatorExpression.kind) {
                 LogicOperationKind.AND -> leftBoolean && rightBoolean
                 LogicOperationKind.OR -> leftBoolean || rightBoolean

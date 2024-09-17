@@ -525,6 +525,7 @@ private class KotlinLikeDumper(val p: Printer, val options: KotlinLikeDumpOption
     private fun IrType.printTypeWithNoIndent() {
         // TODO don't print `Any?` as upper bound?
         printAnnotationsWithNoIndent()
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
         when (this) {
             is IrSimpleType -> {
                 // TODO abbreviation

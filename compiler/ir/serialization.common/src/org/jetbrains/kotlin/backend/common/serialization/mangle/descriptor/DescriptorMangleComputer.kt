@@ -89,6 +89,7 @@ open class DescriptorMangleComputer(builder: StringBuilder, mode: MangleMode) :
 
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
     final override fun mangleType(tBuilder: StringBuilder, wrappedType: KotlinType, declarationSiteSession: Nothing?) {
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
         when (val type = wrappedType.unwrap()) {
             is SimpleType -> {
 

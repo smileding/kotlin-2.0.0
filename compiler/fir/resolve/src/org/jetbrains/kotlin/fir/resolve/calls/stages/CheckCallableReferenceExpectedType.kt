@@ -125,6 +125,7 @@ private fun buildResultingTypeAndAdaptation(
     forceReflectionType: Boolean,
 ): Pair<ConeKotlinType, CallableReferenceAdaptation?> {
     val returnTypeRef = context.bodyResolveComponents.returnTypeCalculator.tryCalculateReturnType(fir)
+    @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
     return when (fir) {
         is FirFunction -> {
             val unboundReferenceTarget = if (receiverType != null) 1 else 0

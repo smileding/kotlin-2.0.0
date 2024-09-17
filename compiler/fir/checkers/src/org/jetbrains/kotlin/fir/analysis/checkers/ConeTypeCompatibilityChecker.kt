@@ -358,6 +358,7 @@ object ConeTypeCompatibilityChecker {
     }
 
     private fun FirClassLikeSymbol<*>.getSuperTypes(): List<ConeClassLikeType> {
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
         return when (this) {
             is FirTypeAliasSymbol -> listOfNotNull(resolvedExpandedTypeRef.coneType as? ConeClassLikeType)
             is FirClassSymbol<*> -> resolvedSuperTypeRefs.mapNotNull { it.coneType as? ConeClassLikeType }
@@ -369,6 +370,7 @@ object ConeTypeCompatibilityChecker {
         lookupTag.toSymbol(ctx.session)
 
     private fun FirClassLikeSymbol<*>.getTypeParameter(index: Int): FirTypeParameterSymbol? {
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
         return when (this) {
             is FirTypeAliasSymbol -> typeParameterSymbols[index]
             is FirClassSymbol<*> -> typeParameterSymbols[index]
@@ -447,6 +449,7 @@ object ConeTypeCompatibilityChecker {
 
         private val FirClassSymbol<*>.isFinal: Boolean
             get() {
+                @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
                 return when (this) {
                     is FirAnonymousObjectSymbol -> true
                     is FirRegularClassSymbol -> modality == Modality.FINAL

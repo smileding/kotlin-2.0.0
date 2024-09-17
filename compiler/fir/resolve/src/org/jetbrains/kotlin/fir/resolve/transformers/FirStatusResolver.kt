@@ -378,6 +378,7 @@ class FirStatusResolver(
 }
 
 private val FirClass.modality: Modality?
+    @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
     get() = when (this) {
         is FirRegularClass -> status.modality
         is FirAnonymousObject -> Modality.FINAL

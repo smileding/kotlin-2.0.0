@@ -665,6 +665,7 @@ open class SupertypeComputationSession {
         supertypeStatusMap[classLikeDeclaration] = SupertypeComputationStatus.Computed(supertypeRefs)
     }
 
+    @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
     protected open fun getResolvedSuperTypeRefsForOutOfSessionDeclaration(
         classLikeDeclaration: FirClassLikeDeclaration,
     ): List<FirResolvedTypeRef>? = when (classLikeDeclaration) {

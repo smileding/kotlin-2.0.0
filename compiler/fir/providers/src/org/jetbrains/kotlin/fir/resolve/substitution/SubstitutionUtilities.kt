@@ -37,6 +37,7 @@ inline fun ConeCapturedType.substitute(f: (ConeKotlinType) -> ConeKotlinType?): 
 }
 
 fun wrapProjection(old: ConeTypeProjection, newType: ConeKotlinType): ConeTypeProjection {
+    @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
     return when (old) {
         is ConeStarProjection -> old
         is ConeKotlinTypeProjectionIn -> ConeKotlinTypeProjectionIn(newType)

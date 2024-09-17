@@ -28,6 +28,7 @@ object FirThrowableSubclassChecker : FirClassChecker(MppCheckerKind.Common) {
                 reporter.reportOn(it, FirErrors.GENERIC_THROWABLE_SUBCLASS, context)
             }
 
+            @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
             val shouldReport = when (declaration) {
                 is FirRegularClass -> declaration.isInner || declaration.isLocal
                 is FirAnonymousObject -> true

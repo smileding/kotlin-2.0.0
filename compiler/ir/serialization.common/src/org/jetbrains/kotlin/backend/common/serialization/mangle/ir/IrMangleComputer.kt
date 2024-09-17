@@ -113,6 +113,7 @@ open class IrMangleComputer(
     final override fun getIndexOfTypeParameter(typeParameter: IrTypeParameterSymbol, container: IrDeclaration) = typeParameter.owner.index
 
     final override fun mangleType(tBuilder: StringBuilder, type: IrType, declarationSiteSession: Nothing?) {
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
         when (type) {
             is IrSimpleType -> {
                 when (val classifier = type.classifier) {

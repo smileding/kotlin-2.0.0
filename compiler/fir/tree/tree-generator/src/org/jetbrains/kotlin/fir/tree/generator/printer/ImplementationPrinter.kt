@@ -121,6 +121,7 @@ internal class ImplementationPrinter(
                                             """.trimMargin(),
                                         )
                                     } else {
+                                        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
                                         when (field) {
                                             is SimpleField -> {
                                                 println(field.acceptString())

@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinGlobalSourc
 import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModuleOutOfBlockModificationListener
 import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModuleStateModificationKind
 import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModuleStateModificationListener
+import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinScriptsStateModificationListener
 import org.jetbrains.kotlin.analysis.api.platform.projectStructure.KotlinModuleDependentsProvider
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaDanglingFileModule
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaLibraryModule
@@ -79,6 +80,12 @@ class LLFirSessionInvalidationService(private val project: Project) {
         }
     }
 
+    internal class LLKotlinScriptsStateModificationListener(val project: Project) : KotlinScriptsStateModificationListener {
+        override fun onModification() {
+            getInstance(project).invalidateScriptsSessions()
+        }
+    }
+
     private val sessionCache: LLFirSessionCache by lazy {
         LLFirSessionCache.getInstance(project)
     }
@@ -121,6 +128,8 @@ class LLFirSessionInvalidationService(private val project: Project) {
             }
         }
     }
+
+    private fun invalidateScriptsSessions() = sessionCache.removeAllScriptSessions()
 
     /**
      * Invalidates all cached sessions. If [includeLibraryModules] is `true`, also invalidates sessions for libraries.

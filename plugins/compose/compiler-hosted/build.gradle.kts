@@ -45,8 +45,9 @@ dependencies {
     testImplementation(projectTests(":compiler:tests-common-new"))
 
     // runtime tests
-    testImplementation(composeRuntime())
-    testImplementation(composeRuntimeTestUtils())
+    testImplementation(composeRuntime()) { isTransitive = false }
+    testImplementation(composeRuntimeTestUtils()) { isTransitive = false }
+    testImplementation("androidx.collection:collection:1.5.0-alpha02")
 
     // other compose
     testImplementationArtifactOnly(compose("foundation", "foundation"))

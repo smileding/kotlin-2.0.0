@@ -1,8 +1,10 @@
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.kotlin.dsl.maven
+import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 import java.net.URI
 
 /*

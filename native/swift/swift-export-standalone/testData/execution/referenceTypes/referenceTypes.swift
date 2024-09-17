@@ -297,6 +297,26 @@ func companionObject() throws {
     try assertEquals(actual: HostDerived.Companion.shared.hostDepth, expected: 1)
 }
 
+func overridesShouldWork() throws {
+    let parent: Parent = Parent()
+    let child: Parent = Child()
+    let grandchild: Parent = GrandChild()
+
+    try assertEquals(actual: parent.foo(), expected: "Parent")
+    try assertEquals(actual: child.foo(), expected: "Child")
+    try assertEquals(actual: grandchild.foo(), expected: "GrandChild")
+
+    parent.bar += 5
+    try assertEquals(actual: parent.bar, expected: 15)
+
+    child.bar += 5
+    try assertEquals(actual: child.bar, expected: 25)
+
+    try assertEquals(actual: grandchild.bar, expected: 42)
+    grandchild.bar = 50
+    try assertEquals(actual: grandchild.bar, expected: 42)
+}
+
 class ReferenceTypesTests : TestProvider {
     var tests: [TestCase] = []
 
@@ -335,6 +355,7 @@ class ReferenceTypesTests : TestProvider {
             TestCase(name: "openClassesAreInheritable", method: withAutorelease(openClassesAreInheritable)),
             TestCase(name: "openClassesAdhereToLSP", method: withAutorelease(openClassesAdhereToLSP)),
             TestCase(name: "companionObject", method: withAutorelease(companionObject)),
+            TestCase(name: "overridesShouldWork", method: withAutorelease(overridesShouldWork)),
         ]
     }
 }

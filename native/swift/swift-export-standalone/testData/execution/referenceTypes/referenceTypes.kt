@@ -144,6 +144,26 @@ class HostDerived : HostBase() {
     }
 }
 
+// FILE: overrides.kt
+
+open class Parent() {
+    open fun foo(): String = "Parent"
+    open var bar: Int = 10
+}
+
+open class Child : Parent() {
+    override fun foo(): String = "Child"
+    override var bar: Int = 20
+}
+
+
+class GrandChild : Child() {
+    final override fun foo(): String = "GrandChild"
+    final override var bar: Int
+        get() = 42
+        set(_) = Unit
+}
+
 // MODULE: second_main(deps)
 // FILE: second_main.kt
 

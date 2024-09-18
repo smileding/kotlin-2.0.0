@@ -8,22 +8,15 @@ package org.jetbrains.kotlin.gradle.plugin.konan.tasks
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.internal.file.FileOperations
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.*
-import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliCompilerRunner
-import org.jetbrains.kotlin.konan.library.defaultResolver
 import org.jetbrains.kotlin.konan.target.CompilerOutputKind
-import org.jetbrains.kotlin.konan.target.Distribution
 import org.jetbrains.kotlin.konan.target.PlatformManager
-import org.jetbrains.kotlin.library.uniqueName
-import org.jetbrains.kotlin.*
 import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
 import org.jetbrains.kotlin.nativeDistribution.nativeDistribution
 import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
-import org.jetbrains.kotlin.util.Logger
 import java.io.File
 import java.util.*
 import javax.inject.Inject
@@ -35,7 +28,6 @@ enum class KonanCacheKind(val outputKind: CompilerOutputKind) {
 
 abstract class KonanCacheTask @Inject constructor(
         private val fileOperations: FileOperations,
-        private val execOperations: ExecOperations,
 ) : DefaultTask() {
     @get:InputDirectory
     abstract val originalKlib: DirectoryProperty
@@ -95,6 +87,6 @@ abstract class KonanCacheTask @Inject constructor(
             args += "-Xmake-per-file-cache"
         args += additionalCacheFlags
         args += cachedLibraries.map { "-Xcached-library=${it.key},${it.value}" }
-        KonanCliCompilerRunner(fileOperations, execOperations, logger, isolatedClassLoadersService.get(), konanHome).run(args)
+        KonanCliCompilerRunner(fileOperations, logger, isolatedClassLoadersService.get(), konanHome).run(args)
     }
 }

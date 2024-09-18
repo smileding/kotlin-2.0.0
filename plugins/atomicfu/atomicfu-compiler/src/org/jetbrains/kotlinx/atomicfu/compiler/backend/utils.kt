@@ -109,7 +109,7 @@ val IrDeclaration.parentDeclarationContainer: IrDeclarationContainer
     get() = parents.filterIsInstance<IrDeclarationContainer>().firstOrNull()
         ?: error("In the sequence of parents for ${this.render()} no IrDeclarationContainer was found" + CONSTRAINTS_MESSAGE)
 
-val IrFunction.containingFunction: IrFunction
+val IrFunction.firstNonLocalFunctionForLambdaParent: IrFunction
     get() {
         if (this.origin != IrDeclarationOrigin.LOCAL_FUNCTION_FOR_LAMBDA) return this
         return parents.filterIsInstance<IrFunction>().firstOrNull {

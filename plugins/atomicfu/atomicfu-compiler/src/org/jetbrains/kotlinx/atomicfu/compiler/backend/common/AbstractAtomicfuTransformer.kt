@@ -71,6 +71,7 @@ abstract class AbstractAtomicfuTransformer(
         transformAtomicProperties(moduleFragment)
         transformAtomicExtensions(moduleFragment)
         transformAtomicFunctions(moduleFragment)
+        remapValueParameters(moduleFragment)
         finalTransformationCheck(moduleFragment)
         for (irFile in moduleFragment.files) {
             irFile.patchDeclarationParents()
@@ -92,6 +93,12 @@ abstract class AbstractAtomicfuTransformer(
     private fun transformAtomicFunctions(moduleFragment: IrModuleFragment) {
         for (irFile in moduleFragment.files) {
             irFile.transform(atomicfuFunctionCallTransformer, null)
+        }
+    }
+
+    private fun remapValueParameters(moduleFragment: IrModuleFragment) {
+        for (irFile in moduleFragment.files) {
+            irFile.transform(RemapValueParameters(), null)
         }
     }
 
@@ -376,64 +383,62 @@ abstract class AbstractAtomicfuTransformer(
         }
 
         override fun visitCall(expression: IrCall, data: IrFunction?): IrElement {
-            (expression.extensionReceiver ?: expression.dispatchReceiver)?.transform(this, data)?.let {
-                val propertyGetterCall = if (it is IrTypeOperatorCallImpl) it.argument else it // <get-_a>()
-                if (propertyGetterCall.type.isAtomicValueType()) {
-                    val valueType = if (it is IrTypeOperatorCallImpl) {
-                        // val a = atomic<Any?>(null)
-                        // (a as AtomicReference<Array<String>?>).getAndSet(arrayOf("aaa", "bbb"))
-                        (it.type as IrSimpleType).arguments[0] as IrSimpleType
-                    } else {
-                        atomicfuSymbols.atomicToPrimitiveType(propertyGetterCall.type as IrSimpleType)
-                    }
-                    val dispatchReceiver =
-                        if (propertyGetterCall is IrCall && propertyGetterCall.isArrayElementGetter())
-                            (propertyGetterCall.dispatchReceiver as? IrCall)?.dispatchReceiver
-                        else (propertyGetterCall as? IrCall)?.dispatchReceiver
-                    val atomicHandler = getAtomicHandler(propertyGetterCall, data)
-                    val atomicHandlerExtraArg = atomicHandler.getAtomicHandlerExtraArg(dispatchReceiver, propertyGetterCall, data)
-                    val builder = atomicfuSymbols.createBuilder(expression.symbol)
-                    if (expression.symbol.owner.isFromKotlinxAtomicfuPackage()) {
-                        val functionName = expression.symbol.owner.name.asString()
-                        if (functionName in ATOMICFU_LOOP_FUNCTIONS) {
-                            requireNotNull(data) { "Expected containing function of the call ${expression.render()}, but found null." }
-                            val loopCall = builder.transformAtomicfuInlineLoopCall(
-                                atomicHandler = atomicHandler,
-                                dispatchReceiver = dispatchReceiver,
-                                valueType = valueType,
-                                atomicHandlerExtraArg = atomicHandlerExtraArg,
-                                action = (expression.getValueArgument(0) as IrFunctionExpression),
-                                functionName = functionName,
-                                parentFunction = data
-                            )
-                            return super.visitCall(loopCall, data)
-                        }
-                        val atomicCall = builder.transformAtomicFunctionCall(
-                            atomicHandler = atomicHandler,
-                            dispatchReceiver = dispatchReceiver,
-                            valueType = valueType,
-                            atomicHandlerExtraArg = atomicHandlerExtraArg,
-                            callValueArguments = expression.valueArguments,
-                            functionName = functionName
-                        )
-                        return super.visitExpression(atomicCall, data)
-                    }
-                    if (expression.symbol.owner.isInline && expression.extensionReceiver != null) {
-                        requireNotNull(data) { "Expected containing function of the call ${expression.render()}, but found null." }
-                        val declaration = expression.symbol.owner
-                        val irCall = builder.transformAtomicExtensionCall(
-                            atomicHandler = atomicHandler,
-                            dispatchReceiver = dispatchReceiver,
-                            callDispatchReceiver = expression.dispatchReceiver,
-                            atomicHandlerExtraArg = atomicHandlerExtraArg,
-                            callValueArguments = expression.valueArguments,
-                            callTypeArguments = expression.typeArguments,
-                            originalAtomicExtension = declaration,
-                            parentFunction = data
-                        )
-                        return super.visitCall(irCall, data)
-                    }
+            val receiver = (expression.extensionReceiver ?: expression.dispatchReceiver) ?: return super.visitCall(expression, data)
+            val propertyGetterCall = if (receiver is IrTypeOperatorCallImpl) receiver.argument else receiver // <get-_a>()
+            if (!propertyGetterCall.type.isAtomicValueType()) return super.visitCall(expression, data)
+            val valueType = if (receiver is IrTypeOperatorCallImpl) {
+                // val a = atomic<Any?>(null)
+                // (a as AtomicReference<Array<String>?>).getAndSet(arrayOf("aaa", "bbb"))
+                (receiver.type as IrSimpleType).arguments[0] as IrSimpleType
+            } else {
+                atomicfuSymbols.atomicToPrimitiveType(propertyGetterCall.type as IrSimpleType)
+            }
+            val dispatchReceiver =
+                if (propertyGetterCall is IrCall && propertyGetterCall.isArrayElementGetter())
+                    (propertyGetterCall.dispatchReceiver as? IrCall)?.dispatchReceiver
+                else (propertyGetterCall as? IrCall)?.dispatchReceiver
+            val atomicHandler = getAtomicHandler(propertyGetterCall, data)
+            val atomicHandlerExtraArg = atomicHandler.getAtomicHandlerExtraArg(dispatchReceiver, propertyGetterCall, data)
+            val builder = atomicfuSymbols.createBuilder(expression.symbol)
+            if (expression.symbol.owner.isFromKotlinxAtomicfuPackage()) {
+                val functionName = expression.symbol.owner.name.asString()
+                if (functionName in ATOMICFU_LOOP_FUNCTIONS) {
+                    requireNotNull(data) { "Expected containing function of the call ${expression.render()}, but found null." }
+                    val loopCall = builder.transformAtomicfuInlineLoopCall(
+                        atomicHandler = atomicHandler,
+                        dispatchReceiver = dispatchReceiver,
+                        valueType = valueType,
+                        atomicHandlerExtraArg = atomicHandlerExtraArg,
+                        action = (expression.getValueArgument(0) as IrFunctionExpression),
+                        functionName = functionName,
+                        parentFunction = data
+                    )
+                    return super.visitCall(loopCall, data)
                 }
+                val atomicCall = builder.transformAtomicFunctionCall(
+                    atomicHandler = atomicHandler,
+                    dispatchReceiver = dispatchReceiver,
+                    valueType = valueType,
+                    atomicHandlerExtraArg = atomicHandlerExtraArg,
+                    callValueArguments = expression.valueArguments,
+                    functionName = functionName
+                )
+                return super.visitExpression(atomicCall, data)
+            }
+            if (expression.symbol.owner.isInline && expression.extensionReceiver != null) {
+                requireNotNull(data) { "Expected containing function of the call ${expression.render()}, but found null." }
+                val declaration = expression.symbol.owner
+                val irCall = builder.transformAtomicExtensionCall(
+                    atomicHandler = atomicHandler,
+                    dispatchReceiver = dispatchReceiver,
+                    callDispatchReceiver = expression.dispatchReceiver,
+                    atomicHandlerExtraArg = atomicHandlerExtraArg,
+                    callValueArguments = expression.valueArguments,
+                    callTypeArguments = expression.typeArguments,
+                    originalAtomicExtension = declaration,
+                    parentFunction = data
+                )
+                return super.visitCall(irCall, data)
             }
             return super.visitCall(expression, data)
         }
@@ -478,7 +483,7 @@ abstract class AbstractAtomicfuTransformer(
             val atomicHandlerReceiverValueParam = getAtomicHandlerValueParameterReceiver(atomicHandler, dispatchReceiver, parentFunction)
             return irCallFunction(
                 symbol = loopFunc.symbol,
-                dispatchReceiver = parentFunction.containingFunction.dispatchReceiverParameter?.capture(),
+                dispatchReceiver = parentFunction.firstNonLocalFunctionForLambdaParent.dispatchReceiverParameter?.capture(),
                 extensionReceiver = null,
                 valueArguments = buildList { add(atomicHandlerReceiverValueParam); atomicHandlerExtraArg?.let { add(it) }; add(transformedAction) },
                 valueType = valueType
@@ -624,37 +629,6 @@ abstract class AbstractAtomicfuTransformer(
             return index.capture()
         }
 
-        override fun visitGetValue(expression: IrGetValue, data: IrFunction?): IrExpression {
-            // During transformation of atomic extensions value parameters are changed, though the body is just copied from the original declaration.
-            // Replace capturing of old value parameters with new parameters in the body of a transformed atomic extension.
-            if (expression.symbol is IrValueParameterSymbol) {
-                val valueParameter = expression.symbol.owner as IrValueParameter
-                val parent = valueParameter.parent
-                // skip value parameters of lambdas
-                if (parent is IrFunctionImpl && parent.origin == IrDeclarationOrigin.LOCAL_FUNCTION_FOR_LAMBDA) return expression
-                if (data != null && data.isTransformedAtomicExtension() &&
-                    parent is IrFunctionImpl && !parent.isTransformedAtomicExtension()
-                ) {
-                    return valueParameter.remapValueParameters(data)?.capture() ?: super.visitGetValue(expression, data)
-                }
-            }
-            return super.visitGetValue(expression, data)
-        }
-
-        private fun IrValueParameter.remapValueParameters(transformedExtension: IrFunction): IrValueParameter? {
-            if (index < 0 && !type.isAtomicValueType()) {
-                // data is a transformed function
-                // index == -1 for `this` parameter
-                return transformedExtension.dispatchReceiverParameter
-                    ?: error("Dispatch receiver of ${transformedExtension.render()} is null" + CONSTRAINTS_MESSAGE)
-            }
-            if (index >= 0) {
-                val shift = transformedExtension.valueParameters.map { it.name.asString() }.count { it.endsWith(ATOMICFU) }
-                return transformedExtension.valueParameters[index + shift]
-            }
-            return null
-        }
-
         override fun visitBlockBody(body: IrBlockBody, data: IrFunction?): IrBody {
             // Erase messages added by the Trace object from the function body:
             // val trace = Trace(size)
@@ -674,6 +648,49 @@ abstract class AbstractAtomicfuTransformer(
                 it.isTraceCall()
             }
             return super.visitContainerExpression(expression, data)
+        }
+    }
+
+    private inner class RemapValueParameters : IrElementTransformer<IrFunction?> {
+
+        override fun visitFunction(declaration: IrFunction, data: IrFunction?): IrStatement {
+            return super.visitFunction(declaration, declaration)
+        }
+
+        override fun visitGetValue(expression: IrGetValue, data: IrFunction?): IrExpression {
+            if (expression.symbol is IrValueParameterSymbol) {
+                val valueParameter = expression.symbol.owner as IrValueParameter
+                val parent = valueParameter.parent
+                if (parent is IrFunctionImpl && parent.origin == IrDeclarationOrigin.LOCAL_FUNCTION_FOR_LAMBDA) return expression
+                // If the parent of the given value parameter was an atomic extension, then this function does not exist anymore,
+                // and the value parameter should be remapped to the corresponding transformed extension.
+                if (parent is IrFunction && parent.isAtomicExtension()) {
+                    require(data != null) { "Tried to remap a value parameter ${valueParameter.render()} to the transformed extension, but the current function data is null." }
+                    return valueParameter.remapValueParameters(data.firstTransformedFunctionParent)?.capture() ?: super.visitGetValue(expression, data)
+                }
+            }
+            return super.visitGetValue(expression, data)
+        }
+
+        val IrFunction.firstTransformedFunctionParent: IrFunction
+            get() =
+                if (this.isTransformedAtomicExtension()) this
+                else
+                    parents.toList().filterIsInstance<IrFunction>().firstOrNull { it.isTransformedAtomicExtension() }
+                        ?: error("Failed to find a transformed atomic extension parent function for ${this.render()}.")
+
+        private fun IrValueParameter.remapValueParameters(transformedExtension: IrFunction): IrValueParameter? {
+            if (index < 0 && !type.isAtomicValueType()) {
+                // data is a transformed function
+                // index == -1 for `this` parameter
+                return transformedExtension.dispatchReceiverParameter
+                    ?: error("Dispatch receiver of ${transformedExtension.render()} is null" + CONSTRAINTS_MESSAGE)
+            }
+            if (index >= 0) {
+                val shift = transformedExtension.valueParameters.map { it.name.asString() }.count { it.endsWith(ATOMICFU) }
+                return transformedExtension.valueParameters[index + shift]
+            }
+            return null
         }
     }
 

@@ -18,7 +18,7 @@ import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.plugin.konan.KonanCliCompilerRunner
 import org.jetbrains.kotlin.gradle.plugin.konan.prepareAsOutput
-import org.jetbrains.kotlin.gradle.plugin.konan.usesIsolatedClassLoadersService
+import org.jetbrains.kotlin.gradle.plugin.konan.registerIsolatedClassLoadersServiceIfAbsent
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import javax.inject.Inject
 
@@ -56,7 +56,7 @@ abstract class KonanCompileTask @Inject constructor(
     }
 
     @get:ServiceReference
-    protected val isolatedClassLoadersService = usesIsolatedClassLoadersService()
+    protected val isolatedClassLoadersService = project.gradle.sharedServices.registerIsolatedClassLoadersServiceIfAbsent()
 
     @TaskAction
     fun run() {

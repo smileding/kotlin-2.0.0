@@ -69,7 +69,7 @@ abstract class KonanInteropTask @Inject constructor(
     }
 
     @get:ServiceReference
-    protected val isolatedClassLoadersService = usesIsolatedClassLoadersService()
+    protected val isolatedClassLoadersService = project.gradle.sharedServices.registerIsolatedClassLoadersServiceIfAbsent()
 
     private val allowRunningCInteropInProcess = project.kotlinBuildProperties.getBoolean("kotlin.native.allowRunningCinteropInProcess")
 

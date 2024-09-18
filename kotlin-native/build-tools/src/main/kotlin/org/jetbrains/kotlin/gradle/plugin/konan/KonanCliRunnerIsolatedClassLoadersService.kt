@@ -5,10 +5,10 @@
 
 package org.jetbrains.kotlin.gradle.plugin.konan
 
-import org.gradle.api.Task
 import org.gradle.api.provider.Provider
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
+import org.gradle.api.services.BuildServiceRegistry
 import java.io.File
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
@@ -38,8 +38,5 @@ abstract class KonanCliRunnerIsolatedClassLoadersService : BuildService<BuildSer
     }
 }
 
-fun Task.usesIsolatedClassLoadersService(): Provider<KonanCliRunnerIsolatedClassLoadersService> {
-    val service = project.gradle.sharedServices.registerIfAbsent("KonanCliRunnerIsolatedClassLoadersService", KonanCliRunnerIsolatedClassLoadersService::class.java) {}
-    usesService(service)
-    return service
-}
+fun BuildServiceRegistry.registerIsolatedClassLoadersServiceIfAbsent(): Provider<KonanCliRunnerIsolatedClassLoadersService> =
+        registerIfAbsent("KonanCliRunnerIsolatedClassLoadersService", KonanCliRunnerIsolatedClassLoadersService::class.java) {}

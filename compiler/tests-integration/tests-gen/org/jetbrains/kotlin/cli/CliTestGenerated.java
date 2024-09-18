@@ -493,6 +493,11 @@ public class CliTestGenerated extends AbstractCliTest {
       runTest("compiler/testData/cli/jvm/errorSuppressionWarning.args");
     }
 
+    @TestMetadata("experimentalCheckers.args")
+    public void testExperimentalCheckers() {
+      runTest("compiler/testData/cli/jvm/experimentalCheckers.args");
+    }
+
     @TestMetadata("experimentalDeprecated.args")
     public void testExperimentalDeprecated() {
       runTest("compiler/testData/cli/jvm/experimentalDeprecated.args");
@@ -578,16 +583,6 @@ public class CliTestGenerated extends AbstractCliTest {
       runTest("compiler/testData/cli/jvm/expression1.args");
     }
 
-    @TestMetadata("extendedCheckers.args")
-    public void testExtendedCheckers() {
-      runTest("compiler/testData/cli/jvm/extendedCheckers.args");
-    }
-
-    @TestMetadata("extendedCheckersNoWarning.args")
-    public void testExtendedCheckersNoWarning() {
-      runTest("compiler/testData/cli/jvm/extendedCheckersNoWarning.args");
-    }
-
     @TestMetadata("extraArgumentPassedInObsoleteForm.args")
     public void testExtraArgumentPassedInObsoleteForm() {
       runTest("compiler/testData/cli/jvm/extraArgumentPassedInObsoleteForm.args");
@@ -606,6 +601,11 @@ public class CliTestGenerated extends AbstractCliTest {
     @TestMetadata("extraBooleanArgumentEqualsTrue.args")
     public void testExtraBooleanArgumentEqualsTrue() {
       runTest("compiler/testData/cli/jvm/extraBooleanArgumentEqualsTrue.args");
+    }
+
+    @TestMetadata("extraCheckers.args")
+    public void testExtraCheckers() {
+      runTest("compiler/testData/cli/jvm/extraCheckers.args");
     }
 
     @TestMetadata("extraHelp.args")
@@ -1486,6 +1486,16 @@ public class CliTestGenerated extends AbstractCliTest {
       runTest("compiler/testData/cli/js/emptySources.args");
     }
 
+    @TestMetadata("experimentalCheckers.args")
+    public void testExperimentalCheckers() {
+      runTest("compiler/testData/cli/js/experimentalCheckers.args");
+    }
+
+    @TestMetadata("extraCheckers.args")
+    public void testExtraCheckers() {
+      runTest("compiler/testData/cli/js/extraCheckers.args");
+    }
+
     @TestMetadata("fir.args")
     public void testFir() {
       runTest("compiler/testData/cli/js/fir.args");
@@ -1672,6 +1682,16 @@ public class CliTestGenerated extends AbstractCliTest {
     @TestMetadata("complexAnnotationArgument.args")
     public void testComplexAnnotationArgument() {
       runTest("compiler/testData/cli/metadata/complexAnnotationArgument.args");
+    }
+
+    @TestMetadata("experimentalCheckers.args")
+    public void testExperimentalCheckers() {
+      runTest("compiler/testData/cli/metadata/experimentalCheckers.args");
+    }
+
+    @TestMetadata("extraCheckers.args")
+    public void testExtraCheckers() {
+      runTest("compiler/testData/cli/metadata/extraCheckers.args");
     }
 
     @TestMetadata("getOrDefault.args")

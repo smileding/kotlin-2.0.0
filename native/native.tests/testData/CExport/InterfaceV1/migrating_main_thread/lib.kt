@@ -3,6 +3,7 @@
  * that can be found in the LICENSE file.
  */
 @file:OptIn(FreezingIsDeprecated::class)
+@file:Suppress("DEPRECATION_ERROR")
 
 class A {
     var i = 0

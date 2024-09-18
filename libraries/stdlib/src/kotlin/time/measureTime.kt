@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2022 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2024 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -8,9 +8,12 @@ package kotlin.time
 import kotlin.contracts.*
 
 /**
- * Executes the given function [block] and returns the duration of elapsed time interval.
+ * Executes the given function [block] and returns the duration of the elapsed time interval.
  *
- * The elapsed time is measured with [TimeSource.Monotonic].
+ * The elapsed time is measured with [TimeSource.Monotonic] which is the most precise
+ * available time source on the platform.
+ *
+ * @sample samples.time.MeasureTime.measureTimeSample
  */
 @SinceKotlin("1.9")
 @WasExperimental(ExperimentalTime::class)
@@ -23,9 +26,11 @@ public inline fun measureTime(block: () -> Unit): Duration {
 
 
 /**
- * Executes the given function [block] and returns the duration of elapsed time interval.
+ * Executes the given function [block] and returns the duration of the elapsed time interval.
  *
  * The elapsed time is measured with the specified `this` [TimeSource] instance.
+ *
+ * @sample samples.time.MeasureTime.explicitMeasureTimeSample
  */
 @SinceKotlin("1.9")
 @WasExperimental(ExperimentalTime::class)
@@ -40,9 +45,12 @@ public inline fun TimeSource.measureTime(block: () -> Unit): Duration {
 }
 
 /**
- * Executes the given function [block] and returns the duration of elapsed time interval.
+ * Executes the given function [block] and returns the duration of the elapsed time interval.
  *
- * The elapsed time is measured with the specified `this` [TimeSource.Monotonic] instance.
+ * The elapsed time is measured with the specified `this` [TimeSource.Monotonic] instance
+ * with the purpose to be more explicit about the intent for code readers.
+ *
+ * @sample samples.time.MeasureTime.monotonicMeasureTimeSample
  */
 @SinceKotlin("1.9")
 @WasExperimental(ExperimentalTime::class)
@@ -58,7 +66,7 @@ public inline fun TimeSource.Monotonic.measureTime(block: () -> Unit): Duration 
 
 
 /**
- * Data class representing a result of executing an action, along with the duration of elapsed time interval.
+ * Data class representing a result of executing an action, along with the duration of the elapsed time interval.
  *
  * @property value the result of the action.
  * @property duration the time elapsed to execute the action.
@@ -69,9 +77,12 @@ public data class TimedValue<T>(val value: T, val duration: Duration)
 
 /**
  * Executes the given function [block] and returns an instance of [TimedValue] class, containing both
- * the result of the function execution and the duration of elapsed time interval.
+ * the result of the function execution and the duration of the elapsed time interval.
  *
- * The elapsed time is measured with [TimeSource.Monotonic].
+ * The elapsed time is measured with [TimeSource.Monotonic] which is the most precise
+ * available time source on the platform.
+ *
+ * @sample samples.time.MeasureTime.measureTimedValueSample
  */
 @SinceKotlin("1.9")
 @WasExperimental(ExperimentalTime::class)
@@ -85,9 +96,11 @@ public inline fun <T> measureTimedValue(block: () -> T): TimedValue<T> {
 
 /**
  * Executes the given function [block] and returns an instance of [TimedValue] class, containing both
- * the result of function execution and the duration of elapsed time interval.
+ * the result of function execution and the duration of the elapsed time interval.
  *
  * The elapsed time is measured with the specified `this` [TimeSource] instance.
+ *
+ * @sample samples.time.MeasureTime.explicitMeasureTimedValueSample
  */
 @SinceKotlin("1.9")
 @WasExperimental(ExperimentalTime::class)
@@ -103,9 +116,12 @@ public inline fun <T> TimeSource.measureTimedValue(block: () -> T): TimedValue<T
 
 /**
  * Executes the given function [block] and returns an instance of [TimedValue] class, containing both
- * the result of function execution and the duration of elapsed time interval.
+ * the result of function execution and the duration of the elapsed time interval.
  *
- * The elapsed time is measured with the specified `this` [TimeSource.Monotonic] instance.
+ * The elapsed time is measured with the specified `this` [TimeSource.Monotonic] instance
+ * with the purpose to be more explicit about the intent for code readers.
+ *
+ * @sample samples.time.MeasureTime.monotonicMeasureTimedValueSample
  */
 @SinceKotlin("1.9")
 @WasExperimental(ExperimentalTime::class)

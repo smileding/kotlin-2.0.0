@@ -231,6 +231,7 @@ internal class ComposableTypeTransformer(
 
     override fun visitClass(declaration: IrClass): IrStatement {
         declaration.superTypes = declaration.superTypes.memoryOptimizedMap { it.remapType() }
+        declaration.valueClassRepresentation = declaration.valueClassRepresentation?.mapUnderlyingType { it.remapType() as IrSimpleType }
         return super.visitClass(declaration)
     }
 

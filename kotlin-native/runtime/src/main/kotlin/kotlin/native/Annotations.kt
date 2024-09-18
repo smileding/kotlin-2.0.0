@@ -61,9 +61,9 @@ public typealias Throws = kotlin.Throws
 public typealias ThreadLocal = kotlin.native.concurrent.ThreadLocal
 
 /** @suppress */
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION", "DEPRECATION_ERROR") // TODO: Remove "DEPRECATION" once stdlib moves to api version 2.1
 @Deprecated("This annotation is redundant and has no effect")
-@DeprecatedSinceKotlin(warningSince = "1.9")
+@DeprecatedSinceKotlin(warningSince = "1.9", errorSince = "2.1")
 // Not @FreezingIsDeprecated: Lots of usages. Usages will trigger INFO reports in the frontend.
 public typealias SharedImmutable = kotlin.native.concurrent.SharedImmutable
 

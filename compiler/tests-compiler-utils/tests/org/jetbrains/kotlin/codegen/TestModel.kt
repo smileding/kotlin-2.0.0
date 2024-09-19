@@ -302,10 +302,10 @@ class ModuleInfoParser(infoFile: File, private val target: String) : InfoParser<
             val expectedState = DirtyFileState.entries.find { it.str == op }
             if (expectedState != null) {
                 val stats = expectedFileStats[expectedState.str]
-                if (stats == null) {
-                    expectedFileStats[expectedState.str] = getOpArgs().toSet()
+                expectedFileStats[expectedState.str] = if (stats == null) {
+                    getOpArgs().toSet()
                 } else {
-                    expectedFileStats[expectedState.str] = stats + getOpArgs()
+                    stats + getOpArgs()
                 }
             } else {
                 when (op) {
@@ -369,8 +369,13 @@ class ModuleInfoParser(infoFile: File, private val target: String) : InfoParser<
 }
 
 private fun parseOpAndTarget(opWithTarget: String): Pair<String, String?>? {
-    val targetStartIndex = opWithTarget.indexOf("<")
-    val targetEndIndex = opWithTarget.indexOf(">")
+    val targetStartIndex = opWithTarget.indexOf('<')
+    val targetEndIndex = opWithTarget.indexOf('>')
+
+    check((targetStartIndex == -1 && targetEndIndex == -1) || (targetStartIndex > -1 && targetEndIndex > -1)) {
+        "Invalid test data: wrong target definition $opWithTarget"
+    }
+
     if (targetEndIndex == -1) return opWithTarget to null
     if (targetStartIndex + 1 >= targetEndIndex) return null
 

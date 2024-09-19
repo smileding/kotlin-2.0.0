@@ -86,15 +86,38 @@ open class KaptIncrementalIT : KGPBaseTest() {
         }
     }
 
-    @DisplayName("Successfully rebuild after error")
+    @DisplayName("Successfully rebuild after compilation error")
     @GradleTest
-    fun testCompileError(gradleVersion: GradleVersion) {
+    open fun testCompileError(gradleVersion: GradleVersion) {
         kaptProject(gradleVersion) {
             build("assemble")
 
             val bKt = javaSourcesDir().resolve("bar/B.kt")
             val errorKt = bKt.resolveSibling("error.kt")
-            errorKt.writeText("<COMPILE_ERROR_MARKER>")
+            errorKt.writeText("fun a(): Unit = {<COMPILE_ERROR_MARKER>}") //kapt will process this successfully as it ignores bodies
+
+            buildAndFail("assemble") {
+                assertTasksFailed(":compileKotlin")
+            }
+
+            errorKt.deleteIfExists()
+            bKt.modify { "$it\n" }
+            build("assemble", buildOptions = buildOptions.copy(logLevel = LogLevel.DEBUG)) {
+                assertCompiledKotlinSources(listOf(projectPath.relativize(bKt)), output)
+                assertTasksExecuted(":kaptGenerateStubsKotlin", ":compileKotlin")
+            }
+        }
+    }
+
+    @DisplayName("Successfully rebuild after KAPT error")
+    @GradleTest
+    open fun testKaptError(gradleVersion: GradleVersion) {
+        kaptProject(gradleVersion) {
+            build("assemble")
+
+            val bKt = javaSourcesDir().resolve("bar/B.kt")
+            val errorKt = bKt.resolveSibling("error.kt")
+            errorKt.writeText("<COMPILE_ERROR_MARKER>") //this is a declaration problem so KAPT will fail on it
 
             buildAndFail("assemble") {
                 assertTasksFailed(":kaptGenerateStubsKotlin")
@@ -269,7 +292,7 @@ open class KaptIncrementalIT : KGPBaseTest() {
 
     @DisplayName("Incremental kapt run is correct after removing all Kotlin sources")
     @GradleTest
-    fun testRemoveAllKotlinSources(gradleVersion: GradleVersion) {
+    open fun testRemoveAllKotlinSources(gradleVersion: GradleVersion) {
         kaptProject(gradleVersion) {
             build("assemble") {
                 assertFileInProjectExists("$KAPT3_STUBS_PATH/bar/UseBKt.java")

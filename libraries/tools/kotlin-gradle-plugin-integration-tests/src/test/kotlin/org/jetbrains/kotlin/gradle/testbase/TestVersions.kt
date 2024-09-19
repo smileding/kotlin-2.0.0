@@ -94,6 +94,8 @@ interface TestVersions {
         const val GOOGLE_DAGGER = "2.24"
         const val GRADLE_ENTERPRISE_PLUGIN_VERSION = "3.13.4"
         const val KOTLINX_ATOMICFU = "0.23.2"
+        const val DOKKA = "1.8.10"
+        const val DOKKA_V2 = "2.0.20-dev-354"
     }
 
     object DevelocityPlugin {

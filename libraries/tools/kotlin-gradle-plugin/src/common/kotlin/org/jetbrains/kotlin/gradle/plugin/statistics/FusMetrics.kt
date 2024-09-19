@@ -22,7 +22,9 @@ import org.jetbrains.kotlin.gradle.report.TaskExecutionResult
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrOutputGranularity
 import org.jetbrains.kotlin.gradle.utils.addConfigurationMetrics
 import org.jetbrains.kotlin.gradle.utils.runMetricMethodSafely
+import org.jetbrains.kotlin.statistics.metrics.BooleanAnonymizationPolicy.SAFE
 import org.jetbrains.kotlin.statistics.metrics.BooleanMetrics
+import org.jetbrains.kotlin.statistics.metrics.BooleanOverridePolicy.OR
 import org.jetbrains.kotlin.statistics.metrics.NumericalMetrics
 import org.jetbrains.kotlin.statistics.metrics.StatisticsValuesConsumer
 import org.jetbrains.kotlin.statistics.metrics.StringMetrics
@@ -42,6 +44,17 @@ internal object ExecutedTaskMetrics : FusMetrics {
         "dokkaGfmCollector" -> BooleanMetrics.ENABLED_DOKKA_GFM_COLLECTOR
         "dokkaJavadocCollector" -> BooleanMetrics.ENABLED_DOKKA_JAVADOC_COLLECTOR
         "dokkaJekyllCollector" -> BooleanMetrics.ENABLED_DOKKA_JEKYLL_COLLECTOR
+        //for new dokka
+        "dokkaGenerate" -> BooleanMetrics.ENABLE_DOKKA_GENERATE_TASK
+        "dokkaGenerateHtml" -> BooleanMetrics.ENABLE_DOKKA_GENERATE_HTML_TASK
+        "dokkaGenerateJavadoc" -> BooleanMetrics.ENABLE_DOKKA_GENERATE_JAVADOC_TASK
+        "dokkaGeneratePublication" -> BooleanMetrics.ENABLE_DOKKA_GENERATE_PUBLICATION_TASK
+        "dokkaGeneratePublicationHtml" -> BooleanMetrics.ENABLE_DOKKA_GENERATE_PUBLICATION_HTML_TASK
+        "dokkaGeneratePublicationJavadoc" -> BooleanMetrics.ENABLE_DOKKA_GENERATE_PUBLICATION_JAVADOC_TASK
+        "dokkaGenerateModule" -> BooleanMetrics.ENABLE_DOKKA_MODULE_TASK
+        "dokkaGenerateModuleHtml" -> BooleanMetrics.ENABLE_DOKKA_MODULE_HTML_TASK
+        "dokkaGenerateModuleJavadoc" -> BooleanMetrics.ENABLE_DOKKA_MODULE_JAVADOC_TASK
+        "logLinkDokkaGeneratePublicationHtml" -> BooleanMetrics.ENABLE_LINK_DOKKA_GENERATE_TASK
         else -> null
     }
 
@@ -78,7 +91,10 @@ internal object CompilerArgumentMetrics : FusMetrics {
                     Pair(BooleanMetrics.ENABLED_COMPILER_PLUGIN_KOTLINX_KOVER, "kover-.*jar"),
                     Pair(BooleanMetrics.ENABLED_COMPILER_PLUGIN_KOTLINX_SERIALIZATION, "serialization-.*jar"),
                     Pair(BooleanMetrics.ENABLED_COMPILER_PLUGIN_KOTLINX_DOKKA, "dokka-.*jar"),
-                    Pair(BooleanMetrics.ENABLED_COMPILER_PLUGIN_KOTLINX_BINARY_COMPATIBILITY_VALIDATOR, "binary-compatibility-validator-.*jar"),
+                    Pair(
+                        BooleanMetrics.ENABLED_COMPILER_PLUGIN_KOTLINX_BINARY_COMPATIBILITY_VALIDATOR,
+                        "binary-compatibility-validator-.*jar"
+                    ),
                 )
                 val pluginJars = args.pluginClasspaths?.map { it.replace("\\", "/").split("/").last() }
                 if (pluginJars != null) {
@@ -191,7 +207,7 @@ internal object CompileKotlinTaskMetrics : FusMetrics {
     internal fun collectMetrics(
         name: String,
         compilerOptions: KotlinCommonCompilerOptions,
-        metricsContainer: StatisticsValuesConsumer
+        metricsContainer: StatisticsValuesConsumer,
     ) {
         metricsContainer.report(BooleanMetrics.KOTLIN_PROGRESSIVE_MODE, compilerOptions.progressiveMode.get())
         compilerOptions.apiVersion.orNull?.also { v ->
@@ -241,7 +257,7 @@ internal object UrlRepoConfigurationMetrics : FusMetrics {
     internal fun collectMetrics(
         length: Long,
         downloadDuration: Long,
-        metricsConsumer: StatisticsValuesConsumer
+        metricsConsumer: StatisticsValuesConsumer,
     ) {
         metricsConsumer.report(NumericalMetrics.ARTIFACTS_DOWNLOAD_SPEED, length * 1000 / downloadDuration)
     }
@@ -281,7 +297,7 @@ internal object NativeLinkTaskMetrics : FusMetrics {
 }
 
 internal object KotlinStdlibConfigurationMetrics : FusMetrics {
-    internal fun collectMetrics(project: Project, requestedStdlibVersion: String, ) {
+    internal fun collectMetrics(project: Project, requestedStdlibVersion: String) {
         project.addConfigurationMetrics {
             it.put(StringMetrics.KOTLIN_STDLIB_VERSION, requestedStdlibVersion)
         }

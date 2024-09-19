@@ -25,7 +25,7 @@ class AtomicCompareAndExchange(private val valueType: Int) : IntrinsicMethod() {
                 OBJECT -> "(Ljava/util/concurrent/atomic/AtomicReference;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"
                 else -> error("Unsupported value type: $valueType")
             }
-            it.invokestatic("kotlin/concurrent/AtomicIntrinsics_jdk8Kt", "compareAndExchange_jdk8", descriptor, false)
+            it.invokestatic("kotlin/concurrent/AtomicIntrinsicsKt", "compareAndExchange", descriptor, false)
         }
     }
 }
@@ -41,7 +41,7 @@ class AtomicArrayCompareAndExchange(private val valueType: Int) : IntrinsicMetho
                 OBJECT -> "(Ljava/util/concurrent/atomic/AtomicReferenceArray;ILjava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"
                 else -> error("Unsupported value type: $valueType")
             }
-            it.invokestatic("kotlin/concurrent/AtomicIntrinsics_jdk8Kt", "compareAndExchange_jdk8", descriptor, false)
+            it.invokestatic("kotlin/concurrent/AtomicIntrinsicsKt", "compareAndExchange", descriptor, false)
         }
     }
 }

@@ -491,8 +491,9 @@ kotlin {
                 val sources = unimplementedNativeBuiltIns
 
                 val excluded = listOf(
+                    "Atomics.jvm.kt", "AtomicArrays.jvm.kt",
                     // Included with K/N collections
-                    "Collections.kt", "Iterator.kt", "Atomics.jvm.kt", "AtomicArrays.jvm.kt"
+                    "Collections.kt", "Iterator.kt"
                 )
 
                 sources.forEach { path ->

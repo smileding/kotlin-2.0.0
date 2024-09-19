@@ -2925,6 +2925,16 @@ public final class kotlin/comparisons/UComparisonsKt {
 	public static final fun minOf-t1qELG4 (S[S)S
 }
 
+public final class kotlin/concurrent/AtomicIntrinsicsKt {
+	public static final synthetic fun compareAndExchange (Ljava/util/concurrent/atomic/AtomicBoolean;ZZ)Z
+	public static final synthetic fun compareAndExchange (Ljava/util/concurrent/atomic/AtomicInteger;II)I
+	public static final synthetic fun compareAndExchange (Ljava/util/concurrent/atomic/AtomicIntegerArray;III)I
+	public static final synthetic fun compareAndExchange (Ljava/util/concurrent/atomic/AtomicLong;JJ)J
+	public static final synthetic fun compareAndExchange (Ljava/util/concurrent/atomic/AtomicLongArray;IJJ)J
+	public static final synthetic fun compareAndExchange (Ljava/util/concurrent/atomic/AtomicReference;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public static final synthetic fun compareAndExchange (Ljava/util/concurrent/atomic/AtomicReferenceArray;ILjava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
 public final class kotlin/concurrent/ThreadsKt {
 	public static final fun thread (ZZLjava/lang/ClassLoader;Ljava/lang/String;ILkotlin/jvm/functions/Function0;)Ljava/lang/Thread;
 	public static synthetic fun thread$default (ZZLjava/lang/ClassLoader;Ljava/lang/String;ILkotlin/jvm/functions/Function0;ILjava/lang/Object;)Ljava/lang/Thread;

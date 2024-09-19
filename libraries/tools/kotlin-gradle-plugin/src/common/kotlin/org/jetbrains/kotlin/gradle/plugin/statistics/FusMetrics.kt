@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.util.capitalizeDecapitalize.toLowerCaseAsciiOnly
 internal sealed interface FusMetrics
 internal object ExecutedTaskMetrics : FusMetrics {
     private fun getMetricToReport(task: String) = when (task.substringAfterLast(":")) {
+        //tasks from DGPv1
         "dokkaHtml" -> BooleanMetrics.ENABLED_DOKKA_HTML
         "dokkaGfm" -> BooleanMetrics.ENABLED_DOKKA_GFM
         "dokkaJavadoc" -> BooleanMetrics.ENABLED_DOKKA_JAVADOC
@@ -44,7 +45,8 @@ internal object ExecutedTaskMetrics : FusMetrics {
         "dokkaGfmCollector" -> BooleanMetrics.ENABLED_DOKKA_GFM_COLLECTOR
         "dokkaJavadocCollector" -> BooleanMetrics.ENABLED_DOKKA_JAVADOC_COLLECTOR
         "dokkaJekyllCollector" -> BooleanMetrics.ENABLED_DOKKA_JEKYLL_COLLECTOR
-        //for new dokka
+
+        //tasks from DGPv2
         "dokkaGenerate" -> BooleanMetrics.ENABLE_DOKKA_GENERATE_TASK
         "dokkaGenerateHtml" -> BooleanMetrics.ENABLE_DOKKA_GENERATE_HTML_TASK
         "dokkaGenerateJavadoc" -> BooleanMetrics.ENABLE_DOKKA_GENERATE_JAVADOC_TASK

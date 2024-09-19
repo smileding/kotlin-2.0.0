@@ -15,6 +15,7 @@ import org.junit.jupiter.api.condition.OS
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.deleteRecursively
 import kotlin.streams.toList
 import kotlin.test.assertTrue
 
@@ -71,8 +72,7 @@ class FusStatisticsIT : KGPBaseTest() {
         project(
             "simpleProject",
             gradleVersion,
-            // TODO: KT-70336 dokka doesn't support Configuration Cache
-            buildOptions = defaultBuildOptions.copy(configurationCache = BuildOptions.ConfigurationCacheValue.DISABLED)
+            buildOptions = defaultBuildOptions.copy(configurationCache = BuildOptions.ConfigurationCacheValue.ENABLED)
         ) {
             settingsGradle.replaceText(
                 "repositories {",
@@ -90,8 +90,22 @@ class FusStatisticsIT : KGPBaseTest() {
                          maven { url "https://maven.pkg.jetbrains.space/kotlin/p/dokka/dev/" }
                 """.trimIndent()
             )
-            applyDokka(TestVersions.ThirdPartyDependencies.DOKKA_V2)
-            build("tasks", "-Porg.jetbrains.dokka.experimental.gradlePlugin.enableV2=true")
+
+            //apply Dokka plugins
+            buildGradle.replaceText(
+                "plugins {",
+                """
+                    plugins {
+                        id("org.jetbrains.dokka") version "${TestVersions.ThirdPartyDependencies.DOKKA_V2}"
+                    """.trimIndent()
+            )
+
+            val expectedDokkaFusMetrics = arrayOf(
+                "ENABLED_DOKKA",
+                "ENABLE_DOKKA_GENERATE_TASK",
+                "ENABLE_DOKKA_GENERATE_PUBLICATION_HTML_TASK",
+                "ENABLE_LINK_DOKKA_GENERATE_TASK"
+            )
 
             build(
                 "compileKotlin",
@@ -99,12 +113,26 @@ class FusStatisticsIT : KGPBaseTest() {
                 "-Porg.jetbrains.dokka.experimental.gradlePlugin.enableV2=true",
                 "-Pkotlin.session.logger.root.path=$projectPath"
             ) {
+                assertConfigurationCacheStored()
                 assertFileContains(
                     fusStatisticsPath,
-                    "ENABLED_DOKKA",
-                    "ENABLE_DOKKA_GENERATE_TASK",
-                    "ENABLE_DOKKA_GENERATE_PUBLICATION_HTML_TASK",
-                    "ENABLE_LINK_DOKKA_GENERATE_TASK",
+                    *expectedDokkaFusMetrics
+                )
+            }
+
+            projectPath.resolve("kotlin-profile").deleteRecursively()
+            build("clean")
+
+            build(
+                "compileKotlin",
+                "dokkaGenerate",
+                "-Porg.jetbrains.dokka.experimental.gradlePlugin.enableV2=true",
+                "-Pkotlin.session.logger.root.path=$projectPath"
+            ) {
+                assertConfigurationCacheReused()
+                assertFileContains(
+                    fusStatisticsPath,
+                    *expectedDokkaFusMetrics
                 )
             }
         }

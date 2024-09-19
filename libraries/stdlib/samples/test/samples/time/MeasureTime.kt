@@ -5,44 +5,38 @@
 
 package samples.time
 
-import samples.Sample
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.TestTimeSource
-import kotlin.time.TimeSource
-import kotlin.time.measureTime
-import kotlin.time.measureTimedValue
+import kotlin.time.*
 
+// Note: samples are timing-heavy and do not assert anything, thus they are not run as test, only compiled
+@Suppress("unused")
 class MeasureTime {
 
-    @Sample
     fun measureTimeSample() {
-        fun slowFunction() = Thread.sleep(1000L)
+        fun slowFunction(): Unit = Thread.sleep(1000L)
         val elapsed = measureTime {
             slowFunction()
         }
-        println("Time elapsed: ${elapsed.inWholeSeconds} second ($elapsed)")
+        println("Time elapsed: ${elapsed.inWholeMilliseconds} milliseconds ($elapsed)")
     }
 
-    @Sample
     fun measureTimedValueSample() {
-        fun slowFunction() = Thread.sleep(1000L)
+        fun slowFunction(): Unit = Thread.sleep(1000L)
         val result = measureTimedValue {
             slowFunction()
         }
         println("Computed result: ${result.value}, time elapsed: ${result.duration}")
     }
 
-    @Sample
     fun explicitMeasureTimeSample() {
         val testSource = TestTimeSource()
         val elapsed = testSource.measureTime {
             println("Pretending this function executes 10 seconds")
             testSource += 10.seconds
         }
-        println("Time elapsed: ${elapsed.inWholeSeconds} second ($elapsed)")
+        println("Time elapsed: ${elapsed.inWholeMilliseconds} milliseconds ($elapsed)")
     }
 
-    @Sample
     fun explicitMeasureTimedValueSample() {
         val testSource = TestTimeSource()
         val result = testSource.measureTimedValue {
@@ -53,18 +47,16 @@ class MeasureTime {
         println("Computed result: ${result.value}, time elapsed: ${result.duration}")
     }
 
-    @Sample
     fun monotonicMeasureTimeSample() {
-        fun slowFunction() = Thread.sleep(1000L)
+        fun slowFunction(): Unit = Thread.sleep(1000L)
         val elapsed = TimeSource.Monotonic.measureTime {
             slowFunction()
         }
-        println("Time elapsed: ${elapsed.inWholeSeconds} second ($elapsed)")
+        println("Time elapsed: ${elapsed.inWholeMilliseconds} milliseconds ($elapsed)")
     }
 
-    @Sample
     fun monotonicMeasureTimedValueSample() {
-        fun slowFunction() = Thread.sleep(1000L)
+        fun slowFunction(): Unit = Thread.sleep(1000L)
         val result = TimeSource.Monotonic.measureTimedValue() {
             slowFunction()
             42

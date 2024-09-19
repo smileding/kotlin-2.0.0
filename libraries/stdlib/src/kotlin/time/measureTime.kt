@@ -47,8 +47,9 @@ public inline fun TimeSource.measureTime(block: () -> Unit): Duration {
 /**
  * Executes the given function [block] and returns the duration of the elapsed time interval.
  *
- * The elapsed time is measured with the specified `this` [TimeSource.Monotonic] instance
- * with the purpose to be more explicit about the intent for code readers.
+ * The elapsed time is measured with the specified `this` [TimeSource.Monotonic] instance.
+ * The explicit instance allows using non-boxed version of [TimeSource.Monotonic.ValueTimeMark]
+ * and, optionally, be more explicit about the intent.
  *
  * @sample samples.time.MeasureTime.monotonicMeasureTimeSample
  */
@@ -118,8 +119,9 @@ public inline fun <T> TimeSource.measureTimedValue(block: () -> T): TimedValue<T
  * Executes the given function [block] and returns an instance of [TimedValue] class, containing both
  * the result of function execution and the duration of the elapsed time interval.
  *
- * The elapsed time is measured with the specified `this` [TimeSource.Monotonic] instance
- * with the purpose to be more explicit about the intent for code readers.
+ * The elapsed time is measured with the specified `this` [TimeSource.Monotonic] instance.
+ * The explicit instance allows using non-boxed version of [TimeSource.Monotonic.ValueTimeMark]
+ * and, optionally, be more explicit about the intent.
  *
  * @sample samples.time.MeasureTime.monotonicMeasureTimedValueSample
  */

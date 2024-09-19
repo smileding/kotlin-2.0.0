@@ -44926,6 +44926,12 @@ public class DiagnosticTestGenerated extends AbstractDiagnosticTest {
     }
 
     @Test
+    @TestMetadata("ArrayOfNothingDisabled.kt")
+    public void testArrayOfNothingDisabled() {
+      runTest("compiler/testData/diagnostics/testsWithStdLib/ArrayOfNothingDisabled.kt");
+    }
+
+    @Test
     @TestMetadata("assignedInSynchronized.kt")
     public void testAssignedInSynchronized() {
       runTest("compiler/testData/diagnostics/testsWithStdLib/assignedInSynchronized.kt");
@@ -49632,6 +49638,12 @@ public class DiagnosticTestGenerated extends AbstractDiagnosticTest {
       @TestMetadata("reifiedNothingSubstitution.kt")
       public void testReifiedNothingSubstitution() {
         runTest("compiler/testData/diagnostics/testsWithStdLib/reified/reifiedNothingSubstitution.kt");
+      }
+
+      @Test
+      @TestMetadata("reifiedNothingSubstitutionDisabled.kt")
+      public void testReifiedNothingSubstitutionDisabled() {
+        runTest("compiler/testData/diagnostics/testsWithStdLib/reified/reifiedNothingSubstitutionDisabled.kt");
       }
     }
 

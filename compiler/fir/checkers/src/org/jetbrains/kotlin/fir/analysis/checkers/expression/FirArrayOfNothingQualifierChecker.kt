@@ -6,6 +6,8 @@
 package org.jetbrains.kotlin.fir.analysis.checkers.expression
 
 import org.jetbrains.kotlin.KtSourceElement
+import org.jetbrains.kotlin.config.LanguageFeature
+import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
@@ -21,10 +23,12 @@ object FirArrayOfNothingQualifierChecker : FirQualifiedAccessExpressionChecker(M
         checkTypeAndTypeArguments(resolvedType, expression.calleeReference.source, context, reporter)
     }
 
-    fun ConeKotlinType.isArrayOfNothing(): Boolean {
+    fun ConeKotlinType.isArrayOfNothing(languageVersionSettings: LanguageVersionSettings): Boolean {
         if (!this.isArrayTypeOrNullableArrayType) return false
         val typeParameterType = typeArguments.firstOrNull()?.type ?: return false
-        return typeParameterType.isNothing
+        return typeParameterType.isNothing ||
+                typeParameterType.isNullableNothing &&
+                !languageVersionSettings.supportsFeature(LanguageFeature.NullableNothingInReifiedPosition)
     }
 
     private fun checkTypeAndTypeArguments(
@@ -34,7 +38,7 @@ object FirArrayOfNothingQualifierChecker : FirQualifiedAccessExpressionChecker(M
         reporter: DiagnosticReporter,
     ) {
         val fullyExpandedType = type.fullyExpandedType(context.session)
-        if (fullyExpandedType.isArrayOfNothing()) {
+        if (fullyExpandedType.isArrayOfNothing(context.languageVersionSettings)) {
             reporter.reportOn(source, FirErrors.UNSUPPORTED, "Array<Nothing> is illegal", context)
         } else {
             for (typeArg in fullyExpandedType.typeArguments) {

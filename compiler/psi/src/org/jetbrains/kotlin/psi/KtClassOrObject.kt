@@ -152,7 +152,8 @@ abstract class KtClassOrObject :
     }
 
     override fun subtreeChanged() {
-        isLocal = null
+        // we may not drop isLocal as the class won't survive such a destructive change
+        // isLocal = null
         cachedClassId = null
         super.subtreeChanged()
     }

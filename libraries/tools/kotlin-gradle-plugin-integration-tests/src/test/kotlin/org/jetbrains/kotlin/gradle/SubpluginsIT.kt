@@ -250,11 +250,11 @@ class SubpuginsIT : KGPBaseTest() {
                     
                     dependencies {
                         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${'$'}kotlin_version")
-                    }    
+                    }
                 }
-            
+                
                 $languageVersionConfiguration
-
+                
                 ${it.substringAfter("}")}
                 """.trimIndent()
             }

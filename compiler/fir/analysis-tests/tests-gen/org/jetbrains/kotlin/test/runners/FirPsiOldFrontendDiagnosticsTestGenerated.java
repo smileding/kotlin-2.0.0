@@ -42864,12 +42864,6 @@ public class FirPsiOldFrontendDiagnosticsTestGenerated extends AbstractFirPsiDia
         }
 
         @Test
-        @TestMetadata("jvmFieldApplicability_1_5.kt")
-        public void testJvmFieldApplicability_1_5() {
-          runTest("compiler/testData/diagnostics/testsWithStdLib/annotations/jvmField/jvmFieldApplicability_1_5.kt");
-        }
-
-        @Test
         @TestMetadata("jvmFieldApplicability_1_6.kt")
         public void testJvmFieldApplicability_1_6() {
           runTest("compiler/testData/diagnostics/testsWithStdLib/annotations/jvmField/jvmFieldApplicability_1_6.kt");

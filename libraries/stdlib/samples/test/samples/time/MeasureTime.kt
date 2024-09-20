@@ -5,6 +5,7 @@
 
 package samples.time
 
+import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.*
 
@@ -24,6 +25,7 @@ class MeasureTime {
         fun slowFunction(): Unit = Thread.sleep(1000L)
         val result = measureTimedValue {
             slowFunction()
+            42
         }
         println("Computed result: ${result.value}, time elapsed: ${result.duration}")
     }

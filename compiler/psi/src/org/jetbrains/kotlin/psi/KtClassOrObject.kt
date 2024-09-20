@@ -90,6 +90,8 @@ abstract class KtClassOrObject :
     private var cachedClassId: ClassId? = null
 
     override fun getClassId(): ClassId? {
+        if (isLocal()) return null
+
         greenStub?.let { return it.getClassId() }
 
         cachedClassId?.let { return it }

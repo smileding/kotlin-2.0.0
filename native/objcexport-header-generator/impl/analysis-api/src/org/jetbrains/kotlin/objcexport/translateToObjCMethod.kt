@@ -154,7 +154,14 @@ internal fun ObjCExportContext.getSwiftName(symbol: KaFunctionSymbol, methodBrid
         append(")")
     }
 
-    return sb.toString()
+    return swiftMethodMangler.getOrPut(this, symbol) {
+        generateSequence(sb.toString()) { selector ->
+            buildString {
+                append(selector)
+                insert(lastIndex - 1, '_')
+            }
+        }
+    }
 }
 
 
@@ -213,7 +220,6 @@ private fun splitSelector(selector: String): List<String> {
  * [org.jetbrains.kotlin.backend.konan.objcexport.ObjCExportNamerImpl.getSelector]
  */
 fun ObjCExportContext.getSelector(symbol: KaFunctionSymbol, methodBridge: MethodBridge): String {
-
     if (symbol is KaNamedSymbol) {
         val name = symbol.name
 
@@ -262,7 +268,14 @@ fun ObjCExportContext.getSelector(symbol: KaFunctionSymbol, methodBridge: Method
         sb.append(':')
     }
 
-    return sb.toString()
+    return objCMethodMangler.getOrPut(this, symbol) {
+        generateSequence(sb.toString()) { selector ->
+            buildString {
+                append(selector)
+                if (parameters.isNotEmpty()) insert(lastIndex, '_') else append('_')
+            }
+        }
+    }
 }
 
 /**
@@ -286,7 +299,7 @@ fun ObjCExportContext.mapReturnType(symbol: KaFunctionSymbol, returnBridge: Meth
     return when (returnBridge) {
         MethodBridge.ReturnValue.Suspend,
         MethodBridge.ReturnValue.Void,
-        -> ObjCVoidType
+            -> ObjCVoidType
         MethodBridge.ReturnValue.HashCode -> ObjCPrimitiveType.NSUInteger
         is MethodBridge.ReturnValue.Mapped -> translateToObjCType(symbol.returnType, returnBridge.bridge)
         MethodBridge.ReturnValue.WithError.Success -> ObjCPrimitiveType.BOOL
@@ -307,6 +320,6 @@ fun ObjCExportContext.mapReturnType(symbol: KaFunctionSymbol, returnBridge: Meth
 
         MethodBridge.ReturnValue.Instance.InitResult,
         MethodBridge.ReturnValue.Instance.FactoryResult,
-        -> ObjCInstanceType
+            -> ObjCInstanceType
     }
 }

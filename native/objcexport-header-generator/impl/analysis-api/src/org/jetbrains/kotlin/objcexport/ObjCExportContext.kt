@@ -2,6 +2,8 @@ package org.jetbrains.kotlin.objcexport
 
 import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassSymbol
+import org.jetbrains.kotlin.objcexport.mangling.ObjCMethodMangler
+import org.jetbrains.kotlin.objcexport.mangling.SwiftMethodMangler
 
 /**
  * Solution for migration from context receivers to context parameters, until the latter aren't available
@@ -38,6 +40,11 @@ data class ObjCExportContext(
      */
     val classifierContext: KaClassSymbol? = null,
 ) {
+    private val ignoreInterfaceMethodCollisions = false
+
+    val objCMethodMangler = ObjCMethodMangler(ignoreInterfaceMethodCollisions = ignoreInterfaceMethodCollisions)
+    val swiftMethodMangler = SwiftMethodMangler(disableMemberMangling = false, ignoreInterfaceMethodCollisions = ignoreInterfaceMethodCollisions)
+
     fun <T> withClassifierContext(symbol: KaClassSymbol, action: ObjCExportContext.() -> T): T {
         return copy(classifierContext = symbol).action()
     }

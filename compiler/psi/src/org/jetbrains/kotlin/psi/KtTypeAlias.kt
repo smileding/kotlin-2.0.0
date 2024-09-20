@@ -31,9 +31,21 @@ class KtTypeAlias : KtTypeParameterListOwnerStub<KotlinTypeAliasStub>, KtNamedDe
     @IfNotParsed
     fun getTypeReference(): KtTypeReference? = getStubOrPsiChild<KtTypeReference>(KtStubElementTypes.TYPE_REFERENCE)
 
+    @Volatile
+    private var cachedClassId: ClassId? = null
+
     override fun getClassId(): ClassId? {
         greenStub?.let { return it.getClassId() }
-        return ClassIdCalculator.calculateClassId(this)
+
+        cachedClassId?.let { return it }
+        val classId = ClassIdCalculator.calculateClassId(this)
+        cachedClassId = classId
+        return classId
+    }
+
+    override fun subtreeChanged() {
+        cachedClassId = null
+        super.subtreeChanged()
     }
 
     override fun getPresentation() = ItemPresentationProviders.getItemPresentation(this)

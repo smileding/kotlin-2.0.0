@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.analysis.low.level.api.fir.compile
 
 import com.intellij.openapi.progress.ProgressManager
 import org.jetbrains.kotlin.analysis.low.level.api.fir.util.getContainingFile
-import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.contracts.FirContractDescription
 import org.jetbrains.kotlin.fir.declarations.*
@@ -16,6 +15,7 @@ import org.jetbrains.kotlin.fir.declarations.utils.isInline
 import org.jetbrains.kotlin.fir.expressions.FirBlock
 import org.jetbrains.kotlin.fir.expressions.FirCallableReferenceAccess
 import org.jetbrains.kotlin.fir.expressions.FirFunctionCall
+import org.jetbrains.kotlin.fir.expressions.FirPropertyAccessExpression
 import org.jetbrains.kotlin.fir.expressions.FirResolvable
 import org.jetbrains.kotlin.fir.expressions.impl.FirContractCallBlock
 import org.jetbrains.kotlin.fir.psi
@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.fir.symbols.SymbolInternals
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirNamedFunctionSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirPropertySymbol
 import org.jetbrains.kotlin.fir.symbols.lazyResolveToPhase
 import org.jetbrains.kotlin.fir.unwrapSubstitutionOverrides
 import org.jetbrains.kotlin.fir.visitors.FirDefaultVisitorVoid
@@ -206,6 +207,12 @@ private class CompilationPeerCollectingVisitor : FirDefaultVisitorVoid() {
         super.visitCallableReferenceAccess(callableReferenceAccess)
         val symbol = callableReferenceAccess.calleeReference.symbol as? FirNamedFunctionSymbol ?: return
         collectKtFileContainingInlineFunction(symbol.fir)
+    }
+
+    override fun visitPropertyAccessExpression(propertyAccessExpression: FirPropertyAccessExpression) {
+        super.visitPropertyAccessExpression(propertyAccessExpression)
+        val symbol = propertyAccessExpression.calleeReference.symbol as? FirPropertySymbol ?: return
+        symbol.getterSymbol?.fir?.let { collectKtFileContainingInlineFunction(it) }
     }
 
     private fun collectKtFileContainingInlineFunction(fir: FirFunction) {

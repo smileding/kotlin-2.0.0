@@ -48,6 +48,12 @@ public class CompilerFacilityTestForComposeCompilerPluginGenerated extends Abstr
   }
 
   @Test
+  @TestMetadata("inlineFuncInDependencyOfDependency.kt")
+  public void testInlineFuncInDependencyOfDependency() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/inlineFuncInDependencyOfDependency.kt");
+  }
+
+  @Test
   @TestMetadata("interface.kt")
   public void testInterface() {
     runTest("plugins/compose/compiler-hosted/testData/codegen/interface.kt");
@@ -117,6 +123,12 @@ public class CompilerFacilityTestForComposeCompilerPluginGenerated extends Abstr
   @TestMetadata("sourceLibModuleInlineFuncRef2.kt")
   public void testSourceLibModuleInlineFuncRef2() {
     runTest("plugins/compose/compiler-hosted/testData/codegen/sourceLibModuleInlineFuncRef2.kt");
+  }
+
+  @Test
+  @TestMetadata("sourceLibModuleInlinePropertyGetter.kt")
+  public void testSourceLibModuleInlinePropertyGetter() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/sourceLibModuleInlinePropertyGetter.kt");
   }
 
   @Test

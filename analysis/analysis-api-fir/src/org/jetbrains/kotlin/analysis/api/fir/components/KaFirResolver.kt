@@ -5,6 +5,8 @@
 
 package org.jetbrains.kotlin.analysis.api.fir.components
 
+import com.intellij.psi.util.CachedValue
+import com.intellij.psi.util.PsiModificationTracker
 import org.jetbrains.kotlin.KtFakeSourceElementKind
 import org.jetbrains.kotlin.analysis.api.diagnostics.KaDiagnostic
 import org.jetbrains.kotlin.analysis.api.fir.KaFirSession
@@ -17,24 +19,7 @@ import org.jetbrains.kotlin.analysis.api.fir.utils.firSymbol
 import org.jetbrains.kotlin.analysis.api.fir.utils.processEqualsFunctions
 import org.jetbrains.kotlin.analysis.api.getModule
 import org.jetbrains.kotlin.analysis.api.impl.base.components.KaAbstractResolver
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseAnnotationCall
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseApplicableCallCandidateInfo
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseCompoundArrayAccessCall
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseCompoundAssignOperation
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseCompoundUnaryOperation
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseCompoundVariableAccessCall
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseDelegatedConstructorCall
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseErrorCallInfo
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseExplicitReceiverValue
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseImplicitReceiverValue
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseInapplicableCallCandidateInfo
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBasePartiallyAppliedSymbol
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseSimpleFunctionCall
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseSimpleVariableAccessCall
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseSimpleVariableReadAccess
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseSimpleVariableWriteAccess
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseSmartCastedReceiverValue
-import org.jetbrains.kotlin.analysis.api.impl.base.resolution.KaBaseSuccessCallInfo
+import org.jetbrains.kotlin.analysis.api.impl.base.resolution.*
 import org.jetbrains.kotlin.analysis.api.impl.base.util.KaNonBoundToPsiErrorDiagnostic
 import org.jetbrains.kotlin.analysis.api.lifetime.withValidityAssertion
 import org.jetbrains.kotlin.analysis.api.resolution.*
@@ -48,6 +33,7 @@ import org.jetbrains.kotlin.analysis.api.utils.errors.withPsiEntry
 import org.jetbrains.kotlin.analysis.low.level.api.fir.api.getOrBuildFir
 import org.jetbrains.kotlin.analysis.low.level.api.fir.api.resolveToFirSymbolOfTypeSafe
 import org.jetbrains.kotlin.analysis.low.level.api.fir.resolver.AllCandidatesResolver
+import org.jetbrains.kotlin.analysis.utils.caches.softCachedValue
 import org.jetbrains.kotlin.analysis.utils.printer.parentOfType
 import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.analysis.checkers.toRegularClassSymbol
@@ -102,6 +88,7 @@ import org.jetbrains.kotlin.utils.exceptions.checkWithAttachment
 import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
 import org.jetbrains.kotlin.utils.exceptions.rethrowExceptionWithDetails
 import org.jetbrains.kotlin.utils.exceptions.withPsiEntry
+import java.util.concurrent.ConcurrentHashMap
 
 internal class KaFirResolver(
     override val analysisSessionProvider: () -> KaFirSession,
@@ -178,8 +165,14 @@ internal class KaFirResolver(
         }
     }
 
-    override fun doResolveCall(psi: KtElement): KaCallInfo? {
-        return wrapError(psi) {
+    private val cache: CachedValue<ConcurrentHashMap<KtElement, Any>> by lazy {
+        softCachedValue(project, PsiModificationTracker.getInstance(project)) {
+            ConcurrentHashMap<KtElement, Any>()
+        }
+    }
+
+    override fun doResolveCall(psi: KtElement): KaCallInfo? = wrapError(psi) {
+        cache.value.getOrPut(psi) {
             val ktCallInfos = getCallInfo(
                 psi,
                 getErrorCallInfo = { psiToResolve ->
@@ -196,8 +189,8 @@ internal class KaFirResolver(
                 }
             )
             check(ktCallInfos.size <= 1) { "Should only return 1 KtCallInfo" }
-            ktCallInfos.singleOrNull()
-        }
+            ktCallInfos.singleOrNull() ?: NULL_VALUE
+        } as? KaCallInfo
     }
 
     override fun doCollectCallCandidates(psi: KtElement): List<KaCallCandidateInfo> = wrapError(psi) {
@@ -1557,3 +1550,5 @@ internal class KaFirResolver(
             ?: KaNonBoundToPsiErrorDiagnostic(factoryName = FirErrors.OTHER_ERROR.name, diagnostic.reason, token))
     }
 }
+
+private val NULL_VALUE: Any = Any()

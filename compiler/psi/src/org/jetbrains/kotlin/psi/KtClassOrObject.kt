@@ -94,10 +94,9 @@ abstract class KtClassOrObject :
 
         greenStub?.let { return it.getClassId() }
 
-        cachedClassId?.let { return it }
-        val classId = ClassIdCalculator.calculateClassId(this)
-        cachedClassId = classId
-        return classId
+        return ClassIdCalculator.calculateClassId(this).also {
+            cachedClassId = it
+        }
     }
 
     @Volatile
@@ -107,9 +106,10 @@ abstract class KtClassOrObject :
         greenStub?.isLocal()?.let { return it }
 
         isLocal?.let { return it }
-        val localFlag = KtPsiUtil.isLocal(this)
-        isLocal = localFlag
-        return localFlag
+
+        return KtPsiUtil.isLocal(this).also {
+            isLocal = it
+        }
     }
 
     fun isData(): Boolean = hasModifier(KtTokens.DATA_KEYWORD)
@@ -160,12 +160,13 @@ abstract class KtClassOrObject :
         super.subtreeChanged()
     }
 
-    override fun isEquivalentTo(another: PsiElement?): Boolean = this === another ||
-            another is KtClassOrObject &&
-            // Consider different instances of local classes non-equivalent
-            !isLocal() &&
-            !another.isLocal() &&
-            getClassId() == another.getClassId()
+    override fun isEquivalentTo(another: PsiElement?): Boolean =
+        this === another ||
+                another is KtClassOrObject &&
+                // Consider different instances of local classes non-equivalent
+                !isLocal() &&
+                !another.isLocal() &&
+                getClassId() == another.getClassId()
 
     fun getContextReceiverList(): KtContextReceiverList? = getStubOrPsiChild(KtStubElementTypes.CONTEXT_RECEIVER_LIST)
 

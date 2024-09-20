@@ -38,9 +38,10 @@ class KtTypeAlias : KtTypeParameterListOwnerStub<KotlinTypeAliasStub>, KtNamedDe
         greenStub?.let { return it.getClassId() }
 
         cachedClassId?.let { return it }
-        val classId = ClassIdCalculator.calculateClassId(this)
-        cachedClassId = classId
-        return classId
+
+        return ClassIdCalculator.calculateClassId(this).also {
+            cachedClassId = it
+        }
     }
 
     override fun subtreeChanged() {

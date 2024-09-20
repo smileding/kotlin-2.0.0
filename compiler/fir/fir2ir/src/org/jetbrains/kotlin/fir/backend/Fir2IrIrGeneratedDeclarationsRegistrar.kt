@@ -283,7 +283,13 @@ class Fir2IrIrGeneratedDeclarationsRegistrar(private val components: Fir2IrCompo
         return this.annotations.map { it.toFirAnnotation() }
     }
 
-    private inner class TypeConverter(val originalFunction: IrFunction, val convertedFunction: FirFunction) {
+    private open inner class TypeConverter(val originalFunction: IrFunction?, val convertedFunction: FirFunction?) {
+        init {
+            if (originalFunction != null && convertedFunction == null) {
+                error("Conversion with null `convertedFunction`is unsupported")
+            }
+        }
+
         fun IrType.toConeType(): ConeKotlinType {
             return when (this) {
                 is IrSimpleType -> {
@@ -310,7 +316,8 @@ class Fir2IrIrGeneratedDeclarationsRegistrar(private val components: Fir2IrCompo
                 is IrClass -> owner.classIdOrFail.toLookupTag()
                 is IrTypeParameter -> {
                     val typeParameter = when (val parent = owner.parent) {
-                        originalFunction -> convertedFunction.typeParameters[owner.index]
+                        // guarded by init block, so !! is safe
+                        originalFunction -> convertedFunction!!.typeParameters[owner.index]
                         is IrClass -> {
                             val firClass = parent.classIdOrFail.toLookupTag().toRegularClassSymbol(session)?.fir
                                 ?: error("Fir class for ${parent.render()} not found")
@@ -324,6 +331,8 @@ class Fir2IrIrGeneratedDeclarationsRegistrar(private val components: Fir2IrCompo
             }
         }
     }
+
+    private val emptyTypeConverter = TypeConverter(null, null)
 
     private fun IrExpression.toFirExpression(): FirExpression {
         when (this) {
@@ -392,7 +401,7 @@ class Fir2IrIrGeneratedDeclarationsRegistrar(private val components: Fir2IrCompo
                 }
             }
             is IrGetEnumValue -> {
-                val enumClassType: ConeKotlinType = this.type.toConeType()
+                val enumClassType: ConeKotlinType = with(emptyTypeConverter) { this@toFirExpression.type.toConeType() }
                 val enumClassId = (this.symbol.owner.parent as IrClass).classId!!
                 val enumClassLookupTag = enumClassId.toLookupTag()
                 val enumVariantName = this.symbol.owner.name
@@ -428,15 +437,16 @@ class Fir2IrIrGeneratedDeclarationsRegistrar(private val components: Fir2IrCompo
                     }
                 }
 
-                val type = this.type.toConeType()
-                val elemType = this.varargElementType.toConeType()
+                return with(emptyTypeConverter) {
+                    val type = this@toFirExpression.type.toConeType()
+                    val elemType = this@toFirExpression.varargElementType.toConeType()
 
-                val expr = buildVarargArgumentsExpression {
-                    arguments.addAll(varargElements)
-                    coneTypeOrNull = type
-                    coneElementTypeOrNull = elemType
+                    buildVarargArgumentsExpression {
+                        arguments.addAll(varargElements)
+                        coneTypeOrNull = type
+                        coneElementTypeOrNull = elemType
+                    }
                 }
-                return expr
             }
             else -> error("Unsupported ir type: $this")
         }
@@ -457,46 +467,6 @@ class Fir2IrIrGeneratedDeclarationsRegistrar(private val components: Fir2IrCompo
                     }
                 }
             }
-        }
-    }
-
-    fun IrType.toConeType(): ConeKotlinType {
-        return when (this) {
-            is IrSimpleType -> {
-                val lookupTag = classifier.toLookupTag()
-                lookupTag.constructType(
-                    this.arguments.map { it.toConeTypeProjection() }.toTypedArray(),
-                    isMarkedNullable = this.isMarkedNullable()
-                )
-            }
-            is IrDynamicType -> ConeDynamicType.create(session)
-            else -> error("Unsupported IR type: $this")
-        }
-    }
-
-    private fun IrTypeArgument.toConeTypeProjection(): ConeTypeProjection {
-        return when (this) {
-            is IrStarProjection -> ConeStarProjection
-            is IrTypeProjection -> type.toConeType().toTypeProjection(variance)
-        }
-    }
-
-    private fun IrClassifierSymbol.toLookupTag(): ConeClassifierLookupTag {
-        return when (val owner = owner) {
-            is IrClass -> owner.classIdOrFail.toLookupTag()
-            is IrTypeParameter -> {
-                val typeParameter = when (val parent = owner.parent) {
-//                    originalFunction -> convertedFunction.typeParameters[owner.index] //TODO
-                    is IrClass -> {
-                        val firClass = parent.classIdOrFail.toLookupTag().toRegularClassSymbol(session)?.fir
-                            ?: error("Fir class for ${parent.render()} not found")
-                        firClass.typeParameters[owner.index]
-                    }
-                    else -> error("Unsupported type parameter container: ${parent.render()}")
-                }
-                typeParameter.symbol.toLookupTag()
-            }
-            else -> error("Unsupported IR classifier: ${owner.render()}")
         }
     }
 

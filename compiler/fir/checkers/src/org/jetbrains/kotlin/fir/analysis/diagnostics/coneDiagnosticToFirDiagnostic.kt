@@ -396,7 +396,6 @@ private fun mapInapplicableCandidateError(
             is OperatorCallOfConstructor -> FirErrors.OPERATOR_CALL_ON_CONSTRUCTOR.createOn(source, rootCause.constructor.name.asString())
             is UnstableSmartCast -> rootCause.mapUnstableSmartCast()
 
-            is DslScopeViolation -> FirErrors.DSL_SCOPE_VIOLATION.createOn(source, rootCause.calleeSymbol)
             is InferenceError -> {
                 rootCause.constraintError.toDiagnostic(
                     source,

@@ -46,6 +46,7 @@ internal class NoInlineFunctionUseSitesValidator(
         val message = buildString {
             append("The following element references ").append(function.visibility).append(" inline ")
             append(
+                @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
                 when (function) {
                     is IrSimpleFunction -> if (function.isAccessor) "property accessor" else "function"
                     is IrConstructor -> "constructor"

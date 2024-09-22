@@ -13,7 +13,7 @@ import kotlin.native.internal.escapeAnalysis.Escapes
  * An immutable compile-time array of bytes.
  */
 @Deprecated("Use ByteArray instead.")
-@DeprecatedSinceKotlin(warningSince = "1.9")
+@DeprecatedSinceKotlin(warningSince = "1.9", errorSince = "2.1")
 public final class ImmutableBlob private constructor() {
     public val size: Int
         get() = getArrayLength()
@@ -55,7 +55,7 @@ private class ImmutableBlobIteratorImpl(val blob: ImmutableBlob) : ByteIterator(
  */
 @Suppress("DEPRECATION")
 @Deprecated("ImmutableBlob is deprecated. Use ByteArray instead.")
-@DeprecatedSinceKotlin(warningSince = "1.9")
+@DeprecatedSinceKotlin(warningSince = "1.9", errorSince = "2.1")
 @GCUnsafeCall("Kotlin_ImmutableBlob_toByteArray")
 @Escapes.Nothing
 public external fun ImmutableBlob.toByteArray(startIndex: Int = 0, endIndex: Int = size): ByteArray
@@ -68,7 +68,7 @@ public external fun ImmutableBlob.toByteArray(startIndex: Int = 0, endIndex: Int
  */
 @Suppress("DEPRECATION")
 @Deprecated("ImmutableBlob is deprecated. Use ByteArray instead.")
-@DeprecatedSinceKotlin(warningSince = "1.9")
+@DeprecatedSinceKotlin(warningSince = "1.9", errorSince = "2.1")
 @ExperimentalUnsignedTypes
 @GCUnsafeCall("Kotlin_ImmutableBlob_toByteArray")
 @Escapes.Nothing
@@ -90,7 +90,7 @@ public external fun ImmutableBlob.toUByteArray(startIndex: Int = 0, endIndex: In
  */
 @Suppress("DEPRECATION")
 @Deprecated("ImmutableBlob is deprecated. Use ByteArray instead. To get a stable C pointer to a `ByteArray`, pin it first.")
-@DeprecatedSinceKotlin(warningSince = "1.9")
+@DeprecatedSinceKotlin(warningSince = "1.9", errorSince = "2.1")
 public fun ImmutableBlob.asCPointer(offset: Int = 0): CPointer<ByteVar> =
         interpretCPointer<ByteVar>(asCPointerImpl(offset))!!
 
@@ -110,7 +110,7 @@ public fun ImmutableBlob.asCPointer(offset: Int = 0): CPointer<ByteVar> =
  */
 @Suppress("DEPRECATION")
 @Deprecated("ImmutableBlob is deprecated. Use ByteArray instead. To get a stable C pointer to a `ByteArray`, pin it first.")
-@DeprecatedSinceKotlin(warningSince = "1.9")
+@DeprecatedSinceKotlin(warningSince = "1.9", errorSince = "2.1")
 public fun ImmutableBlob.asUCPointer(offset: Int = 0): CPointer<UByteVar> =
         interpretCPointer<UByteVar>(asCPointerImpl(offset))!!
 
@@ -129,7 +129,7 @@ private external fun ImmutableBlob.asCPointerImpl(offset: Int): kotlin.native.in
  */
 @Suppress("DEPRECATION")
 @Deprecated("ImmutableBlob is deprecated. Use ByteArray instead.", ReplaceWith("byteArrayOf(*elements)"))
-@DeprecatedSinceKotlin(warningSince = "1.9")
+@DeprecatedSinceKotlin(warningSince = "1.9", errorSince = "2.1")
 @TypedIntrinsic(IntrinsicType.IMMUTABLE_BLOB)
 @Escapes.Nothing
 public external fun immutableBlobOf(vararg elements: Short): ImmutableBlob

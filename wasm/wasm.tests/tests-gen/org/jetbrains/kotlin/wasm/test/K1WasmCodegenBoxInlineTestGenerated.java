@@ -423,6 +423,12 @@ public class K1WasmCodegenBoxInlineTestGenerated extends AbstractK1WasmCodegenBo
     }
 
     @Test
+    @TestMetadata("nestedTypeRemapping.kt")
+    public void testNestedTypeRemapping() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/nestedTypeRemapping.kt");
+    }
+
+    @Test
     @TestMetadata("objectInLambdaCapturesAnotherObject.kt")
     public void testObjectInLambdaCapturesAnotherObject() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/objectInLambdaCapturesAnotherObject.kt");

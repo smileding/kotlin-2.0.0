@@ -423,6 +423,12 @@ public class IrJsES6CodegenInlineTestGenerated extends AbstractIrJsES6CodegenInl
     }
 
     @Test
+    @TestMetadata("nestedTypeRemapping.kt")
+    public void testNestedTypeRemapping() {
+      runTest("compiler/testData/codegen/boxInline/anonymousObject/nestedTypeRemapping.kt");
+    }
+
+    @Test
     @TestMetadata("objectInLambdaCapturesAnotherObject.kt")
     public void testObjectInLambdaCapturesAnotherObject() {
       runTest("compiler/testData/codegen/boxInline/anonymousObject/objectInLambdaCapturesAnotherObject.kt");

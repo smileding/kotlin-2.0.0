@@ -321,7 +321,6 @@ class ObjCExportHeaderGeneratorTest(private val generator: HeaderGenerator) {
      * KT-66066
      */
     @Test
-    @TodoAnalysisApi
     fun `test - member function signature order`() {
         doTest(headersTestDataDir.resolve("memberFunctionSignatureOrder"))
     }
@@ -554,7 +553,6 @@ class ObjCExportHeaderGeneratorTest(private val generator: HeaderGenerator) {
      * Mangling itself work as expected, but test fails due to invalid methods order which requires implementation of KT-66066
      */
     @Test
-    @TodoAnalysisApi
     fun `test - methods mangling`() {
         doTest(headersTestDataDir.resolve("methodsMangling"))
     }

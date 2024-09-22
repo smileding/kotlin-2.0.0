@@ -47,7 +47,7 @@ fun ObjCExportContext.translateToObjCClass(symbol: KaClassSymbol): ObjCClass? = 
         }
 
         this += analysisSession.getCallableSymbolsForObjCMemberTranslation(symbol)
-            .sortedWith(StableCallableOrder)
+            .sortedWith(analysisSession.getStableCallableOrder())
             .flatMap { translateToObjCExportStub(it) }
 
         if (symbol.classKind == KaClassKind.ENUM_CLASS) {

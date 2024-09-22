@@ -3,9 +3,9 @@ package org.jetbrains.kotlin.objcexport.mangling
 import org.jetbrains.kotlin.analysis.api.symbols.KaFunctionSymbol
 import org.jetbrains.kotlin.objcexport.ObjCExportContext
 
-class ObjCMethodMangler(
+internal class ObjCMethodMangler(
     private val ignoreInterfaceMethodCollisions: Boolean,
-) : Mangler<KaFunctionSymbol, String>() {
+) : ObjCMangler<KaFunctionSymbol, String>() {
 
     private val reserved = setOf(
         "retain", "release", "autorelease",
@@ -17,4 +17,15 @@ class ObjCMethodMangler(
 
     override fun ObjCExportContext.conflict(first: KaFunctionSymbol, second: KaFunctionSymbol): Boolean =
         !canHaveSameSelector(first, second, ignoreInterfaceMethodCollisions)
+
+    fun mangeName(name: String, symbol: KaFunctionSymbol, noParameters: Boolean, context: ObjCExportContext): String {
+        return getOrPut(context, symbol) {
+            generateSequence(name) { selector ->
+                buildString {
+                    append(selector)
+                    if (noParameters) append('_') else insert(lastIndex, '_')
+                }
+            }
+        }
+    }
 }

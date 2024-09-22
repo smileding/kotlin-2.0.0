@@ -42,8 +42,11 @@ data class ObjCExportContext(
 ) {
     private val ignoreInterfaceMethodCollisions = false
 
-    val objCMethodMangler = ObjCMethodMangler(ignoreInterfaceMethodCollisions = ignoreInterfaceMethodCollisions)
-    val swiftMethodMangler = SwiftMethodMangler(disableMemberMangling = false, ignoreInterfaceMethodCollisions = ignoreInterfaceMethodCollisions)
+    internal val objCMethodMangler = ObjCMethodMangler(ignoreInterfaceMethodCollisions = ignoreInterfaceMethodCollisions)
+    internal val swiftMethodMangler = SwiftMethodMangler(
+        disableMemberMangling = false,
+        ignoreInterfaceMethodCollisions = ignoreInterfaceMethodCollisions
+    )
 
     fun <T> withClassifierContext(symbol: KaClassSymbol, action: ObjCExportContext.() -> T): T {
         return copy(classifierContext = symbol).action()

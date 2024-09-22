@@ -154,14 +154,7 @@ internal fun ObjCExportContext.getSwiftName(symbol: KaFunctionSymbol, methodBrid
         append(")")
     }
 
-    return swiftMethodMangler.getOrPut(this, symbol) {
-        generateSequence(sb.toString()) { selector ->
-            buildString {
-                append(selector)
-                insert(lastIndex - 1, '_')
-            }
-        }
-    }
+    return swiftMethodMangler.mangeName(sb.toString(), symbol, this)
 }
 
 
@@ -268,14 +261,7 @@ fun ObjCExportContext.getSelector(symbol: KaFunctionSymbol, methodBridge: Method
         sb.append(':')
     }
 
-    return objCMethodMangler.getOrPut(this, symbol) {
-        generateSequence(sb.toString()) { selector ->
-            buildString {
-                append(selector)
-                if (parameters.isNotEmpty()) insert(lastIndex, '_') else append('_')
-            }
-        }
-    }
+    return objCMethodMangler.mangeName(sb.toString(), symbol, parameters.isEmpty(), this)
 }
 
 /**

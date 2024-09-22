@@ -3,7 +3,7 @@ package org.jetbrains.kotlin.objcexport.mangling
 import org.jetbrains.kotlin.objcexport.ObjCExportContext
 
 /**
- * Instance of [Mangler] holds references to symbols which names potentially must be mangled.
+ * Instance of [ObjCMangler] holds references to symbols which names potentially must be mangled.
  *
  * Every group of symbols has it's own implementation:
  * - [ObjCMethodMangler]
@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.objcexport.ObjCExportContext
  *
  * See K1 implementation [org.jetbrains.kotlin.backend.konan.objcexport.ObjCExportNamerImpl.Mapping]
  */
-abstract class Mangler<in T : Any, N> {
+internal abstract class ObjCMangler<in T : Any, N> {
 
     /**
      * See [local] field at [org.jetbrains.kotlin.backend.konan.objcexport.ObjCExportNamerImpl]
@@ -30,7 +30,7 @@ abstract class Mangler<in T : Any, N> {
      * 1. Non mangled first element, it will be used for symbol which met for the first time during traversal
      * 2. All other elements, where every next element consists of `previous + _`
      */
-    fun getOrPut(context: ObjCExportContext, element: T, nameCandidates: () -> Sequence<N>): N {
+    protected fun getOrPut(context: ObjCExportContext, element: T, nameCandidates: () -> Sequence<N>): N {
         val cached = getIfAssigned(element)
         if (cached != null) return cached
 

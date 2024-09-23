@@ -59,6 +59,7 @@ object LombokConfigNames {
     val STATIC_CONSTRUCTOR = Name.identifier("staticConstructor")
 
     val BUILDER_CLASS_NAME = Name.identifier("builderClassName")
+    val SUPER_BUILDER_CLASS_NAME = Name.identifier("superBuilderClassName")
     val BUILD_METHOD_NAME = Name.identifier("buildMethodName")
     val BUILDER_METHOD_NAME = Name.identifier("builderMethodName")
     val TO_BUILDER = Name.identifier("toBuilder")

@@ -15,7 +15,8 @@ import org.jetbrains.kotlin.gradle.targets.js.RequiredKotlinJsDependency
 import org.jetbrains.kotlin.gradle.targets.js.internal.parseNodeJsStackTraceAsJvm
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrTarget
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.Companion.kotlinNodeJsExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsPlugin.Companion.kotlinNodeJsEnvSpec
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.Companion.kotlinNodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.npm.npmProject
 import org.jetbrains.kotlin.gradle.targets.js.writeWasmUnitTestRunner
 
@@ -25,7 +26,7 @@ internal class KotlinWasmNode(kotlinJsTest: KotlinJsTest) : KotlinJsTestFramewor
     private val testPath = kotlinJsTest.path
 
     @Transient
-    private val nodeJs = kotlinJsTest.project.rootProject.kotlinNodeJsExtension
+    private val nodeJs = kotlinJsTest.project.kotlinNodeJsEnvSpec
 
     @Transient
     override val compilation: KotlinJsIrCompilation = kotlinJsTest.compilation
@@ -41,7 +42,7 @@ internal class KotlinWasmNode(kotlinJsTest: KotlinJsTest) : KotlinJsTestFramewor
             }
         }
 
-    override val executable: Provider<String> = kotlinJsTest.project.provider { nodeJs.requireConfigured().executable }
+    override val executable: Provider<String> = nodeJs.produceEnv(kotlinJsTest.project.providers).map { it.executable }
 
     override fun createTestExecutionSpec(
         task: KotlinJsTest,

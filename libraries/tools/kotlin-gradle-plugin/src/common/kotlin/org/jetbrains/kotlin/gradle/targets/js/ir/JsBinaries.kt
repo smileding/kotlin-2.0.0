@@ -298,6 +298,7 @@ class LibraryWasm(
 
     override val optimizeTaskName: String = optimizeTaskName()
 
+    @OptIn(ExperimentalWasmDsl::class)
     override val optimizeTask: TaskProvider<BinaryenExec> = BinaryenExec.create(compilation, optimizeTaskName) {
         val compileWasmDestDir = linkTask.map {
             it.destinationDirectory

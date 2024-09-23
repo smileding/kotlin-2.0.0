@@ -1182,6 +1182,9 @@ internal val KT_DIAGNOSTIC_CONVERTER = KaDiagnosticConverterBuilder.buildConvert
     add(FirErrors.WRONG_ANNOTATION_TARGET) { firDiagnostic ->
         WrongAnnotationTargetImpl(
             firDiagnostic.a,
+            firDiagnostic.b.map { kotlinTarget ->
+                kotlinTarget
+            },
             firDiagnostic as KtPsiDiagnostic,
             token,
         )
@@ -1190,6 +1193,9 @@ internal val KT_DIAGNOSTIC_CONVERTER = KaDiagnosticConverterBuilder.buildConvert
         WrongAnnotationTargetWithUseSiteTargetImpl(
             firDiagnostic.a,
             firDiagnostic.b,
+            firDiagnostic.c.map { kotlinTarget ->
+                kotlinTarget
+            },
             firDiagnostic as KtPsiDiagnostic,
             token,
         )

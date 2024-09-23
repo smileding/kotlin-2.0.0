@@ -22,13 +22,13 @@ Example:
 native
 class A {
     nativeInvoke
-    fun invoke(): String = noImpl
+    fun invoke(): String = definedExternally
 
     nativeInvoke
-    fun foo(a: Int): Int = noImpl
+    fun foo(a: Int): Int = definedExternally
 }
 
-fun A.bar(a: String): Int = noImpl
+fun A.bar(a: String): Int = definedExternally
 
 
 fun test(baz: A) {
@@ -72,19 +72,19 @@ Example:
 native
 class A {
     nativeGetter
-    fun get(a: String): String? = noImpl
+    fun get(a: String): String? = definedExternally
 
     nativeGetter
-    fun foo(a: Int): Int? = noImpl
+    fun foo(a: Int): Int? = definedExternally
 }
 
 class B
 
 nativeGetter
-fun B.get(a: String): Int? = noImpl
+fun B.get(a: String): Int? = definedExternally
 
 nativeGetter
-fun B.bar(a: Int): Int? = noImpl
+fun B.bar(a: Int): Int? = definedExternally
 
 fun test(a: A, b: B) {
 	a["foo"]

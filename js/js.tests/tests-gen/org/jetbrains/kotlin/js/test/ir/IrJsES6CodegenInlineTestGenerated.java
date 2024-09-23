@@ -2323,6 +2323,12 @@ public class IrJsES6CodegenInlineTestGenerated extends AbstractIrJsES6CodegenInl
     public void testExtension() {
       runTest("compiler/testData/codegen/boxInline/functionExpression/extension.kt");
     }
+
+    @Test
+    @TestMetadata("kt71659.kt")
+    public void testKt71659() {
+      runTest("compiler/testData/codegen/boxInline/functionExpression/kt71659.kt");
+    }
   }
 
   @Nested

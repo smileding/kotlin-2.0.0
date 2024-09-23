@@ -26,7 +26,7 @@ abstract class IrTypeVisitor<out R, in D> : IrElementVisitor<R, D> {
     abstract fun visitType(container: IrElement, type: IrType, data: D)
 
     /**
-     * Called by [visitTypeRecursively] on each field of [container] that contains an [IrType].
+     * Called on each field of [container] that contains an [IrType].
      * The default implementation calls [visitType] for [type] and each of its type arguments
      * (for [IrSimpleType]s).
      */

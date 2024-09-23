@@ -45,7 +45,7 @@ internal open class TypeVisitorPrinter(
         protected fun ImportCollectingPrinter.printVisitTypeRecursivelyKDoc() {
             printKDoc(
                 """
-                Called by [visitTypeRecursively] on each field of [container] that contains an [${irTypeType.render()}].
+                Called on each field of [container] that contains an [${irTypeType.render()}].
                 The default implementation calls [visitType] for [type] and each of its type arguments
                 (for [${irSimpleTypeType.render()}]s).
                 """.trimIndent()

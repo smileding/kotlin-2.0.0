@@ -75,7 +75,7 @@ kotlin {
                 // runtime tests
                 implementationArtifactOnly(composeRuntime())
                 implementationArtifactOnly(composeRuntimeTestUtils())
-                implementation("androidx.collection:collection:1.5.0-alpha02")
+                implementation(libs.androidx.collections)
 
                 // other compose
                 implementationArtifactOnly(compose("foundation", "foundation"))

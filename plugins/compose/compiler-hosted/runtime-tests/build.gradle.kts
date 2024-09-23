@@ -52,7 +52,7 @@ kotlin {
                 // external deps
                 implementation(composeRuntime()) { isTransitive = false }
                 implementation(composeRuntimeTestUtils()) { isTransitive = false }
-                implementation("androidx.collection:collection:1.5.0-alpha02")
+                implementation(libs.androidx.collections)
             }
         }
     }

@@ -31,12 +31,18 @@ abstract class BuiltinsVirtualFileProvider {
 abstract class BuiltinsVirtualFileProviderBaseImpl : BuiltinsVirtualFileProvider() {
     private val builtInUrls: Set<URL> by lazy {
         val classLoader = this::class.java.classLoader
-        StandardClassIds.builtInsPackages.mapTo(mutableSetOf()) { builtInPackageFqName ->
+        StandardClassIds.builtInsPackages.mapNotNullTo(mutableSetOf()) { builtInPackageFqName ->
             val resourcePath = BuiltInSerializerProtocol.getBuiltInsFilePath(builtInPackageFqName)
-            classLoader.getResource(resourcePath)
-                ?: errorWithAttachment("Resource for builtin $builtInPackageFqName not found") {
-                    withEntry("resourcePath", resourcePath)
-                }
+            if (resourcePath == "kotlin/concurrent/concurrent.kotlin_builtins") {
+                try {
+                    classLoader.getResource(resourcePath)
+                } catch (_: Throwable) { null } // TODO: as a WA if no concurrent builtins found in the provided stdlib -> skip
+            } else {
+                classLoader.getResource(resourcePath)
+                    ?: errorWithAttachment("Resource for builtin $builtInPackageFqName not found") {
+                        withEntry("resourcePath", resourcePath)
+                    }
+            }
         }
     }
 

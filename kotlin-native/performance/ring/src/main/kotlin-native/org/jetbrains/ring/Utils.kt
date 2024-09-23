@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 // We benchmark both new and legacy MM.
-@file:OptIn(FreezingIsDeprecated::class)
 
 package org.jetbrains.ring
 

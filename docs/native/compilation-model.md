@@ -1,9 +1,6 @@
-**TODO**:
-- [ ] consider describing cinterop separate compilation.
-- [ ] add more links to code or other documents.
-
-This document briefly outlines how the compilation with Kotlin/Native works
-in terms of components and artifacts, including the cases with interoperability
+This document briefly outlines how the compilation with
+[Kotlin/Native](https://kotlinlang.org/docs/native-overview.html) works in
+terms of components and artifacts, including the cases with interoperability
 with different languages.
 
 # Kotlin/Native compilation in Gradle
@@ -15,7 +12,12 @@ using Gradle in this description seems practical.
 By "Gradle" this document mostly means
 "[Kotlin Gradle Plugin](../../libraries/tools/kotlin-gradle-plugin)".
 
-Below is the chart:
+When compiling projects with multiple K/N targets, the build has to handle
+common parts between these targets, which is not trivial.
+This is out of scope for this document, and additionally involves things like
+[commonizer](../../native/commonizer) and common metadata compilation.
+
+So, this document focuses on the single target case. Below is the chart:
 
 ```mermaid
 ---
@@ -60,10 +62,10 @@ Any Kotlin sources are first compiled to a klib.
 The `compileKotlin$Target` tasks do that.
 
 Klib is a very high-level representation of a Kotlin library.
-It contains serialized Kotlin metadata and serialized
+It contains serialized [Kotlin metadata](../../core/metadata) and serialized
 [Kotlin backend IR](../../compiler/ir/ir.tree) (resolved AST).
 
-klibs are designed to have binary compatibility. They are publishable. In
+Klibs are designed to have binary compatibility. They are publishable. In
 particular, dependencies (e.g., those from Maven repositories) are also
 represented as klibs.
 
@@ -81,6 +83,7 @@ compiler.
 In other words, any such task invokes the K/N compiler once.
 They don't split the action into pieces delegating them to the compiler
 one-by-one.
+The entry point of the compiler can be found [here](../../native/cli-native).
 
 So the rest of this document will sometimes operate the terms "first/second
 compilation stage", referring to the compilations from sources to klib and from
@@ -103,7 +106,12 @@ The compiler can produce a few different kinds of binaries.
   framework (i.e. the native library, the headers and additional metadata are
   packed into a `.framework` bundle).
 
-# Closed world compilation model
+The relevant compilation flags specifying what the compiler produces are:
+`-produce`, `-generate-test-runner`, `-Xstatic-framework`.
+The corresponding Gradle documentation is
+[here](https://kotlinlang.org/docs/multiplatform-dsl-reference.html#binaries).
+
+# Closed-world compilation model
 
 As hinted in the compilation scheme overview, compilation of binaries follows
 the closed-world model: a binary always comprises a transitively enclosed set
@@ -122,7 +130,6 @@ That's why the compiler has a few optimizations to that, reusing the machine
 code produced by the previous invocations.
 
 It is worth mentioning that there are "debug" and "release" binaries.
-
 The compilation time optimizations apply only to debug binaries.
 That's because compiling release binaries involves massive global
 optimizations for the generated code, which are incompatible with compiling
@@ -145,13 +152,18 @@ project dependencies to separate chunks of native code, storing them under
 `~/.konan`. So, those are fairly persistent, and thus can be reused across
 compiler invocations.
 
+The entry point to this machinery can be found 
+[here](../../kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/CacheBuilder.kt).
+
 ### Cache format
 
 Such chunks of native code are represented as static libraries (`.a` files).
-They are augmented with additional meta-information (stored as separate files),
-for example, class field layouts.
-Such information is typically deduced from the Kotlin
-backend IR, but storing it separately allows the compiler skipping
+They are augmented with 
+[additional meta-information](../../kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/CacheStorage.kt)
+(stored as separate files), for example, class field layouts.
+
+Without compiler caches, such information is typically deduced from the Kotlin
+backend IR, but adding it to a cache allows the compiler skipping
 deserialization of IR in "cached" klibs.
 
 ### Versioning the caches
@@ -161,7 +173,7 @@ properly accounting parameters affecting the compilation, e.g., compiler flags
 or dependencies.
 
 For example, compiling with `-Xgc=cms` and `-Xgc=pmcs` produces different
-machine code. 
+machine code.
 
 Compiling klib2 against klib1 (its dependency) might produce different machine
 code after changing the version of klib1 (even if those are binary compatible 
@@ -194,9 +206,12 @@ To handle project modules, there is a different (experimental) machinery —
 
 ## Incremental second compilation stage
 
-The compiler is able to reuse the machine code produced by the previous
-invocations even for the project source code. Only this time the compiler
-produces a chunk of machine code per source file, not per klib.
+The compiler is
+[able](https://kotlinlang.org/docs/whatsnew1920.html#incremental-compilation-of-klib-artifacts)
+to reuse the machine code produced by the previous invocations even for the
+project source code.
+Only this time the compiler produces a chunk of machine code per source file,
+not per klib.
 
 More specifically, the compiler compiles each Kotlin file to an individual
 static library (`.a` file), and also stores the graph of dependencies between
@@ -218,6 +233,10 @@ caches at the same time.
 In fact, incremental compilation is implemented with the help of
 "per-file caches" under the hood.
 
+The entry point to this machinery can be found
+[here](../../kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/CacheBuilder.kt),
+same as the compiler caches.
+
 # Interoperability
 
 Kotlin/Native provides a few ways to perform interaction between Kotlin and
@@ -227,10 +246,14 @@ other languages.
 
 ### "cinterop klibs"
 
-Kotlin/Native allows consuming C and Objective-C libraries in Kotlin code. To
-achieve that, there is a special tool — `cinterop`. It takes a C/Objective-C
-library headers (`.h`) as an input and produces a special "cinterop klib" as an
-output.
+Kotlin/Native
+[allows consuming C](https://kotlinlang.org/docs/native-c-interop.html) and
+[Objective-C libraries](https://kotlinlang.org/docs/native-objc-interop.html)
+in Kotlin code.
+To achieve that, there is a special tool — `cinterop`.
+The entry point can be found [here](../../kotlin-native/Interop/StubGenerator).
+It takes a C/Objective-C library headers (`.h`) as an input and produces
+a special "cinterop klib" as an output.
 
 "Cinterop klib" differs from regular Kotlin klibs in some details.
 For example, it contains Kotlin metadata, but not Kotlin backend IR.
@@ -238,10 +261,11 @@ Instead, it includes some other information for the compiler, enabling the
 latter to actually generate machine code for native library use sites.
 
 The compiler can accept a cinterop klib as a dependency, just like any regular
-Kotlin klib. So, to import C or Objective-C library to Kotlin, one needs to
-make a cinterop klib and pass it to the compiler as a dependency.
+Kotlin klib.
+So, to import a C or Objective-C library to Kotlin, one needs to make a
+cinterop klib and pass it to the compiler as a dependency.
 
-In Gradle this is implemented in the following way:
+In Gradle, this is implemented in the following way:
 * A `compilation` can define a `cinterops` description
 * Under the hood, Gradle produces a cinterop klib based on such a description,
   and passes it as a dependency to the corresponding compilation.
@@ -315,14 +339,18 @@ Kotlin.
 
 As mentioned above, the K/N compiler can produce an Objective-C framework,
 which can then be imported to Objective-C or Swift code.
+
+The entry point to the implementation can be found
+[here](../../kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/objcexport/ObjCExport.kt).
+
 For such a framework, it is possible to instruct the compiler which modules to
 include to the framework API as a whole (declarations from the rest will be
 added one-by-one, if used in other parts of the resulting API).
 
 ### Closed world strikes back
 
-The thing worth mentioning (repeating) here is the closed-world compilation
-model.
+The thing worth mentioning (repeating) here is 
+[the closed-world compilation model](#closed-world-compilation-model).
 A compiled framework is a closed world. So, it always contains all the
 dependencies. When working with multiple such frameworks, this might be
 surprising. Consider the following case.
@@ -388,9 +416,17 @@ flowchart RL
 Naturally, that poses a limitation for consuming K/N libraries in
 Objective-C/Swift. In fact, it is never a single library, but a whole "world".
 
+See also
+[here](https://www.jetbrains.com/help/kotlin-multiplatform-dev/multiplatform-project-configuration.html#several-shared-modules).
+
 ## Consuming Kotlin libraries in C/C++
 
-Basically everything from the section above applies to consuming Kotlin in C/C++.
+Basically everything from the section 
+[above](#Consuming-Kotlin-libraries-in-Objective-C-or-Swift) applies to
+[consuming Kotlin in C/C++](https://kotlinlang.org/docs/native-dynamic-libraries.html).
+
+The implementation can be found
+[here](../../kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/cexport).
 
 ## Consuming Kotlin libraries in Swift directly, without Objective-C
 

@@ -49,7 +49,7 @@ public actual class AtomicInt(value: Int) {
      *
      * Comparison of values is done by value.
      */
-    public actual fun compareAndExchange(expectedValue: Int, newValue: Int): Int = TODO()
+    public actual fun compareAndExchange(expectedValue: Int, newValue: Int): Int
 
     /**
      * Atomically adds the [given value][delta] to the current value and returns the old value.

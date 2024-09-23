@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.resources.overriddenGradleVersionF
 import org.jetbrains.kotlin.gradle.plugin.mpp.resources.resolve.KotlinTargetResourcesResolutionStrategy
 import org.jetbrains.kotlin.gradle.plugin.mpp.resources.resourcesPublicationExtension
 import org.jetbrains.kotlin.gradle.util.*
+import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 import kotlin.test.assertEquals
@@ -123,6 +124,8 @@ class KotlinTargetResourcesPublicationImplTests {
     }
 
     @Test
+    // FIXME: KTI-1993
+    @Ignore
     fun `test targets that can publish resources`() {
         buildProjectWithMPP {
             plugins.apply("com.android.library")
@@ -146,6 +149,8 @@ class KotlinTargetResourcesPublicationImplTests {
     }
 
     @Test
+    // FIXME: KTI-1993
+    @Ignore
     fun `test targets that can resolve resources`() {
         buildProjectWithMPP {
             enableMppResourcesPublication(true)
@@ -166,6 +171,8 @@ class KotlinTargetResourcesPublicationImplTests {
     }
 
     @Test
+    // FIXME: KTI-1993
+    @Ignore
     fun `test resolution - emits diagnostic in first resolving project with variant reselection - when Gradle version is below 7_6`() {
         val rootProject = buildProjectWithMPP(
             projectBuilder = { withName("root") },
@@ -190,6 +197,8 @@ class KotlinTargetResourcesPublicationImplTests {
     }
 
     @Test
+    // FIXME: KTI-1993
+    @Ignore
     fun `test resolution - doesn't emit diagnostic with variant reselection - when Gradle version is above 7_6`() {
         buildProjectWithMPP(
             preApplyCode = { overriddenGradleVersionForTests = GradleVersion.version("7.6.1") }

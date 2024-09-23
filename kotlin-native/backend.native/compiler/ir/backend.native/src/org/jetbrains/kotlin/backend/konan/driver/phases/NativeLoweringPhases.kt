@@ -621,7 +621,7 @@ private val assertionRemoverPhase = createFileLoweringPhase(
         prerequisite = setOf(assertionWrapperPhase),
 )
 
-private val constEvaluationPhase = createFileLoweringPhase(
+internal val constEvaluationPhase = createFileLoweringPhase(
         lowering = { context: Context ->
             val configuration = IrInterpreterConfiguration(printOnlyExceptionMessage = true)
             ConstEvaluationLowering(context, configuration = configuration)
@@ -650,7 +650,6 @@ internal fun PhaseEngine<NativeGenerationState>.getLoweringsAfterInlining(): Low
         removeExpectDeclarationsPhase,
         stripTypeAliasDeclarationsPhase,
         assertionRemoverPhase,
-        constEvaluationPhase,
         provisionalFunctionExpressionPhase,
         postInlinePhase,
         contractsDslRemovePhase,

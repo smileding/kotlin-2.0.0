@@ -360,6 +360,8 @@ internal fun PhaseEngine<NativeGenerationState>.lowerModuleWithDependencies(modu
         runLowerings(listOf(inlineAllFunctionsPhase), allModulesToLower)
     }
     runModuleWisePhase(validateIrAfterInliningAllFunctions, allModulesToLower)
+    // We must call `ConstEvaluationLowering` on all modules before other lowerings. Otherwise, const lowering can get inconsistent IR.
+    runLowerings(listOf(constEvaluationPhase), allModulesToLower)
     runLowerings(getLoweringsAfterInlining(), allModulesToLower)
     runModuleWisePhase(validateIrAfterLowering, allModulesToLower)
 

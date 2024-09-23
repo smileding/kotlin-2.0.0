@@ -63,11 +63,10 @@ private class SynchronizedLazyImpl<out T>(initializer: () -> T, lock: Any? = nul
     @Volatile
     private var _value: Any? = UNINITIALIZED_VALUE
 
-    // final field is required to enable safe publication of constructed  instance
+    // final field to ensure safe publication of 'SynchronizedLazyImpl' itself through
+    // var lazy = lazy() {}
     private val lock = lock ?: this
 
-    // Artificial final field to ensure safe publication of 'SafePublicationLazyImpl' itself through
-    // var lazy = lazy() {}
     override val value: T
         get() {
             val _v1 = _value

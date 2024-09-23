@@ -84,6 +84,7 @@ public enum class LazyThreadSafetyMode {
     NONE,
 }
 
+
 internal object UNINITIALIZED_VALUE
 
 // internal to be called from lazy in JS

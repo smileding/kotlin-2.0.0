@@ -9,6 +9,7 @@ import samples.Sample
 import samples.assertPrints
 import kotlin.concurrent.thread
 
+@Suppress("unused")
 class LazySamples {
 
     @Sample
@@ -44,7 +45,6 @@ class LazySamples {
 
     }
 
-    @Sample
     fun lazySynchronizedSample() {
         val answer: Int by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
             println("Computing the answer to the Ultimate Question of Life, the Universe, and Everything")
@@ -64,7 +64,6 @@ class LazySamples {
         t2.join()
     }
 
-    @Sample
     fun lazySafePublicationSample() {
         class Answer(val value: Int, val computedBy: Thread = Thread.currentThread()) {
             override fun toString() = "Answer: $value, computed by: $computedBy"
@@ -89,7 +88,6 @@ class LazySamples {
         t2.join()
     }
 
-    @Sample
     fun explicitLockLazySample() {
         val lock = Any()
         val answer: Int by lazy(lock) {
@@ -98,14 +96,14 @@ class LazySamples {
         }
 
         // Lock is acquired first, so thread cannot compute the answer
-        val thread = synchronized(lock) {
-            val thread = thread(name = "#1") {
+        val thread: Thread
+        synchronized(lock) {
+            thread = thread(name = "#1") {
                 println("Thread is asking for an answer")
                 println("$answer")
             }
-            println("Let's hold the thread for a while with a lock")
+            println("Let's hold the thread #1 for a while with a lock")
             Thread.sleep(100) // Let it wait
-            thread
         }
         // Lock is unlocked, the thread will print an answer
         thread.join()

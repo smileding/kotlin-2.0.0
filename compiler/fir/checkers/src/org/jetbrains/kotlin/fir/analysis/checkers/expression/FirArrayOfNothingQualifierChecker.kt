@@ -23,14 +23,6 @@ object FirArrayOfNothingQualifierChecker : FirQualifiedAccessExpressionChecker(M
         checkTypeAndTypeArguments(resolvedType, expression.calleeReference.source, context, reporter)
     }
 
-    fun ConeKotlinType.isArrayOfNothing(languageVersionSettings: LanguageVersionSettings): Boolean {
-        if (!this.isArrayTypeOrNullableArrayType) return false
-        val typeParameterType = typeArguments.firstOrNull()?.type ?: return false
-        return typeParameterType.isNothing ||
-                typeParameterType.isNullableNothing &&
-                !languageVersionSettings.supportsFeature(LanguageFeature.NullableNothingInReifiedPosition)
-    }
-
     private fun checkTypeAndTypeArguments(
         type: ConeKotlinType,
         source: KtSourceElement?,
@@ -46,5 +38,19 @@ object FirArrayOfNothingQualifierChecker : FirQualifiedAccessExpressionChecker(M
                 checkTypeAndTypeArguments(typeArgType, source, context, reporter)
             }
         }
+    }
+}
+
+internal fun ConeKotlinType.isArrayOfNothing(languageVersionSettings: LanguageVersionSettings): Boolean {
+    if (!this.isArrayTypeOrNullableArrayType) return false
+    val typeParameterType = typeArguments.firstOrNull()?.type ?: return false
+    return typeParameterType.isUnsupportedNothingAsReifiedOrInArray(languageVersionSettings)
+}
+
+internal fun ConeKotlinType.isUnsupportedNothingAsReifiedOrInArray(languageVersionSettings: LanguageVersionSettings): Boolean {
+    return when {
+        isNothing -> true
+        isNullableNothing -> !languageVersionSettings.supportsFeature(LanguageFeature.NullableNothingInReifiedPosition)
+        else -> false
     }
 }

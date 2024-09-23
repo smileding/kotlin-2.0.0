@@ -60,7 +60,7 @@ object FirReifiedChecker : FirQualifiedAccessExpressionChecker(MppCheckerKind.Co
     private fun ConeKotlinType.cannotBeReified(languageVersionSettings: LanguageVersionSettings) = when (this) {
         is ConeCapturedType -> true
         is ConeDynamicType -> true
-        else -> isNothing || isNullableNothing && !languageVersionSettings.supportsFeature(LanguageFeature.NullableNothingInReifiedPosition)
+        else -> isUnsupportedNothingAsReifiedOrInArray(languageVersionSettings)
     }
 
     private fun checkArgumentAndReport(

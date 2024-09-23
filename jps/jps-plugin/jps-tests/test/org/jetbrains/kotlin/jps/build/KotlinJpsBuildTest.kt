@@ -1054,7 +1054,7 @@ open class KotlinJpsBuildTest : KotlinJpsBuildTestBase() {
         assertTrue("The build has been canceled" == list.last().messageText)
     }
 
-    private fun findModule(name: String): JpsModule {
+    protected fun findModule(name: String): JpsModule {
         for (module in myProject.modules) {
             if (module.name == name) {
                 return module
@@ -1123,27 +1123,9 @@ open class KotlinJpsBuildTest : KotlinJpsBuildTestBase() {
     private fun JpsModule.outDir(forTests: Boolean) =
             JpsJavaExtensionService.getInstance().getOutputDirectory(this, forTests)!!
 
-    protected enum class Operation {
-        CHANGE,
-        DELETE
-    }
+    protected fun touch(path: String): Action = TouchAction(File(workDir, path).absolutePath)
 
-    protected fun touch(path: String): Action = Action(Operation.CHANGE, path)
+    protected fun del(path: String): Action = DeleteAction(File(workDir, path).absolutePath)
 
-    protected fun del(path: String): Action = Action(Operation.DELETE, path)
-
-    // TODO inline after KT-3974 will be fixed
-    protected fun touch(file: File): Unit = change(file.absolutePath)
-
-    protected inner class Action constructor(private val operation: Operation, private val path: String) {
-        fun apply() {
-            val file = File(workDir, path)
-            when (operation) {
-                Operation.CHANGE ->
-                    touch(file)
-                Operation.DELETE ->
-                    assertTrue("Can not delete file \"" + file.absolutePath + "\"", file.delete())
-            }
-        }
-    }
+    protected fun change(path: String, content: String): Action = ChangeAction(File(workDir, path).absolutePath, content)
 }

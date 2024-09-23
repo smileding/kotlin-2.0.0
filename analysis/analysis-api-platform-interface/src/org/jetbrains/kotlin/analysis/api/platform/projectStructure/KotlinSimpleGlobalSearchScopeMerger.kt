@@ -12,6 +12,10 @@ import com.intellij.psi.search.GlobalSearchScope
  * provide any scope merging strategies.
  */
 public class KotlinSimpleGlobalSearchScopeMerger : KotlinGlobalSearchScopeMerger {
-    override fun union(scopes: Collection<GlobalSearchScope>): GlobalSearchScope =
-        GlobalSearchScope.union(scopes.toList())
+    override fun union(scopes: Collection<GlobalSearchScope>): GlobalSearchScope {
+        if (scopes.isEmpty()) {
+            return GlobalSearchScope.EMPTY_SCOPE
+        }
+        return GlobalSearchScope.union(scopes.toList())
+    }
 }

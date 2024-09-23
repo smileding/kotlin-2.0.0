@@ -5,76 +5,358 @@
 
 package kotlin.concurrent
 
-public actual class AtomicIntArray public actual constructor(public actual val size: Int) {
+/**
+ * An array of ints in which elements may be updated atomically with guaranteed sequential consistent ordering.
+ *
+ * Instances of [AtomicIntArray] are represented by [java.util.concurrent.atomic.AtomicIntegerArray].
+ * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
+ */
+public actual class AtomicIntArray {
+    /**
+     * Creates a new [AtomicIntArray] of the given [size], with all elements initialized to zero.
+     *
+     * @throws RuntimeException if the specified [size] is negative.
+     */
+    public actual constructor(size: Int)
+
+    /**
+     * Creates a new [AtomicIntArray] filled with elements of the given [array].
+     */
     public actual constructor(array: IntArray)
 
+    /**
+     * Returns the number of elements in the array.
+     */
+    public actual val size: Int get() = array.size
+
+    /**
+     * Atomically gets the value of the element at the given [index].
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun loadAt(index: Int): Int
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue].
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun storeAt(index: Int, newValue: Int)
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue]
+     * and returns the old value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun exchangeAt(index: Int, newValue: Int): Int
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue]
+     * if the current value equals the [expected value][expectedValue].
+     * Returns true if the operation was successful and false only if the current value of the element was not equal to the expected value.
+     *
+     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     *
+     * Comparison of values is done by value.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun compareAndSetAt(index: Int, expectedValue: Int, newValue: Int): Boolean
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue]
+     * if the current value equals the [expected value][expectedValue] and returns the old value of the element in any case.
+     *
+     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     *
+     * Comparison of values is done by value.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun compareAndExchangeAt(index: Int, expectedValue: Int, newValue: Int): Int
 
+    /**
+     * Atomically adds the given [delta] to the element at the given [index] and returns the old value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun fetchAndAddAt(index: Int, delta: Int): Int
 
+    /**
+     * Atomically adds the given [delta] to the element at the given [index] and returns the new value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun addAndFetchAt(index: Int, delta: Int): Int
 
+    /**
+     * Atomically increments the element at the given [index] by one and returns the old value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun fetchAndIncrementAt(index: Int): Int
 
+    /**
+     * Atomically increments the element at the given [index] by one and returns the new value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun incrementAndFetchAt(index: Int): Int
 
+    /**
+     * Atomically decrements the element at the given [index] by one and returns the old value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun fetchAndDecrementAt(index: Int): Int
 
+    /**
+     * Atomically decrements the element at the given [index] by one and returns the new value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun decrementAndFetchAt(index: Int): Int
 
+    /**
+     * Returns the string representation of the underlying array of ints.
+     *
+     * This operation does not provide any atomicity guarantees.
+     */
     public actual override fun toString(): String
 }
 
-public actual class AtomicLongArray public actual constructor(public actual val size: Int) {
+/**
+ * An array of longs in which elements may be updated atomically with guaranteed sequential consistent ordering.
+ *
+ * Instances of [AtomicLongArray] are represented by [java.util.concurrent.atomic.AtomicLongArray].
+ * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
+ */
+public actual class AtomicLongArray {
+    /**
+     * Creates a new [AtomicLongArray] of the given [size], with all elements initialized to zero.
+     *
+     * @throws RuntimeException if the specified [size] is negative.
+     */
+    public actual constructor(size: Int)
+
+    /**
+     * Creates a new [AtomicLongArray] filled with elements of the given [array].
+     */
     public actual constructor(array: LongArray)
 
+    /**
+     * Returns the number of elements in the array.
+     */
+    public actual val size: Int get() = array.size
+
+    /**
+     * Atomically gets the value of the element at the given [index].
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun loadAt(index: Int): Long
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue].
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun storeAt(index: Int, newValue: Long)
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue]
+     * and returns the old value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun exchangeAt(index: Int, newValue: Long): Long
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue]
+     * if the current value equals the [expected value][expectedValue].
+     * Returns true if the operation was successful and false only if the current value of the element was not equal to the expected value.
+     *
+     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     *
+     * Comparison of values is done by value.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun compareAndSetAt(index: Int, expectedValue: Long, newValue: Long): Boolean
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue]
+     * if the current value equals the [expected value][expectedValue] and returns the old value of the element in any case.
+     *
+     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     *
+     * Comparison of values is done by value.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun compareAndExchangeAt(index: Int, expectedValue: Long, newValue: Long): Long
 
+    /**
+     * Atomically adds the given [delta] to the element at the given [index] and returns the old value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun fetchAndAddAt(index: Int, delta: Long): Long
 
+    /**
+     * Atomically adds the given [delta] to the element at the given [index] and returns the new value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun addAndFetchAt(index: Int, delta: Long): Long
 
+    /**
+     * Atomically increments the element at the given [index] by one and returns the old value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun fetchAndIncrementAt(index: Int): Long
 
+    /**
+     * Atomically increments the element at the given [index] by one and returns the new value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun incrementAndFetchAt(index: Int): Long
 
+    /**
+     * Atomically decrements the element at the given [index] by one and returns the old value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun fetchAndDecrementAt(index: Int): Long
 
+    /**
+     * Atomically decrements the element at the given [index] by one and returns the new value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun decrementAndFetchAt(index: Int): Long
 
+    /**
+     * Returns the string representation of the underlying array of longs.
+     *
+     * This operation does not provide any atomicity guarantees.
+     */
     public actual override fun toString(): String
 }
 
+/**
+ * A generic array of objects in which elements may be updated atomically with guaranteed sequential consistent ordering.
+ *
+ * Instances of [AtomicArray] are represented by [java.util.concurrent.atomic.AtomicReferenceArray].
+ * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
+ */
 public actual class AtomicArray<T> {
+    /**
+     * Creates a new [AtomicArray]<T> filled with elements of the given [array].
+     */
     public actual constructor (array: Array<T>)
 
+    /**
+     * Returns the number of elements in the array.
+     */
     public actual val size: Int
 
+    /**
+     * Atomically gets the value of the element at the given [index].
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun loadAt(index: Int): T
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue].
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun storeAt(index: Int, newValue: T)
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue]
+     * and returns the old value of the element.
+     *
+     * Provides sequential consistent ordering guarantees.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun exchangeAt(index: Int, newValue: T): T
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue]
+     * if the current value equals the [expected value][expectedValue].
+     * Returns true if the operation was successful and false only if the current value of the element was not equal to the expected value.
+     *
+     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     *
+     * Comparison of values is done by value.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun compareAndSetAt(index: Int, expectedValue: T, newValue: T): Boolean
 
+    /**
+     * Atomically sets the value of the element at the given [index] to the [new value][newValue]
+     * if the current value equals the [expected value][expectedValue] and returns the old value of the element in any case.
+     *
+     * Provides sequential consistent ordering guarantees and never fails spuriously.
+     *
+     * Comparison of values is done by value.
+     *
+     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
+     */
     public actual fun compareAndExchangeAt(index: Int, expectedValue: T, newValue: T): T
 
+    /**
+     * Returns the string representation of the underlying array of objects.
+     *
+     * This operation does not provide any atomicity guarantees.
+     */
     public actual override fun toString(): String
 }

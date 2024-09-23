@@ -12,10 +12,9 @@ import org.jetbrains.kotlin.gradle.testbase.BuildOptions.IsolatedProjectsMode
 import org.jetbrains.kotlin.gradle.util.replaceText
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.condition.OS
-import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
-import kotlin.streams.toList
+import kotlin.io.path.listDirectoryEntries
 import kotlin.test.assertTrue
 
 @DisplayName("FUS statistic")
@@ -124,10 +123,6 @@ class FusStatisticsIT : KGPBaseTest() {
     @JvmGradlePluginTests
     @DisplayName("for project with buildSrc")
     @GradleTest
-    @OsCondition(
-        supportedOn = [OS.LINUX, OS.MAC, OS.WINDOWS],
-        enabledOnCI = [OS.LINUX, OS.MAC], //Fails on windows KT-65227
-    )
     @GradleTestVersions(
         additionalVersions = [TestVersions.Gradle.G_8_0]
     )
@@ -139,7 +134,7 @@ class FusStatisticsIT : KGPBaseTest() {
         ) {
             build("compileKotlin", "-Pkotlin.session.logger.root.path=$projectPath") {
                 assertFilesCombinedContains(
-                    Files.list(projectPath.resolve("kotlin-profile")).toList(),
+                    projectPath.resolve("kotlin-profile").listDirectoryEntries(),
                     *expectedMetrics,
                     "BUILD_SRC_EXISTS=true"
                 )
@@ -150,10 +145,6 @@ class FusStatisticsIT : KGPBaseTest() {
     @DisplayName("for project with included build")
     @GradleTest
     @JvmGradlePluginTests
-    @OsCondition(
-        supportedOn = [OS.LINUX, OS.MAC, OS.WINDOWS],
-        enabledOnCI = [OS.LINUX, OS.MAC], //Fails on windows KT-65227
-    )
     @GradleTestVersions(
         maxVersion = TestVersions.Gradle.G_8_0
     )
@@ -167,16 +158,16 @@ class FusStatisticsIT : KGPBaseTest() {
             buildOptions = defaultBuildOptions.copy(configurationCache = BuildOptions.ConfigurationCacheValue.ENABLED)
         ) {
             build("compileKotlin", "-Pkotlin.session.logger.root.path=$projectPath") {
-                Files.list(projectPath.resolve("kotlin-profile")).forEach {
+                projectPath.resolve("kotlin-profile").listDirectoryEntries().forEach {
                     assertFileContains(it, *expectedMetrics)
                 }
             }
-            Files.list(projectPath.resolve("kotlin-profile")).forEach {
+            projectPath.resolve("kotlin-profile").listDirectoryEntries().forEach {
                 assertTrue(it.deleteIfExists())
             }
 
             build("compileKotlin", "-Pkotlin.session.logger.root.path=$projectPath") {
-                Files.list(projectPath.resolve("kotlin-profile")).forEach {
+                projectPath.resolve("kotlin-profile").listDirectoryEntries().forEach {
                     assertFileContains(it, *expectedMetrics)
                 }
             }

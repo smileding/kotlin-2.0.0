@@ -11,6 +11,7 @@ package kotlin.concurrent
  * Instances of [AtomicIntArray] are represented by [java.util.concurrent.atomic.AtomicIntegerArray].
  * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
  */
+@SinceKotlin("2.0") // TODO: SinceKotlin version should be updated to 2.1, when the API version is updated to 2.1
 public actual class AtomicIntArray {
     /**
      * Creates a new [AtomicIntArray] of the given [size], with all elements initialized to zero.
@@ -114,6 +115,7 @@ public actual class AtomicIntArray {
  * Instances of [AtomicLongArray] are represented by [java.util.concurrent.atomic.AtomicLongArray].
  * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
  */
+@SinceKotlin("2.0") // TODO: SinceKotlin version should be updated to 2.1, when the API version is updated to 2.1
 public actual class AtomicLongArray {
     /**
      * Creates a new [AtomicLongArray] of the given [size], with all elements initialized to zero.
@@ -217,6 +219,7 @@ public actual class AtomicLongArray {
  * Instances of [AtomicArray] are represented by [java.util.concurrent.atomic.AtomicReferenceArray].
  * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
  */
+@SinceKotlin("2.0") // TODO: SinceKotlin version should be updated to 2.1, when the API version is updated to 2.1
 public actual class AtomicArray<T> {
     /**
      * Creates a new [AtomicArray]<T> filled with elements of the given [array].

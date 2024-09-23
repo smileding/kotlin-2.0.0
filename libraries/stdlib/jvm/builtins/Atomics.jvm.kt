@@ -11,6 +11,7 @@ package kotlin.concurrent
 *  Instances of [AtomicInt] are represented by [java.util.concurrent.atomic.AtomicInteger].
  * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
  */
+@SinceKotlin("2.0") // TODO: SinceKotlin version should be updated to 2.1, when the API version is updated to 2.1
 public actual class AtomicInt(value: Int) {
     /**
      * Atomically gets the value of the atomic.
@@ -74,6 +75,7 @@ public actual class AtomicInt(value: Int) {
  * Instances of [AtomicLong] are represented by [java.util.concurrent.atomic.AtomicLong].
  * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
  */
+@SinceKotlin("2.0") // TODO: SinceKotlin version should be updated to 2.1, when the API version is updated to 2.1
 public actual class AtomicLong(value: Long) {
     /**
      * Atomically gets the value of the atomic.
@@ -138,6 +140,7 @@ public actual class AtomicLong(value: Long) {
  * Instances of [AtomicBoolean] are represented by [java.util.concurrent.atomic.AtomicBoolean].
  * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
  */
+@SinceKotlin("2.0") // TODO: SinceKotlin version should be updated to 2.1, when the API version is updated to 2.1
 public actual class AtomicBoolean (value: Boolean) {
     /**
      * Atomically gets the value of the atomic.
@@ -192,6 +195,7 @@ public actual class AtomicBoolean (value: Boolean) {
  * Instances of [AtomicReference] are represented by [java.util.concurrent.atomic.AtomicReference].
  * For details about guarantees of volatile accesses and updates of atomics refer to The Java Language Specification (17.4 Memory Model).
  */
+@SinceKotlin("2.0") // TODO: SinceKotlin version should be updated to 2.1, when the API version is updated to 2.1
 public actual class AtomicReference<T> (value: T) {
     /**
      * Atomically gets the value of the atomic.

@@ -415,6 +415,7 @@ private fun ConeClassLikeType.mapToCanonicalString(session: FirSession): String 
 
 private fun ConeClassLikeType.mapToCanonicalNoExpansionString(session: FirSession): String {
     if (lookupTag.classId == StandardClassIds.Array) {
+        @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
         return when (val typeProjection = typeArguments[0]) {
             is ConeStarProjection -> CommonClassNames.JAVA_LANG_OBJECT
             is ConeKotlinTypeProjection -> {
@@ -443,6 +444,7 @@ private fun ConeClassLikeType.mapToCanonicalNoExpansionString(session: FirSessio
 }
 
 private fun ConeTypeProjection.mapToCanonicalString(session: FirSession): String {
+    @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
     return when (this) {
         is ConeStarProjection -> "?"
         is ConeKotlinTypeProjection -> {

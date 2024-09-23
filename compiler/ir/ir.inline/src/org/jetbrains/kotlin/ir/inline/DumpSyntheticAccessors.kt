@@ -69,6 +69,7 @@ class DumpSyntheticAccessors(context: CommonBackendContext) : ModuleLoweringPass
 
     private fun collectAccessorTargetSymbols(accessorSymbols: Set<IrFunctionSymbol>): Set<IrSymbol> =
         accessorSymbols.mapToSetOrEmpty { accessorSymbol ->
+            @Suppress("REDUNDANT_ELSE_IN_WHEN") // K2 warning suppression, TODO: KT-62472
             when (val accessor = accessorSymbol.owner) {
                 is IrConstructor -> {
                     val accessorTargetSymbol: IrConstructorSymbol = accessor.getSingleExpression<IrDelegatingConstructorCall>().symbol

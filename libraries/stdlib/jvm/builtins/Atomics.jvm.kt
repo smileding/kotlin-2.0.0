@@ -61,26 +61,6 @@ public actual class AtomicInt(value: Int) {
     public actual fun addAndFetch(delta: Int): Int
 
     /**
-     * Atomically increments the current value by one and returns the old value.
-     */
-    public actual fun fetchAndIncrement(): Int
-
-    /**
-     * Atomically increments the current value by one and returns the new value.
-     */
-    public actual fun incrementAndFetch(): Int
-
-    /**
-     * Atomically decrements the current value by one and returns the new value.
-     */
-    public actual fun decrementAndFetch(): Int
-
-    /**
-     * Atomically decrements the current value by one and returns the old value.
-     */
-    public actual fun fetchAndDecrement(): Int
-
-    /**
      * Returns the string representation of the underlying [Int] value.
      *
      * This operation does not provide any atomicity guarantees.
@@ -143,26 +123,6 @@ public actual class AtomicLong(value: Long) {
      * Atomically adds the [given value][delta] to the current value and returns the new value.
      */
     public actual fun addAndFetch(delta: Long): Long
-
-    /**
-     * Atomically increments the current value by one and returns the old value.
-     */
-    public actual fun fetchAndIncrement(): Long
-
-    /**
-     * Atomically increments the current value by one and returns the new value.
-     */
-    public actual fun incrementAndFetch(): Long
-
-    /**
-     * Atomically decrements the current value by one and returns the new value.
-     */
-    public actual fun decrementAndFetch(): Long
-
-    /**
-     * Atomically decrements the current value by one and returns the old value.
-     */
-    public actual fun fetchAndDecrement(): Long
 
     /**
      * Returns the string representation of the underlying [Long] value.

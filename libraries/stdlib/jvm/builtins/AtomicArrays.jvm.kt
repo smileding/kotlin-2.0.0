@@ -101,42 +101,6 @@ public actual class AtomicIntArray {
     public actual fun addAndFetchAt(index: Int, delta: Int): Int
 
     /**
-     * Atomically increments the element at the given [index] by one and returns the old value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
-     *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
-     */
-    public actual fun fetchAndIncrementAt(index: Int): Int
-
-    /**
-     * Atomically increments the element at the given [index] by one and returns the new value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
-     *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
-     */
-    public actual fun incrementAndFetchAt(index: Int): Int
-
-    /**
-     * Atomically decrements the element at the given [index] by one and returns the old value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
-     *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
-     */
-    public actual fun fetchAndDecrementAt(index: Int): Int
-
-    /**
-     * Atomically decrements the element at the given [index] by one and returns the new value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
-     *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
-     */
-    public actual fun decrementAndFetchAt(index: Int): Int
-
-    /**
      * Returns the string representation of the underlying array of ints.
      *
      * This operation does not provide any atomicity guarantees.
@@ -238,42 +202,6 @@ public actual class AtomicLongArray {
      * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
      */
     public actual fun addAndFetchAt(index: Int, delta: Long): Long
-
-    /**
-     * Atomically increments the element at the given [index] by one and returns the old value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
-     *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
-     */
-    public actual fun fetchAndIncrementAt(index: Int): Long
-
-    /**
-     * Atomically increments the element at the given [index] by one and returns the new value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
-     *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
-     */
-    public actual fun incrementAndFetchAt(index: Int): Long
-
-    /**
-     * Atomically decrements the element at the given [index] by one and returns the old value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
-     *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
-     */
-    public actual fun fetchAndDecrementAt(index: Int): Long
-
-    /**
-     * Atomically decrements the element at the given [index] by one and returns the new value of the element.
-     *
-     * Provides sequential consistent ordering guarantees.
-     *
-     * @throws [IndexOutOfBoundsException] if the [index] is out of bounds of this array.
-     */
-    public actual fun decrementAndFetchAt(index: Int): Long
 
     /**
      * Returns the string representation of the underlying array of longs.

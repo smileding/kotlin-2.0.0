@@ -20,19 +20,12 @@ import org.jetbrains.kotlin.fir.types.isArrayTypeOrNullableArrayType
 import org.jetbrains.kotlin.fir.types.isNullableNothing
 import org.jetbrains.kotlin.fir.types.resolvedType
 import org.jetbrains.kotlin.fir.types.type
-import org.jetbrains.kotlin.fir.types.typeArgumentsOfLowerBoundIfFlexible
 
 object FirArrayOfNullableNothingExpressionChecker : FirQualifiedAccessExpressionChecker(MppCheckerKind.Common) {
     override fun check(expression: FirQualifiedAccessExpression, context: CheckerContext, reporter: DiagnosticReporter) {
         if (!context.languageVersionSettings.supportsFeature(LanguageFeature.NullableNothingInReifiedPosition)) return
         val resolvedType = expression.resolvedType
         checkTypeAndTypeArguments(resolvedType, expression.calleeReference.source, context, reporter)
-    }
-
-    fun ConeKotlinType.isArrayOfNullableNothing(): Boolean {
-        if (!this.isArrayTypeOrNullableArrayType) return false
-        val typeParameterType = typeArgumentsOfLowerBoundIfFlexible.firstOrNull()?.type ?: return false
-        return typeParameterType.isNullableNothing
     }
 
     private fun checkTypeAndTypeArguments(
@@ -45,10 +38,17 @@ object FirArrayOfNullableNothingExpressionChecker : FirQualifiedAccessExpression
         if (fullyExpandedType.isArrayOfNullableNothing()) {
             reporter.reportOn(source, FirErrors.UNSUPPORTED, "Array<Nothing?> isn't supported in JVM", context)
         } else {
-            for (typeArg in fullyExpandedType.typeArgumentsOfLowerBoundIfFlexible) {
+            for (typeArg in fullyExpandedType.typeArguments) {
                 val typeArgType = typeArg.type ?: continue
                 checkTypeAndTypeArguments(typeArgType, source, context, reporter)
             }
         }
     }
 }
+
+internal fun ConeKotlinType.isArrayOfNullableNothing(): Boolean {
+    if (!this.isArrayTypeOrNullableArrayType) return false
+    val typeParameterType = typeArguments.firstOrNull()?.type ?: return false
+    return typeParameterType.isNullableNothing
+}
+

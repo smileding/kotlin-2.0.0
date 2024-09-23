@@ -13,7 +13,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirTypeAliasExpandsToArrayOfNothingsChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.type.FirResolvedTypeRefChecker
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
-import org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.FirArrayOfNullableNothingExpressionChecker.isArrayOfNullableNothing
+import org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.isArrayOfNullableNothing
 import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.declarations.utils.expandedConeType

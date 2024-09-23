@@ -35,7 +35,7 @@ object FirTypeAliasExpandsToArrayOfNothingsChecker : FirTypeAliasChecker(MppChec
         if (classId == StandardClassIds.Array) {
             val singleArgumentType = typeArguments.singleOrNull()?.type?.fullyExpandedType(context.session)
             if (singleArgumentType != null &&
-                (singleArgumentType.isNothing || singleArgumentType.isNullableNothing && !allowNullableNothing)
+                (singleArgumentType.isNothing || (singleArgumentType.isNullableNothing && !allowNullableNothing))
             ) {
                 return true
             }

@@ -132,7 +132,7 @@ fun alloc(): Unit = autoreleasepool {
 
 fun waitDestruction() {
     assertTrue(isMainThread())
-    kotlin.native.internal.GC.collect()
+    kotlin.native.runtime.GC.collect()
     spin()
 }
 

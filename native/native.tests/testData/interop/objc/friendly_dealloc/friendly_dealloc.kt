@@ -41,7 +41,7 @@ val trigerSelector = sel_registerName("trigger")
 fun waitTriggered(event: Event) {
     val timeoutMark = TimeSource.Monotonic.markNow() + timeout
 
-    kotlin.native.internal.GC.collect()
+    kotlin.native.runtime.GC.collect()
     while (true) {
         if (event.isTriggered()) {
             return

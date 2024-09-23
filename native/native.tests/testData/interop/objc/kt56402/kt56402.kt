@@ -58,7 +58,7 @@ fun waitDestruction(id: ULong) {
     // Make sure the finalizers are not run on the main thread even for STMS.
     withWorker {
         execute(TransferMode.SAFE, {}) {
-            kotlin.native.internal.GC.collect()
+            kotlin.native.runtime.GC.collect()
         }.result
     }
     while (true) {

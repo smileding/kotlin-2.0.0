@@ -46,7 +46,6 @@ import org.jetbrains.kotlin.diagnostics.KtPsiDiagnostic
 import org.jetbrains.kotlin.diagnostics.Severity
 import org.jetbrains.kotlin.diagnostics.impl.BaseDiagnosticsCollector
 import org.jetbrains.kotlin.diagnostics.impl.PendingDiagnosticsCollectorWithSuppress
-import org.jetbrains.kotlin.fileClasses.javaFileFacadeFqName
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.diagnostics.toFirDiagnostics
 import org.jetbrains.kotlin.fir.backend.Fir2IrConfiguration
@@ -54,7 +53,6 @@ import org.jetbrains.kotlin.fir.backend.Fir2IrConversionScope
 import org.jetbrains.kotlin.fir.backend.Fir2IrExtensions
 import org.jetbrains.kotlin.fir.backend.FirMetadataSource
 import org.jetbrains.kotlin.fir.backend.jvm.FirJvmBackendExtension
-import org.jetbrains.kotlin.fir.backend.jvm.FirJvmBuiltinProviderActualDeclarationExtractor
 import org.jetbrains.kotlin.fir.backend.jvm.FirJvmVisibilityConverter
 import org.jetbrains.kotlin.fir.backend.jvm.JvmFir2IrExtensions
 import org.jetbrains.kotlin.fir.backend.utils.CodeFragmentConversionData
@@ -203,10 +201,19 @@ internal class KaFirCompilerFacility(
             }
             when (compileResult) {
                 is KaCompilationResult.Success -> {
-                    val className = dependencyFile.classPathForInlineCache()
                     val artifact = compileResult as KaCompilationResult.Success
-                    val compiledFile = artifact.output.firstOrNull { it.path == "$className.class" } ?: return@forEach
-                    inlineFuncDependencyByteArray[className] = compiledFile.content
+                    artifact.output.forEach { compiledFile ->
+                        val path = compiledFile.path
+
+                        // `GenerationState.inlineCache` uses the path to class file without ".class" as a key. For example,
+                        //  - The key for `Foo` class in `com.example.foo` package is `com/example/foo/Foo`.
+                        //  - The key for companion object of `Foo` in `com.example.foo` package is `com/example/foo/Foo$Companion`.
+                        //  - The key for an inner class `Inner` of `Foo` in `com.example.foo` package is `com/example/foo/Foo$Inner`.
+                        if (!path.endsWith(".class")) return@forEach
+                        val className = path.substringBeforeLast(".class")
+
+                        inlineFuncDependencyByteArray[className] = compiledFile.content
+                    }
                 }
                 is KaCompilationResult.Failure -> return compileResult!!
                 null -> return@forEach
@@ -344,18 +351,6 @@ internal class KaFirCompilerFacility(
             else -> listOf(module)
         }
     }
-
-    /**
-     * This function returns the path to class for [GenerationState.inlineCache] key. For example, the key for `Foo` class
-     * of `com.example.foo` package is `com/example/foo/Foo`. Since [javaFileFacadeFqName] for `Foo` class of
-     * `com.example.foo` package is `com.example.foo.FooKt`, this function replaces `.` to `/` and drops the last `Kt`.
-     */
-    private fun KtFile.classPathForInlineCache() = javaFileFacadeFqName.toString().replace(".", "/").let { fqName ->
-        assert(fqName.endsWith("Kt"))
-        fqName.substringBeforeLast("Kt")
-    }
-
-    private fun KtFile.classId() = ClassId(FqName(this.packageFqName.asString()), FqName(this.name), false)
 
     private fun runFir2IrForDependency(
         dependencyFiles: List<KtFile>,

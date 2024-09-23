@@ -114,6 +114,24 @@ public class CompilerFacilityTestForComposeCompilerPluginGenerated extends Abstr
   }
 
   @Test
+  @TestMetadata("sourceLibModuleInlineFuncJvmName.kt")
+  public void testSourceLibModuleInlineFuncJvmName() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/sourceLibModuleInlineFuncJvmName.kt");
+  }
+
+  @Test
+  @TestMetadata("sourceLibModuleInlineFuncOfCompanion.kt")
+  public void testSourceLibModuleInlineFuncOfCompanion() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/sourceLibModuleInlineFuncOfCompanion.kt");
+  }
+
+  @Test
+  @TestMetadata("sourceLibModuleInlineFuncOfInnerClass.kt")
+  public void testSourceLibModuleInlineFuncOfInnerClass() {
+    runTest("plugins/compose/compiler-hosted/testData/codegen/sourceLibModuleInlineFuncOfInnerClass.kt");
+  }
+
+  @Test
   @TestMetadata("sourceLibModuleInlineFuncRef.kt")
   public void testSourceLibModuleInlineFuncRef() {
     runTest("plugins/compose/compiler-hosted/testData/codegen/sourceLibModuleInlineFuncRef.kt");

@@ -53,6 +53,7 @@ internal object KotlinTargetAlreadyDeclaredChecker : KotlinGradleProjectChecker 
     /**
      * DSL names are taken from [org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions]
      */
+    @Suppress("DEPRECATION")
     private val KotlinTarget.targetDslFunctionName
         get() = when (internal._preset) {
             is KotlinJsIrTargetPreset -> "js"

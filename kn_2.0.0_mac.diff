@@ -1,0 +1,1606 @@
+diff --git a/gradle.properties b/gradle.properties
+index eb5175be58ab..718606908fe3 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -1,4 +1,4 @@
+-org.gradle.jvmargs=-Duser.country=US -Dfile.encoding=UTF-8 -Dorg.gradle.internal.publish.checksums.insecure=true
++org.gradle.jvmargs=-Xmx4g -Duser.country=US -Dfile.encoding=UTF-8 -Dorg.gradle.internal.publish.checksums.insecure=true
+ 
+ systemProp.file.encoding=UTF-8
+ systemProp.user.country=US
+@@ -99,7 +99,7 @@ kotlin.build.internal.gradle.setup=true
+ #kotlin.build.render.diagnostic.names=true
+ 
+ # Enable bootstrap from local build of compiler (build from ./gradlew publish)
+-#bootstrap.local=true
++# bootstrap.local=true
+ # By default bootstrap compiler is located in ./build/repo directory
+ # If it differs from default use next flag:
+ #bootstrap.local.path=/path/to/repo
+@@ -148,3 +148,12 @@ kotlin.build.internal.gradle.setup=true
+ # =====================
+ # Enable new dependency resolution | KT-58319
+ kotlin.mpp.import.enableKgpDependencyResolution=true
++
++maven.wagon.http.ssl.allowall=true
++maven.wagon.http.ssl.insecure=true
++
++systemProp.http.auth.ntlm.domain=CHINA
++systemProp.http.ssl.allowall=true
++systemProp.http.ssl.ignore.validity.dates=true
++systemProp.http.ssl.insecure=true
++systemProp.http.keepAlive=true
+\ No newline at end of file
+diff --git a/kotlin-native/Interop/Indexer/build.gradle.kts b/kotlin-native/Interop/Indexer/build.gradle.kts
+index 468443afa1e9..beca988510dd 100644
+--- a/kotlin-native/Interop/Indexer/build.gradle.kts
++++ b/kotlin-native/Interop/Indexer/build.gradle.kts
+@@ -69,7 +69,7 @@ if (libclangextIsEnabled) {
+             "clangToolingCore",
+             "clangTooling", "clangFormat", "LLVMTarget", "LLVMMC", "LLVMLinker", "LLVMTransformUtils",
+             "LLVMBitWriter", "LLVMBitReader", "LLVMAnalysis", "LLVMProfileData", "LLVMCore",
+-            "LLVMSupport", "LLVMBinaryFormat", "LLVMDemangle"
++            "LLVMSupport", "LLVMBinaryFormat", "LLVMDemangle", "LLVMFrontendOpenMP" // dingxiao
+     ).map { "${nativeDependencies.llvmPath}/lib/lib${it}.a" }
+ 
+     ldflags.addAll(llvmLibs)
+diff --git a/kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/BitcodeCompiler.kt b/kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/BitcodeCompiler.kt
+index 47c99ab0a1ad..c1d3e4c7b173 100644
+--- a/kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/BitcodeCompiler.kt
++++ b/kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/BitcodeCompiler.kt
+@@ -40,7 +40,7 @@ internal class BitcodeCompiler(
+     }
+ 
+     private fun hostLlvmTool(tool: String, vararg arg: String) {
+-        val absoluteToolName = "${platform.absoluteLlvmHome}/bin/$tool"
++        val absoluteToolName = "${platform.absoluteLlvmHome()}/bin/$tool"  // dingxiao
+         runTool(absoluteToolName, *arg)
+     }
+ 
+diff --git a/kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/llvm/LlvmAttributes.kt b/kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/llvm/LlvmAttributes.kt
+index 31030ef5b196..2e61936b040e 100644
+--- a/kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/llvm/LlvmAttributes.kt
++++ b/kotlin-native/backend.native/compiler/ir/backend.native/src/org/jetbrains/kotlin/backend/konan/llvm/LlvmAttributes.kt
+@@ -43,7 +43,7 @@ private fun shouldEnforceFramePointer(context: Context): Boolean {
+ 
+     return when (context.config.target.family) {
+         Family.OSX, Family.IOS, Family.WATCHOS, Family.TVOS -> context.shouldContainLocationDebugInfo()
+-        Family.LINUX, Family.MINGW, Family.ANDROID -> false
++        Family.LINUX, Family.MINGW, Family.ANDROID, Family.OHOS -> false // dingxiao
+     }
+ }
+ 
+diff --git a/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/ExecClang.kt b/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/ExecClang.kt
+index 7a94add2a88f..447d4ab2b6e2 100644
+--- a/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/ExecClang.kt
++++ b/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/ExecClang.kt
+@@ -46,11 +46,12 @@ abstract class ExecClang @Inject constructor(
+         return clangArgsForCppRuntime(target)
+     }
+ 
+-    fun resolveExecutable(executableOrNull: String?): String {
++    // dingxiao
++    fun resolveExecutable(executableOrNull: String?, target: String? = null): String {
+         val executable = executableOrNull ?: "clang"
+ 
+         if (listOf("clang", "clang++").contains(executable)) {
+-            return "${platformManager.hostPlatform.absoluteLlvmHome}/bin/$executable"
++            return "${platformManager.hostPlatform.absoluteLlvmHome(target)}/bin/$executable"
+         } else {
+             throw GradleException("unsupported clang executable: $executable")
+         }
+@@ -107,11 +108,11 @@ abstract class ExecClang @Inject constructor(
+     }
+ 
+     fun execKonanClang(target: String?, action: Action<in ExecSpec>): ExecResult {
+-        return this.execClang(clangArgsForCppRuntime(target) + fixBrokenMacroExpansionInXcode15_3(target), action)
++        return this.execClang(clangArgsForCppRuntime(target) + fixBrokenMacroExpansionInXcode15_3(target), action, target)
+     }
+ 
+     fun execKonanClang(target: KonanTarget, action: Action<in ExecSpec>): ExecResult {
+-        return this.execClang(clangArgsForCppRuntime(target) + fixBrokenMacroExpansionInXcode15_3(target), action)
++        return this.execClang(clangArgsForCppRuntime(target) + fixBrokenMacroExpansionInXcode15_3(target), action, target.name)
+     }
+ 
+     /**
+@@ -127,7 +128,7 @@ abstract class ExecClang @Inject constructor(
+             executable = if (target.family.isAppleFamily) {
+                 resolveToolchainExecutable(target, executable)
+             } else {
+-                resolveExecutable(executable)
++                resolveExecutable(executable, target.name) // dingxiao
+             }
+             args = defaultArgs + args
+         }
+@@ -147,15 +148,19 @@ abstract class ExecClang @Inject constructor(
+         return execOperations.exec(extendedAction)
+     }
+ 
+-    private fun execClang(defaultArgs: List<String>, action: Action<in ExecSpec>): ExecResult {
++    // dingxiao
++    private fun execClang(defaultArgs: List<String>, action: Action<in ExecSpec>, target: String? = null): ExecResult {
+         val extendedAction = Action<ExecSpec> {
+             action.execute(this)
+-            executable = resolveExecutable(executable)
++            executable = resolveExecutable(executable, target)
+ 
+             val hostPlatform = platformManager.hostPlatform
+             environment["PATH"] = fileOperations.configurableFiles(hostPlatform.clang.clangPaths).asPath +
+                     File.pathSeparator + environment["PATH"]
+             args = args + defaultArgs
++            if (target?.startsWith("ohos_") == true) {
++                args = args.filter { it != "-Werror"}
++            }
+         }
+         return execOperations.exec(extendedAction)
+     }
+diff --git a/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/ExecLlvm.kt b/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/ExecLlvm.kt
+index a17226ee6795..f895a4b25b2f 100644
+--- a/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/ExecLlvm.kt
++++ b/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/ExecLlvm.kt
+@@ -24,11 +24,13 @@ fun execLlvmUtility(project: Project, utility: String, closure: Closure<in ExecS
+     return execLlvmUtility(project, utility) { project.configure(this, closure) }
+ }
+ 
+-fun PlatformManager.resolveLlvmUtility(utility: String) = "${hostPlatform.absoluteLlvmHome}/bin/$utility"
++// dingxiao
++fun PlatformManager.resolveLlvmUtility(utility: String, target: String? = null) = "${hostPlatform.absoluteLlvmHome(target)}/bin/$utility"
+ 
+-fun ExecOperations.execLlvmUtility(platformManager: PlatformManager, utility: String, action: Action<in ExecSpec>): ExecResult {
++// dingxiao
++fun ExecOperations.execLlvmUtility(platformManager: PlatformManager, utility: String, target: String? = null, action: Action<in ExecSpec>): ExecResult {
+     return exec {
+         action.execute(this)
+-        executable = platformManager.resolveLlvmUtility(utility)
++        executable = platformManager.resolveLlvmUtility(utility, target)
+     }
+ }
+\ No newline at end of file
+diff --git a/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/Utils.kt b/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/Utils.kt
+index 4eddcbad7155..9ded85955d45 100644
+--- a/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/Utils.kt
++++ b/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/Utils.kt
+@@ -340,7 +340,7 @@ fun Project.buildStaticLibrary(cSources: Collection<File>, output: File, objDir:
+     output.parentFile.mkdirs()
+     exec {
+         commandLine(
+-            "${platform.configurables.absoluteLlvmHome}/bin/llvm-ar",
++            "${platform.configurables.absoluteLlvmHome()}/bin/llvm-ar", // dingxiao
+             "-rc",
+             output,
+             *fileTree(objDir).files.toTypedArray()
+diff --git a/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/bitcode/CompileToBitcodePlugin.kt b/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/bitcode/CompileToBitcodePlugin.kt
+index 4cf20b15ae0e..5524231f756d 100644
+--- a/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/bitcode/CompileToBitcodePlugin.kt
++++ b/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/bitcode/CompileToBitcodePlugin.kt
+@@ -243,7 +243,8 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
+                     val compileTask: TaskProvider<ClangFrontend> = this@apply
+                     directory.set(compileTask.flatMap { it.workingDirectory })
+                     files.setFrom(compileTask.map { it.inputFiles })
+-                    arguments.set(compileTask.map { listOf(execClang.resolveExecutable(it.compiler.get())) + it.compilerFlags.get() + execClang.clangArgsForCppRuntime(target.name) })
++                    // dingxiao
++                    arguments.set(compileTask.map { listOf(execClang.resolveExecutable(it.compiler.get(), target.name)) + it.compilerFlags.get() + execClang.clangArgsForCppRuntime(target.name) })
+                     // Only the location of output file matters, compdb does not depend on the compilation result.
+                     output.set(compileTask.flatMap { it.outputDirectory.locationOnly.map { it.asFile.absolutePath }})
+                 }
+@@ -265,6 +266,7 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
+             configure {
+                 notCompatibleWithConfigurationCache("When GoogleTest are not downloaded llvm-link is missing arguments")
+                 this.description = "Link '${module.name}' bitcode files (${this@SourceSet.name} sources) into a single bitcode file for $_target"
++                this.targetName.set(target.name) // dingxiao
+                 this.inputFiles.from(compileTask)
+                 this.outputFile.set(this@SourceSet.outputFile)
+                 this.arguments.set(module.linkerArgs)
+diff --git a/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/cpp/LlvmLink.kt b/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/cpp/LlvmLink.kt
+index 94ee9764e68d..636653bf0385 100644
+--- a/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/cpp/LlvmLink.kt
++++ b/kotlin-native/build-tools/src/main/kotlin/org/jetbrains/kotlin/cpp/LlvmLink.kt
+@@ -29,6 +29,7 @@ private abstract class LlvmLinkJob : WorkAction<LlvmLinkJob.Parameters> {
+         val outputFile: RegularFileProperty
+         val arguments: ListProperty<String>
+         val platformManager: Property<PlatformManager>
++        val targetName: Property<String> // dingxiao
+     }
+ 
+     @get:Inject
+@@ -36,7 +37,7 @@ private abstract class LlvmLinkJob : WorkAction<LlvmLinkJob.Parameters> {
+ 
+     override fun execute() {
+         with(parameters) {
+-            execOperations.execLlvmUtility(platformManager.get(), "llvm-link") {
++            execOperations.execLlvmUtility(platformManager.get(), "llvm-link", targetName.get()) { // dingxiao
+                 args = listOf("-o", outputFile.asFile.get().absolutePath) + arguments.get() + inputFiles.map { it.absolutePath }
+             }
+         }
+@@ -65,6 +66,12 @@ abstract class LlvmLink : DefaultTask() {
+     @get:Input
+     abstract val arguments: ListProperty<String>
+ 
++    /**
++     * targetName added by dingxiao
++     */
++    @get:Input
++    abstract val targetName: Property<String>
++
+     @get:Inject
+     protected abstract val workerExecutor: WorkerExecutor
+ 
+@@ -79,6 +86,7 @@ abstract class LlvmLink : DefaultTask() {
+             outputFile.set(this@LlvmLink.outputFile)
+             arguments.set(this@LlvmLink.arguments)
+             platformManager.set(this@LlvmLink.platformManager)
++            targetName.set(this@LlvmLink.targetName) // dingxiao
+         }
+     }
+ }
+\ No newline at end of file
+diff --git a/kotlin-native/konan/konan.properties b/kotlin-native/konan/konan.properties
+index bfb8200f256d..da41545ba98a 100644
+--- a/kotlin-native/konan/konan.properties
++++ b/kotlin-native/konan/konan.properties
+@@ -574,6 +574,50 @@ abiSpecificLibraries.linux_x64 = lib usr/lib ../lib64 lib64 usr/lib64
+ # targetSysRoot relative
+ crtFilesLocation.linux_x64 = usr/lib
+ 
++# dxx
++targetToolchain.mingw_x64-ohos_arm64 = $llvmHome.mingw_x64
++# targetToolchain.macos_x64-ohos_arm64 = $llvmHome.macos_x64
++targetToolchain.macos_x64-ohos_arm64 = /Users/dxj/development/ohos-sdk/darwin/native/llvm
++targetToolchain.macos_arm64-ohos_arm64 = $llvmHome.macos_arm64
++
++emulatorDependency.linux_x64-ohos_arm64 = qemu-aarch64-static-5.1.0-linux-2
++emulatorExecutable.linux_x64-ohos_arm64 = qemu-aarch64-static-5.1.0-linux-2/qemu-aarch64
++
++targetTriple.ohos_arm64 = aarch64-linux-ohos
++linkerNoDebugFlags.ohos_arm64 = -S
++inkerDynamicFlags.ohos_arm64 = -shared
++linkerOptimizationFlags.ohos_arm64 = --gc-sections
++targetSysRoot.ohos_arm64 = /Users/dxj/development/ohos-sdk/darwin/native/sysroot
++# We could reuse host toolchain here.
++linkerKonanFlags.ohos_arm64 = -Bstatic -Bdynamic -ldl -lm -lpthread -lunwind -lc++ -lc++abi \
++  --defsym __cxa_demangle=Konan_cxa_demangle -lc
++# targetSysroot-relative.
++#libGcc.ohos_arm64 = ../../lib/gcc/aarch64-unknown-linux-gnu/8.3.0
++targetCpu.ohos_arm64 = cortex-a57
++clangFlags.ohos_arm64 = -cc1 -emit-obj -disable-llvm-optzns -x ir
++clangNooptFlags.ohos_arm64 = -O1
++clangOptFlags.ohos_arm64 = -O3 -ffunction-sections
++clangDebugFlags.ohos_arm64 = -O0
++dynamicLibraryRelocationMode.ohos_arm64 = pic
++staticLibraryRelocationMode.ohos_arm64 = pic
++
++linker.linux_x64-ohos_arm64 = $targetToolchain.linux_x64-ohos_arm64/bin/ld.lld
++linkerHostSpecificFlags.linux_x64-ohos_arm64 =
++# TODO: Check ld.lld from LLVM.
++linker.mingw_x64-ohos_arm64 = $targetToolchain.mingw_x64/bin/ld.gold
++linkerHostSpecificFlags.mingw_x64-ohos_arm64 =
++linker.macos_x64-ohos_arm64 = $targetToolchain.macos_x64-ohos_arm64/bin/ld.lld
++linkerHostSpecificFlags.macos_x64-ohos_arm64 =
++linker.macos_arm64-ohos_arm64 = $targetToolchain.macos_arm64-ohos_arm64/bin/ld.lld
++linkerHostSpecificFlags.macos_arm64-ohos_arm64 =
++# dynamicLinker.ohos_arm64 = /lib/ld-musl-aarch64.so.1
++dynamicLinker.ohos_arm64 = /lib/ld-linux-aarch64.so.1
++# targetSysRoot relative
++# abiSpecificLibraries.ohos_arm64 = usr/lib/aarch64-linux-ohos 
++abiSpecificLibraries.ohos_arm64 = lib usr/lib
++# targetSysRoot relative
++# crtFilesLocation.ohos_arm64 = usr/lib/aarch64-linux-ohos
++crtFilesLocation.ohos_arm64 = usr/lib
+ 
+ # Raspberry Pi
+ gccToolchain.linux_arm32_hfp = $toolchainDependency.linux_arm32_hfp
+diff --git a/kotlin-native/libllvmext/src/main/cpp/CAPIExtensions.cpp b/kotlin-native/libllvmext/src/main/cpp/CAPIExtensions.cpp
+index 919d0e35963b..5040dfbcf88a 100644
+--- a/kotlin-native/libllvmext/src/main/cpp/CAPIExtensions.cpp
++++ b/kotlin-native/libllvmext/src/main/cpp/CAPIExtensions.cpp
+@@ -38,6 +38,13 @@ void LLVMKotlinInitializeTargets() {
+     INIT_LLVM_TARGET(Mips)
+     INIT_LLVM_TARGET(X86)
+     INIT_LLVM_TARGET(WebAssembly)
++// dingxiao
++#elif KONAN_OHOS
++    INIT_LLVM_TARGET(AArch64)
++    INIT_LLVM_TARGET(ARM)
++    INIT_LLVM_TARGET(Mips)
++    INIT_LLVM_TARGET(X86)
++    INIT_LLVM_TARGET(WebAssembly)
+ #elif KONAN_WINDOWS
+     INIT_LLVM_TARGET(AArch64)
+     INIT_LLVM_TARGET(ARM)
+diff --git a/kotlin-native/performance/buildSrc/src/main/kotlin/Internals.kt b/kotlin-native/performance/buildSrc/src/main/kotlin/Internals.kt
+index 8affb1e43f89..3b0635ef2f18 100644
+--- a/kotlin-native/performance/buildSrc/src/main/kotlin/Internals.kt
++++ b/kotlin-native/performance/buildSrc/src/main/kotlin/Internals.kt
+@@ -45,6 +45,10 @@ internal val NamedDomainObjectCollection<KotlinTargetPreset<*>>.mingwX64: Kotlin
+ internal val NamedDomainObjectCollection<KotlinTargetPreset<*>>.linuxArm64: KotlinTargetPreset<*>
+     get() = getByName(::linuxArm64.name)
+ 
++// dingxiao
++internal val NamedDomainObjectCollection<KotlinTargetPreset<*>>.ohosArm64: KotlinTargetPreset<*>
++    get() = getByName(::ohosArm64.name)
++
+ internal val NamedDomainObjectContainer<out KotlinCompilation<*>>.main: KotlinNativeCompilation
+     get() = getByName(::main.name) as KotlinNativeCompilation
+ 
+diff --git a/kotlin-native/performance/buildSrc/src/main/kotlin/MPPTools.kt b/kotlin-native/performance/buildSrc/src/main/kotlin/MPPTools.kt
+index 282e30a70527..5b2cfe867a34 100644
+--- a/kotlin-native/performance/buildSrc/src/main/kotlin/MPPTools.kt
++++ b/kotlin-native/performance/buildSrc/src/main/kotlin/MPPTools.kt
+@@ -72,6 +72,7 @@ fun targetHostPreset(
+ ): KotlinTargetPreset<*> {
+     return when(crossTarget) {
+         "linuxArm64" -> subproject.kotlin.presets.linuxArm64
++        "ohosArm64" -> subproject.kotlin.presets.ohosArm64 // dingxiao
+         "linuxX64" -> subproject.kotlin.presets.linuxX64
+         else -> throw Exception("Running becnhmarks on target $crossTarget isn't supported yet.")
+     }
+diff --git a/kotlin-native/platformLibs/build.gradle.kts b/kotlin-native/platformLibs/build.gradle.kts
+index 7187513de0a6..57ece05f771d 100644
+--- a/kotlin-native/platformLibs/build.gradle.kts
++++ b/kotlin-native/platformLibs/build.gradle.kts
+@@ -65,7 +65,14 @@ enabledTargets(platformManager).forEach { target ->
+                     klibFiles(df.config.depends.map { "$konanHome/klib/platform/$targetName/${fileNamePrefix}${it}" })
+                 }
+                 extraOpts("-Xpurge-user-libs", "-Xshort-module-name", df.name, "-Xdisable-experimental-annotation")
+-                compilerOpts("-fmodules-cache-path=${project.layout.buildDirectory.dir("clangModulesCache").get().asFile}")
++                // compilerOpts("-fmodules-cache-path=${project.layout.buildDirectory.dir("clangModulesCache").get().asFile}")
++                // dingxiao
++                val compilerOptions = mutableListOf<String>()
++                compilerOptions.add("-fmodules-cache-path=${project.layout.buildDirectory.dir("clangModulesCache").get().asFile}")
++                if (targetName == "ohos_arm64") {
++                    compilerOptions.add("-I/Users/dxj/development/ohos-sdk/darwin/native/sysroot/usr/include/aarch64-linux-ohos")
++                }
++                compilerOpts(*compilerOptions.toTypedArray())
+             }
+         }
+ 
+diff --git a/kotlin-native/platformLibs/src/platform/ohos/builtin.def b/kotlin-native/platformLibs/src/platform/ohos/builtin.def
+new file mode 100644
+index 000000000000..b106a84964e6
+--- /dev/null
++++ b/kotlin-native/platformLibs/src/platform/ohos/builtin.def
+@@ -0,0 +1,98 @@
++depends = posix
++package = platform.builtin
++headerFilter =
++language = C
++---
++// See https://github.com/llvm-mirror/clang/blob/master/include/clang/Basic/Builtins.def
++// TODO: autogenerate from machine format.
++
++// Returns x with the order of the bytes reversed; for example, 0xaabb becomes 0xbbaa. Byte here always means exactly 8 bits.
++static inline short builtin_bswap16(short x) {
++   return __builtin_bswap16(x);
++}
++
++static inline int builtin_bswap32(int x) {
++   return __builtin_bswap32(x);
++}
++
++static inline long long builtin_bswap64(long long x) {
++   return __builtin_bswap64(x);
++}
++
++// Returns the number of leading 0-bits in x, starting at the most significant bit position. If x is 0, the result is undefined.
++static inline int builtin_clzs(unsigned short x) {
++   return __builtin_clzs(x);
++}
++
++static inline int builtin_clz(unsigned int x) {
++   return __builtin_clz(x);
++}
++
++static inline int builtin_clzl(unsigned long x) {
++   return __builtin_clzl(x);
++}
++
++static inline int builtin_clzll(unsigned long long x) {
++   return __builtin_clzll(x);
++}
++
++// Returns the number of trailing 0-bits in x, starting at the least significant bit position. If x is 0, the result is undefined.
++static inline int builtin_ctzs(unsigned short x) {
++   return __builtin_ctzs(x);
++}
++
++static inline int builtin_ctz(unsigned int x) {
++   return __builtin_ctz(x);
++}
++
++static inline int builtin_ctzl(unsigned long x) {
++   return __builtin_ctzl(x);
++}
++
++static inline int builtin_ctzll(unsigned long long x) {
++   return __builtin_ctzll(x);
++}
++
++// Returns one plus the index of the least significant 1-bit of x, or if x is zero, returns zero.
++static inline int builtin_ffs(int x) {
++   return __builtin_ffs(x);
++}
++
++static inline int builtin_ffsl(long x) {
++   return __builtin_ffsl(x);
++}
++
++static inline int builtin_ffsll(long long x) {
++   return __builtin_ffsll(x);
++}
++
++// Returns the parity of x, i.e. the number of 1-bits in x modulo 2.
++static inline int builtin_parity(int x) {
++   return __builtin_parity(x);
++}
++
++static inline int builtin_parityl(unsigned long x) {
++   return __builtin_parityl(x);
++}
++
++static inline int builtin_parityll(unsigned long long x) {
++   return __builtin_parityll(x);
++}
++
++// Returns the number of 1-bits in x.
++static inline int builtin_popcount(int x) {
++   return __builtin_popcount(x);
++}
++
++static inline int builtin_popcountl(long x) {
++   return __builtin_popcountl(x);
++}
++
++static inline int builtin_popcountll(long long x) {
++    return __builtin_popcountll(x);
++}
++
++// This function is used to flush the processor's instruction cache for the region of memory between begin inclusive and end exclusive.
++static inline void builtin_clear_cache(void* begin, void* end) {
++    __builtin___clear_cache(begin, end);
++}
+\ No newline at end of file
+diff --git a/kotlin-native/platformLibs/src/platform/ohos/iconv.def b/kotlin-native/platformLibs/src/platform/ohos/iconv.def
+new file mode 100644
+index 000000000000..49dd9ec0ed23
+--- /dev/null
++++ b/kotlin-native/platformLibs/src/platform/ohos/iconv.def
+@@ -0,0 +1,3 @@
++depends = posix
++package = platform.iconv
++headers = iconv.h
+diff --git a/kotlin-native/platformLibs/src/platform/ohos/linux.def b/kotlin-native/platformLibs/src/platform/ohos/linux.def
+new file mode 100644
+index 000000000000..c07718e25c34
+--- /dev/null
++++ b/kotlin-native/platformLibs/src/platform/ohos/linux.def
+@@ -0,0 +1,35 @@
++package = platform.linux
++headers = aio.h byteswap.h cpio.h crypt.h \
++	elf.h endian.h features.h fmtmsg.h \
++    glob.h ifaddrs.h langinfo.h lastlog.h \
++	libintl.h link.h malloc.h mntent.h \
++	monetary.h mqueue.h \
++	nl_types.h pty.h \
++	spawn.h stdc-predef.h stdio_ext.h syscall.h \
++	tar.h uchar.h ulimit.h \
++	utmpx.h values.h wait.h wordexp.h \
++	arpa/ftp.h arpa/inet.h arpa/nameser_compat.h \
++	arpa/nameser.h arpa/telnet.h arpa/tftp.h \
++	netinet/if_ether.h \
++	netinet/ether.h linux/in6.h netpacket/packet.h \
++	sys/acct.h sys/auxv.h \
++	sys/dir.h sys/epoll.h sys/errno.h \
++	sys/eventfd.h sys/fanotify.h sys/fcntl.h \
++	sys/file.h sys/fsuid.h \
++	sys/inotify.h sys/kd.h sys/klog.h sys/mount.h \
++	sys/msg.h sys/mtio.h sys/param.h \
++	sys/personality.h sys/prctl.h sys/procfs.h \
++    sys/reboot.h sys/resource.h \
++	sys/sem.h sys/sendfile.h sys/signalfd.h sys/signal.h \
++	sys/socket.h sys/soundcard.h sys/statfs.h \
++	sys/statvfs.h sys/stropts.h sys/swap.h sys/syscall.h \
++	sys/sysinfo.h sys/syslog.h sys/sysmacros.h sys/termios.h \
++	sys/timeb.h sys/timerfd.h sys/timex.h \
++	sys/ttydefaults.h sys/types.h sys/ucontext.h sys/uio.h \
++	sys/un.h sys/user.h utime.h sys/utsname.h sys/vfs.h \
++	sys/vt.h sys/xattr.h
++
++headers.x86-64 = sys/debugreg.h sys/reg.h sys/io.h sys/perm.h sys/kdaemon.h
++
++compilerOpts = -D_ANSI_SOURCE -D_POSIX_C_SOURCE=199309 -D_BSD_SOURCE -D_XOPEN_SOURCE=700
++depends = posix
+diff --git a/kotlin-native/platformLibs/src/platform/ohos/posix.def b/kotlin-native/platformLibs/src/platform/ohos/posix.def
+new file mode 100644
+index 000000000000..b7cc6a0cd057
+--- /dev/null
++++ b/kotlin-native/platformLibs/src/platform/ohos/posix.def
+@@ -0,0 +1,80 @@
++package = platform.posix
++headers = alloca.h ar.h assert.h complex.h ctype.h dirent.h dlfcn.h err.h errno.h fcntl.h \
++    fenv.h fnmatch.h ftw.h getopt.h grp.h inttypes.h libgen.h limits.h \
++    locale.h math.h memory.h netdb.h paths.h poll.h \
++    pthread.h pwd.h regex.h resolv.h sched.h search.h semaphore.h setjmp.h signal.h \
++    stdint.h stddef.h stdio.h stdlib.h string.h strings.h syslog.h termios.h \
++    time.h ucontext.h unistd.h utime.h utmp.h wchar.h wctype.h \
++    net/ethernet.h net/if.h net/if_arp.h net/route.h \
++    netinet/icmp6.h netinet/if_ether.h netinet/in.h netinet/in_systm.h \
++    netinet/ip.h netinet/ip6.h netinet/ip_icmp.h netinet/tcp.h netinet/udp.h \
++    sys/ioctl.h sys/ipc.h sys/mman.h sys/poll.h sys/ptrace.h \
++    sys/select.h sys/shm.h sys/stat.h sys/socket.h \
++    sys/time.h sys/times.h sys/utsname.h sys/wait.h
++
++compilerOpts = -D_ANSI_SOURCE -D_POSIX_C_SOURCE=199309 -D_BSD_SOURCE \
++               -D_XOPEN_SOURCE=700 -D__need_error_t
++linkerOpts = -lresolv -lm -lpthread -lutil -lcrypt -lrt
++excludedFunctions = bindresvport6 __p_section __res_nisourserver __res_npquery \
++                    ns_sign ns_sign2 ns_sign_tcp ns_sign_tcp2 ns_sign_tcp_init \
++           ns_find_tsig ns_verify ns_verify_tcp ns_verify_tcp_init \
++           __acos __asin __atan __atan2 __cos __sin __tan __cosh __sinh \
++           __tanh __acosh __asinh __atanh __exp __frexp __ldexp __log __log10 \
++           __modf __expm1 __log1p __logb __exp2 __log2 __pow __sqrt __hypot \
++           __cbrt __ceil __fabs __floor __fmod __drem __significand __copysign \
++           __nan __j0 __j1 __jn __y0 __y1 __yn __erf __erfc __lgamma __tgamma \
++           __gamma __lgamma_r __rint __nextafter __remainder __scalbn __ilogb \
++           __scalbln __nearbyint __round __trunc __remquo __lrint __llrint \
++           __lround __llround __fdim __fmax __fmin __fma __scalb __acosf __asinf \
++           __atanf __atan2f __cosf __sinf __tanf __coshf __sinhf __tanhf __acoshf \
++           __asinhf __atanhf __expf __frexpf __ldexpf __logf __log10f __modff \
++           __expm1f __log1pf __logbf __exp2f __log2f __powf __sqrtf __hypotf \
++           __cbrtf __ceilf __fabsf __floorf __fmodf __dremf __significandf \
++           __copysignf __nanf __j0f __j1f __jnf __y0f __y1f __ynf __erff \
++           __erfcf __lgammaf __tgammaf __gammaf __lgammaf_r __rintf __nextafterf \
++           __remainderf __scalbnf __ilogbf __scalblnf __nearbyintf __roundf __truncf \
++           __remquof __lrintf __llrintf __lroundf __llroundf __fdimf __fmaxf __fminf \
++           __fmaf __scalbf _ns_flagdata
++---
++// cinterop -target linux -def klib/src/platform/linux/posix.def -o platform.posix.klib
++
++// Wrapper to access errno variable.
++static int posix_errno() {
++    return errno;
++}
++
++static void set_posix_errno(int value) {
++        errno = value;
++}
++
++// Wrapper to access h_errno variable.
++static int posix_h_errno() {
++    return h_errno;
++}
++
++static void set_posix_h_errno(int value) {
++        h_errno = value;
++}
++
++static short posix_htons(short x) {
++    return htons(x);
++}
++
++static void posix_FD_ZERO(fd_set *set) {
++    FD_ZERO(set);
++}
++
++static void posix_FD_SET(int bit, fd_set *set) {
++    FD_SET(bit, set);
++}
++
++static int posix_FD_ISSET(int bit, fd_set *set) {
++    return FD_ISSET(bit, set);
++}
++
++static int init_sockets() {
++    return 0;
++}
++
++static void deinit_sockets() {
++}
+\ No newline at end of file
+diff --git a/kotlin-native/platformLibs/src/platform/ohos/zlib.def b/kotlin-native/platformLibs/src/platform/ohos/zlib.def
+new file mode 100644
+index 000000000000..04eec1ee09e0
+--- /dev/null
++++ b/kotlin-native/platformLibs/src/platform/ohos/zlib.def
+@@ -0,0 +1,34 @@
++depends = posix
++package = platform.zlib
++headers = zconf.h zlib.h
++headerFilter = zlib.h
++compilerOpts = -DByte=uByte -DBytef=uBytef -D_ANSI_SOURCE -D_POSIX_C_SOURCE=199309 -D_BSD_SOURCE -D_XOPEN_SOURCE=700
++linkerOpts = -lz
++
++---
++#undef deflateInit
++static inline int deflateInit(z_streamp strm, int level) {
++	return deflateInit_(strm, level, ZLIB_VERSION, (int)sizeof(z_stream));
++}
++
++#undef deflateInit2
++static inline int deflateInit2(z_streamp strm, int level, int method,
++                               int windowBits, int memLevel, int strategy) {
++	return deflateInit2_(strm, level, method, windowBits, memLevel,
++                         strategy, ZLIB_VERSION, (int)sizeof(z_stream));
++}
++
++#undef inflateInit
++static inline int inflateInit(z_streamp strm) {
++	return inflateInit_(strm, ZLIB_VERSION, (int)sizeof(z_stream));
++}
++
++#undef inflateInit2
++static inline int inflateInit2(z_streamp strm, int windowBits) {
++    return inflateInit2_(strm, windowBits, ZLIB_VERSION, (int)sizeof(z_stream));
++}
++
++#undef inflateBackInit
++static inline int inflateBackInit(z_streamp strm, int windowBits, unsigned char *window) {
++    return inflateBackInit_(strm, windowBits, window, ZLIB_VERSION, (int)sizeof(z_stream));
++}
+diff --git a/kotlin-native/runtime/build.gradle.kts b/kotlin-native/runtime/build.gradle.kts
+index 15d67de5de7b..dfb3fa095672 100644
+--- a/kotlin-native/runtime/build.gradle.kts
++++ b/kotlin-native/runtime/build.gradle.kts
+@@ -81,7 +81,7 @@ bitcode {
+                     if (sanitizer == SanitizerKind.THREAD) { "-O1" } else { "-O3" },
+                     "-DKONAN_MI_MALLOC=1",
+                     "-Wno-unknown-pragmas",
+-                    "-ftls-model=initial-exec",
++                    // "-ftls-model=initial-exec", dingxiao
+                     "-Wno-unused-function",
+                     "-Wno-error=atomic-alignment",
+                     "-Wno-unused-parameter", /* for windows 32 */
+@@ -98,7 +98,7 @@ bitcode {
+                 else -> 32 // TODO(KT-66500): remove after the bootstrap
+             }
+             val useMachO = target.family.isAppleFamily
+-            val useElf = target.family in listOf(Family.LINUX, Family.ANDROID)
++            val useElf = target.family in listOf(Family.LINUX, Family.ANDROID, Family.OHOS)
+ 
+             sourceSets {
+                 main {
+diff --git a/kotlin-native/runtime/src/main/cpp/Atomic.h b/kotlin-native/runtime/src/main/cpp/Atomic.h
+index ce986c2fdb23..fe1d23a045be 100644
+--- a/kotlin-native/runtime/src/main/cpp/Atomic.h
++++ b/kotlin-native/runtime/src/main/cpp/Atomic.h
+@@ -10,7 +10,7 @@ ALWAYS_INLINE inline T atomicAdd(volatile T* where, T what) {
+ 
+ #pragma clang diagnostic push
+ 
+-#if (KONAN_ANDROID || KONAN_IOS || KONAN_WATCHOS || KONAN_LINUX) && (KONAN_ARM32 || KONAN_X86)
++#if (KONAN_ANDROID || KONAN_IOS || KONAN_WATCHOS || KONAN_LINUX || KONAN_OHOS) && (KONAN_ARM32 || KONAN_X86)
+ // On 32-bit Android clang generates library calls for "large" atomic operations
+ // and warns about "significant performance penalty". See more details here:
+ // https://github.com/llvm/llvm-project/blob/ce56e1a1cc5714f4af5675dd963cfebed766d9e1/clang/lib/CodeGen/CGAtomic.cpp#L775
+diff --git a/kotlin-native/runtime/src/main/cpp/MemoryUsageInfo.cpp b/kotlin-native/runtime/src/main/cpp/MemoryUsageInfo.cpp
+index 709087cd4649..93623964957f 100644
+--- a/kotlin-native/runtime/src/main/cpp/MemoryUsageInfo.cpp
++++ b/kotlin-native/runtime/src/main/cpp/MemoryUsageInfo.cpp
+@@ -24,7 +24,7 @@ size_t kotlin::GetPeakResidentSetSizeBytes() noexcept {
+     return memoryCounters.PeakWorkingSetSize;
+ }
+ 
+-#elif KONAN_LINUX || KONAN_MACOSX || KONAN_IOS
++#elif KONAN_LINUX || KONAN_OHOS || KONAN_MACOSX || KONAN_IOS
+ 
+ #include <sys/time.h>
+ #include <sys/resource.h>
+@@ -32,7 +32,7 @@ size_t kotlin::GetPeakResidentSetSizeBytes() noexcept {
+ size_t kotlin::GetPeakResidentSetSizeBytes() noexcept {
+     ::rusage usage;
+     auto failed = ::getrusage(RUSAGE_SELF, &usage);
+-#if KONAN_LINUX
++#if KONAN_LINUX || KONAN_OHOS
+     // On Linux it's in kilobytes.
+     size_t maxrss = static_cast<size_t>(usage.ru_maxrss * 1024);
+ #elif KONAN_MACOSX || KONAN_IOS
+diff --git a/kotlin-native/runtime/src/main/cpp/Porting.cpp b/kotlin-native/runtime/src/main/cpp/Porting.cpp
+index 8fbee36c8bf4..90e6e263c2f9 100644
+--- a/kotlin-native/runtime/src/main/cpp/Porting.cpp
++++ b/kotlin-native/runtime/src/main/cpp/Porting.cpp
+@@ -194,11 +194,11 @@ NO_EXTERNAL_CALLS_CHECK bool isOnThreadExitNotSetOrAlreadyStarted() {
+     return terminationKey != 0 && pthread_getspecific(terminationKey) == nullptr;
+ }
+ 
+-#if KONAN_LINUX
++#if KONAN_LINUX || KONAN_OHOS
+ static pthread_key_t dummyKey;
+ #endif
+ static void onThreadExitInit() {
+-#if KONAN_LINUX
++#if KONAN_LINUX || KONAN_OHOS
+   // Due to glibc bug we have to create first key as dummy, to avoid
+   // conflicts with potentially uninitialized dlfcn error key.
+   // https://code.woboq.org/userspace/glibc/dlfcn/dlerror.c.html#237
+@@ -221,7 +221,7 @@ void onThreadExit(void (*destructor)(void*), void* destructorParameter) {
+   pthread_setspecific(terminationKey, destructorRecord);
+ }
+ 
+-#if KONAN_LINUX
++#if KONAN_LINUX || KONAN_OHOS
+ #include <unistd.h>
+ #include <sys/types.h>
+ #include <sys/syscall.h>
+@@ -243,7 +243,7 @@ NO_EXTERNAL_CALLS_CHECK int currentThreadId() {
+     return tid;
+ #elif KONAN_ANDROID
+     return gettid();
+-#elif KONAN_LINUX
++#elif KONAN_LINUX || KONAN_OHOS
+     return gettid();
+ #elif KONAN_WINDOWS
+   return GetCurrentThreadId();
+diff --git a/kotlin-native/runtime/src/main/cpp/Runtime.cpp b/kotlin-native/runtime/src/main/cpp/Runtime.cpp
+index cb9d27d0a136..a89fee0f3daf 100644
+--- a/kotlin-native/runtime/src/main/cpp/Runtime.cpp
++++ b/kotlin-native/runtime/src/main/cpp/Runtime.cpp
+@@ -302,6 +302,8 @@ KInt Konan_Platform_getOsFamily() {
+   return 7;
+ #elif KONAN_WATCHOS
+   return 8;
++#elif KONAN_OHOS
++  return 9; // dingxiao
+ #else
+ #warning "Unknown platform"
+   return 0;
+diff --git a/kotlin-native/runtime/src/main/cpp/StdCppStubs.cpp b/kotlin-native/runtime/src/main/cpp/StdCppStubs.cpp
+index cc9967cbb4a4..c51eb210037b 100644
+--- a/kotlin-native/runtime/src/main/cpp/StdCppStubs.cpp
++++ b/kotlin-native/runtime/src/main/cpp/StdCppStubs.cpp
+@@ -18,7 +18,7 @@
+ #include "Porting.h"
+ #include "Common.h"
+ 
+-#if KONAN_LINUX || KONAN_WINDOWS
++#if KONAN_LINUX || KONAN_OHOS || KONAN_WINDOWS
+ // This function replaces `__cxa_demangle` defined in GNU libstdc++
+ // by adding `--defsym` flag in `konan.properties`.
+ // This allows to avoid linking `__cxa_demangle` and its dependencies, thus reducing binary size.
+@@ -30,16 +30,18 @@ RUNTIME_USED RUNTIME_WEAK extern "C" char* Konan_cxa_demangle(
+   return nullptr;
+ }
+ 
++#ifndef KONAN_OHOS
+ namespace std {
+ RUNTIME_WEAK void __throw_length_error(const char* __s __attribute__((unused))) {
+   RuntimeCheck(false, "%s", __s);
+ }
+ 
+ }  // namespace std
++#endif
+ 
+-#endif // KONAN_LINUX || KONAN_WINDOWS
++#endif // KONAN_LINUX || KONAN_OHOS || KONAN_WINDOWS
+ 
+-#if KONAN_LINUX
++#if KONAN_LINUX || KONAN_OHOS
+ 
+ #include <system_error>
+ 
+@@ -54,4 +56,4 @@ const std::error_category& std_system_category_backward_compatibility_with_gcc_4
+     return std::system_category();
+ }
+ 
+-#endif // KONAN_LINUX
++#endif // KONAN_LINUX || KONAN_OHOS
+diff --git a/kotlin-native/utilities/cli-runner/src/org/jetbrains/kotlin/cli/utilities/LlvmClang.kt b/kotlin-native/utilities/cli-runner/src/org/jetbrains/kotlin/cli/utilities/LlvmClang.kt
+index cd3275e122f4..09d3929f4f62 100644
+--- a/kotlin-native/utilities/cli-runner/src/org/jetbrains/kotlin/cli/utilities/LlvmClang.kt
++++ b/kotlin-native/utilities/cli-runner/src/org/jetbrains/kotlin/cli/utilities/LlvmClang.kt
+@@ -13,7 +13,7 @@ fun runLlvmTool(args: Array<String>) {
+     val toolArguments = args.drop(1)
+ 
+     val platform = platformManager().hostPlatform
+-    val llvmHome = platform.configurables.absoluteLlvmHome
++    val llvmHome = platform.configurables.absoluteLlvmHome()
+ 
+     val toolPath = "$llvmHome/bin/$toolName"
+ 
+@@ -27,7 +27,7 @@ fun runLlvmClangToolWithTarget(args: Array<String>) {
+ 
+     val platformManager = platformManager()
+     val platform = platformManager.platform(platformManager.targetByName(targetName))
+-    val llvmHome = platform.configurables.absoluteLlvmHome
++    val llvmHome = platform.configurables.absoluteLlvmHome()
+ 
+     val toolPath = "$llvmHome/bin/$toolName"
+ 
+diff --git a/libraries/tools/kotlin-gradle-plugin-api/src/common/kotlin/org/jetbrains/kotlin/gradle/plugin/KotlinHierarchyBuilder.kt b/libraries/tools/kotlin-gradle-plugin-api/src/common/kotlin/org/jetbrains/kotlin/gradle/plugin/KotlinHierarchyBuilder.kt
+index 56a82bc918c4..20d797b9a755 100644
+--- a/libraries/tools/kotlin-gradle-plugin-api/src/common/kotlin/org/jetbrains/kotlin/gradle/plugin/KotlinHierarchyBuilder.kt
++++ b/libraries/tools/kotlin-gradle-plugin-api/src/common/kotlin/org/jetbrains/kotlin/gradle/plugin/KotlinHierarchyBuilder.kt
+@@ -171,6 +171,9 @@ interface KotlinHierarchyBuilder {
+     fun withMacosArm64()
+     fun withLinuxArm64()
+ 
++    fun withOhosArm64()
++    fun withOhos()
++
+     @Deprecated(message = REMOVED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+     fun withIosArm32()
+ 
+diff --git a/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/dsl/AbstractKotlinNativeBinaryContainer.kt b/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/dsl/AbstractKotlinNativeBinaryContainer.kt
+index d19ecbadc134..109645dcddee 100644
+--- a/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/dsl/AbstractKotlinNativeBinaryContainer.kt
++++ b/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/dsl/AbstractKotlinNativeBinaryContainer.kt
+@@ -4,7 +4,6 @@ import org.gradle.api.Action
+ import org.gradle.api.DomainObjectSet
+ import org.gradle.api.Project
+ import org.jetbrains.kotlin.gradle.plugin.mpp.*
+-import org.jetbrains.kotlin.util.capitalizeDecapitalize.toUpperCaseAsciiOnly
+ 
+ // DO NOT EDIT MANUALLY! Generated by org.jetbrains.kotlin.generators.gradle.dsl.MppNativeBinaryDSLCodegenKt
+ 
+@@ -43,7 +42,7 @@ abstract class AbstractKotlinNativeBinaryContainer : DomainObjectSet<NativeBinar
+ 
+     /** Returns an executable with the given [namePrefix] and the given build type. Throws an exception if there is no such binary.*/
+     fun getExecutable(namePrefix: String, buildType: String): Executable =
+-        getExecutable(namePrefix, NativeBuildType.valueOf(buildType.toUpperCaseAsciiOnly()))
++        getExecutable(namePrefix, NativeBuildType.valueOf(buildType.toUpperCase()))
+ 
+     /** Returns an executable with the empty name prefix and the given build type. Throws an exception if there is no such binary.*/
+     fun getExecutable(buildType: NativeBuildType): Executable = getExecutable("", buildType)
+@@ -56,7 +55,7 @@ abstract class AbstractKotlinNativeBinaryContainer : DomainObjectSet<NativeBinar
+ 
+     /** Returns an executable with the given [namePrefix] and the given build type. Returns null if there is no such binary. */
+     fun findExecutable(namePrefix: String, buildType: String): Executable? =
+-        findExecutable(namePrefix, NativeBuildType.valueOf(buildType.toUpperCaseAsciiOnly()))
++        findExecutable(namePrefix, NativeBuildType.valueOf(buildType.toUpperCase()))
+ 
+     /** Returns an executable with the empty name prefix and the given build type. Returns null if there is no such binary. */
+     fun findExecutable(buildType: NativeBuildType): Executable? = findExecutable("", buildType)
+@@ -69,7 +68,7 @@ abstract class AbstractKotlinNativeBinaryContainer : DomainObjectSet<NativeBinar
+ 
+     /** Returns a static library with the given [namePrefix] and the given build type. Throws an exception if there is no such binary.*/
+     fun getStaticLib(namePrefix: String, buildType: String): StaticLibrary =
+-        getStaticLib(namePrefix, NativeBuildType.valueOf(buildType.toUpperCaseAsciiOnly()))
++        getStaticLib(namePrefix, NativeBuildType.valueOf(buildType.toUpperCase()))
+ 
+     /** Returns a static library with the empty name prefix and the given build type. Throws an exception if there is no such binary.*/
+     fun getStaticLib(buildType: NativeBuildType): StaticLibrary = getStaticLib("", buildType)
+@@ -82,7 +81,7 @@ abstract class AbstractKotlinNativeBinaryContainer : DomainObjectSet<NativeBinar
+ 
+     /** Returns a static library with the given [namePrefix] and the given build type. Returns null if there is no such binary. */
+     fun findStaticLib(namePrefix: String, buildType: String): StaticLibrary? =
+-        findStaticLib(namePrefix, NativeBuildType.valueOf(buildType.toUpperCaseAsciiOnly()))
++        findStaticLib(namePrefix, NativeBuildType.valueOf(buildType.toUpperCase()))
+ 
+     /** Returns a static library with the empty name prefix and the given build type. Returns null if there is no such binary. */
+     fun findStaticLib(buildType: NativeBuildType): StaticLibrary? = findStaticLib("", buildType)
+@@ -95,7 +94,7 @@ abstract class AbstractKotlinNativeBinaryContainer : DomainObjectSet<NativeBinar
+ 
+     /** Returns a shared library with the given [namePrefix] and the given build type. Throws an exception if there is no such binary.*/
+     fun getSharedLib(namePrefix: String, buildType: String): SharedLibrary =
+-        getSharedLib(namePrefix, NativeBuildType.valueOf(buildType.toUpperCaseAsciiOnly()))
++        getSharedLib(namePrefix, NativeBuildType.valueOf(buildType.toUpperCase()))
+ 
+     /** Returns a shared library with the empty name prefix and the given build type. Throws an exception if there is no such binary.*/
+     fun getSharedLib(buildType: NativeBuildType): SharedLibrary = getSharedLib("", buildType)
+@@ -108,7 +107,7 @@ abstract class AbstractKotlinNativeBinaryContainer : DomainObjectSet<NativeBinar
+ 
+     /** Returns a shared library with the given [namePrefix] and the given build type. Returns null if there is no such binary. */
+     fun findSharedLib(namePrefix: String, buildType: String): SharedLibrary? =
+-        findSharedLib(namePrefix, NativeBuildType.valueOf(buildType.toUpperCaseAsciiOnly()))
++        findSharedLib(namePrefix, NativeBuildType.valueOf(buildType.toUpperCase()))
+ 
+     /** Returns a shared library with the empty name prefix and the given build type. Returns null if there is no such binary. */
+     fun findSharedLib(buildType: NativeBuildType): SharedLibrary? = findSharedLib("", buildType)
+@@ -121,7 +120,7 @@ abstract class AbstractKotlinNativeBinaryContainer : DomainObjectSet<NativeBinar
+ 
+     /** Returns an Objective-C framework with the given [namePrefix] and the given build type. Throws an exception if there is no such binary.*/
+     fun getFramework(namePrefix: String, buildType: String): Framework =
+-        getFramework(namePrefix, NativeBuildType.valueOf(buildType.toUpperCaseAsciiOnly()))
++        getFramework(namePrefix, NativeBuildType.valueOf(buildType.toUpperCase()))
+ 
+     /** Returns an Objective-C framework with the empty name prefix and the given build type. Throws an exception if there is no such binary.*/
+     fun getFramework(buildType: NativeBuildType): Framework = getFramework("", buildType)
+@@ -134,7 +133,7 @@ abstract class AbstractKotlinNativeBinaryContainer : DomainObjectSet<NativeBinar
+ 
+     /** Returns an Objective-C framework with the given [namePrefix] and the given build type. Returns null if there is no such binary. */
+     fun findFramework(namePrefix: String, buildType: String): Framework? =
+-        findFramework(namePrefix, NativeBuildType.valueOf(buildType.toUpperCaseAsciiOnly()))
++        findFramework(namePrefix, NativeBuildType.valueOf(buildType.toUpperCase()))
+ 
+     /** Returns an Objective-C framework with the empty name prefix and the given build type. Returns null if there is no such binary. */
+     fun findFramework(buildType: NativeBuildType): Framework? = findFramework("", buildType)
+@@ -147,7 +146,7 @@ abstract class AbstractKotlinNativeBinaryContainer : DomainObjectSet<NativeBinar
+ 
+     /** Returns a test executable with the given [namePrefix] and the given build type. Throws an exception if there is no such binary.*/
+     fun getTest(namePrefix: String, buildType: String): TestExecutable =
+-        getTest(namePrefix, NativeBuildType.valueOf(buildType.toUpperCaseAsciiOnly()))
++        getTest(namePrefix, NativeBuildType.valueOf(buildType.toUpperCase()))
+ 
+     /** Returns a test executable with the empty name prefix and the given build type. Throws an exception if there is no such binary.*/
+     fun getTest(buildType: NativeBuildType): TestExecutable = getTest("", buildType)
+@@ -160,7 +159,7 @@ abstract class AbstractKotlinNativeBinaryContainer : DomainObjectSet<NativeBinar
+ 
+     /** Returns a test executable with the given [namePrefix] and the given build type. Returns null if there is no such binary. */
+     fun findTest(namePrefix: String, buildType: String): TestExecutable? =
+-        findTest(namePrefix, NativeBuildType.valueOf(buildType.toUpperCaseAsciiOnly()))
++        findTest(namePrefix, NativeBuildType.valueOf(buildType.toUpperCase()))
+ 
+     /** Returns a test executable with the empty name prefix and the given build type. Returns null if there is no such binary. */
+     fun findTest(buildType: NativeBuildType): TestExecutable? = findTest("", buildType)
+diff --git a/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/dsl/KotlinTargetContainerWithPresetFunctions.kt b/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/dsl/KotlinTargetContainerWithPresetFunctions.kt
+index e1d6239dea49..0e1fde585ea0 100644
+--- a/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/dsl/KotlinTargetContainerWithPresetFunctions.kt
++++ b/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/dsl/KotlinTargetContainerWithPresetFunctions.kt
+@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.konan.target.DEPRECATED_TARGET_MESSAGE
+ 
+ private const val ANDROID_TARGET_MIGRATION_MESSAGE = "Please use androidTarget() instead. Learn more here: https://kotl.in/android-target-dsl"
+ 
+-@KotlinGradlePluginPublicDsl
++@KotlinGradlePluginDsl
+ interface KotlinTargetContainerWithPresetFunctions : KotlinTargetsContainerWithPresets {
+ 
+     fun jvm(
+@@ -154,36 +154,6 @@ interface KotlinTargetContainerWithPresetFunctions : KotlinTargetsContainerWithP
+     fun androidNativeArm64(name: String, configure: Action<KotlinNativeTarget>) = androidNativeArm64(name) { configure.execute(this) }
+     fun androidNativeArm64(configure: Action<KotlinNativeTarget>) = androidNativeArm64 { configure.execute(this) }
+ 
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    fun iosArm32(
+-        name: String = "iosArm32",
+-        configure: KotlinNativeTarget.() -> Unit = { }
+-    ): KotlinNativeTarget =
+-        configureOrCreate(
+-            name,
+-            @Suppress("DEPRECATION")
+-            presets.getByName("iosArm32") as KotlinNativeTargetPreset,
+-            configure
+-        )
+-
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun iosArm32() = iosArm32("iosArm32") { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun iosArm32(name: String) = iosArm32(name) { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun iosArm32(name: String, configure: Action<KotlinNativeTarget>) = iosArm32(name) { configure.execute(this) }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun iosArm32(configure: Action<KotlinNativeTarget>) = iosArm32 { configure.execute(this) }
+-
+     fun iosArm64(
+         name: String = "iosArm64",
+         configure: KotlinNativeTarget.() -> Unit = { }
+@@ -264,36 +234,6 @@ interface KotlinTargetContainerWithPresetFunctions : KotlinTargetsContainerWithP
+     fun watchosArm64(name: String, configure: Action<KotlinNativeTarget>) = watchosArm64(name) { configure.execute(this) }
+     fun watchosArm64(configure: Action<KotlinNativeTarget>) = watchosArm64 { configure.execute(this) }
+ 
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    fun watchosX86(
+-        name: String = "watchosX86",
+-        configure: KotlinNativeTargetWithSimulatorTests.() -> Unit = { }
+-    ): KotlinNativeTargetWithSimulatorTests =
+-        configureOrCreate(
+-            name,
+-            @Suppress("DEPRECATION")
+-            presets.getByName("watchosX86") as KotlinNativeTargetWithSimulatorTestsPreset,
+-            configure
+-        )
+-
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun watchosX86() = watchosX86("watchosX86") { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun watchosX86(name: String) = watchosX86(name) { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun watchosX86(name: String, configure: Action<KotlinNativeTargetWithSimulatorTests>) = watchosX86(name) { configure.execute(this) }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun watchosX86(configure: Action<KotlinNativeTargetWithSimulatorTests>) = watchosX86 { configure.execute(this) }
+-
+     fun watchosX64(
+         name: String = "watchosX64",
+         configure: KotlinNativeTargetWithSimulatorTests.() -> Unit = { }
+@@ -406,35 +346,21 @@ interface KotlinTargetContainerWithPresetFunctions : KotlinTargetsContainerWithP
+     fun linuxX64(name: String, configure: Action<KotlinNativeTargetWithHostTests>) = linuxX64(name) { configure.execute(this) }
+     fun linuxX64(configure: Action<KotlinNativeTargetWithHostTests>) = linuxX64 { configure.execute(this) }
+ 
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    fun mingwX86(
+-        name: String = "mingwX86",
++    fun ohosArm64(
++        name: String = "ohosArm64",
+         configure: KotlinNativeTarget.() -> Unit = { }
+     ): KotlinNativeTarget =
+         configureOrCreate(
+             name,
+             @Suppress("DEPRECATION")
+-            presets.getByName("mingwX86") as KotlinNativeTargetPreset,
++            presets.getByName("ohosArm64") as KotlinNativeTargetPreset,
+             configure
+         )
+ 
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun mingwX86() = mingwX86("mingwX86") { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun mingwX86(name: String) = mingwX86(name) { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun mingwX86(name: String, configure: Action<KotlinNativeTarget>) = mingwX86(name) { configure.execute(this) }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun mingwX86(configure: Action<KotlinNativeTarget>) = mingwX86 { configure.execute(this) }
++    fun ohosArm64() = ohosArm64("ohosArm64") { }
++    fun ohosArm64(name: String) = ohosArm64(name) { }
++    fun ohosArm64(name: String, configure: Action<KotlinNativeTarget>) = ohosArm64(name) { configure.execute(this) }
++    fun ohosArm64(configure: Action<KotlinNativeTarget>) = ohosArm64 { configure.execute(this) }
+ 
+     fun mingwX64(
+         name: String = "mingwX64",
+@@ -530,94 +456,4 @@ interface KotlinTargetContainerWithPresetFunctions : KotlinTargetsContainerWithP
+     @Suppress("DEPRECATION")
+     fun linuxArm32Hfp(configure: Action<KotlinNativeTarget>) = linuxArm32Hfp { configure.execute(this) }
+ 
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    fun linuxMips32(
+-        name: String = "linuxMips32",
+-        configure: KotlinNativeTarget.() -> Unit = { }
+-    ): KotlinNativeTarget =
+-        configureOrCreate(
+-            name,
+-            @Suppress("DEPRECATION")
+-            presets.getByName("linuxMips32") as KotlinNativeTargetPreset,
+-            configure
+-        )
+-
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun linuxMips32() = linuxMips32("linuxMips32") { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun linuxMips32(name: String) = linuxMips32(name) { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun linuxMips32(name: String, configure: Action<KotlinNativeTarget>) = linuxMips32(name) { configure.execute(this) }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun linuxMips32(configure: Action<KotlinNativeTarget>) = linuxMips32 { configure.execute(this) }
+-
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    fun linuxMipsel32(
+-        name: String = "linuxMipsel32",
+-        configure: KotlinNativeTarget.() -> Unit = { }
+-    ): KotlinNativeTarget =
+-        configureOrCreate(
+-            name,
+-            @Suppress("DEPRECATION")
+-            presets.getByName("linuxMipsel32") as KotlinNativeTargetPreset,
+-            configure
+-        )
+-
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun linuxMipsel32() = linuxMipsel32("linuxMipsel32") { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun linuxMipsel32(name: String) = linuxMipsel32(name) { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun linuxMipsel32(name: String, configure: Action<KotlinNativeTarget>) = linuxMipsel32(name) { configure.execute(this) }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun linuxMipsel32(configure: Action<KotlinNativeTarget>) = linuxMipsel32 { configure.execute(this) }
+-
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    fun wasm32(
+-        name: String = "wasm32",
+-        configure: KotlinNativeTarget.() -> Unit = { }
+-    ): KotlinNativeTarget =
+-        configureOrCreate(
+-            name,
+-            @Suppress("DEPRECATION")
+-            presets.getByName("wasm32") as KotlinNativeTargetPreset,
+-            configure
+-        )
+-
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun wasm32() = wasm32("wasm32") { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun wasm32(name: String) = wasm32(name) { }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun wasm32(name: String, configure: Action<KotlinNativeTarget>) = wasm32(name) { configure.execute(this) }
+-
+-    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    @Suppress("DEPRECATION_ERROR")
+-    fun wasm32(configure: Action<KotlinNativeTarget>) = wasm32 { configure.execute(this) }
+-
+ }
+\ No newline at end of file
+diff --git a/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/plugin/hierarchy/KotlinHierarchyBuilderImpl.kt b/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/plugin/hierarchy/KotlinHierarchyBuilderImpl.kt
+index 38f5b5b20a4b..eaffd6708092 100644
+--- a/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/plugin/hierarchy/KotlinHierarchyBuilderImpl.kt
++++ b/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/plugin/hierarchy/KotlinHierarchyBuilderImpl.kt
+@@ -146,6 +146,8 @@ private class KotlinHierarchyBuilderImpl(
+ 
+     override fun withLinux() = withTargets { it is KotlinNativeTarget && it.konanTarget.family == Family.LINUX }
+ 
++    override fun withOhos() = withTargets { it is KotlinNativeTarget && it.konanTarget.family == Family.OHOS }
++
+     override fun withAndroidNative() = withTargets { it is KotlinNativeTarget && it.konanTarget.family == Family.ANDROID }
+ 
+     // Don't check for instance of [KotlinJsTargetDsl] or [KotlinWasmTargetDsl] because they are implemented by single target [KotlinJsIrTarget]
+@@ -260,6 +262,10 @@ private class KotlinHierarchyBuilderImpl(
+         it is KotlinNativeTarget && it.konanTarget == KonanTarget.LINUX_ARM64
+     }
+ 
++    override fun withOhosArm64() = withTargets {
++        it is KotlinNativeTarget && it.konanTarget == KonanTarget.OHOS_ARM64
++    }
++
+     @Deprecated(REMOVED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+     override fun withWatchosX86() = Unit
+ 
+diff --git a/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/native/tasks/artifact/KotlinArtifactsExtensionImpl.kt b/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/native/tasks/artifact/KotlinArtifactsExtensionImpl.kt
+index 92cfc4c56bdd..fe26d1a8a1e6 100644
+--- a/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/native/tasks/artifact/KotlinArtifactsExtensionImpl.kt
++++ b/libraries/tools/kotlin-gradle-plugin/src/common/kotlin/org/jetbrains/kotlin/gradle/targets/native/tasks/artifact/KotlinArtifactsExtensionImpl.kt
+@@ -6,8 +6,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinArtifactConfig
+ import org.jetbrains.kotlin.gradle.dsl.KotlinArtifactsExtension
+ import org.jetbrains.kotlin.gradle.plugin.mpp.BitcodeEmbeddingMode
+ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
++import org.jetbrains.kotlin.konan.target.DEPRECATED_TARGET_MESSAGE
+ import org.jetbrains.kotlin.konan.target.KonanTarget
+-import org.jetbrains.kotlin.konan.target.REMOVED_TARGET_MESSAGE
+ import javax.inject.Inject
+ 
+ // DO NOT EDIT MANUALLY! Generated by org.jetbrains.kotlin.generators.gradle.dsl.KotlinArtifactsDSLCodegenKt
+@@ -46,30 +46,14 @@ abstract class KotlinArtifactsExtensionImpl @Inject constructor(project: Project
+     val tvosX64 = KonanTarget.TVOS_X64
+     val tvosSimulatorArm64 = KonanTarget.TVOS_SIMULATOR_ARM64
+     val linuxX64 = KonanTarget.LINUX_X64
++    val ohosArm64 = KonanTarget.OHOS_ARM64
+     val mingwX64 = KonanTarget.MINGW_X64
+     val macosX64 = KonanTarget.MACOS_X64
+     val macosArm64 = KonanTarget.MACOS_ARM64
+     val linuxArm64 = KonanTarget.LINUX_ARM64
+ 
+ 
+-    @Deprecated(REMOVED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    val iosArm32 = Unit
++    @Deprecated(DEPRECATED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
++    val linuxArm32Hfp = KonanTarget.LINUX_ARM32_HFP
+ 
+-    @Deprecated(REMOVED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    val watchosX86 = Unit
+-
+-    @Deprecated(REMOVED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    val mingwX86 = Unit
+-
+-    @Deprecated(REMOVED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    val linuxArm32Hfp = Unit
+-
+-    @Deprecated(REMOVED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    val linuxMips32 = Unit
+-
+-    @Deprecated(REMOVED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    val linuxMipsel32 = Unit
+-
+-    @Deprecated(REMOVED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)
+-    val wasm32 = Unit
+-}
++}
+\ No newline at end of file
+diff --git a/libraries/tools/kotlin-gradle-statistics/src/main/kotlin/org/jetbrains/kotlin/statistics/metrics/StringMetrics.kt b/libraries/tools/kotlin-gradle-statistics/src/main/kotlin/org/jetbrains/kotlin/statistics/metrics/StringMetrics.kt
+index 776997830a03..9722e0c282b4 100644
+--- a/libraries/tools/kotlin-gradle-statistics/src/main/kotlin/org/jetbrains/kotlin/statistics/metrics/StringMetrics.kt
++++ b/libraries/tools/kotlin-gradle-statistics/src/main/kotlin/org/jetbrains/kotlin/statistics/metrics/StringMetrics.kt
+@@ -35,6 +35,7 @@ enum class StringMetrics(val type: StringOverridePolicy, val anonymization: Stri
+                 "ios_arm64",
+                 "ios_simulator_arm64",
+                 "ios_x64",
++                "ohos_arm64",
+                 "watchos_arm32",
+                 "watchos_arm64",
+                 "watchos_x64",
+diff --git a/native/commonizer/src/org/jetbrains/kotlin/commonizer/mergedtree/PlatformWidthIndex.kt b/native/commonizer/src/org/jetbrains/kotlin/commonizer/mergedtree/PlatformWidthIndex.kt
+index de59ad48e9ea..069378d2ee57 100644
+--- a/native/commonizer/src/org/jetbrains/kotlin/commonizer/mergedtree/PlatformWidthIndex.kt
++++ b/native/commonizer/src/org/jetbrains/kotlin/commonizer/mergedtree/PlatformWidthIndex.kt
+@@ -31,6 +31,7 @@ object PlatformWidthIndex {
+         LeafCommonizerTarget(KonanTarget.TVOS_X64) to PlatformIntWidth.LONG,
+         LeafCommonizerTarget(KonanTarget.TVOS_SIMULATOR_ARM64) to PlatformIntWidth.LONG,
+         LeafCommonizerTarget(KonanTarget.LINUX_X64) to PlatformIntWidth.LONG,
++        LeafCommonizerTarget(KonanTarget.OHOS_ARM64) to PlatformIntWidth.LONG, // dingxiao
+         LeafCommonizerTarget(KonanTarget.MINGW_X64) to PlatformIntWidth.LONG,
+         LeafCommonizerTarget(KonanTarget.MACOS_X64) to PlatformIntWidth.LONG,
+         LeafCommonizerTarget(KonanTarget.MACOS_ARM64) to PlatformIntWidth.LONG,
+diff --git a/native/native.tests/tests/org/jetbrains/kotlin/konan/test/blackbox/AbstractNativeCInteropTest.kt b/native/native.tests/tests/org/jetbrains/kotlin/konan/test/blackbox/AbstractNativeCInteropTest.kt
+index 1e10b42ff1f4..de3b4159640e 100644
+--- a/native/native.tests/tests/org/jetbrains/kotlin/konan/test/blackbox/AbstractNativeCInteropTest.kt
++++ b/native/native.tests/tests/org/jetbrains/kotlin/konan/test/blackbox/AbstractNativeCInteropTest.kt
+@@ -132,6 +132,7 @@ abstract class AbstractNativeCInteropTest : AbstractNativeCInteropBaseTest() {
+             KonanTarget.IOS_X64 -> "X64"
+             KonanTarget.LINUX_ARM32_HFP -> "ARM32"
+             KonanTarget.LINUX_ARM64 -> "ARM64"
++            KonanTarget.OHOS_ARM64 -> "ARM64" // dingxiao
+             KonanTarget.LINUX_X64 -> "X64"
+             KonanTarget.MACOS_ARM64 -> "CPointerByteVar"
+             KonanTarget.MACOS_X64 -> "X64"
+diff --git a/native/utils/src/org/jetbrains/kotlin/konan/target/AbstractToolConfig.kt b/native/utils/src/org/jetbrains/kotlin/konan/target/AbstractToolConfig.kt
+index ec2128fda388..304a83831a35 100644
+--- a/native/utils/src/org/jetbrains/kotlin/konan/target/AbstractToolConfig.kt
++++ b/native/utils/src/org/jetbrains/kotlin/konan/target/AbstractToolConfig.kt
+@@ -20,7 +20,7 @@ abstract class AbstractToolConfig(konanHome: String, userProvidedTargetName: Str
+ 
+     fun downloadDependencies() = platform.downloadDependencies()
+ 
+-    val llvmHome = platform.absoluteLlvmHome
++    val llvmHome = platform.absoluteLlvmHome() // dingxiao
+     val sysRoot = platform.absoluteTargetSysRoot
+ 
+     val libclang = when (host) {
+diff --git a/native/utils/src/org/jetbrains/kotlin/konan/target/ClangArgs.kt b/native/utils/src/org/jetbrains/kotlin/konan/target/ClangArgs.kt
+index 3fd27e68467a..3f98d6279000 100644
+--- a/native/utils/src/org/jetbrains/kotlin/konan/target/ClangArgs.kt
++++ b/native/utils/src/org/jetbrains/kotlin/konan/target/ClangArgs.kt
+@@ -27,7 +27,7 @@ sealed class ClangArgs(
+ 
+     private val absoluteTargetToolchain = configurables.absoluteTargetToolchain
+     private val absoluteTargetSysRoot = configurables.absoluteTargetSysRoot
+-    private val absoluteLlvmHome = configurables.absoluteLlvmHome
++    private val absoluteLlvmHome = configurables.absoluteLlvmHome(configurables.target.name) // dingxiao
+     private val target = configurables.target
+     private val targetTriple = configurables.targetTriple
+ 
+@@ -216,13 +216,17 @@ sealed class ClangArgs(
+     val clangArgsForKonanSources =
+             clangXXArgs + clangArgsSpecificForKonanSources
+ 
+-    private val libclangSpecificArgs =
++    // private val libclangSpecificArgs =
+             // libclang works not exactly the same way as the clang binary and
+             // (in particular) uses different default header search path.
+             // See e.g. http://lists.llvm.org/pipermail/cfe-dev/2013-November/033680.html
+             // We workaround the problem with -isystem flag below.
+             // TODO: Revise after update to LLVM 10.
+-            listOf("-isystem", "$absoluteLlvmHome/lib/clang/${configurables.llvmVersion}/include")
++            // listOf("-isystem", "$absoluteLlvmHome/lib/clang/${configurables.llvmVersion}/include")
++    private val libclangSpecificArgs =when (configurables) {
++        is OhosConfigurables -> listOf("-isystem", "$absoluteLlvmHome/lib/clang/12.0.1/include")
++        else -> listOf("-isystem", "$absoluteLlvmHome/lib/clang/${configurables.llvmVersion}/include")
++    }
+ 
+     /**
+      * libclang args for plain C and Objective-C.
+diff --git a/native/utils/src/org/jetbrains/kotlin/konan/target/Configurables.kt b/native/utils/src/org/jetbrains/kotlin/konan/target/Configurables.kt
+index eb95363e50dd..c482b8252847 100644
+--- a/native/utils/src/org/jetbrains/kotlin/konan/target/Configurables.kt
++++ b/native/utils/src/org/jetbrains/kotlin/konan/target/Configurables.kt
+@@ -17,6 +17,7 @@
+ package org.jetbrains.kotlin.konan.target
+ 
+ import org.jetbrains.kotlin.konan.properties.*
++import java.nio.file.Paths
+ 
+ interface RelocationModeFlags : TargetableExternalStorage {
+     val dynamicLibraryRelocationMode get() = targetString("dynamicLibraryRelocationMode").mode()
+@@ -77,7 +78,12 @@ interface Configurables : TargetableExternalStorage, RelocationModeFlags {
+ 
+     val absoluteTargetSysRoot get() = absolute(targetSysRoot)
+     val absoluteTargetToolchain get() = absolute(targetToolchain)
+-    val absoluteLlvmHome get() = absolute(llvmHome)
++    fun absoluteLlvmHome(target: String? = null): String {
++        if (target?.startsWith("ohos_") == true) {
++            return Paths.get(System.getenv("OHOS_SDK_HOME"), "native", "llvm").toString()
++        }
++        return absolute(llvmHome)
++    }
+ 
+     val targetCpu get() = targetString("targetCpu")
+     val targetCpuFeatures get() = targetString("targetCpuFeatures")
+@@ -131,6 +137,20 @@ interface GccConfigurables : Configurables, ClangFlags {
+     val linkerGccFlags get() = targetList("linkerGccFlags")
+ }
+ 
++// dingxiao
++interface OhosConfigurables : Configurables, ClangFlags {
++    val gccToolchain get() = targetString("gccToolchain")
++    val absoluteGccToolchain get() = absolute(gccToolchain)
++
++    val dynamicLinker get() = targetString("dynamicLinker")!!
++    val abiSpecificLibraries get() = targetList("abiSpecificLibraries")
++    val crtFilesLocation get() = targetString("crtFilesLocation")!!
++
++    val linker get() = hostTargetString("linker")
++    val linkerHostSpecificFlags get() = hostTargetList("linkerHostSpecificFlags")
++    val absoluteLinker get() = absolute(linker)
++}
++
+ interface AndroidConfigurables : Configurables, ClangFlags
+ 
+ interface WasmConfigurables : Configurables, ClangFlags, LldFlags
+diff --git a/native/utils/src/org/jetbrains/kotlin/konan/target/ConfigurablesImpl.kt b/native/utils/src/org/jetbrains/kotlin/konan/target/ConfigurablesImpl.kt
+index 293d3f8383a6..b237b3c97f9d 100644
+--- a/native/utils/src/org/jetbrains/kotlin/konan/target/ConfigurablesImpl.kt
++++ b/native/utils/src/org/jetbrains/kotlin/konan/target/ConfigurablesImpl.kt
+@@ -25,6 +25,12 @@ class GccConfigurablesImpl(target: KonanTarget, properties: Properties, dependen
+         get() = super.dependencies + listOfNotNull(emulatorDependency)
+ }
+ 
++class OhosConfigurablesImpl(target: KonanTarget, properties: Properties, dependenciesRoot: String?, progressCallback: ProgressCallback)
++    : OhosConfigurables, KonanPropertiesLoader(target, properties, dependenciesRoot, progressCallback = progressCallback), ConfigurablesWithEmulator {
++    override val dependencies: List<String>
++        get() = super.dependencies + listOfNotNull(emulatorDependency)
++}
++
+ class AndroidConfigurablesImpl(target: KonanTarget, properties: Properties, dependenciesRoot: String?, progressCallback: ProgressCallback) : AndroidConfigurables,
+     KonanPropertiesLoader(target, properties, dependenciesRoot, progressCallback = progressCallback)
+ 
+@@ -38,6 +44,8 @@ fun loadConfigurables(
+ ): Configurables = when (target.family) {
+     Family.LINUX -> GccConfigurablesImpl(target, properties, dependenciesRoot, progressCallback)
+ 
++    Family.OHOS -> OhosConfigurablesImpl(target, properties, dependenciesRoot, progressCallback)
++
+     Family.TVOS, Family.WATCHOS, Family.IOS, Family.OSX -> AppleConfigurablesImpl(target, properties, dependenciesRoot, progressCallback)
+ 
+     Family.ANDROID -> AndroidConfigurablesImpl(target, properties, dependenciesRoot, progressCallback)
+diff --git a/native/utils/src/org/jetbrains/kotlin/konan/target/Family.kt b/native/utils/src/org/jetbrains/kotlin/konan/target/Family.kt
+index ccdab6929bda..99f0d955a294 100644
+--- a/native/utils/src/org/jetbrains/kotlin/konan/target/Family.kt
++++ b/native/utils/src/org/jetbrains/kotlin/konan/target/Family.kt
+@@ -17,6 +17,7 @@ enum class Family(
+     TVOS("kexe", "lib", "dylib", "lib", "a"),
+     WATCHOS("kexe", "lib", "dylib", "lib", "a"),
+     LINUX("kexe", "lib", "so", "lib", "a"),
++    OHOS("kexe", "lib", "so", "lib", "a"),
+     MINGW("exe", "", "dll", "lib", "a"),
+     ANDROID("kexe", "lib", "so", "lib", "a");
+ 
+diff --git a/native/utils/src/org/jetbrains/kotlin/konan/target/HostManager.kt b/native/utils/src/org/jetbrains/kotlin/konan/target/HostManager.kt
+index a4057c8a7771..18dca8a4f70b 100644
+--- a/native/utils/src/org/jetbrains/kotlin/konan/target/HostManager.kt
++++ b/native/utils/src/org/jetbrains/kotlin/konan/target/HostManager.kt
+@@ -52,6 +52,7 @@ open class HostManager() {
+         LINUX_X64,
+         LINUX_ARM32_HFP,
+         LINUX_ARM64,
++        OHOS_ARM64,
+         MINGW_X64,
+         ANDROID_X86,
+         ANDROID_X64,
+diff --git a/native/utils/src/org/jetbrains/kotlin/konan/target/KonanTarget.kt b/native/utils/src/org/jetbrains/kotlin/konan/target/KonanTarget.kt
+index e09fc2e8801b..05ae4be8ea87 100644
+--- a/native/utils/src/org/jetbrains/kotlin/konan/target/KonanTarget.kt
++++ b/native/utils/src/org/jetbrains/kotlin/konan/target/KonanTarget.kt
+@@ -34,6 +34,8 @@ sealed class KonanTarget(override val name: String, val family: Family, val arch
+     object TVOS_X64 : KonanTarget("tvos_x64", Family.TVOS, Architecture.X64)
+     object TVOS_SIMULATOR_ARM64 : KonanTarget("tvos_simulator_arm64", Family.TVOS, Architecture.ARM64)
+     object LINUX_X64 : KonanTarget("linux_x64", Family.LINUX, Architecture.X64)
++
++    object OHOS_ARM64 : KonanTarget("ohos_arm64", Family.OHOS, Architecture.ARM64)
+     object MINGW_X64 : KonanTarget("mingw_x64", Family.MINGW, Architecture.X64)
+     object MACOS_X64 : KonanTarget("macos_x64", Family.OSX, Architecture.X64)
+     object MACOS_ARM64 : KonanTarget("macos_arm64", Family.OSX, Architecture.ARM64)
+@@ -80,7 +82,7 @@ sealed class KonanTarget(override val name: String, val family: Family, val arch
+                 WATCHOS_ARM32, WATCHOS_ARM64, WATCHOS_X64,
+                 WATCHOS_SIMULATOR_ARM64, WATCHOS_DEVICE_ARM64,
+                 TVOS_ARM64, TVOS_X64, TVOS_SIMULATOR_ARM64,
+-                LINUX_X64,
++                LINUX_X64, OHOS_ARM64,
+                 MINGW_X64,
+                 MACOS_X64, MACOS_ARM64,
+                 LINUX_ARM64, LINUX_ARM32_HFP
+diff --git a/native/utils/src/org/jetbrains/kotlin/konan/target/KonanTargetExtenstions.kt b/native/utils/src/org/jetbrains/kotlin/konan/target/KonanTargetExtenstions.kt
+index 5ed646b79acb..47e27810cdca 100644
+--- a/native/utils/src/org/jetbrains/kotlin/konan/target/KonanTargetExtenstions.kt
++++ b/native/utils/src/org/jetbrains/kotlin/konan/target/KonanTargetExtenstions.kt
+@@ -18,6 +18,7 @@ fun KonanTarget.binaryFormat() = when (family) {
+     Family.OSX -> BinaryFormat.MACH_O
+     Family.ANDROID -> BinaryFormat.ELF
+     Family.LINUX -> BinaryFormat.ELF
++    Family.OHOS -> BinaryFormat.ELF // dingxiao
+     Family.MINGW -> BinaryFormat.PE_COFF
+ }
+ 
+@@ -36,6 +37,7 @@ fun KonanTarget.supportsMimallocAllocator(): Boolean =
+         is KonanTarget.MACOS_ARM64 -> true
+         is KonanTarget.LINUX_ARM64 -> true
+         is KonanTarget.LINUX_ARM32_HFP -> true
++        is KonanTarget.OHOS_ARM64 -> true
+         is KonanTarget.ANDROID_X64 -> true
+         is KonanTarget.ANDROID_ARM64 -> true
+         is KonanTarget.IOS_ARM64 -> true
+@@ -50,7 +52,7 @@ fun KonanTarget.supportsMimallocAllocator(): Boolean =
+ 
+ fun KonanTarget.supportsLibBacktrace(): Boolean =
+         this.family.isAppleFamily ||
+-                this.family == Family.LINUX ||
++                this.family == Family.LINUX || this.family == Family.OHOS || // dingxiao
+                 this.family == Family.ANDROID
+ 
+ // TODO: Add explicit WATCHOS_DEVICE_ARM64 after compiler update.
+@@ -61,7 +63,7 @@ fun KonanTarget.supportsCoreSymbolication(): Boolean =
+                 KonanTarget.WATCHOS_X64, KonanTarget.WATCHOS_SIMULATOR_ARM64
+         )
+ 
+-fun KonanTarget.supportsGccUnwind(): Boolean = family == Family.ANDROID || family == Family.LINUX
++fun KonanTarget.supportsGccUnwind(): Boolean = family == Family.ANDROID || family == Family.LINUX || family == Family.OHOS // dingxiao
+ // MINGW_X64 target does not support GCC unwind, since its sysroot contains libgcc version < 12 having misfeature, see KT-49240
+ fun KonanTarget.supportsWinAPIUnwind(): Boolean = this is KonanTarget.MINGW_X64
+ 
+diff --git a/native/utils/src/org/jetbrains/kotlin/konan/target/Linker.kt b/native/utils/src/org/jetbrains/kotlin/konan/target/Linker.kt
+index cdf6880be6e8..a2849c08e39f 100644
+--- a/native/utils/src/org/jetbrains/kotlin/konan/target/Linker.kt
++++ b/native/utils/src/org/jetbrains/kotlin/konan/target/Linker.kt
+@@ -63,7 +63,7 @@ private fun staticGnuArCommands(ar: String, executable: ExecutableFile,
+ // for another implementation of this class.
+ abstract class LinkerFlags(val configurables: Configurables) {
+ 
+-    protected val llvmBin = "${configurables.absoluteLlvmHome}/bin"
++    protected val llvmBin = "${configurables.absoluteLlvmHome()}/bin"
+ 
+     open val useCompilerDriverAsLinker: Boolean get() = false // TODO: refactor.
+ 
+@@ -365,7 +365,7 @@ class GccBasedLinker(targetProperties: GccConfigurables)
+             KonanTarget.LINUX_X64 -> "x86_64"
+             else -> error("$target is not supported.")
+         }
+-        val dir = File("$absoluteLlvmHome/lib/clang/").listFiles.firstOrNull()?.absolutePath
++        val dir = File("${absoluteLlvmHome()}/lib/clang/").listFiles.firstOrNull()?.absolutePath
+         return if (dir != null) "$dir/lib/linux/libclang_rt.$libraryName-$targetSuffix.a" else null
+     }
+ 
+@@ -441,9 +441,9 @@ class MingwLinker(targetProperties: MingwConfigurables)
+     private val ar = if (HostManager.hostIsMingw) {
+         "$absoluteTargetToolchain/bin/ar"
+     } else {
+-        "$absoluteLlvmHome/bin/llvm-ar"
++        "${absoluteLlvmHome()}/bin/llvm-ar"
+     }
+-    private val clang = "$absoluteLlvmHome/bin/clang++"
++    private val clang = "${absoluteLlvmHome()}/bin/clang++"
+ 
+     override val useCompilerDriverAsLinker: Boolean get() = true
+ 
+@@ -457,7 +457,7 @@ class MingwLinker(targetProperties: MingwConfigurables)
+             KonanTarget.MINGW_X64 -> "x86_64"
+             else -> error("$target is not supported.")
+         }
+-        val dir = File("$absoluteLlvmHome/lib/clang/").listFiles.firstOrNull()?.absolutePath
++        val dir = File("${absoluteLlvmHome()}/lib/clang/").listFiles.firstOrNull()?.absolutePath
+         return if (dir != null) "$dir/lib/windows/libclang_rt.$libraryName-$targetSuffix.a" else null
+     }
+ 
+@@ -506,6 +506,93 @@ class MingwLinker(targetProperties: MingwConfigurables)
+     }
+ }
+ 
++class OhosBasedLinker(targetProperties: OhosConfigurables)
++    : LinkerFlags(targetProperties), OhosConfigurables by targetProperties {
++    
++    private val ar = if (HostManager.hostIsLinux) {
++        "$absoluteTargetToolchain/bin/ar"
++    } else {
++        "$absoluteTargetToolchain/bin/llvm-ar"
++    }
++
++    private val specificLibs = abiSpecificLibraries.map { "-L${absoluteTargetSysRoot}/$it" }
++
++    override fun provideCompilerRtLibrary(libraryName: String, isDynamic: Boolean): String? {
++        require(!isDynamic) {
++            "Dynamic compiler rt librares are unsupported"
++        }
++        val targetSuffix = when (target) {
++            KonanTarget.LINUX_X64 -> "x86_64"
++            else -> error("$target is not supported.")
++        }
++        val dir = File("${absoluteLlvmHome()}/lib/clang/").listFiles.firstOrNull()?.absolutePath
++        return if (dir != null) "$dir/lib/linux/libclang_rt.$libraryName-$targetSuffix.a" else null
++    }
++
++    override fun filterStaticLibraries(binaries: List<String>) = binaries.filter { it.isUnixStaticLib }
++
++    override fun finalLinkCommands(objectFiles: List<ObjectFile>, executable: ExecutableFile,
++                                   libraries: List<String>, linkerArgs: List<String>,
++                                   optimize: Boolean, debug: Boolean,
++                                   kind: LinkerOutputKind, outputDsymBundle: String,
++                                   mimallocEnabled: Boolean,
++                                   sanitizer: SanitizerKind?): List<Command> {
++        require(kind == LinkerOutputKind.DYNAMIC_LIBRARY) {
++            "OHOS链路当前只支持共享库"
++        }
++        val dynamic = kind == LinkerOutputKind.DYNAMIC_LIBRARY
++        val targetToolchain = absoluteTargetToolchain
++        // val crtPrefix = "$absoluteTargetSysRoot/$crtFilesLocation"
++        // TODO: Can we extract more to the konan.configurables?
++        return listOf(Command(absoluteLinker).apply {
++            +"--sysroot=${absoluteTargetSysRoot}"
++            +"-export-dynamic"
++            +"-z"
++            +"relro"
++            +"--build-id"
++            +"--eh-frame-hdr"
++            +"-dynamic-linker"
++            +dynamicLinker
++            linkerHostSpecificFlags.forEach { +it }
++            +"-o"
++            +executable
++            // +"${absoluteTargetSysRoot}/usr/lib/aarch64-linux-ohos/Scrt1.o"
++            // +"${absoluteTargetSysRoot}/usr/lib/aarch64-linux-ohos/crti.o"
++            +"-L${targetToolchain}/lib/clang/12.0.1/lib/aarch64-linux-ohos"
++            +"-L${targetToolchain}/lib/aarch64-linux-ohos"
++            +"--hash-style=gnu"
++            +"-L${targetToolchain}/lib/aarch64-linux-ohos/c++"
++            +specificLibs
++            if (optimize) +linkerOptimizationFlags
++            if (!debug) +linkerNoDebugFlags
++            if (dynamic) +linkerDynamicFlags
++            +objectFiles
++            +libraries
++            +linkerArgs
++            if (mimallocEnabled) +mimallocLinkerDependencies
++            // See explanation about `-u__llvm_profile_runtime` here:
++            // https://github.com/llvm/llvm-project/blob/21e270a479a24738d641e641115bce6af6ed360a/llvm/lib/Transforms/Instrumentation/InstrProfiling.cpp#L930
++            // if (needsProfileLibrary) +listOf("-u__llvm_profile_runtime", profileLibrary!!)
++            +linkerKonanFlags
++            +"${targetToolchain}/lib/clang/12.0.1/lib/aarch64-linux-ohos/clang_rt.crtend.o"
++            // +"$crtPrefix/crtn.o"
++            when (sanitizer) {
++                null -> {}
++                SanitizerKind.ADDRESS -> {
++                    +"-lrt"
++                    +provideCompilerRtLibrary("asan")!!
++                    +provideCompilerRtLibrary("asan_cxx")!!
++                }
++                SanitizerKind.THREAD -> {
++                    +"-lrt"
++                    +provideCompilerRtLibrary("tsan")!!
++                    +provideCompilerRtLibrary("tsan_cxx")!!
++                }
++            }
++        })
++    }
++}
++
+ class WasmLinker(targetProperties: WasmConfigurables)
+     : LinkerFlags(targetProperties), WasmConfigurables by targetProperties {
+ 
+@@ -592,6 +679,7 @@ open class ZephyrLinker(targetProperties: ZephyrConfigurables)
+ fun linker(configurables: Configurables): LinkerFlags =
+         when (configurables) {
+             is GccConfigurables -> GccBasedLinker(configurables)
++            is OhosConfigurables -> OhosBasedLinker(configurables)
+             is AppleConfigurables -> MacOSBasedLinker(configurables)
+             is AndroidConfigurables-> AndroidLinker(configurables)
+             is MingwConfigurables -> MingwLinker(configurables)

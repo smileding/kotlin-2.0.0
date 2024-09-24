@@ -35,6 +35,7 @@ enum class StringMetrics(val type: StringOverridePolicy, val anonymization: Stri
                 "ios_arm64",
                 "ios_simulator_arm64",
                 "ios_x64",
+                "ohos_arm64",
                 "watchos_arm32",
                 "watchos_arm64",
                 "watchos_x64",

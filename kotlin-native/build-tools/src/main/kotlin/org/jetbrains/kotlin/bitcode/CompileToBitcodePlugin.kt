@@ -243,7 +243,8 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
                     val compileTask: TaskProvider<ClangFrontend> = this@apply
                     directory.set(compileTask.flatMap { it.workingDirectory })
                     files.setFrom(compileTask.map { it.inputFiles })
-                    arguments.set(compileTask.map { listOf(execClang.resolveExecutable(it.compiler.get())) + it.compilerFlags.get() + execClang.clangArgsForCppRuntime(target.name) })
+                    // dingxiao
+                    arguments.set(compileTask.map { listOf(execClang.resolveExecutable(it.compiler.get(), target.name)) + it.compilerFlags.get() + execClang.clangArgsForCppRuntime(target.name) })
                     // Only the location of output file matters, compdb does not depend on the compilation result.
                     output.set(compileTask.flatMap { it.outputDirectory.locationOnly.map { it.asFile.absolutePath }})
                 }
@@ -265,6 +266,7 @@ open class CompileToBitcodeExtension @Inject constructor(val project: Project) :
             configure {
                 notCompatibleWithConfigurationCache("When GoogleTest are not downloaded llvm-link is missing arguments")
                 this.description = "Link '${module.name}' bitcode files (${this@SourceSet.name} sources) into a single bitcode file for $_target"
+                this.targetName.set(target.name) // dingxiao
                 this.inputFiles.from(compileTask)
                 this.outputFile.set(this@SourceSet.outputFile)
                 this.arguments.set(module.linkerArgs)

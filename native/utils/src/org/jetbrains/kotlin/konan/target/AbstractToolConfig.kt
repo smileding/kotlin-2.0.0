@@ -20,7 +20,7 @@ abstract class AbstractToolConfig(konanHome: String, userProvidedTargetName: Str
 
     fun downloadDependencies() = platform.downloadDependencies()
 
-    val llvmHome = platform.absoluteLlvmHome
+    val llvmHome = platform.absoluteLlvmHome() // dingxiao
     val sysRoot = platform.absoluteTargetSysRoot
 
     val libclang = when (host) {

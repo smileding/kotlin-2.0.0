@@ -63,7 +63,7 @@ private fun staticGnuArCommands(ar: String, executable: ExecutableFile,
 // for another implementation of this class.
 abstract class LinkerFlags(val configurables: Configurables) {
 
-    protected val llvmBin = "${configurables.absoluteLlvmHome}/bin"
+    protected val llvmBin = "${configurables.absoluteLlvmHome()}/bin"
 
     open val useCompilerDriverAsLinker: Boolean get() = false // TODO: refactor.
 
@@ -365,7 +365,7 @@ class GccBasedLinker(targetProperties: GccConfigurables)
             KonanTarget.LINUX_X64 -> "x86_64"
             else -> error("$target is not supported.")
         }
-        val dir = File("$absoluteLlvmHome/lib/clang/").listFiles.firstOrNull()?.absolutePath
+        val dir = File("${absoluteLlvmHome()}/lib/clang/").listFiles.firstOrNull()?.absolutePath
         return if (dir != null) "$dir/lib/linux/libclang_rt.$libraryName-$targetSuffix.a" else null
     }
 
@@ -441,9 +441,9 @@ class MingwLinker(targetProperties: MingwConfigurables)
     private val ar = if (HostManager.hostIsMingw) {
         "$absoluteTargetToolchain/bin/ar"
     } else {
-        "$absoluteLlvmHome/bin/llvm-ar"
+        "${absoluteLlvmHome()}/bin/llvm-ar"
     }
-    private val clang = "$absoluteLlvmHome/bin/clang++"
+    private val clang = "${absoluteLlvmHome()}/bin/clang++"
 
     override val useCompilerDriverAsLinker: Boolean get() = true
 
@@ -457,7 +457,7 @@ class MingwLinker(targetProperties: MingwConfigurables)
             KonanTarget.MINGW_X64 -> "x86_64"
             else -> error("$target is not supported.")
         }
-        val dir = File("$absoluteLlvmHome/lib/clang/").listFiles.firstOrNull()?.absolutePath
+        val dir = File("${absoluteLlvmHome()}/lib/clang/").listFiles.firstOrNull()?.absolutePath
         return if (dir != null) "$dir/lib/windows/libclang_rt.$libraryName-$targetSuffix.a" else null
     }
 
@@ -503,6 +503,93 @@ class MingwLinker(targetProperties: MingwConfigurables)
         }
 
         return listOf(Command(clang).constructLinkerArguments(additionalArguments = listOf("-fuse-ld=$absoluteLinker")))
+    }
+}
+
+class OhosBasedLinker(targetProperties: OhosConfigurables)
+    : LinkerFlags(targetProperties), OhosConfigurables by targetProperties {
+    
+    private val ar = if (HostManager.hostIsLinux) {
+        "$absoluteTargetToolchain/bin/ar"
+    } else {
+        "$absoluteTargetToolchain/bin/llvm-ar"
+    }
+
+    private val specificLibs = abiSpecificLibraries.map { "-L${absoluteTargetSysRoot}/$it" }
+
+    override fun provideCompilerRtLibrary(libraryName: String, isDynamic: Boolean): String? {
+        require(!isDynamic) {
+            "Dynamic compiler rt librares are unsupported"
+        }
+        val targetSuffix = when (target) {
+            KonanTarget.LINUX_X64 -> "x86_64"
+            else -> error("$target is not supported.")
+        }
+        val dir = File("${absoluteLlvmHome()}/lib/clang/").listFiles.firstOrNull()?.absolutePath
+        return if (dir != null) "$dir/lib/linux/libclang_rt.$libraryName-$targetSuffix.a" else null
+    }
+
+    override fun filterStaticLibraries(binaries: List<String>) = binaries.filter { it.isUnixStaticLib }
+
+    override fun finalLinkCommands(objectFiles: List<ObjectFile>, executable: ExecutableFile,
+                                   libraries: List<String>, linkerArgs: List<String>,
+                                   optimize: Boolean, debug: Boolean,
+                                   kind: LinkerOutputKind, outputDsymBundle: String,
+                                   mimallocEnabled: Boolean,
+                                   sanitizer: SanitizerKind?): List<Command> {
+        require(kind == LinkerOutputKind.DYNAMIC_LIBRARY) {
+            "OHOS链路当前只支持共享库"
+        }
+        val dynamic = kind == LinkerOutputKind.DYNAMIC_LIBRARY
+        val targetToolchain = absoluteTargetToolchain
+        // val crtPrefix = "$absoluteTargetSysRoot/$crtFilesLocation"
+        // TODO: Can we extract more to the konan.configurables?
+        return listOf(Command(absoluteLinker).apply {
+            +"--sysroot=${absoluteTargetSysRoot}"
+            +"-export-dynamic"
+            +"-z"
+            +"relro"
+            +"--build-id"
+            +"--eh-frame-hdr"
+            +"-dynamic-linker"
+            +dynamicLinker
+            linkerHostSpecificFlags.forEach { +it }
+            +"-o"
+            +executable
+            // +"${absoluteTargetSysRoot}/usr/lib/aarch64-linux-ohos/Scrt1.o"
+            // +"${absoluteTargetSysRoot}/usr/lib/aarch64-linux-ohos/crti.o"
+            +"-L${targetToolchain}/lib/clang/12.0.1/lib/aarch64-linux-ohos"
+            +"-L${targetToolchain}/lib/aarch64-linux-ohos"
+            +"--hash-style=gnu"
+            +"-L${targetToolchain}/lib/aarch64-linux-ohos/c++"
+            +specificLibs
+            if (optimize) +linkerOptimizationFlags
+            if (!debug) +linkerNoDebugFlags
+            if (dynamic) +linkerDynamicFlags
+            +objectFiles
+            +libraries
+            +linkerArgs
+            if (mimallocEnabled) +mimallocLinkerDependencies
+            // See explanation about `-u__llvm_profile_runtime` here:
+            // https://github.com/llvm/llvm-project/blob/21e270a479a24738d641e641115bce6af6ed360a/llvm/lib/Transforms/Instrumentation/InstrProfiling.cpp#L930
+            // if (needsProfileLibrary) +listOf("-u__llvm_profile_runtime", profileLibrary!!)
+            +linkerKonanFlags
+            +"${targetToolchain}/lib/clang/12.0.1/lib/aarch64-linux-ohos/clang_rt.crtend.o"
+            // +"$crtPrefix/crtn.o"
+            when (sanitizer) {
+                null -> {}
+                SanitizerKind.ADDRESS -> {
+                    +"-lrt"
+                    +provideCompilerRtLibrary("asan")!!
+                    +provideCompilerRtLibrary("asan_cxx")!!
+                }
+                SanitizerKind.THREAD -> {
+                    +"-lrt"
+                    +provideCompilerRtLibrary("tsan")!!
+                    +provideCompilerRtLibrary("tsan_cxx")!!
+                }
+            }
+        })
     }
 }
 
@@ -592,6 +679,7 @@ open class ZephyrLinker(targetProperties: ZephyrConfigurables)
 fun linker(configurables: Configurables): LinkerFlags =
         when (configurables) {
             is GccConfigurables -> GccBasedLinker(configurables)
+            is OhosConfigurables -> OhosBasedLinker(configurables)
             is AppleConfigurables -> MacOSBasedLinker(configurables)
             is AndroidConfigurables-> AndroidLinker(configurables)
             is MingwConfigurables -> MingwLinker(configurables)

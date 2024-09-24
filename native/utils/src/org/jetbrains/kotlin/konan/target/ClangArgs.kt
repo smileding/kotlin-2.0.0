@@ -27,7 +27,7 @@ sealed class ClangArgs(
 
     private val absoluteTargetToolchain = configurables.absoluteTargetToolchain
     private val absoluteTargetSysRoot = configurables.absoluteTargetSysRoot
-    private val absoluteLlvmHome = configurables.absoluteLlvmHome
+    private val absoluteLlvmHome = configurables.absoluteLlvmHome(configurables.target.name) // dingxiao
     private val target = configurables.target
     private val targetTriple = configurables.targetTriple
 
@@ -216,13 +216,17 @@ sealed class ClangArgs(
     val clangArgsForKonanSources =
             clangXXArgs + clangArgsSpecificForKonanSources
 
-    private val libclangSpecificArgs =
+    // private val libclangSpecificArgs =
             // libclang works not exactly the same way as the clang binary and
             // (in particular) uses different default header search path.
             // See e.g. http://lists.llvm.org/pipermail/cfe-dev/2013-November/033680.html
             // We workaround the problem with -isystem flag below.
             // TODO: Revise after update to LLVM 10.
-            listOf("-isystem", "$absoluteLlvmHome/lib/clang/${configurables.llvmVersion}/include")
+            // listOf("-isystem", "$absoluteLlvmHome/lib/clang/${configurables.llvmVersion}/include")
+    private val libclangSpecificArgs =when (configurables) {
+        is OhosConfigurables -> listOf("-isystem", "$absoluteLlvmHome/lib/clang/12.0.1/include")
+        else -> listOf("-isystem", "$absoluteLlvmHome/lib/clang/${configurables.llvmVersion}/include")
+    }
 
     /**
      * libclang args for plain C and Objective-C.

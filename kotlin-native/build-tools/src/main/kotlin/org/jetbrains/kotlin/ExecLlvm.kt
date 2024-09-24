@@ -24,11 +24,13 @@ fun execLlvmUtility(project: Project, utility: String, closure: Closure<in ExecS
     return execLlvmUtility(project, utility) { project.configure(this, closure) }
 }
 
-fun PlatformManager.resolveLlvmUtility(utility: String) = "${hostPlatform.absoluteLlvmHome}/bin/$utility"
+// dingxiao
+fun PlatformManager.resolveLlvmUtility(utility: String, target: String? = null) = "${hostPlatform.absoluteLlvmHome(target)}/bin/$utility"
 
-fun ExecOperations.execLlvmUtility(platformManager: PlatformManager, utility: String, action: Action<in ExecSpec>): ExecResult {
+// dingxiao
+fun ExecOperations.execLlvmUtility(platformManager: PlatformManager, utility: String, target: String? = null, action: Action<in ExecSpec>): ExecResult {
     return exec {
         action.execute(this)
-        executable = platformManager.resolveLlvmUtility(utility)
+        executable = platformManager.resolveLlvmUtility(utility, target)
     }
 }

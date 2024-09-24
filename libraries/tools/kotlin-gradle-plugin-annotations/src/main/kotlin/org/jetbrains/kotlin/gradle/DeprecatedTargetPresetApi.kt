@@ -11,7 +11,7 @@ const val PRESETS_API_IS_DEPRECATED_MESSAGE = "The presets $PRESETS_DEPRECATION_
 
 @RequiresOptIn(
     message = PRESETS_API_IS_DEPRECATED_MESSAGE,
-    level = RequiresOptIn.Level.WARNING
+    level = RequiresOptIn.Level.ERROR
 )
 @InternalKotlinGradlePluginApi
 annotation class DeprecatedTargetPresetApi

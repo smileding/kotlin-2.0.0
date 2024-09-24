@@ -81,7 +81,7 @@ bitcode {
                     if (sanitizer == SanitizerKind.THREAD) { "-O1" } else { "-O3" },
                     "-DKONAN_MI_MALLOC=1",
                     "-Wno-unknown-pragmas",
-                    "-ftls-model=initial-exec",
+                    // "-ftls-model=initial-exec", dingxiao
                     "-Wno-unused-function",
                     "-Wno-error=atomic-alignment",
                     "-Wno-unused-parameter", /* for windows 32 */
@@ -98,7 +98,7 @@ bitcode {
                 else -> 32 // TODO(KT-66500): remove after the bootstrap
             }
             val useMachO = target.family.isAppleFamily
-            val useElf = target.family in listOf(Family.LINUX, Family.ANDROID)
+            val useElf = target.family in listOf(Family.LINUX, Family.ANDROID, Family.OHOS)
 
             sourceSets {
                 main {

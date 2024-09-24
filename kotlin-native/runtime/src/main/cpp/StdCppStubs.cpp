@@ -18,7 +18,7 @@
 #include "Porting.h"
 #include "Common.h"
 
-#if KONAN_LINUX || KONAN_WINDOWS
+#if KONAN_LINUX || KONAN_OHOS || KONAN_WINDOWS
 // This function replaces `__cxa_demangle` defined in GNU libstdc++
 // by adding `--defsym` flag in `konan.properties`.
 // This allows to avoid linking `__cxa_demangle` and its dependencies, thus reducing binary size.
@@ -30,16 +30,18 @@ RUNTIME_USED RUNTIME_WEAK extern "C" char* Konan_cxa_demangle(
   return nullptr;
 }
 
+#ifndef KONAN_OHOS
 namespace std {
 RUNTIME_WEAK void __throw_length_error(const char* __s __attribute__((unused))) {
   RuntimeCheck(false, "%s", __s);
 }
 
 }  // namespace std
+#endif
 
-#endif // KONAN_LINUX || KONAN_WINDOWS
+#endif // KONAN_LINUX || KONAN_OHOS || KONAN_WINDOWS
 
-#if KONAN_LINUX
+#if KONAN_LINUX || KONAN_OHOS
 
 #include <system_error>
 
@@ -54,4 +56,4 @@ const std::error_category& std_system_category_backward_compatibility_with_gcc_4
     return std::system_category();
 }
 
-#endif // KONAN_LINUX
+#endif // KONAN_LINUX || KONAN_OHOS

@@ -40,7 +40,7 @@ internal class BitcodeCompiler(
     }
 
     private fun hostLlvmTool(tool: String, vararg arg: String) {
-        val absoluteToolName = "${platform.absoluteLlvmHome}/bin/$tool"
+        val absoluteToolName = "${platform.absoluteLlvmHome()}/bin/$tool"  // dingxiao
         runTool(absoluteToolName, *arg)
     }
 

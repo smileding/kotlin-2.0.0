@@ -146,6 +146,8 @@ private class KotlinHierarchyBuilderImpl(
 
     override fun withLinux() = withTargets { it is KotlinNativeTarget && it.konanTarget.family == Family.LINUX }
 
+    override fun withOhos() = withTargets { it is KotlinNativeTarget && it.konanTarget.family == Family.OHOS }
+
     override fun withAndroidNative() = withTargets { it is KotlinNativeTarget && it.konanTarget.family == Family.ANDROID }
 
     // Don't check for instance of [KotlinJsTargetDsl] or [KotlinWasmTargetDsl] because they are implemented by single target [KotlinJsIrTarget]
@@ -258,6 +260,10 @@ private class KotlinHierarchyBuilderImpl(
 
     override fun withLinuxArm64() = withTargets {
         it is KotlinNativeTarget && it.konanTarget == KonanTarget.LINUX_ARM64
+    }
+
+    override fun withOhosArm64() = withTargets {
+        it is KotlinNativeTarget && it.konanTarget == KonanTarget.OHOS_ARM64
     }
 
     @Deprecated(REMOVED_TARGET_MESSAGE, level = DeprecationLevel.ERROR)

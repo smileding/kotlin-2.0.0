@@ -13,7 +13,7 @@ fun runLlvmTool(args: Array<String>) {
     val toolArguments = args.drop(1)
 
     val platform = platformManager().hostPlatform
-    val llvmHome = platform.configurables.absoluteLlvmHome
+    val llvmHome = platform.configurables.absoluteLlvmHome()
 
     val toolPath = "$llvmHome/bin/$toolName"
 
@@ -27,7 +27,7 @@ fun runLlvmClangToolWithTarget(args: Array<String>) {
 
     val platformManager = platformManager()
     val platform = platformManager.platform(platformManager.targetByName(targetName))
-    val llvmHome = platform.configurables.absoluteLlvmHome
+    val llvmHome = platform.configurables.absoluteLlvmHome()
 
     val toolPath = "$llvmHome/bin/$toolName"
 

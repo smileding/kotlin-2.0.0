@@ -340,7 +340,7 @@ fun Project.buildStaticLibrary(cSources: Collection<File>, output: File, objDir:
     output.parentFile.mkdirs()
     exec {
         commandLine(
-            "${platform.configurables.absoluteLlvmHome}/bin/llvm-ar",
+            "${platform.configurables.absoluteLlvmHome()}/bin/llvm-ar", // dingxiao
             "-rc",
             output,
             *fileTree(objDir).files.toTypedArray()

@@ -69,7 +69,7 @@ if (libclangextIsEnabled) {
             "clangToolingCore",
             "clangTooling", "clangFormat", "LLVMTarget", "LLVMMC", "LLVMLinker", "LLVMTransformUtils",
             "LLVMBitWriter", "LLVMBitReader", "LLVMAnalysis", "LLVMProfileData", "LLVMCore",
-            "LLVMSupport", "LLVMBinaryFormat", "LLVMDemangle"
+            "LLVMSupport", "LLVMBinaryFormat", "LLVMDemangle", "LLVMFrontendOpenMP" // dingxiao
     ).map { "${nativeDependencies.llvmPath}/lib/lib${it}.a" }
 
     ldflags.addAll(llvmLibs)

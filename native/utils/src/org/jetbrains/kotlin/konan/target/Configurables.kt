@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.konan.target
 
 import org.jetbrains.kotlin.konan.properties.*
+import java.nio.file.Paths
 
 interface RelocationModeFlags : TargetableExternalStorage {
     val dynamicLibraryRelocationMode get() = targetString("dynamicLibraryRelocationMode").mode()
@@ -77,7 +78,12 @@ interface Configurables : TargetableExternalStorage, RelocationModeFlags {
 
     val absoluteTargetSysRoot get() = absolute(targetSysRoot)
     val absoluteTargetToolchain get() = absolute(targetToolchain)
-    val absoluteLlvmHome get() = absolute(llvmHome)
+    fun absoluteLlvmHome(target: String? = null): String {
+        if (target?.startsWith("ohos_") == true) {
+            return Paths.get(System.getenv("OHOS_SDK_HOME"), "native", "llvm").toString()
+        }
+        return absolute(llvmHome)
+    }
 
     val targetCpu get() = targetString("targetCpu")
     val targetCpuFeatures get() = targetString("targetCpuFeatures")
@@ -129,6 +135,20 @@ interface GccConfigurables : Configurables, ClangFlags {
     val absoluteLinker get() = absolute(linker)
 
     val linkerGccFlags get() = targetList("linkerGccFlags")
+}
+
+// dingxiao
+interface OhosConfigurables : Configurables, ClangFlags {
+    val gccToolchain get() = targetString("gccToolchain")
+    val absoluteGccToolchain get() = absolute(gccToolchain)
+
+    val dynamicLinker get() = targetString("dynamicLinker")!!
+    val abiSpecificLibraries get() = targetList("abiSpecificLibraries")
+    val crtFilesLocation get() = targetString("crtFilesLocation")!!
+
+    val linker get() = hostTargetString("linker")
+    val linkerHostSpecificFlags get() = hostTargetList("linkerHostSpecificFlags")
+    val absoluteLinker get() = absolute(linker)
 }
 
 interface AndroidConfigurables : Configurables, ClangFlags

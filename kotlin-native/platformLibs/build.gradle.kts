@@ -65,7 +65,14 @@ enabledTargets(platformManager).forEach { target ->
                     klibFiles(df.config.depends.map { "$konanHome/klib/platform/$targetName/${fileNamePrefix}${it}" })
                 }
                 extraOpts("-Xpurge-user-libs", "-Xshort-module-name", df.name, "-Xdisable-experimental-annotation")
-                compilerOpts("-fmodules-cache-path=${project.layout.buildDirectory.dir("clangModulesCache").get().asFile}")
+                // compilerOpts("-fmodules-cache-path=${project.layout.buildDirectory.dir("clangModulesCache").get().asFile}")
+                // dingxiao
+                val compilerOptions = mutableListOf<String>()
+                compilerOptions.add("-fmodules-cache-path=${project.layout.buildDirectory.dir("clangModulesCache").get().asFile}")
+                if (targetName == "ohos_arm64") {
+                    compilerOptions.add("-I/Users/dxj/development/ohos-sdk/darwin/native/sysroot/usr/include/aarch64-linux-ohos")
+                }
+                compilerOpts(*compilerOptions.toTypedArray())
             }
         }
 

@@ -29,6 +29,7 @@ private abstract class LlvmLinkJob : WorkAction<LlvmLinkJob.Parameters> {
         val outputFile: RegularFileProperty
         val arguments: ListProperty<String>
         val platformManager: Property<PlatformManager>
+        val targetName: Property<String> // dingxiao
     }
 
     @get:Inject
@@ -36,7 +37,7 @@ private abstract class LlvmLinkJob : WorkAction<LlvmLinkJob.Parameters> {
 
     override fun execute() {
         with(parameters) {
-            execOperations.execLlvmUtility(platformManager.get(), "llvm-link") {
+            execOperations.execLlvmUtility(platformManager.get(), "llvm-link", targetName.get()) { // dingxiao
                 args = listOf("-o", outputFile.asFile.get().absolutePath) + arguments.get() + inputFiles.map { it.absolutePath }
             }
         }
@@ -65,6 +66,12 @@ abstract class LlvmLink : DefaultTask() {
     @get:Input
     abstract val arguments: ListProperty<String>
 
+    /**
+     * targetName added by dingxiao
+     */
+    @get:Input
+    abstract val targetName: Property<String>
+
     @get:Inject
     protected abstract val workerExecutor: WorkerExecutor
 
@@ -79,6 +86,7 @@ abstract class LlvmLink : DefaultTask() {
             outputFile.set(this@LlvmLink.outputFile)
             arguments.set(this@LlvmLink.arguments)
             platformManager.set(this@LlvmLink.platformManager)
+            targetName.set(this@LlvmLink.targetName) // dingxiao
         }
     }
 }
